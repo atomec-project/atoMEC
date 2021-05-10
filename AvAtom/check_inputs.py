@@ -63,7 +63,7 @@ class Atom:
         '''
         Checks the charge is an integer
         '''
-        if isinstance(density,(float,int))==True:
+        if isinstance(density,(float,int))==False:
             raise InputError.density_error("Density is not a number")
         else:
             if density<=0.0:
