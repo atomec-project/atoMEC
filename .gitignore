@@ -1,2 +1,6 @@
-AvAtom/__pycache__/ # python cache folder
-*~ # emacs extension files
+AvAtom/__pycache__ # python cache folder
+
+# emacs extension files
+*~
+*#
+#*
