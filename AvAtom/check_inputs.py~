@@ -1,0 +1,20 @@
+'''
+This module checks inputs for errors
+'''
+
+# standard python packages
+
+# external packages
+
+#internal packages
+
+class Atom:
+    '''
+    Checks the inputs from the BuildAtom class
+    '''
+
+    def check_species(self,species):
+        '''
+        Checks the species is a string and corresponds to an actual element
+        '''
+        

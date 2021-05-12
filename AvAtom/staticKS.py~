@@ -1,0 +1,35 @@
+'''
+Module which computes time-independent properties from the average-atom setup
+'''
+
+#standard packages
+
+#external packages
+import numpy as np
+
+#internal modules
+import config
+import numerov
+
+
+class Orbitals:
+    '''
+    The orbitals object has the following attributes:
+    - eigfuncs (numpy array)    :   the orbitals defined on the numerical grid
+    - eigvals  (numpy array)    :   KS orbital eigenvalues
+    - occnums  (numpy array)    :   KS orbital occupation numbers
+    '''
+
+    def initialize(self):
+        '''
+        Initializes the KS orbitals before an SCF cycle using the bare clmb potential
+        '''
+
+        
+        
+        
+        
+        
+    
+        
+        
