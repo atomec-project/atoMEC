@@ -117,7 +117,9 @@ class Atom:
         grid = gridmod.GridSetup(self)
 
         # initialize orbitals
-        orbs = staticKS.Orbitals.SCF_init(self, grid)
+        orbs = staticKS.Orbitals()
+        orbs.SCF_init(self, grid)
+        # print(orbs.eigfuncs)
         # occupy orbitals
         # orbs.occupy()
         # construct density
