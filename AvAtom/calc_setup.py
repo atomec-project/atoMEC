@@ -50,6 +50,7 @@ class Atom:
         rad_cm = (3.0 * vol_cm / (4.0 * pi)) ** (1.0 / 3.0)
         # Convert to a.u.
         self.radius = unit_conv.cm_to_bohr(rad_cm)
+        config.r_s = self.radius
         self.volume = (4.0 * pi * self.radius ** 3.0) / 3.0
 
     class ISModel:
@@ -114,12 +115,12 @@ class Atom:
         config.scf_params = scf_params
 
         # set up the grids
-        grid = gridmod.GridSetup(self)
+        gridmod.grid_setup()
 
         # initialize orbitals
         orbs = staticKS.Orbitals()
-        orbs.SCF_init(self, grid)
-        # print(orbs.eigfuncs)
+        orbs.SCF_init(self)
+        print(orbs.eigvals)
         # occupy orbitals
         # orbs.occupy()
         # construct density

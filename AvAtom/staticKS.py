@@ -28,17 +28,17 @@ class Orbitals:
         self.eigvals = np.zeros((1))
         self.occnums = np.zeros((1))
 
-    def SCF_init(self, atom, grid):
+    def SCF_init(self, atom):
         """
         Initializes the KS orbitals before an SCF cycle using the bare clmb potential
         """
 
         # compute the bare coulomb potential
-        v_en_up = -atom.at_chrg * np.exp(-grid.xgrid)
+        v_en_up = -atom.at_chrg * np.exp(-config.xgrid)
         v_en = [v_en_up, v_en_up]
 
         # solve the KS equations with the bare coulomb potential
-        eigfuncs, eigvals = numerov.matrix_solve(v_en, grid.xgrid)
+        eigfuncs, eigvals = numerov.matrix_solve(v_en, config.xgrid)
 
         self.eigfuncs = eigfuncs
         self.eigvals = eigvals
