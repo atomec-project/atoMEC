@@ -13,6 +13,7 @@ from scipy.linalg import eigh, eig
 
 # internal libs
 import config
+import mathtools
 
 
 def matrix_solve(v, xgrid):
@@ -146,13 +147,13 @@ def update_orbitals(eigfuncs, eigvals, l_eigfuncs, l_eigvals):
         boundvals = np.where(l_eigvals < 0)
 
         # keep only bound states
-        l_eigfuncs = l_eigfuncs[boundvals, :]
+        l_eigfuncs = l_eigfuncs[boundvals]
         l_eigvals = l_eigvals[boundvals]
 
         # update orbitals with new bound states
         if l_eigvals.size != 0:
             # normalize the eigenfunctions within the cell
-            # l_eigfuncs=normalize_orbs(l_eigfuncs)
+            l_eigfuncs = mathtools.normalize_orbs(l_eigfuncs)
             eigfuncs.append(l_eigfuncs)
             eigvals.append(l_eigvals)
 
