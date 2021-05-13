@@ -9,8 +9,7 @@ import numpy as np
 
 # internal modules
 import config
-
-# import numerov
+import numerov
 
 
 class Orbitals:
@@ -35,7 +34,8 @@ class Orbitals:
         """
 
         # compute the bare coulomb potential
-        v_en = -atom.at_chrg * np.exp(-grid.xgrid)
+        v_en_up = -atom.at_chrg * np.exp(-grid.xgrid)
+        v_en = [v_en_up, v_en_up]
 
         # solve the KS equations with the bare coulomb potential
         eigfuncs, eigvals = numerov.matrix_solve(v_en, grid.xgrid)
