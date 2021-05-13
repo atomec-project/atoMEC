@@ -1,14 +1,16 @@
 """
-Configuration file to store global parameters
+65;6003;1cConfiguration file to store global parameters
 """
 
 # physical parameters
+nmax = 20  # maximum quantum number n of eigenfunctions
+lmax = 3  # maximum quantum number l of eigenfunctions
 
 # model parameters
 spinpol = False  # spin-polarized functional
 xfunc = "lda"  # exchange functional (libxc ref)
 cfunc = "lda_pw"  # correlation functional (libxc ref)
-bc = "Dirichlet"  # boundary condition: Dirchlet means X(r_s)=0, Neumann means [dX(r)/dr]_(r=r_s)=0
+bc = "dirichlet"  # boundary condition: Dirchlet means X(r_s)=0, Neumann means [dX(r)/dr]_(r=r_s)=0
 unbound = "ideal"  # treatment for unbound electrons
 
 
