@@ -7,7 +7,7 @@ from math import sqrt, pi, exp
 
 # external libraries
 import numpy as np
-import scipy.integrate
+from scipy import optimize, integrate
 
 # internal libraries
 import config
@@ -63,16 +63,16 @@ def fermi_dirac(eps, mu, beta, n=0):
     f_fd = (eps)^(n/2) / (1 + exp(beta(eps-mu))
 
     Inputs:
-    - mu   (float)  : chemical potential
-    - beta (float)  : inverse temperature
-    - eps  (float)  : energy
-    - n    (int)    : power to which energy is raised (opt)
+    - mu   (float)     : chemical potential
+    - beta (float)     : inverse temperature
+    - eps  (np array)  : energy
+    - n    (int)       : power to which energy is raised (opt)
     Returns:
-    - f_fd (float)  : fermi_dirac occupation
+    - f_fd (float)     : fermi_dirac occupation
     """
 
     # dfn the exponential function
-    fn_exp = exp(beta * (eps - mu))
+    fn_exp = np.minimum(np.exp(beta * (eps - mu)), 1e12)
 
     # fermi_dirac dist
     f_fd = (eps) ** (n / 2.0) / (1 + fn_exp)
@@ -93,4 +93,62 @@ def fd_int_complete(mu, beta, n):
     - I_n (float)   : fd integral
     """
 
-    return integrate.quad(fermi_dirac, 0, np.inf, args=(mu, beta, n))
+    # use scipy quad integration routine
+    limup = mu + 10
+    I_n, err = integrate.quad(fermi_dirac, 0, limup, args=(mu, beta, n))
+
+    return I_n
+
+
+def chem_pot(eigvals):
+    """
+    Determines the chemical potential by enforcing charge neutrality
+    Finds the roots of the eqn:
+    \sum_{nl} (2l+1) f_fd(e_nl,beta,mu) + N_ub(beta,mu) - N_e = 0
+
+    Inputs:
+    - eigvals (list of np arrays) : the (bound) eigenvalues
+    Returns:
+    - mu (list of floats)         : chem pot for each spin
+    """
+
+    mu = config.mu
+    mu0 = mu  # set initial guess to existing value of chem pot
+
+    # so far only the ideal treatment for unbound electrons is implemented
+    if config.unbound == "ideal":
+        if config.spinpol == True:
+            for i in range(2):
+                soln = optimize.root(
+                    f_root_id,
+                    mu0[i],
+                    args=(eigvals[i], config.nele[i]),
+                    method="broyden1",
+                )
+                mu[i] = soln.x
+        else:
+            soln = optimize.root(
+                f_root_id, mu0[0], args=(eigvals[0], config.nele[0]), method="broyden1"
+            )
+            mu[0] = soln.x
+            mu[1] = mu[0]
+
+    return mu
+
+
+def f_root_id(mu, eigvals, nele):
+
+    # caluclate the contribution from the bound electrons
+    contrib_bound = 0.0
+    for l in range(config.lmax):
+        occnum_l = fermi_dirac(eigvals[l], mu, config.beta)
+        contrib_bound += (2 * l + 1) * np.sum(occnum_l)
+
+    # now compute the contribution from the unbound electrons
+    # this function uses the ideal approximation
+
+    prefac = config.sph_vol / (sqrt(2) * pi ** 2)
+    contrib_unbound = prefac * fd_int_complete(mu, config.beta, 0.5)
+
+    # return the function whose roots are to be found
+    return contrib_bound + contrib_unbound - nele
