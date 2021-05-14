@@ -154,7 +154,7 @@ def update_orbitals(eigfuncs, eigvals, l_eigfuncs, l_eigvals):
         if l_eigvals.size != 0:
             # normalize the eigenfunctions within the cell
             l_eigfuncs = mathtools.normalize_orbs(l_eigfuncs)
-            eigfuncs.append(l_eigfuncs)
-            eigvals.append(l_eigvals)
+            eigfuncs.append(l_eigfuncs.real)
+            eigvals.append(l_eigvals.real)
 
     return eigfuncs, eigvals
