@@ -61,6 +61,9 @@ class Atom:
         self.volume = (4.0 * pi * self.radius ** 3.0) / 3.0
         config.sph_vol = self.volume
 
+        # compute inverse temperature
+        config.beta = 1.0 / temp
+
     class ISModel:
         def __init__(
             self,
@@ -128,9 +131,8 @@ class Atom:
         # initialize orbitals
         orbs = staticKS.Orbitals()
         orbs.SCF_init(self)
-        print(orbs.eigvals)
         # occupy orbitals
-        # orbs.occupy()
+        orbs.occupy()
         # construct density
         # rho=KSvars.Density.construct(orbs,grid.xgrid)
         # construct potential
