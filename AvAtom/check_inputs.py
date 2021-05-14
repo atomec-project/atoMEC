@@ -72,6 +72,48 @@ class Atom:
             else:
                 return density
 
+    def check_spinmag(spinmag, nele):
+        """
+        Checks the spin magnetization is compatible with the total electron number
+        """
+        if isinstance(spinmag, int) == False:
+            raise InputError.spinmag_error(
+                "Spin magnetization is not a positive integer"
+            )
+
+        # computes the default value of spin magnetization
+        if spinmag == -1:
+            if nele % 2 == 0:
+                spinmag = 0
+            else:
+                spinmag = 1
+        elif spinmag > -1:
+            if nele % 2 == 0 and spinmag % 2 != 0:
+                raise InputError.spinmag_error(
+                    "Spin magnetization is not compatible with total electron number"
+                )
+            elif nele % 2 != 0 and spinmag % 2 == 0:
+                raise InputError.spinmag_error(
+                    "Spin magnetization is not compatible with total electron number"
+                )
+        else:
+            raise InputError.spinmag_error(
+                "Spin magnetization is not a positive integer"
+            )
+
+        return spinmag
+
+    def calc_nele(spinmag, nele):
+        """
+        Calculates the electron number in each spin channel from spinmag
+        and total electron number
+        """
+
+        nele_up = (nele + spinmag) / 2
+        nele_dw = (nele - spinmag) / 2
+
+        return [nele_up, nele_dw]
+
 
 class InputError(Exception):
     """
@@ -116,6 +158,14 @@ class InputError(Exception):
         - err_msg (str)     : error message printed
         """
         print("Error in density input: " + err_msg)
+        sys.exit("Exiting AvAtom")
+
+    def spinmag_error(err_msg):
+        """
+        Raises an exception if density is not a float or negative
+        """
+
+        print("Error in spinmag input: " + err_msg)
         sys.exit("Exiting AvAtom")
 
 

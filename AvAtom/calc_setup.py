@@ -19,14 +19,15 @@ class Atom:
     The Atom class defines the main object which is to be used for calculations
 
     Mandatory inputs:
-    - species (str)    : atomic species
-    - temp (float)     : system temperature in eV
-    - density (float)  : material density (in g cm^-3)
+    - species (str)     : atomic species
+    - temp (float)      : system temperature in eV
+    - density (float)   : material density (in g cm^-3)
     Optional inputs:
-    - charge (int)     : net charge
+    - charge (int)      : net charge
+    - spinmag (int>0)   : spin magnetization (default -1 assigns spin automatically)
     """
 
-    def __init__(self, species, density, temp, charge=0):
+    def __init__(self, species, density, temp, charge=0, spinmag=-1):
 
         print("Initializing AvAtom calculation")
 
@@ -39,10 +40,16 @@ class Atom:
         # Fundamental atomic properties
         self.at_chrg = self.species.atomic_number  # atomic number
         self.at_mass = self.species.atomic_weight  # atomic mass
-        self.nele = self.at_chrg + self.charge
+        nele_tot = self.at_chrg + self.charge  # total electron number
+
+        # spin magnetization has to be compatible with total electron number
+        self.spinmag = check_inputs.Atom.check_spinmag(spinmag, nele_tot)
+
+        # calculate electron number in each spin channel
+        self.nele = check_inputs.Atom.calc_nele(self.spinmag, nele_tot)
+        config.nele = self.nele
 
         # Compute the radius and volume of average atom model
-
         # compute atomic mass in g
         mass_g = constants.mp_g * self.at_mass
         # compute volume and radius in cm^3/cm
@@ -52,6 +59,7 @@ class Atom:
         self.radius = unit_conv.cm_to_bohr(rad_cm)
         config.r_s = self.radius
         self.volume = (4.0 * pi * self.radius ** 3.0) / 3.0
+        config.sph_vol = self.volume
 
     class ISModel:
         def __init__(
