@@ -16,13 +16,14 @@ import config
 import mathtools
 
 
-def matrix_solve(v, xgrid):
+def matrix_solve(orbs, v, xgrid):
     """
     Solves the KS equations via diagonalization of a matrix via the method described in the following paper:
     Mohandas Pillai, Joshua Goglio, and Thad G. Walker , "Matrix Numerov method for solving Schrödinger’s equation",
     American Journal of Physics 80, 1017-1019 (2012) https://doi.org/10.1119/1.4748813
 
     Inputs:
+    - orbs (object)            : the orbitals object
     - v (numpy array)          : KS potential
     - grid (numpy array)       : logarithmic grid
 
@@ -31,9 +32,11 @@ def matrix_solve(v, xgrid):
     - eigvals  (numpy array)   : KS orbital eigenvalues
     """
 
-    # initialize the eigenfunctions and their eigenvalues
-    eigfuncs = [[], []]
-    eigvals = [[], []]
+    # # initialize the eigenfunctions and their eigenvalues
+    # eigfuncs = [[], []]
+    # eigvals = [[], []]
+    eigfuncs = np.zeros(np.shape(orbs.eigfuncs))
+    eigvals = np.zeros(np.shape(orbs.eigvals))
 
     # define the spacing of the xgrid
     dx = xgrid[1] - xgrid[0]
@@ -88,14 +91,8 @@ def matrix_solve(v, xgrid):
             eigs_up, vecs_up = eigs(H_up, k=config.nmax, M=B, which="LM", sigma=0.0001)
             eigs_dw, vecs_dw = eigs(H_dw, k=config.nmax, M=B, which="LM", sigma=0.0001)
 
-            # update up spin orbitals
-            eigfuncs[0], eigvals[0] = update_orbitals(
-                eigfuncs[0], eigvals[0], vecs_up, eigs_up
-            )
-            # update down spin orbitals
-            eigfuncs[1], eigvals[1] = update_orbitals(
-                eigfuncs[1], eigvals[1], vecs_up, eigs_up
-            )
+            eigfuncs[0, l], eigvals[0, l] = update_orbs(vecs_up, eigs_up)
+            eigfuncs[1, l], eigvals[1, l] = update_orbs(vecs_dw, eigs_dw)
 
         else:
             # fill potential matrices
@@ -107,21 +104,17 @@ def matrix_solve(v, xgrid):
             # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
             # use `shift-invert mode' (sigma=0) and pick lowest magnitude ("LM") eigs
             # sigma=0 seems to cause numerical issues so use a small offset
-            eigs_up, vecs_up = eigs(H_up, k=config.nmax, M=B, which="LM", sigma=0)
+            eigs_up, vecs_up = eigs(H_up, k=config.nmax, M=B, which="LM", sigma=0.0001)
 
-            # update spin-up orbitals
-            eigfuncs[0], eigvals[0] = update_orbitals(
-                eigfuncs[0], eigvals[0], vecs_up, eigs_up
-            )
-
-            # spin-down orbitals are identical to spin-up orbitals
+            # update orbitals
+            eigfuncs[0, l], eigvals[0, l] = update_orbs(vecs_up, eigs_up)
             eigfuncs[1] = eigfuncs[0]
             eigvals[1] = eigvals[0]
 
     return eigfuncs, eigvals
 
 
-def update_orbitals(eigfuncs, eigvals, l_eigfuncs, l_eigvals):
+def update_orbs(l_eigfuncs, l_eigvals):
     """
     Updates the set of KS orbitals stored. If ideal or TF treatment of unbound electrons is chosen, only the bound orbitals are kept
     and the rest are thrown away. Quantum treatment of unbound electrons is not yet implemented but will require a different approach.
@@ -138,23 +131,8 @@ def update_orbitals(eigfuncs, eigvals, l_eigfuncs, l_eigvals):
 
     # Sort eigenvalues in ascending order
     idr = np.argsort(l_eigvals)
-    l_eigvals = np.array(l_eigvals[idr])
-    l_eigfuncs = np.array(np.transpose(l_eigfuncs)[idr])
-
-    if config.unbound == "ideal":
-
-        # location of bound eigenvalues (E<0)
-        boundvals = np.where(l_eigvals < 0)
-
-        # keep only bound states
-        l_eigfuncs = l_eigfuncs[boundvals]
-        l_eigvals = l_eigvals[boundvals]
-
-        # update orbitals with new bound states
-        if l_eigvals.size != 0:
-            # normalize the eigenfunctions within the cell
-            l_eigfuncs = mathtools.normalize_orbs(l_eigfuncs)
-            eigfuncs.append(l_eigfuncs.real)
-            eigvals.append(l_eigvals.real)
+    eigvals = np.array(l_eigvals[idr])
+    eigfuncs = np.array(np.transpose(l_eigfuncs)[idr])
+    eigfuncs = mathtools.normalize_orbs(eigfuncs)
 
     return eigfuncs, eigvals
