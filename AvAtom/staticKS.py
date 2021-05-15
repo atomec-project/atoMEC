@@ -25,9 +25,12 @@ class Orbitals:
         """
         Initializes the orbital attributes to empty numpy arrays
         """
-        self.eigfuncs = np.zeros((1))
-        self.eigvals = np.zeros((1))
-        self.occnums = np.zeros((1))
+        self.eigfuncs = np.zeros(
+            (2, config.lmax, config.nmax, config.grid_params["ngrid"])
+        )
+        self.eigvals = np.zeros((2, config.lmax, config.nmax))
+        self.occnums = np.zeros((2, config.lmax, config.nmax))
+        self.lbound = np.zeros((2, config.lmax, config.nmax))
 
     def SCF_init(self, atom):
         """
@@ -39,14 +42,14 @@ class Orbitals:
         v_en = [v_en_up, v_en_up]
 
         # solve the KS equations with the bare coulomb potential
-        eigfuncs, eigvals = numerov.matrix_solve(v_en, config.xgrid)
+        self.eigfuncs, self.eigvals = numerov.matrix_solve(self, v_en, config.xgrid)
 
-        # redefine lmax
-        config.lmax = len(eigvals[0])
+        # compute the lbound array
+        self.make_lbound()
 
-        # keep only the real parts
-        self.eigfuncs = eigfuncs
-        self.eigvals = eigvals
+        # # keep only the real parts
+        # self.eigfuncs = eigfuncs
+        # self.eigvals = eigvals
 
         # initial guess for the chemical potential
         config.mu = [0.0, 0.0]
@@ -59,8 +62,7 @@ class Orbitals:
         """
 
         # compute the chemical potential using the eigenvalues
-        config.mu = mathtools.chem_pot(self.eigvals)
-        print(config.mu)
+        config.mu = mathtools.chem_pot(self)
 
         # compute the occupation numbers using the chemical potential
         self.occnums = self.calc_occnums(config.mu)
@@ -77,16 +79,22 @@ class Orbitals:
 
         if config.spinpol == True:
             for i in range(2):
-                for l in range(config.lmax):
-                    occnums[i][l] = mathtools.fermi_dirac(
-                        self.eigvals[i][l], mu[i], config.beta
-                    )
-
-        else:
-            for l in range(config.lmax):
-                occnums[0][l] = mathtools.fermi_dirac(
-                    self.eigvals[0][l], mu[0], config.beta
+                occnums[i] = self.lbound[i] * mathtools.fermi_dirac(
+                    self.eigvals[i], mu[i], config.beta
                 )
+        else:
+            occnums[0] = self.lbound[0] * mathtools.fermi_dirac(
+                self.eigvals[0], mu[0], config.beta
+            )
             occnums[1] = occnums[0]
 
         return occnums
+
+    def make_lbound(self):
+        """
+        Constructs the 'lbound' attribute
+        For each spin channel, lbound(l,n)=(2l+1)*Theta(eps_n)
+        """
+
+        for l in range(config.lmax):
+            self.lbound[:, l] = np.where(self.eigvals[:, l] < 0, 2 * l + 1.0, 0.0)
