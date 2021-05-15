@@ -100,14 +100,14 @@ def fd_int_complete(mu, beta, n):
     return I_n
 
 
-def chem_pot(eigvals):
+def chem_pot(orbs):
     """
     Determines the chemical potential by enforcing charge neutrality
     Finds the roots of the eqn:
     \sum_{nl} (2l+1) f_fd(e_nl,beta,mu) + N_ub(beta,mu) - N_e = 0
 
     Inputs:
-    - eigvals (list of np arrays) : the (bound) eigenvalues
+    - orbs (object)           : the orbitals object
     Returns:
     - mu (list of floats)         : chem pot for each spin
     """
@@ -122,13 +122,16 @@ def chem_pot(eigvals):
                 soln = optimize.root(
                     f_root_id,
                     mu0[i],
-                    args=(eigvals[i], config.nele[i]),
+                    args=(orbs.eigvals[i], orbs.lbound[i], config.nele[i]),
                     method="broyden1",
                 )
                 mu[i] = soln.x
         else:
             soln = optimize.root(
-                f_root_id, mu0[0], args=(eigvals[0], config.nele[0]), method="broyden1"
+                f_root_id,
+                mu0[0],
+                args=(orbs.eigvals[0], orbs.lbound[0], config.nele[0]),
+                method="broyden1",
             )
             mu[0] = soln.x
             mu[1] = mu[0]
@@ -136,13 +139,11 @@ def chem_pot(eigvals):
     return mu
 
 
-def f_root_id(mu, eigvals, nele):
+def f_root_id(mu, eigvals, lbound, nele):
 
     # caluclate the contribution from the bound electrons
-    contrib_bound = 0.0
-    for l in range(config.lmax):
-        occnum_l = fermi_dirac(eigvals[l], mu, config.beta)
-        contrib_bound += (2 * l + 1) * np.sum(occnum_l)
+    occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
+    contrib_bound = occnums.sum()
 
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation
