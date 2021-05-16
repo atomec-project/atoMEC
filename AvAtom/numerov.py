@@ -32,9 +32,7 @@ def matrix_solve(orbs, v, xgrid):
     - eigvals  (numpy array)   : KS orbital eigenvalues
     """
 
-    # # initialize the eigenfunctions and their eigenvalues
-    # eigfuncs = [[], []]
-    # eigvals = [[], []]
+    # initialize the eigenfunctions and their eigenvalues
     eigfuncs = np.zeros(np.shape(orbs.eigfuncs))
     eigvals = np.zeros(np.shape(orbs.eigvals))
 
@@ -52,8 +50,7 @@ def matrix_solve(orbs, v, xgrid):
     I_zero = np.eye(N)
     I_plus = np.eye(N, k=1)
 
-    V_up = np.zeros((N, N))
-    V_dw = V_up  # potential matrix on log grid
+    V_mat = np.zeros((N, N))
     p = np.zeros((N, N))  # transformation for kinetic term on log grid
     np.fill_diagonal(p, np.exp(-2 * xgrid))
 
@@ -75,53 +72,30 @@ def matrix_solve(orbs, v, xgrid):
     for l in range(config.lmax):
 
         # diagonalize Hamiltonian using scipy
-        if config.spinpol == True:
+        for i in range(np.shape(v)[0]):
 
             # fill potential matrices
-            np.fill_diagonal(V_up, v[0] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
-            np.fill_diagonal(V_dw, v[1] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
+            np.fill_diagonal(V_mat, v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
 
             # construct Hamiltonians
-            H_up = T + B * V_up
-            H_dw = T + B * V_dw
+            H = T + B * V_mat
 
             # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
             # use `shift-invert mode' (sigma=0) and pick lowest magnitude ("LM") eigs
             # sigma=0 seems to cause numerical issues so use a small offset
-            eigs_up, vecs_up = eigs(H_up, k=config.nmax, M=B, which="LM", sigma=0.0001)
-            eigs_dw, vecs_dw = eigs(H_dw, k=config.nmax, M=B, which="LM", sigma=0.0001)
+            eigs_up, vecs_up = eigs(H, k=config.nmax, M=B, which="LM", sigma=0.0001)
 
-            eigfuncs[0, l], eigvals[0, l] = update_orbs(vecs_up, eigs_up)
-            eigfuncs[1, l], eigvals[1, l] = update_orbs(vecs_dw, eigs_dw)
-
-        else:
-            # fill potential matrices
-            np.fill_diagonal(V_up, v[0] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
-
-            # construct Hamiltonians
-            H_up = T + B * V_up
-
-            # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
-            # use `shift-invert mode' (sigma=0) and pick lowest magnitude ("LM") eigs
-            # sigma=0 seems to cause numerical issues so use a small offset
-            eigs_up, vecs_up = eigs(H_up, k=config.nmax, M=B, which="LM", sigma=0.0001)
-
-            # update orbitals
-            eigfuncs[0, l], eigvals[0, l] = update_orbs(vecs_up, eigs_up)
-            eigfuncs[1] = eigfuncs[0]
-            eigvals[1] = eigvals[0]
+            eigfuncs[i, l], eigvals[i, l] = update_orbs(vecs_up, eigs_up)
 
     return eigfuncs, eigvals
 
 
 def update_orbs(l_eigfuncs, l_eigvals):
     """
-    Updates the set of KS orbitals stored. If ideal or TF treatment of unbound electrons is chosen, only the bound orbitals are kept
-    and the rest are thrown away. Quantum treatment of unbound electrons is not yet implemented but will require a different approach.
+    Sorts the eigenvalues and functions by ascending order in energy
+    and normalizes the eigenfunctions within the Voronoi sphere
 
     Inputs:
-    - eigfuncs (np array)     : the set of orbitals to be updated
-    - eigvals  (np array)     : the set of eigenvalues to be updated
     - l_eigfuncs (np array)   : the eigenfunctions resulting from the chosen value of l
     - l_eigvals  (np array)   : the eigenvalues resulting from the chosen value of l
     Returns:
@@ -131,8 +105,8 @@ def update_orbs(l_eigfuncs, l_eigvals):
 
     # Sort eigenvalues in ascending order
     idr = np.argsort(l_eigvals)
-    eigvals = np.array(l_eigvals[idr])
-    eigfuncs = np.array(np.transpose(l_eigfuncs)[idr])
+    eigvals = np.array(l_eigvals[idr].real)
+    eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
     eigfuncs = mathtools.normalize_orbs(eigfuncs)
 
     return eigfuncs, eigvals
