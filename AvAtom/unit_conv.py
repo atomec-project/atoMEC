@@ -2,6 +2,14 @@
 Contains unit conversions
 """
 
+import config
+
 
 def cm_to_bohr(x):
-    return x * 1.889716165e8
+    y = x * 1.889716165e8
+    return y
+
+
+def bohr_to_cm(x):
+    y = x / 1.889716165e8
+    return y
