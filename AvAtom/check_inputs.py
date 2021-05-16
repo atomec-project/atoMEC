@@ -9,8 +9,11 @@ import sys
 from mendeleev import element
 import sqlalchemy.orm.exc as ele_chk
 import numpy as np
+from math import pi
 
 # internal packages
+import constants
+import unitconv
 
 
 class Atom:
@@ -18,7 +21,7 @@ class Atom:
     Checks the inputs from the BuildAtom class
     """
 
-    def check_species(species):
+    def check_species(self, species):
         """
         Checks the species is a string and corresponds to an actual element
 
@@ -33,7 +36,7 @@ class Atom:
             except ele_chk.NoResultFound:
                 raise InputError.species_error("invalid element")
 
-    def check_temp(temp):
+    def check_temp(self, temp):
         """
         Checks the temperature is a float within a sensible range
         """
@@ -52,7 +55,7 @@ class Atom:
             else:
                 return temp
 
-    def check_charge(charge):
+    def check_charge(self, charge):
         """
         Checks the charge is an integer
         """
@@ -61,19 +64,81 @@ class Atom:
         else:
             return charge
 
-    def check_density(density):
+    def check_density(self, atom, radius, density):
         """
-        Checks the charge is an integer
+        Checks that the density or radius is specified
+
+        Inputs:
+        - atom (object)     : atom object
+        - density (float)   : material density
+        - radius (float)    : voronoi sphere radius
         """
         if isinstance(density, (float, int)) == False:
             raise InputError.density_error("Density is not a number")
+        elif isinstance(radius, (float, int)) == False:
+            raise InputError.density_error("Radius is not a number")
         else:
-            if density <= 0.0:
-                raise InputError.density_error("Density is negative!")
-            else:
-                return density
+            if density == -1 and radius != -1:
+                if radius < 0.1:
+                    raise InputError.density_error(
+                        "Radius must be a positive number greater than 0.1"
+                    )
+                else:
+                    density = self.radius_to_dens(atom, radius)
+            elif radius == -1 and density != -1:
+                if density > 100 or density < 0:
+                    raise InputError.density_error(
+                        "Density must be a positive number less than 100"
+                    )
+                else:
+                    radius = self.dens_to_radius(atom, density)
+            elif radius != -1 and density != -1:
+                density_test = self.radius_to_dens(atom, radius)
+                if abs((density_test - density) / density) > 5e-2:
+                    raise InputError.density_error(
+                        "Both radius and density are specified but they are not compatible"
+                    )
+                else:
+                    density = density_test
+            elif radius == -1 and density == -1:
+                raise InputError.density_error(
+                    "One of radius or density must be specified"
+                )
 
-    def check_spinmag(spinmag, nele):
+        return radius, density
+
+    def radius_to_dens(self, atom, radius):
+        """
+        Convert the Voronoi sphere radius to a mass density
+        """
+
+        # radius in cm
+        rad_cm = unitconv.bohr_to_cm(radius)
+        # volume in cm
+        vol_cm = (4.0 * pi * rad_cm ** 3) / 3.0
+        # atomic mass in g
+        mass_g = constants.mp_g * atom.at_mass
+        # density in g cm^-3
+        density = mass_g / vol_cm
+
+        return density
+
+    def dens_to_radius(self, atom, density):
+        """
+        Convert the material density to Voronoi sphere radius
+        """
+
+        # compute atomic mass in g
+        mass_g = constants.mp_g * atom.at_mass
+        # compute volume and radius in cm^3/cm
+        vol_cm = mass_g / density
+        rad_cm = (3.0 * vol_cm / (4.0 * pi)) ** (1.0 / 3.0)
+        # convert to a.u.
+        radius = unitconv.cm_to_bohr(rad_cm)
+
+        return radius
+
+    def check_spinmag(self, spinmag, nele):
         """
         Checks the spin magnetization is compatible with the total electron number
         """
@@ -104,7 +169,7 @@ class Atom:
 
         return spinmag
 
-    def calc_nele(spinmag, nele):
+    def calc_nele(self, spinmag, nele):
         """
         Calculates the electron number in each spin channel from spinmag
         and total electron number

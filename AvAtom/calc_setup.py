@@ -6,7 +6,6 @@ from mendeleev import element
 from math import pi
 
 # import internal packages
-import unit_conv
 import constants
 import check_inputs
 import config
@@ -21,42 +20,41 @@ class Atom:
     Mandatory inputs:
     - species (str)     : atomic species
     - temp (float)      : system temperature in eV
+    One of the following must be specified:
+    - radius (float)    : radius of Voronoi sphere
     - density (float)   : material density (in g cm^-3)
     Optional inputs:
     - charge (int)      : net charge
     - spinmag (int>0)   : spin magnetization (default -1 assigns spin automatically)
     """
 
-    def __init__(self, species, density, temp, charge=0, spinmag=-1):
+    def __init__(self, species, temp, radius=-1, density=-1, charge=0, spinmag=-1):
 
         print("Initializing AvAtom calculation")
 
         # Input variables
-        self.species = check_inputs.Atom.check_species(species)
-        self.density = check_inputs.Atom.check_density(density)
-        self.temp = check_inputs.Atom.check_temp(temp)
-        self.charge = check_inputs.Atom.check_charge(charge)
+        self.species = check_inputs.Atom().check_species(species)
+        # self.density = check_inputs.Atom.check_density(density)
+        self.temp = check_inputs.Atom().check_temp(temp)
+        self.charge = check_inputs.Atom().check_charge(charge)
 
         # Fundamental atomic properties
         self.at_chrg = self.species.atomic_number  # atomic number
         self.at_mass = self.species.atomic_weight  # atomic mass
         nele_tot = self.at_chrg + self.charge  # total electron number
 
+        # Check the
+        self.radius, self.density = check_inputs.Atom().check_density(
+            self, radius, density
+        )
+
         # spin magnetization has to be compatible with total electron number
-        self.spinmag = check_inputs.Atom.check_spinmag(spinmag, nele_tot)
+        self.spinmag = check_inputs.Atom().check_spinmag(spinmag, nele_tot)
 
         # calculate electron number in each spin channel
-        self.nele = check_inputs.Atom.calc_nele(self.spinmag, nele_tot)
+        self.nele = check_inputs.Atom().calc_nele(self.spinmag, nele_tot)
         config.nele = self.nele
 
-        # Compute the radius and volume of average atom model
-        # compute atomic mass in g
-        mass_g = constants.mp_g * self.at_mass
-        # compute volume and radius in cm^3/cm
-        vol_cm = mass_g / self.density
-        rad_cm = (3.0 * vol_cm / (4.0 * pi)) ** (1.0 / 3.0)
-        # Convert to a.u.
-        self.radius = unit_conv.cm_to_bohr(rad_cm)
         config.r_s = self.radius
         self.volume = (4.0 * pi * self.radius ** 3.0) / 3.0
         config.sph_vol = self.volume
@@ -94,6 +92,10 @@ class Atom:
             config.bc = self.bc
             self.spinpol = spinpol
             config.spinpol = self.spinpol
+            if config.spinpol == True:
+                config.spindims = 2
+            else:
+                config.spindims = 1
             self.unbound = unbound
             config.unbound = self.unbound
 
@@ -133,6 +135,9 @@ class Atom:
         orbs.SCF_init(self)
         # occupy orbitals
         orbs.occupy()
+        print(orbs.eigvals)
+        print(orbs.occnums)
+        # print(orbs.occnums)
         # construct density
         # rho=KSvars.Density.construct(orbs,grid.xgrid)
         # construct potential
