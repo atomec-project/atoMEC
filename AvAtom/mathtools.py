@@ -117,8 +117,8 @@ def chem_pot(orbs):
 
     # so far only the ideal treatment for unbound electrons is implemented
     if config.unbound == "ideal":
-        if config.spinpol == True:
-            for i in range(2):
+        for i in range(config.spindims):
+            try:
                 soln = optimize.root(
                     f_root_id,
                     mu0[i],
@@ -126,15 +126,9 @@ def chem_pot(orbs):
                     method="broyden1",
                 )
                 mu[i] = soln.x
-        else:
-            soln = optimize.root(
-                f_root_id,
-                mu0[0],
-                args=(orbs.eigvals[0], orbs.lbound[0], config.nele[0]),
-                method="broyden1",
-            )
-            mu[0] = soln.x
-            mu[1] = mu[0]
+            # this handles the case when there are no electrons in one spin channel
+            except TypeError:
+                mu[i] = -np.inf
 
     return mu
 
@@ -148,7 +142,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation
 
-    prefac = config.sph_vol / (sqrt(2) * pi ** 2)
+    prefac = nele * config.sph_vol / (sqrt(2) * pi ** 2)
     contrib_unbound = prefac * fd_int_complete(mu, config.beta, 0.5)
 
     # return the function whose roots are to be found

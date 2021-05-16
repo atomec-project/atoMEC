@@ -26,11 +26,11 @@ class Orbitals:
         Initializes the orbital attributes to empty numpy arrays
         """
         self.eigfuncs = np.zeros(
-            (2, config.lmax, config.nmax, config.grid_params["ngrid"])
+            (config.spindims, config.lmax, config.nmax, config.grid_params["ngrid"])
         )
-        self.eigvals = np.zeros((2, config.lmax, config.nmax))
-        self.occnums = np.zeros((2, config.lmax, config.nmax))
-        self.lbound = np.zeros((2, config.lmax, config.nmax))
+        self.eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
+        self.occnums = np.zeros((config.spindims, config.lmax, config.nmax))
+        self.lbound = np.zeros((config.spindims, config.lmax, config.nmax))
 
     def SCF_init(self, atom):
         """
@@ -38,8 +38,12 @@ class Orbitals:
         """
 
         # compute the bare coulomb potential
-        v_en_up = -atom.at_chrg * np.exp(-config.xgrid)
-        v_en = [v_en_up, v_en_up]
+        # v_en = -atom.at_chrg * np.exp(-config.xgrid)
+
+        v_en = np.zeros((config.spindims, config.grid_params["ngrid"]))
+
+        for i in range(config.spindims):
+            v_en[i] = -atom.at_chrg * np.exp(-config.xgrid)
 
         # solve the KS equations with the bare coulomb potential
         self.eigfuncs, self.eigvals = numerov.matrix_solve(self, v_en, config.xgrid)
@@ -47,12 +51,8 @@ class Orbitals:
         # compute the lbound array
         self.make_lbound()
 
-        # # keep only the real parts
-        # self.eigfuncs = eigfuncs
-        # self.eigvals = eigvals
-
         # initial guess for the chemical potential
-        config.mu = [0.0, 0.0]
+        config.mu = np.zeros((config.spindims))
 
     def occupy(self):
         """
@@ -77,16 +77,10 @@ class Orbitals:
         # initialize the occnums to have the same format
         occnums = self.eigvals
 
-        if config.spinpol == True:
-            for i in range(2):
-                occnums[i] = self.lbound[i] * mathtools.fermi_dirac(
-                    self.eigvals[i], mu[i], config.beta
-                )
-        else:
-            occnums[0] = self.lbound[0] * mathtools.fermi_dirac(
-                self.eigvals[0], mu[0], config.beta
+        for i in range(config.spindims):
+            occnums[i] = self.lbound[i] * mathtools.fermi_dirac(
+                self.eigvals[i], mu[i], config.beta
             )
-            occnums[1] = occnums[0]
 
         return occnums
 
