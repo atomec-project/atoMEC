@@ -74,8 +74,7 @@ class Orbitals:
         Computes the Fermi-Dirac occupations for the eigenvalues
         """
 
-        # initialize the occnums to have the same format
-        occnums = self.eigvals
+        occnums = np.zeros_like(self.eigvals)
 
         for i in range(config.spindims):
             occnums[i] = self.lbound[i] * mathtools.fermi_dirac(
