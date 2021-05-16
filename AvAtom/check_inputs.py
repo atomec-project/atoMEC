@@ -8,6 +8,7 @@ import sys
 # external packages
 from mendeleev import element
 import sqlalchemy.orm.exc as ele_chk
+import numpy as np
 
 # internal packages
 
@@ -112,7 +113,7 @@ class Atom:
         nele_up = (nele + spinmag) / 2
         nele_dw = (nele - spinmag) / 2
 
-        return [nele_up, nele_dw]
+        return np.array([nele_up, nele_dw])
 
 
 class InputError(Exception):
