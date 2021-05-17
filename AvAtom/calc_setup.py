@@ -43,7 +43,7 @@ class Atom:
         self.at_mass = self.species.atomic_weight  # atomic mass
         nele_tot = self.at_chrg + self.charge  # total electron number
 
-        # Check the
+        # Check the radius and density
         self.radius, self.density = check_inputs.Atom().check_density(
             self, radius, density
         )
@@ -136,9 +136,12 @@ class Atom:
         # occupy orbitals
         orbs.occupy()
         print(orbs.eigvals)
-        print(orbs.occnums)
+        # print(orbs.occnums)
         # print(orbs.occnums)
         # construct density
-        # rho=KSvars.Density.construct(orbs,grid.xgrid)
+        rho = staticKS.Density()
+        rho.construct(orbs)
+        print(rho.N_bound)
+        rho.write_to_file()
         # construct potential
         # pot=KSvars.Potential.construct(rho,grid.xgrid)
