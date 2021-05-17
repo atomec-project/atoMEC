@@ -31,7 +31,7 @@ def normalize_orbs(eigfuncs_x):
         # compute the mod squared eigenvalues
         eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
         # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
-        exp_x = np.exp(config.xgrid)
+        exp_x = np.exp(-config.xgrid)
         ampsq = int_sphere(exp_x * eigfuncs_sq)
         # normalize eigenfunctions
         eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)
@@ -86,7 +86,7 @@ def fd_int_complete(mu, beta, n):
     I_(n/2)(mu, beta) = \int_0^inf \de e^(n/2) f_fd(mu, e, beta)
 
     Inputs:
-    - mu (float)    : chemical potential
+    - mu (float) : chemical potential
     - beta (float)  : inverse temperature
     - n (int)       : order of integral I_(n/2)
     Returns
@@ -95,6 +95,7 @@ def fd_int_complete(mu, beta, n):
 
     # use scipy quad integration routine
     limup = mu + 10
+
     I_n, err = integrate.quad(fermi_dirac, 0, limup, args=(mu, beta, n))
 
     return I_n
@@ -136,8 +137,11 @@ def chem_pot(orbs):
 def f_root_id(mu, eigvals, lbound, nele):
 
     # caluclate the contribution from the bound electrons
-    occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
-    contrib_bound = occnums.sum()
+    if nele != 0:
+        occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
+        contrib_bound = occnums.sum()
+    else:
+        contrib_bound = 0.0
 
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation
