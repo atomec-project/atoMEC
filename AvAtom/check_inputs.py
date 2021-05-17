@@ -178,7 +178,7 @@ class Atom:
         nele_up = (nele + spinmag) / 2
         nele_dw = (nele - spinmag) / 2
 
-        return np.array([nele_up, nele_dw])
+        return np.array([nele_up, nele_dw], dtype=int)
 
 
 class InputError(Exception):
