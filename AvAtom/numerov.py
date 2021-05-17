@@ -61,7 +61,7 @@ def matrix_solve(orbs, v, xgrid):
     # von neumann boundary conditions
     if config.bc == "neumann":
         A[N - 2, N - 1] = 2 * dx ** (-2)
-        B[N - 2, N - 1] = 2 * B[N - 1, N - 1]
+        B[N - 2, N - 1] = 2 * B[N - 2, N - 1]
         A[N - 1, N - 1] = A[N - 1, N - 1] + 1.0 / dx
         B[N - 1, N - 1] = B[N - 1, N - 1] - dx / 12.0
 
@@ -106,7 +106,10 @@ def update_orbs(l_eigfuncs, l_eigvals):
     # Sort eigenvalues in ascending order
     idr = np.argsort(l_eigvals)
     eigvals = np.array(l_eigvals[idr].real)
+    # under neumann bc the RHS pt is junk, convert to correct value
+    if config.bc == "neumann":
+        l_eigfuncs[-1] = l_eigfuncs[-2]
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
-    eigfuncs = mathtools.normalize_orbs(eigfuncs)
+    eigfuncs = mathtools.normalize_orbs(eigfuncs)  # normalize
 
     return eigfuncs, eigvals
