@@ -6,7 +6,7 @@ Module which computes time-independent properties from the average-atom setup
 
 # external packages
 import numpy as np
-from math import sqrt, pi
+from math import sqrt, pi, exp
 
 # internal modules
 import config
@@ -44,7 +44,7 @@ class Orbitals:
         v_en = np.zeros((config.spindims, config.grid_params["ngrid"]))
 
         for i in range(config.spindims):
-            v_en[i] = -atom.at_chrg * np.exp(-config.xgrid)
+            v_en[i] = -config.Z * np.exp(-config.xgrid)
 
         # solve the KS equations with the bare coulomb potential
         self.eigfuncs, self.eigvals = numerov.matrix_solve(self, v_en, config.xgrid)
@@ -98,6 +98,7 @@ class Orbitals:
 class Density:
     """
     The Density object has the following attributes:
+    - rho_tot (np array)       : the total density n(r)
     - rho_bound (np array)     : the bound part of the density n(r)
     - rho_unbound (np array)   : the unbound part of the density n(r)
     - N_bound (np array)       : the number of bound electrons
@@ -106,6 +107,7 @@ class Density:
 
     def __init__(self):
 
+        self.rho_tot = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self.rho_bound = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self.rho_unbound = np.zeros_like(self.rho_bound)
         self.N_bound = np.zeros((config.spindims))
@@ -123,6 +125,9 @@ class Density:
         self.construct_rho_bound(orbs)
         # construct the unbound part
         self.construct_rho_unbound(orbs)
+
+        # sum to get the total density
+        self.rho_tot = self.rho_bound + self.rho_unbound
 
     def construct_rho_bound(self, orbs):
         """
@@ -203,3 +208,89 @@ class Density:
             )
 
         np.savetxt(fname, data, fmt="%8.3e", header=headstr)
+
+
+class Potential:
+    """
+    The potential object has the following attributes:
+    - v_s   (np array)    : KS potential
+    - v_en  (np array)    : electron-nuclear potential
+    - v_ha   (np array)    : Hartree potential
+    - v_xc  (np array)    : xc-potential
+    """
+
+    def __init__(self):
+        self.v_s = np.zeros((config.spindims, config.grid_params["ngrid"]))
+        self.v_en = np.zeros((1, config.grid_params["ngrid"]))
+        self.v_ha = np.zeros((1, config.grid_params["ngrid"]))
+        self.v_xc = np.zeros((config.spindims, config.grid_params["ngrid"]))
+
+    def construct(self, density):
+        """
+        Constructs the components of the KS potential
+
+        Inputs:
+        - density (object)   : the density object
+        """
+
+        # construct the electron-nuclear potential
+        self.v_en[0] = -config.Z * np.exp(-config.xgrid)
+
+        # construct the Hartree potential
+        self.v_ha = self.calc_v_ha(density)
+
+        # sum the potentials to get the total KS potential
+        self.v_s = self.v_en + self.v_ha
+
+    def calc_v_ha(self, density):
+        """
+        Constructs the Hartree potential
+        On the r-grid:
+        v_ha(r) = 4*pi* \int_0^r_s dr' n(r') r'^2 / max(r,r')
+        On the x-grid:
+        v_ha(x) = 4*pi* { exp(-x) \int_x0^x dx' n(x') exp(3x')
+                         - \int_x^log(r_s) dx' n(x') exp(2x') }
+
+        Inputs:
+        - density (object)  : density object
+        """
+
+        # rename xgrid for ease
+        xgrid = config.xgrid
+
+        # construct the total (sum over spins) density
+        rho = np.sum(density.rho_tot, axis=0)
+
+        # initialize v_hartree potential
+        v_ha = np.zeros((config.grid_params["ngrid"]))
+
+        # loop over the x-grid
+        # this may be a bottleneck...
+        for i, x0 in enumerate(xgrid):
+
+            # set up 'upper' and 'lower' parts of the xgrid (x<=x0; x>x0)
+            x_u = xgrid[np.where(x0 <= xgrid)]
+            x_l = xgrid[np.where(x0 > xgrid)]
+
+            # likewise for the density
+            rho_u = rho[np.where(x0 <= xgrid)]
+            rho_l = rho[np.where(x0 > xgrid)]
+
+            # now compute the hartree potential
+            int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l))
+            int_u = np.trapz(rho_u * np.exp(2 * x_u))
+
+            # total hartree potential is sum over integrals
+            v_ha[i] = 4.0 * pi * (int_l + int_u)
+
+        return v_ha
+
+    def calc_v_xc(self, density):
+        """
+        Wrapper function which calls from xc module
+
+        Inputs:
+        - density (object)    : the density object
+        """
+
+        return xc.Potential(density).v_xc
