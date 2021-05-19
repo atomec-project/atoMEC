@@ -11,6 +11,7 @@ import check_inputs
 import config
 import staticKS
 import gridmod
+import xc
 
 
 class Atom:
@@ -40,6 +41,7 @@ class Atom:
 
         # Fundamental atomic properties
         self.at_chrg = self.species.atomic_number  # atomic number
+        config.Z = self.at_chrg
         self.at_mass = self.species.atomic_weight  # atomic mass
         nele_tot = self.at_chrg + self.charge  # total electron number
 
@@ -60,7 +62,8 @@ class Atom:
         config.sph_vol = self.volume
 
         # compute inverse temperature
-        config.beta = 1.0 / temp
+        config.temp = self.temp
+        config.beta = 1.0 / self.temp
 
     class ISModel:
         def __init__(
@@ -84,10 +87,12 @@ class Atom:
             """
 
             # Input variables
+
+            # check the xc functionals are ok
             self.xfunc = xfunc
-            config.xfunc = self.xfunc
             self.cfunc = cfunc
-            config.cfunc = self.cfunc
+            config.xfunc, config.cfunc = check_inputs.ISModel().check_xc(xfunc, cfunc)
+
             self.bc = bc
             config.bc = self.bc
             self.spinpol = spinpol
@@ -135,13 +140,18 @@ class Atom:
         orbs.SCF_init(self)
         # occupy orbitals
         orbs.occupy()
+        print("Eigenvalues")
         print(orbs.eigvals)
         # print(orbs.occnums)
-        # print(orbs.occnums)
+        print("Occupations")
+        print(orbs.occnums)
         # construct density
         rho = staticKS.Density()
         rho.construct(orbs)
-        print(rho.N_bound)
+        print("Unbound electrons")
+        print(rho.N_unbound)
         rho.write_to_file()
+        print("Computing KS potential")
         # construct potential
-        # pot=KSvars.Potential.construct(rho,grid.xgrid)
+        pot = staticKS.Potential()
+        pot.construct(rho)

@@ -14,6 +14,7 @@ from math import pi
 # internal packages
 import constants
 import unitconv
+import xc
 
 
 class Atom:
@@ -181,6 +182,39 @@ class Atom:
         return np.array([nele_up, nele_dw], dtype=int)
 
 
+class ISModel:
+    """
+    Checks the inputs for the IS model class
+    """
+
+    def check_xc(self, x_func, c_func):
+        """
+        checks the exchange and correlation functionals are defined by libxc
+        """
+
+        x_func, err_x = xc.check_xc_func(x_func)
+        c_func, err_c = xc.check_xc_func(c_func)
+
+        if err_x == 1:
+            raise InputError.xc_error("x functional is not an id (int) or name (str)")
+        elif err_c == 1:
+            raise InputError.xc_error("c functional is not an id (int) or name (str)")
+        elif err_x == 2:
+            raise InputError.xc_error(
+                "x functional is not a valid name or id.\n \
+            Please choose from the valid inputs listed here: \n\
+            https://www.tddft.org/programs/libxc/functionals/"
+            )
+        elif err_c == 2:
+            raise InputError.xc_error(
+                "c functional is not a valid name or id. \n\
+            Please choose from the valid inputs listed here: \n\
+            https://www.tddft.org/programs/libxc/functionals/"
+            )
+
+        return x_func, c_func
+
+
 class InputError(Exception):
     """
     Handles errors in inputs
@@ -232,6 +266,15 @@ class InputError(Exception):
         """
 
         print("Error in spinmag input: " + err_msg)
+        sys.exit("Exiting AvAtom")
+
+    def xc_error(err_msg):
+
+        """
+        Raises an exception if density is not a float or negative
+        """
+
+        print("Error in xc input: " + err_msg)
         sys.exit("Exiting AvAtom")
 
 
