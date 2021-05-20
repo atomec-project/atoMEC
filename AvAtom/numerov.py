@@ -16,14 +16,13 @@ import config
 import mathtools
 
 
-def matrix_solve(orbs, v, xgrid):
+def matrix_solve(v, xgrid):
     """
     Solves the KS equations via diagonalization of a matrix via the method described in the following paper:
     Mohandas Pillai, Joshua Goglio, and Thad G. Walker , "Matrix Numerov method for solving Schrödinger’s equation",
     American Journal of Physics 80, 1017-1019 (2012) https://doi.org/10.1119/1.4748813
 
     Inputs:
-    - orbs (object)            : the orbitals object
     - v (numpy array)          : KS potential
     - grid (numpy array)       : logarithmic grid
 
@@ -32,14 +31,15 @@ def matrix_solve(orbs, v, xgrid):
     - eigvals  (numpy array)   : KS orbital eigenvalues
     """
 
+    N = config.grid_params["ngrid"]
+
     # initialize the eigenfunctions and their eigenvalues
-    eigfuncs = np.zeros(np.shape(orbs.eigfuncs))
-    eigvals = np.zeros(np.shape(orbs.eigvals))
+    eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N))
+    eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
 
     # define the spacing of the xgrid
     dx = xgrid[1] - xgrid[0]
     # number of grid points
-    N = config.grid_params["ngrid"]
 
     # Set-up the following matrix diagonalization problem
     # H*|u>=E*B*|u>; H=T+B*V; T=-p*A
