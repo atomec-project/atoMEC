@@ -26,12 +26,35 @@ class Orbitals:
         """
         Initializes the orbital attributes to empty numpy arrays
         """
-        self.eigfuncs = np.zeros(
-            (config.spindims, config.lmax, config.nmax, config.grid_params["ngrid"])
-        )
-        self.eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
-        self.occnums = np.zeros((config.spindims, config.lmax, config.nmax))
-        self.lbound = np.zeros((config.spindims, config.lmax, config.nmax))
+
+        self._eigfuncs = None
+        self._eigvals = None
+        self._occnums = None
+        self._lbound = None
+
+    @property
+    def eigvals(self):
+        if self._eigvals is None:
+            raise Exception("Eigenvalues have not been initialized")
+        return self._eigvals
+
+    @property
+    def eigfuncs(self):
+        if self._eigfuncs is None:
+            raise Exception("Eigenfunctions have not been initialized")
+        return self._eigfuncs
+
+    @property
+    def occnums(self):
+        if self._occnums is None:
+            raise Exception("Occnums have not been initialized")
+        return self._occnums
+
+    @property
+    def lbound(self):
+        if self._lbound is None:
+            raise Exception("lbound has not been initialized")
+        return self._lbound
 
     def SCF_init(self, atom):
         """
@@ -47,10 +70,10 @@ class Orbitals:
             v_en[i] = -config.Z * np.exp(-config.xgrid)
 
         # solve the KS equations with the bare coulomb potential
-        self.eigfuncs, self.eigvals = numerov.matrix_solve(self, v_en, config.xgrid)
+        self._eigfuncs, self._eigvals = numerov.matrix_solve(v_en, config.xgrid)
 
         # compute the lbound array
-        self.make_lbound()
+        self._make_lbound()
 
         # initial guess for the chemical potential
         config.mu = np.zeros((config.spindims))
@@ -66,11 +89,9 @@ class Orbitals:
         config.mu = mathtools.chem_pot(self)
 
         # compute the occupation numbers using the chemical potential
-        self.occnums = self.calc_occnums(config.mu)
+        self._occnums = self._calc_occnums(config.mu)
 
-        return True
-
-    def calc_occnums(self, mu):
+    def _calc_occnums(self, mu):
         """
         Computes the Fermi-Dirac occupations for the eigenvalues
         """
@@ -85,14 +106,16 @@ class Orbitals:
 
         return occnums
 
-    def make_lbound(self):
+    def _make_lbound(self):
         """
         Constructs the 'lbound' attribute
         For each spin channel, lbound(l,n)=(2l+1)*Theta(eps_n)
         """
 
+        self._lbound = np.zeros_like(self.eigvals)
+
         for l in range(config.lmax):
-            self.lbound[:, l] = np.where(self.eigvals[:, l] < 0, 2 * l + 1.0, 0.0)
+            self._lbound[:, l] = np.where(self.eigvals[:, l] < 0, 2 * l + 1.0, 0.0)
 
 
 class Density:
@@ -122,14 +145,15 @@ class Density:
         """
 
         # construct the bound part of the density
-        self.construct_rho_bound(orbs)
+        self.bound, self.N_bound = self.construct_rho_bound(orbs)
         # construct the unbound part
         self.construct_rho_unbound(orbs)
 
         # sum to get the total density
         self.rho_tot = self.rho_bound + self.rho_unbound
 
-    def construct_rho_bound(self, orbs):
+    @staticmethod
+    def construct_rho_bound(orbs):
         """
         Constructs the bound part of the density
 
@@ -146,10 +170,12 @@ class Density:
         orbs_R_sq = orbs_R ** 2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
-        self.rho_bound = np.einsum("ijk,ijkl->il", orbs.occnums, orbs_R_sq)
+        rho_bound = np.einsum("ijk,ijkl->il", orbs.occnums, orbs_R_sq)
 
         # compute the number of unbound electrons
-        self.N_bound = np.sum(orbs.occnums, axis=(1, 2))
+        N_bound = np.sum(orbs.occnums, axis=(1, 2))
+
+        return rho_bound, N_bound
 
     def construct_rho_unbound(self, orbs):
         """
@@ -222,8 +248,10 @@ class Potential:
     def __init__(self):
         self.v_s = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self.v_en = np.zeros((1, config.grid_params["ngrid"]))
-        self.v_ha = np.zeros((1, config.grid_params["ngrid"]))
+        # self.v_ha = np.zeros((1, config.grid_params["ngrid"]))
         self.v_xc = np.zeros((config.spindims, config.grid_params["ngrid"]))
+        self.v_x = np.zeros_like(self.v_xc)
+        self.v_c = np.zeros_like(self.v_x)
 
     def construct(self, density):
         """
@@ -242,7 +270,8 @@ class Potential:
         # sum the potentials to get the total KS potential
         self.v_s = self.v_en + self.v_ha
 
-    def calc_v_ha(self, density):
+    @staticmethod
+    def calc_v_ha(density):
         """
         Constructs the Hartree potential
         On the r-grid:
@@ -291,6 +320,6 @@ class Potential:
 
         Inputs:
         - density (object)    : the density object
+        Returns:
+        - vx
         """
-
-        return xc.Potential(density).v_xc
