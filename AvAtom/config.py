@@ -20,5 +20,5 @@ conv_params = {"econv": 1e-6, "nconv": 1e-6, "numconv": 1e-6}
 scf_params = {"maxscf": 50, "mixfrac": 0.3}
 
 # variables
-nmax = 5  # maximum quantum number n of eigenfunctions
-lmax = 4  # maximum quantum number l of eigenfunctions
+nmax = 6  # maximum quantum number n of eigenfunctions
+lmax = 5  # maximum quantum number l of eigenfunctions
