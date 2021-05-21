@@ -12,6 +12,7 @@ from math import sqrt, pi, exp
 import config
 import numerov
 import mathtools
+import xc
 
 
 class Orbitals:
@@ -73,7 +74,7 @@ class Orbitals:
         self._eigfuncs, self._eigvals = numerov.matrix_solve(v_en, config.xgrid)
 
         # compute the lbound array
-        self._make_lbound()
+        self._lbound = self.make_lbound(self.eigvals)
 
         # initial guess for the chemical potential
         config.mu = np.zeros((config.spindims))
@@ -89,33 +90,37 @@ class Orbitals:
         config.mu = mathtools.chem_pot(self)
 
         # compute the occupation numbers using the chemical potential
-        self._occnums = self._calc_occnums(config.mu)
+        self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
 
-    def _calc_occnums(self, mu):
+    @staticmethod
+    def calc_occnums(eigvals, lbound, mu):
         """
         Computes the Fermi-Dirac occupations for the eigenvalues
         """
 
-        occnums = np.zeros_like(self.eigvals)
+        occnums = np.zeros_like(eigvals)
 
         for i in range(config.spindims):
             if config.nele[i] != 0:
-                occnums[i] = self.lbound[i] * mathtools.fermi_dirac(
-                    self.eigvals[i], mu[i], config.beta
+                occnums[i] = lbound[i] * mathtools.fermi_dirac(
+                    eigvals[i], mu[i], config.beta
                 )
 
         return occnums
 
-    def _make_lbound(self):
+    @staticmethod
+    def make_lbound(eigvals):
         """
         Constructs the 'lbound' attribute
         For each spin channel, lbound(l,n)=(2l+1)*Theta(eps_n)
         """
 
-        self._lbound = np.zeros_like(self.eigvals)
+        lbound_mat = np.zeros_like(eigvals)
 
         for l in range(config.lmax):
-            self._lbound[:, l] = np.where(self.eigvals[:, l] < 0, 2 * l + 1.0, 0.0)
+            lbound_mat[:, l] = np.where(eigvals[:, l] < 0, 2 * l + 1.0, 0.0)
+
+        return lbound_mat
 
 
 class Density:
@@ -145,9 +150,9 @@ class Density:
         """
 
         # construct the bound part of the density
-        self.bound, self.N_bound = self.construct_rho_bound(orbs)
+        self.rho_bound, self.N_bound = self.construct_rho_bound(orbs)
         # construct the unbound part
-        self.construct_rho_unbound(orbs)
+        self.rho_unbound, self.N_unbound = self.construct_rho_unbound()
 
         # sum to get the total density
         self.rho_tot = self.rho_bound + self.rho_unbound
@@ -177,13 +182,14 @@ class Density:
 
         return rho_bound, N_bound
 
-    def construct_rho_unbound(self, orbs):
+    @staticmethod
+    def construct_rho_unbound():
         """
         Constructs the bound part of the density
-
-        Inputs:
-        - orbs (object)    : the orbitals object
         """
+
+        rho_unbound = np.zeros((config.spindims, config.grid_params["ngrid"]))
+        N_unbound = np.zeros((config.spindims))
 
         # so far only the ideal approximation is implemented
         if config.unbound == "ideal":
@@ -194,8 +200,10 @@ class Density:
                 n_ub = prefac * mathtools.fd_int_complete(
                     config.mu[i], config.beta, 0.5
                 )
-                self.rho_unbound[i] = n_ub
-                self.N_unbound[i] = n_ub * config.sph_vol
+                rho_unbound[i] = n_ub
+                N_unbound[i] = n_ub * config.sph_vol
+
+        return rho_unbound, N_unbound
 
     def write_to_file(self):
         # this routine should probably be moved to a more appropriate place
@@ -248,7 +256,7 @@ class Potential:
     def __init__(self):
         self.v_s = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self.v_en = np.zeros((1, config.grid_params["ngrid"]))
-        # self.v_ha = np.zeros((1, config.grid_params["ngrid"]))
+        self.v_ha = np.zeros((1, config.grid_params["ngrid"]))
         self.v_xc = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self.v_x = np.zeros_like(self.v_xc)
         self.v_c = np.zeros_like(self.v_x)
@@ -265,10 +273,16 @@ class Potential:
         self.v_en[0] = -config.Z * np.exp(-config.xgrid)
 
         # construct the Hartree potential
-        self.v_ha = self.calc_v_ha(density)
+        self.v_ha[0] = self.calc_v_ha(density)
+
+        # extract the xc components from the potential object
+        pot_xc = xc.XCPotential(density, config.xfunc, config.cfunc)
+        self.v_x = pot_xc.vx
+        self.v_c = pot_xc.vc
+        self.v_xc = pot_xc.vxc
 
         # sum the potentials to get the total KS potential
-        self.v_s = self.v_en + self.v_ha
+        self.v_s = self.v_en + self.v_ha + self.v_xc
 
     @staticmethod
     def calc_v_ha(density):
@@ -306,20 +320,48 @@ class Potential:
             rho_l = rho[np.where(x0 > xgrid)]
 
             # now compute the hartree potential
-            int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l))
-            int_u = np.trapz(rho_u * np.exp(2 * x_u))
+            int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
+            int_u = np.trapz(rho_u * np.exp(2 * x_u), x_u)
 
             # total hartree potential is sum over integrals
             v_ha[i] = 4.0 * pi * (int_l + int_u)
 
         return v_ha
 
-    def calc_v_xc(self, density):
+    def write_to_file(self):
+        # this routine should probably be moved to a more appropriate place
         """
-        Wrapper function which calls from xc module
+        Writes the potential (on the r-grid) to file
+        """
 
-        Inputs:
-        - density (object)    : the density object
-        Returns:
-        - vx
-        """
+        fname = "potential.csv"
+
+        if config.spinpol == True:
+            headstr = (
+                "r"
+                + 7 * " "
+                + "v_en"
+                + 4 * " "
+                + "v_ha"
+                + 3 * " "
+                + "v^up_xc"
+                + 4 * " "
+                + "v^dw_xc"
+                + 3 * " "
+            )
+            data = np.column_stack(
+                [
+                    config.rgrid,
+                    self.v_en[0],
+                    self.v_ha[0],
+                    self.v_xc[0],
+                    self.v_xc[1],
+                ]
+            )
+        else:
+            headstr = "r" + 8 * " " + "v_en" + 6 * " " + "v_ha" + 3 * " "
+            data = np.column_stack(
+                [config.rgrid, self.v_en[0], self.v_ha[0], self.v_xc[0]]
+            )
+
+        np.savetxt(fname, data, fmt="%8.3e", header=headstr)
