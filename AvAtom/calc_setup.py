@@ -138,20 +138,50 @@ class Atom:
         # initialize orbitals
         orbs = staticKS.Orbitals()
         orbs.SCF_init(self)
+
         # occupy orbitals
         orbs.occupy()
-        print("Eigenvalues")
-        print(orbs.eigvals)
-        # print(orbs.occnums)
-        print("Occupations")
-        print(orbs.occnums)
+
         # construct density
         rho = staticKS.Density()
         rho.construct(orbs)
-        print("Unbound electrons")
-        print(rho.N_unbound)
-        rho.write_to_file()
-        print("Computing KS potential")
+
         # construct potential
         pot = staticKS.Potential()
         pot.construct(rho)
+
+        # compute energies
+        # energy = staticKS.Energy()
+        # energy.compute(orbs, rho, pot)
+
+        # write the initial spiel
+        # scf_string = self.print_scf_init()
+
+        # for i in range(scf_params["maxscf"]):
+
+        #     # update the orbitals with the KS potential
+        #     orbs.update(pot)
+        #     orbs.occupy
+
+        #     # construct density
+        #     rho.construct(orbs)
+
+        #     # construct potential
+        #     pot.construct(rho)
+
+        #     # mix potential
+        #     pot.mix()
+
+        #     # compute the energy
+        #     energy.compute(orbs, rho, pot)
+
+        #     # test convergence
+        #     conv_vals = convergence.SCF_check(energy, rho, pot)
+
+        #     scf_string = self.print_scf_cycle(conv_vals)
+        #     print(scf_string)
+
+        #     if conv_vals["complete"]:
+        #         break
+
+        # scf_string = self.print_scf_complete(conv_vals)
