@@ -89,14 +89,16 @@ class Atom:
             # Input variables
 
             # check the xc functionals are ok
+            self.spinpol = spinpol
+            config.spinpol = self.spinpol
+
             self.xfunc = xfunc
             self.cfunc = cfunc
             config.xfunc, config.cfunc = check_inputs.ISModel().check_xc(xfunc, cfunc)
 
             self.bc = bc
             config.bc = self.bc
-            self.spinpol = spinpol
-            config.spinpol = self.spinpol
+
             if config.spinpol == True:
                 config.spindims = 2
             else:
@@ -141,18 +143,28 @@ class Atom:
 
         # occupy orbitals
         orbs.occupy()
+        print(orbs.occnums)
 
         # construct density
         rho = staticKS.Density()
         rho.construct(orbs)
+
+        print(rho.N_bound, rho.N_unbound)
 
         # construct potential
         pot = staticKS.Potential()
         pot.construct(rho)
 
         # compute energies
-        # energy = staticKS.Energy()
-        # energy.compute(orbs, rho, pot)
+        energy = staticKS.Energy(orbs, rho, pot)
+        E_free = energy.F_tot
+        print("free energy = ", E_free)
+        print("total energy = ", energy.E_tot)
+        # print(energy.entropy)
+        # print(energy.E_kin)
+        # print(energy.E_en)
+        print("hartree energy = ", energy.E_ha)
+        print("xc energy = ", energy.E_xc)
 
         # write the initial spiel
         # scf_string = self.print_scf_init()
