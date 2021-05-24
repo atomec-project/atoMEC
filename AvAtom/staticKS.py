@@ -157,6 +157,9 @@ class Density:
         # sum to get the total density
         self.rho_tot = self.rho_bound + self.rho_unbound
 
+        # check the integral of the density
+        int_dens = mathtools.int_sphere(self.rho_tot)
+
     @staticmethod
     def construct_rho_bound(orbs):
         """
@@ -196,12 +199,16 @@ class Density:
 
             # unbound density is constant
             for i in range(config.spindims):
-                prefac = config.nele[i] / (sqrt(2) * pi ** 2)
-                n_ub = prefac * mathtools.fd_int_complete(
-                    config.mu[i], config.beta, 0.5
-                )
-                rho_unbound[i] = n_ub
-                N_unbound[i] = n_ub * config.sph_vol
+                if config.nele[i] > 1e-5:
+                    prefac = 1.0 / (sqrt(2) * pi ** 2)
+                    n_ub = prefac * mathtools.fd_int_complete(
+                        config.mu[i], config.beta, 1.0
+                    )
+                    rho_unbound[i] = n_ub
+                    N_unbound[i] = n_ub * config.sph_vol
+                else:
+                    N_unbound[i] = 0.0
+                    rho_unbound[i] = 0.0
 
         return rho_unbound, N_unbound
 
@@ -365,3 +372,289 @@ class Potential:
             )
 
         np.savetxt(fname, data, fmt="%8.3e", header=headstr)
+
+
+class Energy:
+    """
+    Holds the energy which includes the following attributes
+    Note:
+    F = E - TS
+    E = E_kin + E_en + E_ha + E_xc
+
+    - F_tot (dict np arrays)    : the total free energy F
+      contains: F, E, S
+    - E_kin (dict np arrays)    : the kinetic energy E_kin
+      contains: bound, unbound
+    - E_en (np array)           : the electron-nuclear energy E_en
+    - E_ha (np array)           : the Hartree energy E_ha
+    - E_xc (dict np arrays)     : the xc energy
+      contains : xc, x, c
+
+    Inputs:
+    - orbs (object)          : the orbitals object
+    - dens  (object)         : the density object
+    - pot (object)           : the potential object
+    """
+
+    def __init__(self, orbs, dens, pot):
+
+        # inputs
+        self._orbs = orbs
+        self._dens = dens
+        self._pot = pot
+
+        # initialize attributes
+        self._F_tot = None
+        self._E_tot = None
+        self._entropy = None
+        self._E_kin = None
+        self._E_en = None
+        self._E_ha = None
+        self._E_xc = None
+
+    @property
+    def F_tot(self):
+        if self._F_tot == None:
+            self._F_tot = self.E_tot - config.temp * self.entropy["tot"]
+        return self._F_tot
+
+    @property
+    def E_tot(self):
+        if self._E_tot == None:
+            self._E_tot = self.E_kin["tot"] + self.E_en + self.E_ha + self.E_xc["xc"]
+        return self._E_tot
+
+    @property
+    def entropy(self):
+        if self._entropy == None:
+            self._entropy = self.calc_entropy(self._orbs)
+        return self._entropy
+
+    @property
+    def E_kin(self):
+        if self._E_kin == None:
+            self._E_kin = self.calc_E_kin(self._orbs)
+        return self._E_kin
+
+    @property
+    def E_en(self):
+        if self._E_en == None:
+            self._E_en = self.calc_E_en(self._dens, self._pot)
+        return self._E_en
+
+    @property
+    def E_ha(self):
+        if self._E_ha == None:
+            self._E_ha = self.calc_E_ha(self._dens, self._pot)
+        return self._E_ha
+
+    @property
+    def E_xc(self):
+        if self._E_xc == None:
+            self._E_xc = xc.XCEnergy(self._dens, config.xfunc, config.cfunc).E_xc
+        return self._E_xc
+
+    def calc_E_kin(self, orbs):
+        """
+        Kinetic energy computation is in general different
+        for bound and unbound components.
+        This wrapper calls the respective functions
+
+        Inputs:
+        - orbs (object)                : the orbitals object
+        Returns:
+        - E_kin (dict of np arrays)    : kinetic energy
+          E_kin = {"bound" : E_b, "unbound" : E_ub}
+        """
+
+        E_kin = {}
+
+        # bound part
+        E_kin["bound"] = self.calc_E_kin_bound(orbs)
+
+        # unbound part
+        E_kin["unbound"] = self.calc_E_kin_unbound(orbs)
+
+        # total
+        E_kin["tot"] = E_kin["bound"] + E_kin["unbound"]
+
+        return E_kin
+
+    @staticmethod
+    def calc_E_kin_bound(orbs):
+        """
+        Computes the kinetic energy contribution from the bound electrons
+
+        Inputs:
+        - orbs (object)        : the orbitals object
+        Returns:
+        - E_kin_bound (float)  : kinetic energy
+        """
+
+        # compute the grad^2 component
+        grad2_orbs = mathtools.laplace(orbs.eigfuncs, config.xgrid)
+
+        # compute the (l+1/2)^2 component
+        l_arr = np.array([(l + 0.5) ** 2.0 for l in range(config.lmax)])
+        lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, orbs.eigfuncs)
+
+        # add together and multiply by eigfuncs*exp(-3x)
+        prefac = np.exp(-3.0 * config.xgrid) * orbs.eigfuncs
+        kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
+
+        # multiply and sum over occupation numbers
+        e_kin_dens = np.einsum("ijk,ijkl->l", orbs.occnums, kin_orbs)
+
+        # integrate over sphere
+        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens)
+
+        return E_kin_bound
+
+    @staticmethod
+    def calc_E_kin_unbound(orbs):
+        """
+        Computes the unbound contribution to the kinetic energy
+
+        Inputs:
+        - orbs (object)          : the orbitals object
+        Returns:
+        - E_kin_unbound (float)  : the unbound K.E.
+        """
+
+        # currently only ideal treatment supported
+        if config.unbound == "ideal":
+            E_kin_unbound = 0.0  # initialize
+            for i in range(config.spindims):
+                prefac = config.nele[i] * config.sph_vol / (sqrt(2) * pi ** 2)
+                E_kin_unbound += prefac * mathtools.fd_int_complete(
+                    config.mu[i], config.beta, 3.0
+                )
+
+        return E_kin_unbound
+
+    def calc_entropy(self, orbs):
+        """
+        Entropy is in general computed differently for bound / unbound orbitals
+        This wrapper calls the respective bound and unbound components
+
+        Inputs
+        - orbs (object)      : the orbitals object
+        """
+
+        S = {}
+
+        # bound part
+        S["bound"] = self.calc_S_bound(orbs)
+
+        # unbound part
+        S["unbound"] = self.calc_S_unbound(orbs)
+
+        # total
+        S["tot"] = S["bound"] + S["unbound"]
+
+        return S
+
+    @staticmethod
+    def calc_S_bound(orbs):
+        """
+        Computes the contribution of the bound states to the entropy
+        S_bo = -\sum_{s,l,n} (2l+1) [ f_{nls} log(f_{nls})
+                                     + (1-f_{nls}) (log(1-f_{nls}) ]
+
+        Inputs:
+        - orbs (object)      : the orbitals object
+        Returns
+        - S_bound (float)    : the bound contribution to entropy
+        """
+
+        # the occupation numbers are stored as f'_{nl}=f_{nl}*(2l+1)
+        # we first need to map them back to their 'pure' form f_{nl}
+        lbound_inv = np.zeros_like(orbs.lbound)
+        for l in range(config.lmax):
+            lbound_inv[:, l] = np.where(
+                orbs.eigvals[:, l] < 0, 1.0 / (2 * l + 1.0), 0.0
+            )
+
+        # pure occupation numbers (with zeros replaced by finite values)
+        occnums_pu = lbound_inv * orbs.occnums
+        occnums_mod1 = np.where(occnums_pu > 1e-5, occnums_pu, 0.5)
+        occnums_mod2 = np.where(occnums_pu < 1.0 - 1e-5, occnums_pu, 0.5)
+
+        # now compute the terms in the square bracket
+        term1 = occnums_pu * np.log(occnums_mod1)
+        term2 = (1.0 - occnums_pu) * np.log(1.0 - occnums_mod2)
+
+        # multiply by (2l+1) factor
+        g_nls = orbs.lbound * (term1 + term2)
+
+        # sum over all quantum numbers to get the total entropy
+        S_bound = np.sum(g_nls)
+
+        return S_bound
+
+    @staticmethod
+    def calc_S_unbound(orbs):
+        """
+        Computes the unbound contribution to the entropy
+
+        Inputs:
+        - orbs (object)          : the orbitals object
+        Returns:
+        - S_unbound (float)      : the unbound entropy
+        """
+
+        # currently only ideal treatment supported
+        if config.unbound == "ideal":
+            S_unbound = 0.0  # initialize
+            for i in range(config.spindims):
+                if config.nele[i] > 1e-5:
+                    prefac = config.sph_vol / (sqrt(2) * pi ** 2)
+                    S_unbound -= prefac * mathtools.fd_int_complete(
+                        config.mu[i], config.beta, 1.0
+                    )
+                else:
+                    S_unbound += 0.0
+
+        return S_unbound
+
+    @staticmethod
+    def calc_E_en(dens, pot):
+        """
+        Computes the electron-nuclear energy
+        E_en = \int dr v_en(r) n(r)
+
+        Inputs:
+        - dens (object)      : the density object
+        - pot  (object)      : the potential object
+        """
+
+        # sum the density over the spin axes to get the total density
+        dens_tot = np.sum(dens.rho_tot, axis=0)
+
+        # compute the integral
+        E_en = mathtools.int_sphere(dens_tot * pot.v_en)
+
+        return E_en[0]
+
+    @staticmethod
+    def calc_E_ha(dens, pot):
+        """
+        Computes the Hartree energy
+        E_ha = 1/2 \int dr \int dr' n(r)n(r')/|r-r'|
+        Uses the pre-computed hartree potential
+        E_ha = 1/2 /int dr n(r) v_ha(r)
+
+        Inputs:
+        - dens (object)      : the density object
+        - pot  (object)      : the potential object
+        Returns:
+        - E_ha (float)       : the hartree energy
+        """
+
+        # sum density over spins to get total density
+        dens_tot = np.sum(dens.rho_tot, axis=0)
+
+        # compute the integral
+        E_ha = 0.5 * mathtools.int_sphere(dens_tot * pot.v_ha)
+
+        return E_ha[0]
