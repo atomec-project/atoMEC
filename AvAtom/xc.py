@@ -10,7 +10,7 @@ import numpy as np
 
 # internal libs
 import config
-from staticKS import Orbitals
+import mathtools
 
 
 def check_xc_func(xc_code, id_supp):
@@ -40,7 +40,7 @@ def check_xc_func(xc_code, id_supp):
     else:
         # checks if the libxc code is recognised
         try:
-            if config.spinpol == "True":
+            if config.spinpol == True:
                 xc_func = pylibxc.LibXCFunctional(xc_code, "polarized")
             else:
                 xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
@@ -124,14 +124,79 @@ class XCPotential:
 
             # lda
             if xcfunc._family == 1:
+                # transform to correct dimensions for libxc
+                rho_libxc = np.zeros((config.grid_params["ngrid"], config.spindims))
+                for i in range(config.spindims):
+                    rho_libxc[:, i] = density.rho_tot[i, :]
                 # lda just needs density as input
-                inp = {"rho": density.rho_tot}
+                inp = {"rho": rho_libxc}
                 # compute the xc potential and energy density
                 out = xcfunc.compute(inp)
                 # extract the potential
-                vxc_libxc = out["vrho"][:, 0]
+                vxc_libxc = out["vrho"]
 
             # tranpose back to AvAtom array style
-            vxc = np.reshape(vxc_libxc, (config.spindims, config.grid_params["ngrid"]))
+            vxc = vxc_libxc.transpose()
 
         return vxc
+
+
+class XCEnergy:
+
+    """
+    Holds the XC potential object and the routines to compute it
+    Inputs:
+    - density (object)     : the density object
+    - xfunc   (object)     : the exchange functional
+    - cfunc   (object)     : the correlation functional
+    """
+
+    def __init__(self, density, xfunc, cfunc):
+
+        # initialize the properties
+        self._density = density
+        self._xfunc = xfunc
+        self._cfunc = cfunc
+        self._E_xc = None
+
+        # compute or retrieve the x and c potentials
+
+    @property
+    def E_xc(self):
+        if self._E_xc is None:
+            self._E_xc = {}
+            self._E_xc["x"] = self.calc_Exc(self._density, self._xfunc)
+            self._E_xc["c"] = self.calc_Exc(self._density, self._cfunc)
+            self._E_xc["xc"] = self._E_xc["x"] + self._E_xc["c"]
+        return self._E_xc
+
+    @staticmethod
+    def calc_Exc(density, xcfunc):
+        """
+        Calls libxc to compute the chosen exchange or correlation energy
+        """
+
+        # case where there is no xc func
+        if xcfunc == 0:
+            E_xc = 0.0
+        else:
+            # lda
+            if xcfunc._family == 1:
+                # lda just needs density as input
+                # messy transformation for libxc - why isn't tranpose working??
+                rho_libxc = np.zeros((config.grid_params["ngrid"], config.spindims))
+                for i in range(config.spindims):
+                    rho_libxc[:, i] = density.rho_tot[i, :]
+                inp = {"rho": rho_libxc}
+                # compute the xc potential and energy density
+                out = xcfunc.compute(inp)
+                # extract the energy density
+                exc = out["zk"]
+
+            # get the total density
+            dens_tot = np.sum(density.rho_tot, axis=0)
+
+            # integrate over sphere to get total energy
+            E_xc = mathtools.int_sphere(exc[:, 0] * dens_tot)
+
+        return E_xc
