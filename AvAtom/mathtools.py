@@ -51,10 +51,30 @@ def int_sphere(fx):
     I_sph (float)      : value of spherical integral
     """
 
-    func_int = 4 * pi * np.exp(3 * config.xgrid) * fx
+    func_int = 4.0 * pi * np.exp(3.0 * config.xgrid) * fx
     I_sph = np.trapz(func_int, config.xgrid)
 
     return I_sph
+
+
+def laplace(y, x, axis=-1):
+    """
+    Computes the second-order derivative d^2 y / dx^2
+    over the chosen axis of the input array
+
+    Inputs:
+    - y (np array)    : function on which differential is computed
+    - x (np array)    : grid for differentation
+    - axis (int)      : axis to differentiate on (defaults to last)
+    """
+
+    # first compute the first-order gradient
+    grad1_y = np.gradient(y, x, edge_order=2, axis=axis)
+
+    # now compute the second-order gradient
+    grad2_y = np.gradient(grad1_y, x, edge_order=2, axis=axis)
+
+    return grad2_y
 
 
 def fermi_dirac(eps, mu, beta, n=0):
@@ -94,7 +114,7 @@ def fd_int_complete(mu, beta, n):
     """
 
     # use scipy quad integration routine
-    limup = mu + 10
+    limup = mu + 15
 
     I_n, err = integrate.quad(fermi_dirac, 0, limup, args=(mu, beta, n))
 
@@ -146,8 +166,8 @@ def f_root_id(mu, eigvals, lbound, nele):
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation
 
-    prefac = nele * config.sph_vol / (sqrt(2) * pi ** 2)
-    contrib_unbound = prefac * fd_int_complete(mu, config.beta, 0.5)
+    prefac = config.sph_vol / (sqrt(2) * pi ** 2)
+    contrib_unbound = prefac * fd_int_complete(mu, config.beta, 1.0)
 
     # return the function whose roots are to be found
     return contrib_bound + contrib_unbound - nele
