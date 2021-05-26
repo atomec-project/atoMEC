@@ -152,8 +152,8 @@ class Atom:
         print(rho.N_bound, rho.N_unbound)
 
         # construct potential
-        pot = staticKS.Potential()
-        pot.construct(rho)
+        pot = staticKS.Potential(rho)
+        pot.write_to_file()
 
         # compute energies
         energy = staticKS.Energy(orbs, rho, pot)

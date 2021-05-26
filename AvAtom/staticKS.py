@@ -260,36 +260,52 @@ class Potential:
     - v_xc  (np array)    : xc-potential
     """
 
-    def __init__(self):
-        self.v_s = np.zeros((config.spindims, config.grid_params["ngrid"]))
-        self.v_en = np.zeros((1, config.grid_params["ngrid"]))
-        self.v_ha = np.zeros((1, config.grid_params["ngrid"]))
-        self.v_xc = np.zeros((config.spindims, config.grid_params["ngrid"]))
-        self.v_x = np.zeros_like(self.v_xc)
-        self.v_c = np.zeros_like(self.v_x)
+    def __init__(self, density):
 
-    def construct(self, density):
+        self._v_s = np.zeros_like(density.rho_tot)
+        self._v_en = np.zeros((config.grid_params["ngrid"]))
+        self._v_ha = np.zeros((config.grid_params["ngrid"]))
+        self._v_xc = {
+            "x": np.zeros_like(density.rho_tot),
+            "c": np.zeros_like(density.rho_tot),
+            "xc": np.zeros_like(density.rho_tot),
+        }
+        self._density = density
+
+    @property
+    def v_s(self):
+        if self._v_s.all() == 0.0:
+            self._v_s = self.v_en + self.v_ha + self.v_xc["xc"]
+        return self._v_s
+
+    @property
+    def v_en(self):
+        if self._v_en.all() == 0.0:
+            self._v_en = self.calc_v_en()
+        return self._v_en
+
+    @property
+    def v_ha(self):
+        if self._v_ha.all() == 0.0:
+            self._v_ha = self.calc_v_ha(self._density)
+        return self._v_ha
+
+    @property
+    def v_xc(self):
+        if self._v_xc["xc"].all() == 0.0:
+            self._v_xc = xc.v_xc(self._density, config.xfunc, config.cfunc)
+        return self._v_xc
+
+    @staticmethod
+    def calc_v_en():
         """
-        Constructs the components of the KS potential
-
-        Inputs:
-        - density (object)   : the density object
+        Constructs the electron-nuclear potential
+        v_en (x) = -Z * exp(-x)
         """
 
-        # construct the electron-nuclear potential
-        self.v_en[0] = -config.Z * np.exp(-config.xgrid)
+        v_en = -config.Z * np.exp(-config.xgrid)
 
-        # construct the Hartree potential
-        self.v_ha[0] = self.calc_v_ha(density)
-
-        # extract the xc components from the potential object
-        pot_xc = xc.XCPotential(density, config.xfunc, config.cfunc)
-        self.v_x = pot_xc.vx
-        self.v_c = pot_xc.vc
-        self.v_xc = pot_xc.vxc
-
-        # sum the potentials to get the total KS potential
-        self.v_s = self.v_en + self.v_ha + self.v_xc
+        return v_en
 
     @staticmethod
     def calc_v_ha(density):
@@ -308,11 +324,11 @@ class Potential:
         # rename xgrid for ease
         xgrid = config.xgrid
 
+        # initialize v_ha
+        v_ha = np.zeros_like(xgrid)
+
         # construct the total (sum over spins) density
         rho = np.sum(density.rho_tot, axis=0)
-
-        # initialize v_hartree potential
-        v_ha = np.zeros((config.grid_params["ngrid"]))
 
         # loop over the x-grid
         # this may be a bottleneck...
@@ -359,16 +375,16 @@ class Potential:
             data = np.column_stack(
                 [
                     config.rgrid,
-                    self.v_en[0],
-                    self.v_ha[0],
-                    self.v_xc[0],
-                    self.v_xc[1],
+                    self.v_en,
+                    self.v_ha,
+                    self.v_xc["xc"][0],
+                    self.v_xc["xc"][0],
                 ]
             )
         else:
             headstr = "r" + 8 * " " + "v_en" + 6 * " " + "v_ha" + 3 * " "
             data = np.column_stack(
-                [config.rgrid, self.v_en[0], self.v_ha[0], self.v_xc[0]]
+                [config.rgrid, self.v_en, self.v_ha, self.v_xc["xc"][0]]
             )
 
         np.savetxt(fname, data, fmt="%8.3e", header=headstr)
@@ -404,54 +420,55 @@ class Energy:
         self._pot = pot
 
         # initialize attributes
-        self._F_tot = None
-        self._E_tot = None
-        self._entropy = None
-        self._E_kin = None
-        self._E_en = None
-        self._E_ha = None
-        self._E_xc = None
+        self._F_tot = 0.0
+        self._E_tot = 0.0
+        self._entropy = {"tot": 0.0, "bound": 0.0, "unbound": 0.0}
+        self._E_kin = {"tot": 0.0, "bound": 0.0, "unbound": 0.0}
+        self._E_en = 0.0
+        self._E_ha = 0.0
+        self._E_xc = {"xc": 0.0, "x": 0.0, "c": 0.0}
 
     @property
     def F_tot(self):
-        if self._F_tot == None:
+        if self._F_tot == 0.0:
             self._F_tot = self.E_tot - config.temp * self.entropy["tot"]
         return self._F_tot
 
     @property
     def E_tot(self):
-        if self._E_tot == None:
+        if self._E_tot == 0.0:
             self._E_tot = self.E_kin["tot"] + self.E_en + self.E_ha + self.E_xc["xc"]
         return self._E_tot
 
     @property
     def entropy(self):
-        if self._entropy == None:
+        if self._entropy["tot"] == 0.0:
             self._entropy = self.calc_entropy(self._orbs)
         return self._entropy
 
     @property
     def E_kin(self):
-        if self._E_kin == None:
+        if self._E_kin["tot"] == 0.0:
             self._E_kin = self.calc_E_kin(self._orbs)
         return self._E_kin
 
     @property
     def E_en(self):
-        if self._E_en == None:
+        if self._E_en == 0.0:
             self._E_en = self.calc_E_en(self._dens, self._pot)
         return self._E_en
 
     @property
     def E_ha(self):
-        if self._E_ha == None:
+        if self._E_ha == 0.0:
             self._E_ha = self.calc_E_ha(self._dens, self._pot)
         return self._E_ha
 
     @property
     def E_xc(self):
-        if self._E_xc == None:
-            self._E_xc = xc.XCEnergy(self._dens, config.xfunc, config.cfunc).E_xc
+        if self._E_xc["xc"] == 0.0:
+            # self._E_xc = xc.XCEnergy(self._dens, config.xfunc, config.cfunc).E_xc
+            self._E_xc = xc.E_xc(self._dens, config.xfunc, config.cfunc)
         return self._E_xc
 
     def calc_E_kin(self, orbs):
@@ -634,7 +651,7 @@ class Energy:
         # compute the integral
         E_en = mathtools.int_sphere(dens_tot * pot.v_en)
 
-        return E_en[0]
+        return E_en
 
     @staticmethod
     def calc_E_ha(dens, pot):
@@ -657,4 +674,4 @@ class Energy:
         # compute the integral
         E_ha = 0.5 * mathtools.int_sphere(dens_tot * pot.v_ha)
 
-        return E_ha[0]
+        return E_ha
