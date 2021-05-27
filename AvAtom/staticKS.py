@@ -57,27 +57,28 @@ class Orbitals:
             raise Exception("lbound has not been initialized")
         return self._lbound
 
-    def SCF_init(self, atom):
+    def compute(self, potential, init=False):
         """
-        Initializes the KS orbitals before an SCF cycle using the bare clmb potential
+        Compute the orbitals and their eigenvalues with the given potential
         """
 
-        # compute the bare coulomb potential
-        # v_en = -atom.at_chrg * np.exp(-config.xgrid)
+        # ensure the potential has the correct dimensions
+        v = np.zeros((config.spindims, config.grid_params["ngrid"]))
 
-        v_en = np.zeros((config.spindims, config.grid_params["ngrid"]))
+        # set v to equal the input potential
+        v[:] = potential
 
-        for i in range(config.spindims):
-            v_en[i] = -config.Z * np.exp(-config.xgrid)
-
-        # solve the KS equations with the bare coulomb potential
-        self._eigfuncs, self._eigvals = numerov.matrix_solve(v_en, config.xgrid)
+        # solve the KS equations
+        self._eigfuncs, self._eigvals = numerov.matrix_solve(v, config.xgrid)
 
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals)
 
-        # initial guess for the chemical potential
-        config.mu = np.zeros((config.spindims))
+        # guess the chemical potential if initializing
+        if init:
+            config.mu = np.zeros((config.spindims))
+
+        return
 
     def occupy(self):
         """
@@ -133,32 +134,37 @@ class Density:
     - N_unbound (np array)     : the number of unbound electrons
     """
 
-    def __init__(self):
+    def __init__(self, orbs):
 
-        self.rho_tot = np.zeros((config.spindims, config.grid_params["ngrid"]))
-        self.rho_bound = np.zeros((config.spindims, config.grid_params["ngrid"]))
-        self.rho_unbound = np.zeros_like(self.rho_bound)
-        self.N_bound = np.zeros((config.spindims))
-        self.N_unbound = np.zeros_like(self.N_bound)
+        self._total = np.zeros((config.spindims, config.grid_params["ngrid"]))
+        self._bound = {
+            "rho": np.zeros((config.spindims, config.grid_params["ngrid"])),
+            "N": np.zeros((config.spindims)),
+        }
+        self._unbound = {
+            "rho": np.zeros((config.spindims, config.grid_params["ngrid"])),
+            "N": np.zeros((config.spindims)),
+        }
 
-    def construct(self, orbs):
-        """
-        Constructs the density
+        self._orbs = orbs
 
-        Inputs:
-        - orbs (object)    : the orbitals object
-        """
+    @property
+    def total(self):
+        if np.all(self._total == 0.0):
+            self._total = self.bound["rho"] + self.unbound["rho"]
+        return self._total
 
-        # construct the bound part of the density
-        self.rho_bound, self.N_bound = self.construct_rho_bound(orbs)
-        # construct the unbound part
-        self.rho_unbound, self.N_unbound = self.construct_rho_unbound()
+    @property
+    def bound(self):
+        if np.all(self._bound["rho"] == 0.0):
+            self._bound = self.construct_rho_bound(self._orbs)
+        return self._bound
 
-        # sum to get the total density
-        self.rho_tot = self.rho_bound + self.rho_unbound
-
-        # check the integral of the density
-        int_dens = mathtools.int_sphere(self.rho_tot)
+    @property
+    def unbound(self):
+        if np.all(self._unbound["rho"]) == 0.0:
+            self._unbound = self.construct_rho_unbound(self._orbs)
+        return self._unbound
 
     @staticmethod
     def construct_rho_bound(orbs):
@@ -169,6 +175,8 @@ class Density:
         - orbs (object)    : the orbitals object
         """
 
+        bound = {}  # initialize empty dict
+
         # first of all construct the density
         # rho_b(r) = \sum_{n,l} (2l+1) f_{nl} |R_{nl}(r)|^2
         # occnums in AvAtom are defined as (2l+1)*f_{nl}
@@ -178,15 +186,15 @@ class Density:
         orbs_R_sq = orbs_R ** 2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
-        rho_bound = np.einsum("ijk,ijkl->il", orbs.occnums, orbs_R_sq)
+        bound["rho"] = np.einsum("ijk,ijkl->il", orbs.occnums, orbs_R_sq)
 
         # compute the number of unbound electrons
-        N_bound = np.sum(orbs.occnums, axis=(1, 2))
+        bound["N"] = np.sum(orbs.occnums, axis=(1, 2))
 
-        return rho_bound, N_bound
+        return bound
 
     @staticmethod
-    def construct_rho_unbound():
+    def construct_rho_unbound(orbs):
         """
         Constructs the bound part of the density
         """
@@ -210,7 +218,9 @@ class Density:
                     N_unbound[i] = 0.0
                     rho_unbound[i] = 0.0
 
-        return rho_unbound, N_unbound
+        unbound = {"rho": rho_unbound, "N": N_unbound}
+
+        return unbound
 
     def write_to_file(self):
         # this routine should probably be moved to a more appropriate place
@@ -236,16 +246,16 @@ class Density:
             data = np.column_stack(
                 [
                     config.rgrid,
-                    self.rho_bound[0],
-                    self.rho_unbound[0],
-                    self.rho_bound[1],
-                    self.rho_unbound[1],
+                    self.bound["rho"][0],
+                    self.unbound["rho"][0],
+                    self.bound["rho"][1],
+                    self.unbound["rho"][1],
                 ]
             )
         else:
             headstr = "r" + 8 * " " + "n_b" + 6 * " " + "n^_ub" + 3 * " "
             data = np.column_stack(
-                [config.rgrid, self.rho_bound[0], self.rho_unbound[0]]
+                [config.rgrid, self.bound["rho"][0], self.unbound["rho"][0]]
             )
 
         np.savetxt(fname, data, fmt="%8.3e", header=headstr)
@@ -262,37 +272,37 @@ class Potential:
 
     def __init__(self, density):
 
-        self._v_s = np.zeros_like(density.rho_tot)
+        self._v_s = np.zeros_like(density.total)
         self._v_en = np.zeros((config.grid_params["ngrid"]))
         self._v_ha = np.zeros((config.grid_params["ngrid"]))
         self._v_xc = {
-            "x": np.zeros_like(density.rho_tot),
-            "c": np.zeros_like(density.rho_tot),
-            "xc": np.zeros_like(density.rho_tot),
+            "x": np.zeros_like(density.total),
+            "c": np.zeros_like(density.total),
+            "xc": np.zeros_like(density.total),
         }
-        self._density = density.rho_tot
+        self._density = density.total
 
     @property
     def v_s(self):
-        if self._v_s.all() == 0.0:
+        if np.all(self._v_s == 0.0):
             self._v_s = self.v_en + self.v_ha + self.v_xc["xc"]
         return self._v_s
 
     @property
     def v_en(self):
-        if self._v_en.all() == 0.0:
+        if np.all(self._v_en == 0.0):
             self._v_en = self.calc_v_en()
         return self._v_en
 
     @property
     def v_ha(self):
-        if self._v_ha.all() == 0.0:
+        if np.all(self._v_ha == 0.0):
             self._v_ha = self.calc_v_ha(self._density)
         return self._v_ha
 
     @property
     def v_xc(self):
-        if self._v_xc["xc"].all() == 0.0:
+        if np.all(self._v_xc["xc"] == 0.0):
             self._v_xc = xc.v_xc(self._density, config.xfunc, config.cfunc)
         return self._v_xc
 
@@ -416,7 +426,7 @@ class Energy:
 
         # inputs
         self._orbs = orbs
-        self._dens = dens.rho_tot
+        self._dens = dens.total
 
         # initialize attributes
         self._F_tot = 0.0
