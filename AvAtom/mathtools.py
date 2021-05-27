@@ -139,17 +139,19 @@ def chem_pot(orbs):
     # so far only the ideal treatment for unbound electrons is implemented
     if config.unbound == "ideal":
         for i in range(config.spindims):
-            try:
-                soln = optimize.root(
+            if config.nele[i] != 0:
+                soln = optimize.root_scalar(
                     f_root_id,
-                    mu0[i],
+                    x0=mu0[i],
                     args=(orbs.eigvals[i], orbs.lbound[i], config.nele[i]),
-                    method="broyden1",
+                    method="brentq",
+                    bracket=[-10, 10],
+                    options={"maxiter": 100},
                 )
-                mu[i] = soln.x
-            # this handles the case when there are no electrons in one spin channel
-            except TypeError:
-                mu[i] = -np.inf
+                mu[i] = soln.root
+            # in case there are no electrons in one spin channel
+            else:
+                mu[i] = 1000
 
     return mu
 
