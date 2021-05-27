@@ -13,11 +13,11 @@ unbound = "ideal"  # treatment for unbound electrons
 
 
 # numerical grid for static calculations
-grid_params = {"ngrid": 1000, "x0": -10}
+grid_params = {"ngrid": 1000, "x0": -12}
 # convergence parameters for static calculations
-conv_params = {"econv": 1e-6, "nconv": 1e-6, "numconv": 1e-6}
+conv_params = {"econv": 1e-6, "nconv": 1e-6, "vconv": 1e-4}
 # scf parameters
-scf_params = {"maxscf": 50, "mixfrac": 0.3}
+scf_params = {"maxscf": 30, "mixfrac": 0.5}
 
 # variables
 nmax = 6  # maximum quantum number n of eigenfunctions
