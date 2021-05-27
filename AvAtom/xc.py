@@ -98,7 +98,7 @@ def E_xc(density, xfunc, cfunc):
     _E_xc = {}
 
     # get the total density
-    dens_tot = np.sum(density.rho_tot, axis=0)
+    dens_tot = np.sum(density, axis=0)
 
     # compute the exchange energy
     ex_libxc = calc_xc(density, xfunc, "e_xc")
@@ -121,9 +121,15 @@ def calc_xc(density, xcfunc, xctype):
     by xc type
     """
 
+    # determine the dimensions of the xc_arr based on xctype
+    if xctype == "e_xc":
+        xc_arr = np.zeros((config.grid_params["ngrid"]))
+    elif xctype == "v_xc":
+        xc_arr = np.zeros_like(density)
+
     # case where there is no xc func
     if xcfunc == 0:
-        xc_arr = np.zeros_like(density.rho_tot)
+        xc_arr = 0.0
 
     # special case in which xc = -hartree
     elif xcfunc == -1:
@@ -132,7 +138,6 @@ def calc_xc(density, xcfunc, xctype):
         import staticKS
 
         if xctype == "v_xc":
-            xc_arr = np.zeros_like(density.rho_tot)
             xc_arr[:] = -staticKS.Potential.calc_v_ha(density)
         elif xctype == "e_xc":
             xc_arr = -0.5 * staticKS.Potential.calc_v_ha(density)
@@ -144,7 +149,7 @@ def calc_xc(density, xcfunc, xctype):
             # messy transformation for libxc - why isn't tranpose working??
             rho_libxc = np.zeros((config.grid_params["ngrid"], config.spindims))
             for i in range(config.spindims):
-                rho_libxc[:, i] = density.rho_tot[i, :]
+                rho_libxc[:, i] = density[i, :]
             inp = {"rho": rho_libxc}
             # compute the xc potential and energy density
             out = xcfunc.compute(inp)

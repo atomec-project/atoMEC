@@ -270,7 +270,7 @@ class Potential:
             "c": np.zeros_like(density.rho_tot),
             "xc": np.zeros_like(density.rho_tot),
         }
-        self._density = density
+        self._density = density.rho_tot
 
     @property
     def v_s(self):
@@ -318,7 +318,7 @@ class Potential:
                          - \int_x^log(r_s) dx' n(x') exp(2x') }
 
         Inputs:
-        - density (object)  : density object
+        - density (np array)  : density
         """
 
         # rename xgrid for ease
@@ -328,7 +328,7 @@ class Potential:
         v_ha = np.zeros_like(xgrid)
 
         # construct the total (sum over spins) density
-        rho = np.sum(density.rho_tot, axis=0)
+        rho = np.sum(density, axis=0)
 
         # loop over the x-grid
         # this may be a bottleneck...
@@ -412,12 +412,11 @@ class Energy:
     - pot (object)           : the potential object
     """
 
-    def __init__(self, orbs, dens, pot):
+    def __init__(self, orbs, dens):
 
         # inputs
         self._orbs = orbs
-        self._dens = dens
-        self._pot = pot
+        self._dens = dens.rho_tot
 
         # initialize attributes
         self._F_tot = 0.0
@@ -455,13 +454,13 @@ class Energy:
     @property
     def E_en(self):
         if self._E_en == 0.0:
-            self._E_en = self.calc_E_en(self._dens, self._pot)
+            self._E_en = self.calc_E_en(self._dens)
         return self._E_en
 
     @property
     def E_ha(self):
         if self._E_ha == 0.0:
-            self._E_ha = self.calc_E_ha(self._dens, self._pot)
+            self._E_ha = self.calc_E_ha(self._dens)
         return self._E_ha
 
     @property
@@ -635,26 +634,26 @@ class Energy:
         return S_unbound
 
     @staticmethod
-    def calc_E_en(dens, pot):
+    def calc_E_en(density):
         """
         Computes the electron-nuclear energy
         E_en = \int dr v_en(r) n(r)
 
         Inputs:
-        - dens (object)      : the density object
-        - pot  (object)      : the potential object
+        - density (np array) : density
         """
 
         # sum the density over the spin axes to get the total density
-        dens_tot = np.sum(dens.rho_tot, axis=0)
+        dens_tot = np.sum(density, axis=0)
 
         # compute the integral
-        E_en = mathtools.int_sphere(dens_tot * pot.v_en)
+        v_en = Potential.calc_v_en()
+        E_en = mathtools.int_sphere(dens_tot * v_en)
 
         return E_en
 
     @staticmethod
-    def calc_E_ha(dens, pot):
+    def calc_E_ha(density):
         """
         Computes the Hartree energy
         E_ha = 1/2 \int dr \int dr' n(r)n(r')/|r-r'|
@@ -662,16 +661,17 @@ class Energy:
         E_ha = 1/2 /int dr n(r) v_ha(r)
 
         Inputs:
-        - dens (object)      : the density object
-        - pot  (object)      : the potential object
+        - density (np array)    : the density object
+        - pot  (object)         : the potential object
         Returns:
         - E_ha (float)       : the hartree energy
         """
 
         # sum density over spins to get total density
-        dens_tot = np.sum(dens.rho_tot, axis=0)
+        dens_tot = np.sum(density, axis=0)
 
         # compute the integral
-        E_ha = 0.5 * mathtools.int_sphere(dens_tot * pot.v_ha)
+        v_ha = Potential.calc_v_ha(density)
+        E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha)
 
         return E_ha
