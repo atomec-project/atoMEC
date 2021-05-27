@@ -12,6 +12,7 @@ import config
 import staticKS
 import gridmod
 import xc
+import convergence
 
 
 class Atom:
@@ -139,61 +140,82 @@ class Atom:
 
         # initialize orbitals
         orbs = staticKS.Orbitals()
-        orbs.SCF_init(self)
+        # use coulomb potential as initial guess
+        v_init = staticKS.Potential.calc_v_en()
+        orbs.compute(v_init, init=True)
 
         # occupy orbitals
         orbs.occupy()
-        print(orbs.occnums)
-
-        # construct density
-        rho = staticKS.Density()
-        rho.construct(orbs)
-
-        print(rho.N_bound, rho.N_unbound)
-
-        # construct potential
-        pot = staticKS.Potential(rho)
-        pot.write_to_file()
-
-        # compute energies
-        energy = staticKS.Energy(orbs, rho, pot)
-        E_free = energy.F_tot
-        print("free energy = ", E_free)
-        print("total energy = ", energy.E_tot)
-        # print(energy.entropy)
-        # print(energy.E_kin)
-        # print(energy.E_en)
-        print("hartree energy = ", energy.E_ha)
-        print("xc energy = ", energy.E_xc)
 
         # write the initial spiel
         # scf_string = self.print_scf_init()
 
-        # for i in range(scf_params["maxscf"]):
+        # initialize the convergence object
+        conv = convergence.SCF()
 
-        #     # update the orbitals with the KS potential
-        #     orbs.update(pot)
-        #     orbs.occupy
+        for iscf in range(config.scf_params["maxscf"]):
 
-        #     # construct density
-        #     rho.construct(orbs)
+            # construct density
+            rho = staticKS.Density(orbs)
 
-        #     # construct potential
-        #     pot.construct(rho)
+            # construct potential
+            pot = staticKS.Potential(rho)
 
-        #     # mix potential
-        #     pot.mix()
+            # compute energies
+            energy = staticKS.Energy(orbs, rho)
+            E_free = energy.F_tot
 
-        #     # compute the energy
-        #     energy.compute(orbs, rho, pot)
+            # mix potential
+            if iscf > 1:
+                alpha = config.scf_params["mixfrac"]
+                v_s = alpha * pot.v_s + (1 - alpha) * v_s_old
+            else:
+                v_s = pot.v_s
 
-        #     # test convergence
-        #     conv_vals = convergence.SCF_check(energy, rho, pot)
+            # update the orbitals with the KS potential
+            orbs.compute(v_s)
+            orbs.occupy()
 
-        #     scf_string = self.print_scf_cycle(conv_vals)
-        #     print(scf_string)
+            # update old potential
+            v_s_old = v_s
 
-        #     if conv_vals["complete"]:
-        #         break
+            # test convergence
+            conv_vals = conv.check_conv(E_free, v_s, rho.total, iscf)
 
-        # scf_string = self.print_scf_complete(conv_vals)
+            #     scf_string = self.print_scf_cycle(conv_vals)
+            #     print(scf_string)
+
+            if conv_vals["complete"]:
+                break
+
+            print(
+                iscf,
+                E_free,
+                conv_vals["dE"],
+                np.max(conv_vals["dpot"]),
+                np.max(conv_vals["drho"]),
+            )
+
+
+#     # construct density
+#     rho.construct(orbs)
+
+#     # construct potential
+#     pot.construct(rho)
+
+#     # mix potential
+#     pot.mix()
+
+#     # compute the energy
+#     energy.compute(orbs, rho, pot)
+
+#     # test convergence
+#     conv_vals = convergence.SCF_check(energy, rho, pot)
+
+#     scf_string = self.print_scf_cycle(conv_vals)
+#     print(scf_string)
+
+#     if conv_vals["complete"]:
+#         break
+
+# scf_string = self.print_scf_complete(conv_vals)
