@@ -15,6 +15,7 @@ from math import pi
 import constants
 import unitconv
 import xc
+import config
 
 
 class Atom:
@@ -37,13 +38,22 @@ class Atom:
             except ele_chk.NoResultFound:
                 raise InputError.species_error("invalid element")
 
-    def check_temp(self, temp):
+    def check_temp(self, temp, units_temp):
         """
         Checks the temperature is a float within a sensible range
         """
-        if isinstance(temp, (float, int)) == False:
+        units_accepted = ["ha", "ev", "k"]
+        if units_temp.lower() not in units_accepted:
+            raise InputError.temp_error("units of temperature are not recognised")
+
+        elif isinstance(temp, (float, int)) == False:
             raise InputError.temp_error("temperature is not a number")
         else:
+            # convert internal temperature to hartree
+            if units_temp.lower() == "ev":
+                temp = unitconv.ev_to_ha * temp
+            elif units_temp.lower() == "k":
+                temp = unitconv.K_to_ha * temp
             # check if temperature is within some reasonable limits
             if temp < 0:
                 raise InputError.temp_error("temperature is negative")
@@ -65,7 +75,7 @@ class Atom:
         else:
             return charge
 
-    def check_density(self, atom, radius, density):
+    def check_density(self, atom, radius, density, units_radius, units_density):
         """
         Checks that the density or radius is specified
 
@@ -74,11 +84,21 @@ class Atom:
         - density (float)   : material density
         - radius (float)    : voronoi sphere radius
         """
+
+        radius_units_accepted = ["bohr", "angstrom", "ang"]
+        density_units_accepted = ["g/cm3", "gcm3"]
+
         if isinstance(density, (float, int)) == False:
             raise InputError.density_error("Density is not a number")
         elif isinstance(radius, (float, int)) == False:
             raise InputError.density_error("Radius is not a number")
+        elif units_radius.lower() not in radius_units_accepted:
+            raise InputError.density_error("Radius units not recognised")
+        elif units_density.lower() not in density_units_accepted:
+            raise InputError.density_error("Density units not recognised")
         else:
+            if units_radius == "angstrom" or units_radius == "ang":
+                radius = unitconv.angstrom_to_bohr * radius
             if density == -1 and radius != -1:
                 if radius < 0.1:
                     raise InputError.density_error(
@@ -114,7 +134,7 @@ class Atom:
         """
 
         # radius in cm
-        rad_cm = unitconv.bohr_to_cm(radius)
+        rad_cm = radius / unitconv.cm_to_bohr
         # volume in cm
         vol_cm = (4.0 * pi * rad_cm ** 3) / 3.0
         # atomic mass in g
@@ -135,7 +155,7 @@ class Atom:
         vol_cm = mass_g / density
         rad_cm = (3.0 * vol_cm / (4.0 * pi)) ** (1.0 / 3.0)
         # convert to a.u.
-        radius = unitconv.cm_to_bohr(rad_cm)
+        radius = rad_cm * unitconv.cm_to_bohr
 
         return radius
 
@@ -176,10 +196,14 @@ class Atom:
         and total electron number
         """
 
-        nele_up = (nele + spinmag) / 2
-        nele_dw = (nele - spinmag) / 2
+        if config.spindims == 1:
+            nele = np.array([nele], dtype=int)
+        elif config.spindims == 2:
+            nele_up = (nele + spinmag) / 2
+            nele_dw = (nele - spinmag) / 2
+            nele = np.array([nele_up, nele_dw], dtype=int)
 
-        return np.array([nele_up, nele_dw], dtype=int)
+        return nele
 
 
 class ISModel:
