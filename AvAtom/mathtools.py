@@ -4,6 +4,7 @@ Low-level module containing various mathematical functions
 
 # standard libraries
 from math import sqrt, pi, exp
+import warnings
 
 # external libraries
 import numpy as np
@@ -92,7 +93,9 @@ def fermi_dirac(eps, mu, beta, n=0):
     """
 
     # dfn the exponential function
-    fn_exp = np.minimum(np.exp(beta * (eps - mu)), 1e12)
+    # ignore warnings here
+    with np.errstate(over="ignore"):
+        fn_exp = np.minimum(np.exp(beta * (eps - mu)), 1e12)
 
     # fermi_dirac dist
     f_fd = (eps) ** (n / 2.0) / (1 + fn_exp)
@@ -114,9 +117,12 @@ def fd_int_complete(mu, beta, n):
     """
 
     # use scipy quad integration routine
-    limup = mu + 15
+    limup = np.inf
 
-    I_n, err = integrate.quad(fermi_dirac, 0, limup, args=(mu, beta, n))
+    # ignore integration warnings (omnipresent because of inf upper limit)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        I_n, err = integrate.quad(fermi_dirac, 0, limup, args=(mu, beta, n))
 
     return I_n
 
@@ -168,7 +174,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation
 
-    prefac = config.sph_vol / (sqrt(2) * pi ** 2)
+    prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
     contrib_unbound = prefac * fd_int_complete(mu, config.beta, 1.0)
 
     # return the function whose roots are to be found
