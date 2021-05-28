@@ -15,7 +15,7 @@ unbound = "ideal"  # treatment for unbound electrons
 # numerical grid for static calculations
 grid_params = {"ngrid": 1000, "x0": -12}
 # convergence parameters for static calculations
-conv_params = {"econv": 1e-6, "nconv": 1e-6, "vconv": 1e-4}
+conv_params = {"econv": 1e-5, "nconv": 1e-3, "vconv": 1e-3}
 # scf parameters
 scf_params = {"maxscf": 30, "mixfrac": 0.5}
 
