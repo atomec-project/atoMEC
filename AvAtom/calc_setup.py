@@ -27,85 +27,109 @@ class Atom:
     - density (float)   : material density (in g cm^-3)
     Optional inputs:
     - charge (int)      : net charge
-    - spinmag (int>0)   : spin magnetization (default -1 assigns spin automatically)
     """
 
-    def __init__(self, species, temp, radius=-1, density=-1, charge=0, spinmag=-1):
-
-        print("Initializing AvAtom calculation")
+    def __init__(
+        self,
+        species,
+        temp,
+        radius=-1,
+        density=-1,
+        charge=0,
+        units_temp="ha",
+        units_radius="bohr",
+        units_density="g/cm3",
+    ):
 
         # Input variables
         self.species = check_inputs.Atom().check_species(species)
         # self.density = check_inputs.Atom.check_density(density)
-        self.temp = check_inputs.Atom().check_temp(temp)
+        self.temp = check_inputs.Atom().check_temp(temp, units_temp)
         self.charge = check_inputs.Atom().check_charge(charge)
 
         # Fundamental atomic properties
         self.at_chrg = self.species.atomic_number  # atomic number
         config.Z = self.at_chrg
         self.at_mass = self.species.atomic_weight  # atomic mass
-        nele_tot = self.at_chrg + self.charge  # total electron number
+        self.nele = self.at_chrg + self.charge  # total electron number
 
         # Check the radius and density
         self.radius, self.density = check_inputs.Atom().check_density(
-            self, radius, density
+            self,
+            radius,
+            density,
+            units_radius,
+            units_density,
         )
-
-        # spin magnetization has to be compatible with total electron number
-        self.spinmag = check_inputs.Atom().check_spinmag(spinmag, nele_tot)
-
-        # calculate electron number in each spin channel
-        self.nele = check_inputs.Atom().calc_nele(self.spinmag, nele_tot)
-        config.nele = self.nele
 
         config.r_s = self.radius
         self.volume = (4.0 * pi * self.radius ** 3.0) / 3.0
         config.sph_vol = self.volume
 
-        # compute inverse temperature
+        # set temperature and inverse temperature
         config.temp = self.temp
         config.beta = 1.0 / self.temp
 
-    class ISModel:
-        def __init__(
-            self,
-            xfunc=config.xfunc,
-            cfunc=config.cfunc,
-            bc=config.bc,
-            spinpol=config.spinpol,
-            unbound=config.unbound,
-        ):
-            """
-            Defines the parameters used for an energy calculation.
-            These are choices for the theoretical model, not numerical parameters for implementation
 
-            Inputs (all optional):
-            - xfunc    (str)   : code for libxc exchange functional     (use "None" for no exchange func)
-            - cfunc    (str)   : code for libxc correlation functional  (use "None" for no correlation func)
-            - bc       (int)   : choice of boundary condition (1 or 2)
-            - spinpol  (bool)  : spin-polarized calculation
-            - unbound  (str)   : treatment of unbound electrons
-            """
+class ISModel:
+    def __init__(
+        self,
+        atom,
+        xfunc=config.xfunc,
+        cfunc=config.cfunc,
+        bc=config.bc,
+        spinpol=config.spinpol,
+        spinmag=-1,
+        unbound=config.unbound,
+    ):
+        """
+        Defines the parameters used for an energy calculation.
+        These are choices for the theoretical model, not numerical parameters for implementation
 
-            # Input variables
+        Inputs (all optional):
+        - xfunc    (str)   : code for libxc exchange functional     (use "None" for no exchange func)
+        - cfunc    (str)   : code for libxc correlation functional  (use "None" for no correlation func)
+        - bc       (int)   : choice of boundary condition (1 or 2)
+        - spinpol  (bool)  : spin-polarized calculation
+        - spinmag (int)    : spin-magentization
+        - unbound  (str)   : treatment of unbound electrons
+        """
 
-            # check the xc functionals are ok
-            self.spinpol = spinpol
-            config.spinpol = self.spinpol
+        # Input variables
 
-            self.xfunc = xfunc
-            self.cfunc = cfunc
-            config.xfunc, config.cfunc = check_inputs.ISModel().check_xc(xfunc, cfunc)
+        # check the spin polarization
+        self.spinpol = spinpol
+        config.spinpol = self.spinpol
 
-            self.bc = bc
-            config.bc = self.bc
+        # set the spinpol param (leading dimension for density, orbitals etc)
+        if config.spinpol == True:
+            config.spindims = 2
+        else:
+            config.spindims = 1
 
-            if config.spinpol == True:
-                config.spindims = 2
-            else:
-                config.spindims = 1
-            self.unbound = unbound
-            config.unbound = self.unbound
+        # spin magnetization has to be compatible with total electron number
+        self.spinmag = check_inputs.Atom().check_spinmag(spinmag, atom.nele)
+
+        # calculate electron number in (each) spin channel
+        self.nele = check_inputs.Atom().calc_nele(self.spinmag, atom.nele)
+        config.nele = self.nele
+
+        print("nele = ", config.nele)
+
+        # check the xc functionals
+        self.xfunc = xfunc
+        self.cfunc = cfunc
+        config.xfunc, config.cfunc = check_inputs.ISModel().check_xc(xfunc, cfunc)
+
+        self.bc = bc
+        config.bc = self.bc
+
+        if config.spinpol == True:
+            config.spindims = 2
+        else:
+            config.spindims = 1
+        self.unbound = unbound
+        config.unbound = self.unbound
 
     def CalcEnergy(
         self,
@@ -195,6 +219,19 @@ class Atom:
                 np.max(conv_vals["dpot"]),
                 np.max(conv_vals["drho"]),
             )
+
+        print(orbs.eigvals)
+        print(orbs.occnums)
+
+        print(rho.unbound["N"])
+
+        print("kinetic energy = ", energy.E_kin)
+        print("electron-nuclear energy = ", energy.E_en)
+        print("Hartree energy = ", energy.E_ha)
+        print("xc energy = ", energy.E_xc)
+        print("entropy = ", energy.entropy)
+
+        rho.write_to_file()
 
 
 #     # construct density
