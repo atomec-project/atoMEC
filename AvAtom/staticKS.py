@@ -119,7 +119,9 @@ class Orbitals:
         lbound_mat = np.zeros_like(eigvals)
 
         for l in range(config.lmax):
-            lbound_mat[:, l] = np.where(eigvals[:, l] < 0, 2 * l + 1.0, 0.0)
+            lbound_mat[:, l] = (2.0 / config.spindims) * np.where(
+                eigvals[:, l] < 0, 2 * l + 1.0, 0.0
+            )
 
         return lbound_mat
 
@@ -208,7 +210,7 @@ class Density:
             # unbound density is constant
             for i in range(config.spindims):
                 if config.nele[i] > 1e-5:
-                    prefac = 1.0 / (sqrt(2) * pi ** 2)
+                    prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi ** 2)
                     n_ub = prefac * mathtools.fd_int_complete(
                         config.mu[i], config.beta, 1.0
                     )
@@ -597,7 +599,7 @@ class Energy:
         # we first need to map them back to their 'pure' form f_{nl}
         lbound_inv = np.zeros_like(orbs.lbound)
         for l in range(config.lmax):
-            lbound_inv[:, l] = np.where(
+            lbound_inv[:, l] = config.spindims * np.where(
                 orbs.eigvals[:, l] < 0, 1.0 / (2 * l + 1.0), 0.0
             )
 
@@ -614,7 +616,7 @@ class Energy:
         g_nls = orbs.lbound * (term1 + term2)
 
         # sum over all quantum numbers to get the total entropy
-        S_bound = np.sum(g_nls)
+        S_bound = -np.sum(g_nls)
 
         return S_bound
 
@@ -634,7 +636,10 @@ class Energy:
             S_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 if config.nele[i] > 1e-5:
-                    prefac = config.sph_vol / (sqrt(2) * pi ** 2)
+                    prefac = (
+                        (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
+                    )
+
                     S_unbound -= prefac * mathtools.fd_int_complete(
                         config.mu[i], config.beta, 1.0
                     )
