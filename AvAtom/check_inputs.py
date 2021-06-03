@@ -211,7 +211,7 @@ class ISModel:
     Checks the inputs for the IS model class
     """
 
-    def check_xc(self, x_func, c_func):
+    def check_xc(x_func, c_func):
         """
         checks the exchange and correlation functionals are defined by libxc
         """
@@ -232,29 +232,107 @@ class ISModel:
         elif err_x == 2:
             raise InputError.xc_error(
                 "x functional is not a valid name or id.\n \
-Please choose from the valid inputs listed here: \n\
-https://www.tddft.org/programs/libxc/functionals/"
+                Please choose from the valid inputs listed here: \n\
+                https://www.tddft.org/programs/libxc/functionals/"
             )
         elif err_c == 2:
             raise InputError.xc_error(
                 "c functional is not a valid name or id. \n\
-Please choose from the valid inputs listed here: \n\
-https://www.tddft.org/programs/libxc/functionals/"
+                Please choose from the valid inputs listed here: \n\
+                https://www.tddft.org/programs/libxc/functionals/"
             )
         elif err_x == 3:
             raise InputError.xc_error(
                 "This family of functionals is not yet supported by AvAtom. \n\
-Supported families so far are: "
+                Supported families so far are: "
                 + " ".join(names_supp)
             )
         elif err_c == 3:
             raise InputError.xc_error(
                 "This family of functionals is not yet supported by AvAtom. \n\
-Supported families so far are: "
+                Supported families so far are: "
                 + " ".join(names_supp)
             )
 
         return x_func, c_func
+
+    def check_unbound(unbound):
+        """
+        Checks the input for the unbound electrons
+
+        Parameters
+        ----------
+        unbound : str
+            defines the treatment of the unbound electrons
+
+        Raises
+        ------
+            InputError
+
+        Returns
+        -------
+        str:
+            description of unbound electron treatment
+        """
+
+        # list all possible treatments for unbound electrons
+        unbound_permitted = ["ideal"]
+
+        # convert unbound to all lowercase
+        unbound.lower()
+
+        if not isinstance(unbound, str):
+            raise InputError.unbound_error(
+                "Unbound electron description is not a string"
+            )
+        else:
+            if unbound not in unbound_permitted:
+                err_msg = (
+                    "Treatment of unbound electrons not recognised. \n \
+                Allowed treatments are: "
+                    + [ub for ub in unbound_permitted]
+                )
+                raise InputError.unbound_error(err_msg)
+
+        return unbound
+
+    def check_bc(bc):
+        """
+        Checks the boundary condition is permitted
+
+        Parameters
+        ----------
+        bc : str
+            defines the boundary condition used to solve KS eqns
+
+        Raises
+        ------
+            InputError
+
+        Returns
+        -------
+        str:
+            boundary condition used to solve KS eqns
+        """
+
+        # list permitted boundary conditions
+        bcs_permitted = ["dirichlet", "neumann"]
+
+        # convert to lowercase
+        bc.lower()
+
+        if not isinstance("bc", str):
+            raise InputError.bc_error("Boundary condition is not a string")
+        else:
+            if bc not in bcs_permitted:
+                err_msg = (
+                    "Boundary condition is not recognised. \n \
+                Allowed boundary conditions are: "
+                    + [b for b in bcs_permitted]
+                )
+                raise InputError.bc_error(err_msg)
+
+        return bc
 
 
 class InputError(Exception):
@@ -317,6 +395,40 @@ class InputError(Exception):
         """
 
         print("Error in xc input: " + err_msg)
+        sys.exit("Exiting AvAtom")
+
+    def unbound_error(err_msg):
+        """
+        Raises exception if unbound not str or in permitted values
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Raises
+        -------
+            InputError
+        """
+
+        print("Error in unbound electron input: " + err_msg)
+        sys.exit("Exiting AvAtom")
+
+    def bc_error(err_msg):
+        """
+        Raises exception if unbound not str or in permitted values
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Raises
+        -------
+            InputError
+        """
+
+        print("Error in boundary condition input: " + err_msg)
         sys.exit("Exiting AvAtom")
 
 
