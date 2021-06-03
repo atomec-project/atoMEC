@@ -69,6 +69,9 @@ class Atom:
         units_density="g/cm3",
     ):
 
+        # print the initial spiel
+        print("\n" + "Welcome to AvAtom! \n")
+
         # Input variables
         self.species = check_inputs.Atom().check_species(species)
         self.temp = check_inputs.Atom().check_temp(temp, units_temp)
