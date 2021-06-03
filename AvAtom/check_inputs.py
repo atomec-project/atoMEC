@@ -58,10 +58,10 @@ class Atom:
             if temp < 0:
                 raise InputError.temp_error("temperature is negative")
             if temp < 0.01:
-                InputWarning.temp_warning("low")
+                print(InputWarning.temp_warning("low"))
                 return temp
-            elif temp > 100.0:
-                InputWarning.temp_warning("high")
+            elif temp > 3.5:
+                print(InputWarning.temp_warning("high"))
                 return temp
             else:
                 return temp
@@ -335,6 +335,97 @@ class ISModel:
         return bc
 
 
+class EnergyCalcs:
+    @staticmethod
+    def check_grid_params(grid_params):
+        """
+        Checks grid parameters are reasonable, or assigns if empty
+
+        Parameters
+        ----------
+        grid_params : dict
+            Can contain the keys "ngrid" (int, number of grid points)
+            and "x0" (float, LHS grid point for log grid)
+
+        Returns
+        -------
+        dict
+          {'ngrid'    (int)    : number of grid points
+           'x0'       (float)  : LHS grid point takes form r0=exp(x0); x0 can be specified }
+        """
+
+        # First assign the keys ngrid and x0 if they are not given
+        try:
+            ngrid = grid_params["ngrid"]
+        except KeyError:
+            ngrid = config.grid_params["ngrid"]
+
+        try:
+            x0 = grid_params["x0"]
+        except KeyError:
+            x0 = config.grid_params["x0"]
+
+        # check that ngrid is an integer
+        if not isinstance(ngrid, int):
+            raise InputError.grid_error("Number of grid points not an integer!")
+        # check that ngrid is a positive number
+        if ngrid < 0:
+            raise InputError.grid_error("Number of grid points must be positive")
+        elif ngrid < 500:
+            print(InputWarning.ngrid_warning("low", "inaccurate"))
+        elif ngrid > 5000:
+            print(InputWarning.ngrid_warning("high", "expensive"))
+
+        # check that x0 is reasonable
+        if x0 > -3:
+            raise InputError.grid_error(
+                "x0 is too high, calculation will likely not converge"
+            )
+
+        grid_params = {"ngrid": ngrid, "x0": x0}
+
+        return grid_params
+
+    @staticmethod
+    def check_conv_params(input_params):
+        """
+        Checks convergence parameters are reasonable, or assigns if empty
+
+        Parameters
+        ----------
+        input_params : dict of floats
+            Can contain the keys "econv", "nconv" and "vconv", for energy,
+            density and potential convergence parameters
+
+        Returns
+        -------
+        dict
+          {'econv'    (float)    : energy convergence
+           'nconv'    (float)    : density convergence
+           'vconv'    (float)    : potential convergence}
+        """
+
+        conv_params = {}
+        # loop through the convergence parameters
+        for conv in ["econv", "nconv", "vconv"]:
+            # assign value if not given
+            try:
+                x_conv = input_params[conv]
+            except KeyError:
+                x_conv = config.conv_params[conv]
+
+            # check float
+            if not isinstance(x_conv, float):
+                raise InputError.conv_error(conv + " is not a float!")
+            # check > 0
+            elif x_conv < 0:
+                raise InputError.conv_error(conv + " cannot be negative")
+
+            conv_params[conv] = x_conv
+
+        return conv_params
+
+
 class InputError(Exception):
     """
     Handles errors in inputs
@@ -431,6 +522,40 @@ class InputError(Exception):
         print("Error in boundary condition input: " + err_msg)
         sys.exit("Exiting AvAtom")
 
+    def grid_error(err_msg):
+        """
+        Raises exception if error in grid inputs
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Raises
+        -------
+            InputError
+        """
+
+        print("Error in grid inputs: " + err_msg)
+        sys.exit("Exiting AvAtom")
+
+    def conv_error(err_msg):
+        """
+        Raises exception if error in convergence inputs
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Raises
+        -------
+            InputError
+        """
+
+        print("Error in convergence inputs: " + err_msg)
+        sys.exit("Exiting AvAtom")
+
 
 class InputWarning:
     """
@@ -445,9 +570,24 @@ class InputWarning:
         - temp (float)    : temperature in units of eV
         - err (str)       : "high" or "low"
         """
-        print(
+        warning = (
             "Warning: this input temperature is very "
             + err
-            + ". Proceeding anyway, but results may not be accurate."
+            + ". Proceeding anyway, but results may not be accurate. \n"
+            + "Normal temperature range for AvAtom is 0.01 -- 100 eV \n"
         )
-        print("Normal temperature range for AvAtom is 0.01 -- 100 eV ")
+        return warning
+
+    def ngrid_warning(err1, err2):
+        """
+        Warning if grid params outside of sensible range
+        """
+        warning = (
+            "Warning: number of grid points is very "
+            + err1
+            + ". Proceeding anyway, but results may be "
+            + err2
+            + "\n"
+            + "Suggested grid range is between 1000-5000 but should be tested wrt convergence \n"
+        )
+        return warning
