@@ -13,6 +13,7 @@ import staticKS
 import gridmod
 import xc
 import convergence
+import writeoutput
 
 
 class ISModel:
@@ -60,6 +61,21 @@ class ISModel:
         unbound : str, optional
             The way in which the unbound electron density is computed
             Default : "ideal"
+
+        Attributes
+        ----------
+        xfunc : str
+            The (short-hand) name of the exchange functional
+        cfunc : str
+            The (short-hand) name of the correlation functional
+        bc : str
+            The boundary condition
+        spinpol : bool
+            Whether calculation will be spin-polarized
+        nele : numpy array
+            Number of electrons in each spin channel (total if spinpol=False)
+        unbound : str
+            The treatment of unbound electrons
         """
 
         # Input variables
@@ -95,35 +111,46 @@ class ISModel:
         self.unbound = config.unbound
 
         # write output information
-        # output_str = writeoutput.ISModel().write_init(self)
+        output_str = writeoutput.write_ISModel_data(self)
+        print(output_str)
 
-    def CalcEnergy(
-        self,
-        grid_params=config.grid_params,
-        conv_params=config.conv_params,
-        scf_params=config.scf_params,
-    ):
+    def CalcEnergy(self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}):
 
         """
         Runs a self-consistent calculation to minimize the Kohn--Sham free energy functional
 
-        Inputs (optional):
-        - grid_params (dict)   : dictionary of grid parameters as follows
-          {'ngrid'    (int)    : number of grid points
-           'x0'       (float)  : LHS grid point takes form r0=exp(x0); x0 can be specified }
-        - conv_params (dict)   : dictionary of convergence parameters as follows
-          {'econv'    (float)  : convergence for total energy
-           'nconv'    (float)  : convergence for density
-           'numconv'  (float)  : convergence for electron number}
-        - scf_params  (dict)   : dictionary for scf cycle parameters as follows
-          {'maxscf'   (int)    : maximum number of scf cycles
-           'mixfrac'  (float)  : density mixing fraction}
+        Parameters
+        ----------
+        nmax : int
+            maximum no. eigenvalues to compute for each value of angular momentum
+        lmax : int
+            maximum no. angular momentum eigenfunctions to consider
+        grid_params : dict, optional
+            dictionary of grid parameters as follows
+            {'ngrid'    (int)    : number of grid points
+             'x0'       (float)  : LHS grid point takes form r0=exp(x0); x0 can be specified }
+        conv_params dict, optional
+            dictionary of convergence parameters as follows
+            {'econv'    (float)  : convergence for total energy
+             'nconv'    (float)  : convergence for density
+             'vconv'  (float)  : convergence for electron number}
+        scf_params : dict, optional
+            dictionary for scf cycle parameters as follows
+            {'maxscf'   (int)    : maximum number of scf cycles
+             'mixfrac'  (float)  : density mixing fraction}
+
+        Returns
+        -------
+        obj
+            Total energy object
         """
 
         # reset global parameters if they are changed
-        config.grid_params = grid_params
-        config.conv_params = conv_params
-        config.scf_params = scf_params
+        config.nmax = nmax
+        config.lmax = lmax
+        config.grid_params = check_inputs.EnergyCalcs.check_grid_params(grid_params)
+        config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
+        # config.scf_params = scf_params.EnergyCalcs.check_scf_params(scf_params)
 
         # set up the grids
         gridmod.grid_setup()
@@ -138,7 +165,8 @@ class ISModel:
         orbs.occupy()
 
         # write the initial spiel
-        # scf_string = self.print_scf_init()
+        scf_init = writeoutput.SCF.write_init()
+        print(scf_init)
 
         # initialize the convergence object
         conv = convergence.SCF()
@@ -172,53 +200,21 @@ class ISModel:
             # test convergence
             conv_vals = conv.check_conv(E_free, v_s, rho.total, iscf)
 
-            #     scf_string = self.print_scf_cycle(conv_vals)
-            #     print(scf_string)
+            # write scf output
+            scf_string = writeoutput.SCF.write_cycle(iscf, E_free, conv_vals)
+            print(scf_string)
 
+            # exit if converged
             if conv_vals["complete"]:
                 break
 
-            print(
-                iscf,
-                E_free,
-                conv_vals["dE"],
-                np.max(conv_vals["dpot"]),
-                np.max(conv_vals["drho"]),
-            )
-
-        print(orbs.eigvals)
-        print(orbs.occnums)
-
-        print(rho.unbound["N"])
-
-        print("kinetic energy = ", energy.E_kin)
-        print("electron-nuclear energy = ", energy.E_en)
-        print("Hartree energy = ", energy.E_ha)
-        print("xc energy = ", energy.E_xc)
-        print("entropy = ", energy.entropy)
+        # write final output
+        scf_final = writeoutput.SCF.write_final(energy, orbs, conv_vals)
+        print(scf_final)
 
         rho.write_to_file()
 
+        return energy
 
-#     # construct density
-#     rho.construct(orbs)
-
-#     # construct potential
-#     pot.construct(rho)
-
-#     # mix potential
-#     pot.mix()
-
-#     # compute the energy
-#     energy.compute(orbs, rho, pot)
-
-#     # test convergence
-#     conv_vals = convergence.SCF_check(energy, rho, pot)
-
-#     scf_string = self.print_scf_cycle(conv_vals)
-#     print(scf_string)
-
-#     if conv_vals["complete"]:
-#         break
 
 # scf_string = self.print_scf_complete(conv_vals)
