@@ -13,6 +13,73 @@ import config
 import mathtools
 
 
+class XCFunc:
+    """
+    Class which defines the XCFunc object for 'special' (non-libxc) funcs
+    Desgined to align with some proprerties of libxc func objects
+
+    Parameters
+    ----------
+    xc_code: str
+         The string identifier for the x/c func
+
+    Attributes
+    ----------
+    _xc_func_name : str
+         String which describes the functional
+    _number : int
+        Functional id
+    _family : str
+        The family to which the xc functional belongs
+    """
+
+    def __init__(self, xc_code):
+        self._xc_func_name = self.get_name(xc_code)
+        self._number = self.get_id(xc_code)
+        self._family = "special"
+
+    # defines the xc functional name
+    @staticmethod
+    def get_name(xc_code):
+        """
+        Parameters
+        ----------
+        xc_code : str
+            String defining the xc functional
+
+        Returns
+        -------
+        str:
+            A name identifying the functional
+        """
+        if xc_code == "hartree":
+            xc_name = "- hartree"
+        elif xc_code == "None":
+            xc_name = "none"
+        return xc_name
+
+    @staticmethod
+    # defines an id for the xc functional
+    def get_id(xc_code):
+        """
+        Parameters
+        ----------
+        xc_code : str
+            String defining the xc functional
+
+        Returns
+        -------
+        int:
+            A number identifying the functional
+        """
+
+        if xc_code == "hartree":
+            xc_number = -1
+        elif xc_code == "None":
+            xc_number = 0
+        return xc_number
+
+
 def check_xc_func(xc_code, id_supp):
     """
     Checks there is a valid libxc code (or "None" for no x/c term)
@@ -31,15 +98,11 @@ def check_xc_func(xc_code, id_supp):
         err = 1
         xc_func = 0
 
-    # if "None" is chosen (ie no exchange correlation)
-    elif xc_code == "None":
+    # case when xc code is not a libxc functional
+    xc_special_codes = ["hartree", "None"]
+    if xc_code in xc_special_codes:
+        xc_func = XCFunc(xc_code)
         err = 0
-        xc_func = 0
-
-    # special code to choose xc = - hartree
-    elif xc_code == "hartree":
-        err = 0
-        xc_func = -1
 
     # make the libxc object functional
     else:
@@ -128,11 +191,11 @@ def calc_xc(density, xcfunc, xctype):
         xc_arr = np.zeros_like(density)
 
     # case where there is no xc func
-    if xcfunc == 0:
+    if xcfunc._number == 0:
         xc_arr = 0.0
 
     # special case in which xc = -hartree
-    elif xcfunc == -1:
+    elif xcfunc._number == -1:
 
         # import the staticKS module
         import staticKS
