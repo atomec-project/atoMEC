@@ -265,7 +265,7 @@ class SCF:
 
         eigvals, occnums = self.write_orb_info(orbitals)
         output_str += dblspc + "Orbital eigenvalues (Ha) :" + dblspc + eigvals
-        output_str += spc + "Orbital occupations [2l+1] * f_{nl} :" + dblspc + occnums
+        output_str += spc + "Orbital occupations (2l+1) * f_{nl} :" + dblspc + occnums
 
         return output_str
 
