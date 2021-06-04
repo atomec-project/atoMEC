@@ -40,17 +40,18 @@ class SCF:
         self._density[0] = dens
 
         # compute the change in energy
-        conv_vals["dE"] = abs(self._energy[0] - self._energy[1])
+        conv_vals["dE"] = abs((self._energy[0] - self._energy[1]) / self._energy[0])
 
         # compute the change in potential
         dv = np.abs(self._potential[0] - self._potential[1])
-        # integrate over sphere to return a number
-        conv_vals["dpot"] = mathtools.int_sphere(dv)
+        # compute the norm
+        norm_v = mathtools.int_sphere(np.abs(self._potential[0]))
+        conv_vals["dpot"] = mathtools.int_sphere(dv) / norm_v
 
         # compute the change in density
         dn = np.abs(self._density[0] - self._density[1])
         # integrate over sphere to return a number
-        conv_vals["drho"] = mathtools.int_sphere(dn)
+        conv_vals["drho"] = mathtools.int_sphere(dn) / config.nele
 
         # reset the energy, potential and density attributes
         self._energy[1] = E_free
