@@ -14,23 +14,44 @@ import config
 
 class SCF:
     """
-    Handles any routines related to the SCF cycle
+    Convergence attributes and functions related to SCF energy procedures
+
+    Notes
+    -----
+    Contains the private attributes _energy, _potential and _density
+
     """
 
     def __init__(self):
-
-        self.conv_vals = {
-            "dE": 0.0,
-            "drho": np.zeros((2)),
-            "dpot": np.zeros((2)),
-            "complete": False,
-        }
 
         self._energy = np.zeros((2))
         self._potential = np.zeros((2, config.spindims, config.grid_params["ngrid"]))
         self._density = np.zeros((2, config.spindims, config.grid_params["ngrid"]))
 
     def check_conv(self, E_free, pot, dens, iscf):
+        """
+        Computes the changes in energy, integrated density and integrated potential
+        and checks if they satisfy the proscribed convergence parameters
+
+        Parameters
+        ----------
+        E_free : float
+            the total free energy
+        v_s : ndarray
+            the KS potential
+        dens : ndarray
+            the electronic density
+        iscf : int
+            the iteration number
+
+        Returns
+        -------
+        conv_vals : dict
+            Dictionary of convergence parameters as follows:
+            {'conv_energy' : float, 'conv_rho' : ndarray,
+             'conv_pot' : ndarray, 'complete' : bool}
+
+        """
 
         conv_vals = {}
 
