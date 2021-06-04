@@ -425,6 +425,52 @@ class EnergyCalcs:
 
         return conv_params
 
+    @staticmethod
+    def check_scf_params(input_params):
+        """
+        Checks convergence parameters are reasonable, or assigns if empty
+
+        Parameters
+        ----------
+        input_params : dict
+            Can contain the keys "maxscf" and "mixfrac" for max scf cycle
+            and potential mixing fraction
+
+        Returns
+        -------
+        scf_params : dict
+            A dictionary with the following scf parameters
+            {'maxscf'   (int)    : max number scf cycles
+             'mixfrac'  (int)    : mixing fraction}
+        """
+
+        scf_params = {}
+
+        # assign value to scf param if it is not specified
+        for p in ["maxscf", "mixfrac"]:
+            try:
+                scf_params[p] = input_params[p]
+            except KeyError:
+                scf_params[p] = config.scf_params[p]
+
+        # check maxscf is an integer
+        maxscf = scf_params["maxscf"]
+        if not isinstance(maxscf, int):
+            raise InputError.SCF_error("maxscf is not an integer!")
+        # check it is at least 1
+        elif maxscf < 1:
+            raise InputError.SCF_error("maxscf must be at least 1")
+
+        # check mixfrac is a float
+        mixfrac = scf_params["mixfrac"]
+        if not isinstance(mixfrac, float):
+            raise InputError.SCF_error("mixfrac is not a float!")
+        # check it lies between 0,1
+        elif mixfrac < 0 or mixfrac > 1:
+            raise InputError.SCF_error("mixfrac must be in range [0,1]")
+
+        return scf_params
+
 
 class InputError(Exception):
     """
@@ -554,6 +600,23 @@ class InputError(Exception):
         """
 
         print("Error in convergence inputs: " + err_msg)
+        sys.exit("Exiting AvAtom")
+
+    def SCF_error(err_msg):
+        """
+        Raises exception if error in convergence inputs
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Raises
+        -------
+            InputError
+        """
+
+        print("Error in scf_params input: " + err_msg)
         sys.exit("Exiting AvAtom")
 
 

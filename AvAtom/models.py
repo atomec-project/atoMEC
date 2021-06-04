@@ -141,7 +141,7 @@ class ISModel:
 
         Returns
         -------
-        obj
+        energy : obj
             Total energy object
         """
 
@@ -150,7 +150,7 @@ class ISModel:
         config.lmax = lmax
         config.grid_params = check_inputs.EnergyCalcs.check_grid_params(grid_params)
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
-        # config.scf_params = scf_params.EnergyCalcs.check_scf_params(scf_params)
+        config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
 
         # set up the grids
         gridmod.grid_setup()
