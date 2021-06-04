@@ -209,7 +209,7 @@ class ISModel:
                 break
 
         # write final output
-        scf_final = writeoutput.SCF.write_final(energy, orbs, conv_vals)
+        scf_final = writeoutput.SCF().write_final(energy, orbs, rho, conv_vals)
         print(scf_final)
 
         rho.write_to_file()

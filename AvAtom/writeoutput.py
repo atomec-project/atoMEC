@@ -6,6 +6,7 @@ Handles all output, writing to files etc
 
 # external libs
 import numpy as np
+import tabulate
 
 # internal libs
 import unitconv
@@ -203,8 +204,7 @@ class SCF:
 
         return output
 
-    @staticmethod
-    def write_final(energy, orbitals, conv_vals):
+    def write_final(self, energy, orbitals, density, conv_vals):
         """
         Writes the final information about the energy and orbitals
 
@@ -214,6 +214,8 @@ class SCF:
             the energy object
         orbitals : obj
             the orbitals object
+        density: obj
+            the density object
         conv_vals : dict
             dictionary of convergence values
 
@@ -224,7 +226,6 @@ class SCF:
         """
 
         output_str = 65 * "-" + spc
-        box_str = 45 * "-" + spc
 
         # write whether convergence cycle succesfully completed
         if conv_vals["complete"]:
@@ -233,14 +234,62 @@ class SCF:
             output_str += (
                 output_str
                 + "SCF cycle did not converge in "
-                + config.scf_params["maxscf"]
-                + "iterations"
+                + str(config.scf_params["maxscf"])
+                + " iterations"
                 + dblspc
             )
 
-        output_str += "Final energies (Ha)" + dblspc
+        # write the total energies
+        output_str += self.write_final_energies(energy) + spc
+
+        # write the chemical potential and mean ionization state
+
+        N_ub = density.unbound["N"]
+
+        if config.spindims == 2:
+            mu_str = "Chemical potential (u/d)"
+            chem_pot_str = "{mu:30s} : {mu1:7.3f} / {mu2:<7.3f}".format(
+                mu=mu_str, mu1=config.mu[0], mu2=config.mu[1]
+            )
+            N_ub_str = "Mean ionization state (u/d)"
+            MIS_str = "{Nub:30s} : {Nub1:7.3f} / {Nub2:<7.3f}".format(
+                Nub=N_ub_str, Nub1=N_ub[0], Nub2=N_ub[1]
+            )
+        elif config.spindims == 1:
+            mu_str = "Chemical potential"
+            chem_pot_str = "{mu:30s} : {mu1:7.3f}".format(mu=mu_str, mu1=config.mu[0])
+            N_ub_str = "Mean ionization state"
+            MIS_str = "{Nub:30s} : {Nub1:7.3f}".format(Nub=N_ub_str, Nub1=N_ub[0])
+
+        output_str += spc.join([chem_pot_str, MIS_str])
+
+        eigvals, occnums = self.write_orb_info(orbitals)
+        output_str += dblspc + "Orbital eigenvalues (Ha) :" + dblspc + eigvals
+        output_str += spc + "Orbital occupations [2l+1] * f_{nl} :" + dblspc + occnums
+
+        return output_str
+
+    @staticmethod
+    def write_final_energies(energy):
+        """
+        Writes the final energy information to screen
+
+        Parameters
+        ---------
+        energy : obj
+            the total energy object
+
+        Returns
+        -------
+        str
+            The output text string
+        """
+
+        output_str = "Final energies (Ha)" + dblspc
+        box_str = 45 * "-" + spc
         output_str += box_str
 
+        # write the kinetic energy information
         E_kin = energy.E_kin
         KE_str = (
             "{KE:30s} : {KE_x:9.4f}".format(KE="Kinetic energy", KE_x=E_kin["tot"])
@@ -259,6 +308,7 @@ class SCF:
 
         output_str += KE_str
 
+        # electron-nuclear contribution
         en_str = (
             "{en:30s} : {E_en:9.4f}".format(
                 en="Electron-nuclear energy", E_en=energy.E_en
@@ -267,11 +317,13 @@ class SCF:
         )
         output_str += en_str
 
+        # hartree contribution
         ha_str = (
             "{Ha:30s} : {E_ha:9.4f}".format(Ha="Hartree energy", E_ha=energy.E_ha) + spc
         )
         output_str += ha_str
 
+        # exchange-correlation (broken down into components)
         E_xc = energy.E_xc
         xc_str = (
             "{xc:30s} : {xc_x:9.4f}".format(
@@ -292,6 +344,7 @@ class SCF:
 
         output_str += xc_str
 
+        # total energy
         tot_E_str = (
             box_str
             + "{tot:30s} : {E_tot:9.4f}".format(tot="Total energy", E_tot=energy.E_tot)
@@ -300,6 +353,7 @@ class SCF:
         )
         output_str += tot_E_str
 
+        # entropy (split into bound / unbound)
         ent = energy.entropy
         ent_str = "{S:30s} : {S_x:9.4f}".format(S="Entropy", S_x=ent["tot"]) + spc
         ent_str += (
@@ -313,6 +367,7 @@ class SCF:
 
         output_str += ent_str
 
+        # total free energy F = E - T * S
         tot_F_str = (
             box_str
             + "{F:30s} : {F_x:9.4f}".format(F="Total free energy", F_x=energy.F_tot)
@@ -322,3 +377,44 @@ class SCF:
         output_str += tot_F_str
 
         return output_str
+
+    @staticmethod
+    def write_orb_info(orbitals):
+        """ """
+
+        # loop over the spin dimensions
+        eigval_tbl = ""
+        occnum_tbl = ""
+        for i in range(config.spindims):
+            headers = [n + 1 for n in range(config.nmax)]
+            headers[0] = "n=1"
+            RowIDs = [l for l in range(config.lmax)]
+            RowIDs[0] = "l=0"
+
+            # the eigenvalue table
+            eigval_tbl += (
+                tabulate.tabulate(
+                    orbitals.eigvals[i],
+                    headers,
+                    tablefmt="presto",
+                    floatfmt="6.2f",
+                    showindex=RowIDs,
+                    stralign="right",
+                )
+                + dblspc
+            )
+
+            # the occnums table
+            occnum_tbl += (
+                tabulate.tabulate(
+                    orbitals.occnums[i],
+                    headers,
+                    tablefmt="presto",
+                    showindex=RowIDs,
+                    floatfmt="6.2f",
+                    stralign="right",
+                )
+                + dblspc
+            )
+
+        return eigval_tbl, occnum_tbl
