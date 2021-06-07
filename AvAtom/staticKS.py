@@ -548,7 +548,7 @@ class Energy:
         # we first need to map them back to their 'pure' form f_{nl}
         lbound_inv = np.zeros_like(orbs.lbound)
         for l in range(config.lmax):
-            lbound_inv[:, l] = config.spindims * np.where(
+            lbound_inv[:, l] = (config.spindims / 2.0) * np.where(
                 orbs.eigvals[:, l] < 0, 1.0 / (2 * l + 1.0), 0.0
             )
 
