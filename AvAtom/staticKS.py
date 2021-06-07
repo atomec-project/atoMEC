@@ -521,21 +521,21 @@ class Energy:
         """
 
         # compute the grad^2 component
-        grad2_orbs = mathtools.laplace(orbs.eigfuncs, config.xgrid)
+        grad2_orbs = mathtools.laplace(orbs.eigfuncs, orbs._xgrid)
 
         # compute the (l+1/2)^2 component
         l_arr = np.array([(l + 0.5) ** 2.0 for l in range(config.lmax)])
         lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, orbs.eigfuncs)
 
         # add together and multiply by eigfuncs*exp(-3x)
-        prefac = np.exp(-3.0 * config.xgrid) * orbs.eigfuncs
+        prefac = np.exp(-3.0 * orbs._xgrid) * orbs.eigfuncs
         kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
 
         # multiply and sum over occupation numbers
         e_kin_dens = np.einsum("ijk,ijkl->l", orbs.occnums, kin_orbs)
 
         # integrate over sphere
-        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens, config.xgrid)
+        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens, orbs._xgrid)
 
         return E_kin_bound
 
