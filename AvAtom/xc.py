@@ -132,7 +132,7 @@ def check_xc_func(xc_code, id_supp):
     return xc_func, err
 
 
-def v_xc(density, xfunc, cfunc):
+def v_xc(density, xgrid, xfunc, cfunc):
     """
     Wrapper function which computes the exchange and correlation potentials
     """
@@ -141,10 +141,10 @@ def v_xc(density, xfunc, cfunc):
     _v_xc = {}
 
     # compute the exchange potential
-    _v_xc["x"] = calc_xc(density, xfunc, "v_xc")
+    _v_xc["x"] = calc_xc(density, xgrid, xfunc, "v_xc")
 
     # compute the correlation potential
-    _v_xc["c"] = calc_xc(density, cfunc, "v_xc")
+    _v_xc["c"] = calc_xc(density, xgrid, cfunc, "v_xc")
 
     # sum to get the total xc potential
     _v_xc["xc"] = _v_xc["x"] + _v_xc["c"]
@@ -164,11 +164,11 @@ def E_xc(density, xgrid, xfunc, cfunc):
     dens_tot = np.sum(density, axis=0)
 
     # compute the exchange energy
-    ex_libxc = calc_xc(density, xfunc, "e_xc")
+    ex_libxc = calc_xc(density, xgrid, xfunc, "e_xc")
     _E_xc["x"] = mathtools.int_sphere(ex_libxc * dens_tot, xgrid)
 
     # compute the correlation energy
-    ec_libxc = calc_xc(density, cfunc, "e_xc")
+    ec_libxc = calc_xc(density, xgrid, cfunc, "e_xc")
     _E_xc["c"] = mathtools.int_sphere(ec_libxc * dens_tot, xgrid)
 
     # sum to get the total xc potential
@@ -177,7 +177,7 @@ def E_xc(density, xgrid, xfunc, cfunc):
     return _E_xc
 
 
-def calc_xc(density, xcfunc, xctype):
+def calc_xc(density, xgrid, xcfunc, xctype):
     """
     Computes the xc energy density and potential
     Returns either the energy or potential depending what is requested
@@ -201,9 +201,9 @@ def calc_xc(density, xcfunc, xctype):
         import staticKS
 
         if xctype == "v_xc":
-            xc_arr[:] = -staticKS.Potential.calc_v_ha(density)
+            xc_arr[:] = -staticKS.Potential.calc_v_ha(density, xgrid)
         elif xctype == "e_xc":
-            xc_arr = -0.5 * staticKS.Potential.calc_v_ha(density)
+            xc_arr = -0.5 * staticKS.Potential.calc_v_ha(density, xgrid)
 
     else:
         # lda
