@@ -73,7 +73,8 @@ class SCF:
         # compute the change in density
         dn = np.abs(self._density[0] - self._density[1])
         # integrate over sphere to return a number
-        conv_vals["drho"] = mathtools.int_sphere(dn, self._xgrid) / config.nele
+        # note we add a small constant to avoid errors if there are no electrons in one spin channel
+        conv_vals["drho"] = mathtools.int_sphere(dn, self._xgrid) / (config.nele + 1e-3)
 
         # reset the energy, potential and density attributes
         self._energy[1] = E_free
