@@ -5,7 +5,7 @@ to solve the electronic structure problem for single-element materials at finite
 
 More information on the average-atom methodology and Kohn--Sham density functional theory can be found (for example) in the following pre-print_
 and references therein.
-..pre-print: https://arxiv.org/abs/2103.09928
+.. pre-print: https://arxiv.org/abs/2103.09928
 
 
 Installation
@@ -22,7 +22,7 @@ First, clone the AvAtom repository and ``cd`` into the main directory.
   #. Next, install AvAtom and its dependencies with ``pipenv install``
   #. For example, type ``pipenv shell`` from the AvAtom directory to enter the AvAtom virtual environment
 
-..pipenv: https://pypi.org/project/pipenv/    
+.. pipenv: https://pypi.org/project/pipenv/    
 
 * Alternatively, use one of the standard techniques:
   
