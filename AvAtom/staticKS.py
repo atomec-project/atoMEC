@@ -139,6 +139,7 @@ class Density:
 
     def __init__(self, orbs):
 
+        self._xgrid = orbs._xgrid
         self._total = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self._bound = {
             "rho": np.zeros((config.spindims, config.grid_params["ngrid"])),
@@ -160,7 +161,7 @@ class Density:
     @property
     def bound(self):
         if np.all(self._bound["rho"] == 0.0):
-            self._bound = self.construct_rho_bound(self._orbs)
+            self._bound = self.construct_rho_bound(self._orbs, self._xgrid)
         return self._bound
 
     @property
@@ -170,7 +171,7 @@ class Density:
         return self._unbound
 
     @staticmethod
-    def construct_rho_bound(orbs):
+    def construct_rho_bound(orbs, xgrid):
         """
         Constructs the bound part of the density
 
@@ -185,7 +186,7 @@ class Density:
         # occnums in AvAtom are defined as (2l+1)*f_{nl}
 
         # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
-        orbs_R = np.exp(-config.xgrid / 2.0) * orbs.eigfuncs
+        orbs_R = np.exp(-xgrid / 2.0) * orbs.eigfuncs
         orbs_R_sq = orbs_R ** 2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
