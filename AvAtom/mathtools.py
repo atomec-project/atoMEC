@@ -14,14 +14,21 @@ from scipy import optimize, integrate
 import config
 
 
-def normalize_orbs(eigfuncs_x):
+def normalize_orbs(eigfuncs_x, xgrid):
     """
-    Normalizes the KS orbitals within the Voronoi sphere
+    Normalizes the KS orbitals within the chosen sphere
 
-    Inputs:
-    - eigfuncs_x (np array)      : eigenfunctions on the log grid
-    Returns:
-    - eigfuncs_x_norm (np array) : normalized eigenfunctions on the log grid
+    Parameters
+    ----------
+    eigfuncs : ndarray
+        The radial KS eigenfunctions :math: 'X_{nl}^{\sigma}(x)'
+    xgrid : ndarray
+        The logarithmic grid over which normalization is performed
+
+    Returns
+    -------
+    eigfuncs_x_norm : ndarray
+        The radial KS eigenfunctions normalized over the chosen sphere
     """
 
     # initialize the normalized eigenfunctions
@@ -32,7 +39,7 @@ def normalize_orbs(eigfuncs_x):
         # compute the mod squared eigenvalues
         eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
         # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
-        exp_x = np.exp(-config.xgrid)
+        exp_x = np.exp(-xgrid)
         ampsq = int_sphere(exp_x * eigfuncs_sq)
         # normalize eigenfunctions
         eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)

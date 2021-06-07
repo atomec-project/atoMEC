@@ -110,6 +110,6 @@ def update_orbs(l_eigfuncs, l_eigvals):
     if config.bc == "neumann":
         l_eigfuncs[-1] = l_eigfuncs[-2]
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
-    eigfuncs = mathtools.normalize_orbs(eigfuncs)  # normalize
+    eigfuncs = mathtools.normalize_orbs(eigfuncs, config.xgrid)  # normalize
 
     return eigfuncs, eigvals
