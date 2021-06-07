@@ -534,7 +534,7 @@ class Energy:
         e_kin_dens = np.einsum("ijk,ijkl->l", orbs.occnums, kin_orbs)
 
         # integrate over sphere
-        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens)
+        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens, config.xgrid)
 
         return E_kin_bound
 
@@ -663,7 +663,7 @@ class Energy:
 
         # compute the integral
         v_en = Potential.calc_v_en()
-        E_en = mathtools.int_sphere(dens_tot * v_en)
+        E_en = mathtools.int_sphere(dens_tot * v_en, config.xgrid)
 
         return E_en
 
@@ -687,6 +687,6 @@ class Energy:
 
         # compute the integral
         v_ha = Potential.calc_v_ha(density)
-        E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha)
+        E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha, config.xgrid)
 
         return E_ha

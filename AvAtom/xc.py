@@ -165,11 +165,11 @@ def E_xc(density, xfunc, cfunc):
 
     # compute the exchange energy
     ex_libxc = calc_xc(density, xfunc, "e_xc")
-    _E_xc["x"] = mathtools.int_sphere(ex_libxc * dens_tot)
+    _E_xc["x"] = mathtools.int_sphere(ex_libxc * dens_tot, config.xgrid)
 
     # compute the correlation energy
     ec_libxc = calc_xc(density, cfunc, "e_xc")
-    _E_xc["c"] = mathtools.int_sphere(ec_libxc * dens_tot)
+    _E_xc["c"] = mathtools.int_sphere(ec_libxc * dens_tot, config.xgrid)
 
     # sum to get the total xc potential
     _E_xc["xc"] = _E_xc["x"] + _E_xc["c"]

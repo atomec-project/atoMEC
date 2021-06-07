@@ -66,13 +66,13 @@ class SCF:
         # compute the change in potential
         dv = np.abs(self._potential[0] - self._potential[1])
         # compute the norm
-        norm_v = mathtools.int_sphere(np.abs(self._potential[0]))
-        conv_vals["dpot"] = mathtools.int_sphere(dv) / norm_v
+        norm_v = mathtools.int_sphere(np.abs(self._potential[0]), config.xgrid)
+        conv_vals["dpot"] = mathtools.int_sphere(dv, config.xgrid) / norm_v
 
         # compute the change in density
         dn = np.abs(self._density[0] - self._density[1])
         # integrate over sphere to return a number
-        conv_vals["drho"] = mathtools.int_sphere(dn) / config.nele
+        conv_vals["drho"] = mathtools.int_sphere(dn, config.xgrid) / config.nele
 
         # reset the energy, potential and density attributes
         self._energy[1] = E_free
