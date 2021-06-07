@@ -3,9 +3,10 @@ AvAtom: KS-DFT average atom python code
 AvAtom is a python-based average-atom code for simulations of warm-dense matter. It uses Kohn--Sham density-functional theory, in combination with an average-atom approximation,
 to solve the electronic structure problem for single-element materials at finite temperature.
 
-More information on the average-atom methodology and Kohn--Sham density functional theory can be found (for example) in the following pre-print_
+More information on the average-atom methodology and Kohn--Sham density functional theory can be found (for example) in the following preprint_
 and references therein.
-.. _pre-print: https://arxiv.org/abs/2103.09928
+
+.. _preprint: https://arxiv.org/abs/2103.09928
 
 
 Installation
