@@ -294,7 +294,7 @@ class Potential:
     @property
     def v_xc(self):
         if np.all(self._v_xc["xc"] == 0.0):
-            self._v_xc = xc.v_xc(self._density, config.xfunc, config.cfunc)
+            self._v_xc = xc.v_xc(self._density, self._xgrid, config.xfunc, config.cfunc)
         return self._v_xc
 
     @staticmethod
@@ -565,7 +565,7 @@ class Energy:
         g_nls = orbs.lbound * (term1 + term2)
 
         # sum over all quantum numbers to get the total entropy
-        S_bound = -np.sum(g_nls)
+        S_bound = np.sum(g_nls)
 
         return S_bound
 
