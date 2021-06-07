@@ -419,3 +419,85 @@ class SCF:
             )
 
         return eigval_tbl, occnum_tbl
+
+
+def density_to_csv(rgrid, density):
+    # this routine should probably be moved to a more appropriate place
+    """
+    Writes the density (on the r-grid) to file
+    """
+
+    fname = "density.csv"
+
+    if config.spinpol == True:
+        headstr = (
+            "r"
+            + 7 * " "
+            + "n^up_b"
+            + 4 * " "
+            + "n^up_ub"
+            + 3 * " "
+            + "n^dw_b"
+            + 4 * " "
+            + "n^dw_ub"
+            + 3 * " "
+        )
+        data = np.column_stack(
+            [
+                rgrid,
+                density.bound["rho"][0],
+                density.unbound["rho"][0],
+                density.bound["rho"][1],
+                density.unbound["rho"][1],
+            ]
+        )
+    else:
+        headstr = "r" + 8 * " " + "n_b" + 6 * " " + "n^_ub" + 3 * " "
+        data = np.column_stack(
+            [rgrid, density.bound["rho"][0], density.unbound["rho"][0]]
+        )
+
+    np.savetxt(fname, data, fmt="%8.3e", header=headstr)
+
+    return
+
+
+def potential_to_csv(rgrid, potential):
+    # this routine should probably be moved to a more appropriate place
+    """
+    Writes the potential (on the r-grid) to file
+    """
+
+    fname = "potential.csv"
+
+    if config.spinpol == True:
+        headstr = (
+            "r"
+            + 7 * " "
+            + "v_en"
+            + 4 * " "
+            + "v_ha"
+            + 3 * " "
+            + "v^up_xc"
+            + 4 * " "
+            + "v^dw_xc"
+            + 3 * " "
+        )
+        data = np.column_stack(
+            [
+                rgrid,
+                potential.v_en,
+                potential.v_ha,
+                potential.v_xc["xc"][0],
+                potential.v_xc["xc"][0],
+            ]
+        )
+    else:
+        headstr = "r" + 8 * " " + "v_en" + 6 * " " + "v_ha" + 3 * " "
+        data = np.column_stack(
+            [rgrid, potential.v_en, potential.v_ha, potential.v_xc["xc"][0]]
+        )
+
+    np.savetxt(fname, data, fmt="%8.3e", header=headstr)
+
+    return

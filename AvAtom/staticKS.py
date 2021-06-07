@@ -250,44 +250,6 @@ class Density:
 
         return unbound
 
-    def write_to_file(self):
-        # this routine should probably be moved to a more appropriate place
-        """
-        Writes the density (on the r-grid) to file
-        """
-
-        fname = "density.csv"
-
-        if config.spinpol == True:
-            headstr = (
-                "r"
-                + 7 * " "
-                + "n^up_b"
-                + 4 * " "
-                + "n^up_ub"
-                + 3 * " "
-                + "n^dw_b"
-                + 4 * " "
-                + "n^dw_ub"
-                + 3 * " "
-            )
-            data = np.column_stack(
-                [
-                    config.rgrid,
-                    self.bound["rho"][0],
-                    self.unbound["rho"][0],
-                    self.bound["rho"][1],
-                    self.unbound["rho"][1],
-                ]
-            )
-        else:
-            headstr = "r" + 8 * " " + "n_b" + 6 * " " + "n^_ub" + 3 * " "
-            data = np.column_stack(
-                [config.rgrid, self.bound["rho"][0], self.unbound["rho"][0]]
-            )
-
-        np.savetxt(fname, data, fmt="%8.3e", header=headstr)
-
 
 class Potential:
     """
@@ -386,44 +348,6 @@ class Potential:
             v_ha[i] = 4.0 * pi * (int_l + int_u)
 
         return v_ha
-
-    def write_to_file(self):
-        # this routine should probably be moved to a more appropriate place
-        """
-        Writes the potential (on the r-grid) to file
-        """
-
-        fname = "potential.csv"
-
-        if config.spinpol == True:
-            headstr = (
-                "r"
-                + 7 * " "
-                + "v_en"
-                + 4 * " "
-                + "v_ha"
-                + 3 * " "
-                + "v^up_xc"
-                + 4 * " "
-                + "v^dw_xc"
-                + 3 * " "
-            )
-            data = np.column_stack(
-                [
-                    config.rgrid,
-                    self.v_en,
-                    self.v_ha,
-                    self.v_xc["xc"][0],
-                    self.v_xc["xc"][0],
-                ]
-            )
-        else:
-            headstr = "r" + 8 * " " + "v_en" + 6 * " " + "v_ha" + 3 * " "
-            data = np.column_stack(
-                [config.rgrid, self.v_en, self.v_ha, self.v_xc["xc"][0]]
-            )
-
-        np.savetxt(fname, data, fmt="%8.3e", header=headstr)
 
 
 class Energy:

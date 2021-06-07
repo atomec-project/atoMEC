@@ -209,7 +209,11 @@ class ISModel:
         scf_final = writeoutput.SCF().write_final(energy, orbs, rho, conv_vals)
         print(scf_final)
 
-        rho.write_to_file()
+        # write the density to file
+        writeoutput.density_to_csv(rgrid, rho)
+
+        # write the potential to file
+        writeoutput.potential_to_csv(rgrid, pot)
 
         return energy
 
