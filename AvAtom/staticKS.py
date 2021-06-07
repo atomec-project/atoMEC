@@ -14,6 +14,30 @@ import numerov
 import mathtools
 import xc
 
+# the logarithmic grid
+def log_grid(x_r):
+    """
+    Parameters
+    ----------
+    x_r : float
+        The RHS grid point (in logarithmic space)
+
+    Returns
+    -------
+    xgrid, rgrid : tuple of ndarrays
+        The grids in logarithmic (x) and real (r) space
+    """
+
+    # grid in logarithmic co-ordinates
+    xgrid = np.linspace(config.grid_params["x0"], x_r, config.grid_params["ngrid"])
+    # grid in real space co-ordinates
+    rgrid = np.exp(xgrid)
+
+    config.xgrid = xgrid
+    config.rgrid = rgrid
+
+    return xgrid, rgrid
+
 
 class Orbitals:
     """

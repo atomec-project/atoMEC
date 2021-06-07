@@ -3,15 +3,12 @@
 # import external packages
 import numpy as np
 from mendeleev import element
-from math import pi
+from math import pi, log
 
 # import internal packages
-import constants
 import check_inputs
 import config
 import staticKS
-import gridmod
-import xc
 import convergence
 import writeoutput
 
@@ -152,8 +149,8 @@ class ISModel:
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
 
-        # set up the grids
-        xgrid = gridmod.grid_setup()
+        # set up the xgrid and rgrid
+        xgrid, rgrid = staticKS.log_grid(log(config.r_s))
 
         # initialize orbitals
         orbs = staticKS.Orbitals(xgrid)
