@@ -292,17 +292,17 @@ class SCF:
         # write the kinetic energy information
         E_kin = energy.E_kin
         KE_str = (
-            "{KE:30s} : {KE_x:9.4f}".format(KE="Kinetic energy", KE_x=E_kin["tot"])
+            "{KE:30s} : {KE_x:10.4f}".format(KE="Kinetic energy", KE_x=E_kin["tot"])
             + spc
         )
         KE_str += (
             4 * " "
-            + "{KE:26s} : {KE_x:9.4f}".format(KE="bound", KE_x=E_kin["bound"])
+            + "{KE:26s} : {KE_x:10.4f}".format(KE="bound", KE_x=E_kin["bound"])
             + spc
         )
         KE_str += (
             4 * " "
-            + "{KE:26s} : {KE_x:9.4f}".format(KE="unbound", KE_x=E_kin["unbound"])
+            + "{KE:26s} : {KE_x:10.4f}".format(KE="unbound", KE_x=E_kin["unbound"])
             + spc
         )
 
@@ -310,7 +310,7 @@ class SCF:
 
         # electron-nuclear contribution
         en_str = (
-            "{en:30s} : {E_en:9.4f}".format(
+            "{en:30s} : {E_en:10.4f}".format(
                 en="Electron-nuclear energy", E_en=energy.E_en
             )
             + spc
@@ -319,26 +319,27 @@ class SCF:
 
         # hartree contribution
         ha_str = (
-            "{Ha:30s} : {E_ha:9.4f}".format(Ha="Hartree energy", E_ha=energy.E_ha) + spc
+            "{Ha:30s} : {E_ha:10.4f}".format(Ha="Hartree energy", E_ha=energy.E_ha)
+            + spc
         )
         output_str += ha_str
 
         # exchange-correlation (broken down into components)
         E_xc = energy.E_xc
         xc_str = (
-            "{xc:30s} : {xc_x:9.4f}".format(
+            "{xc:30s} : {xc_x:10.4f}".format(
                 xc="Exchange-correlation energy", xc_x=E_xc["xc"]
             )
             + spc
         )
         xc_str += (
             4 * " "
-            + "{xc:26s} : {xc_x:9.4f}".format(xc="exchange", xc_x=E_xc["x"])
+            + "{xc:26s} : {xc_x:10.4f}".format(xc="exchange", xc_x=E_xc["x"])
             + spc
         )
         xc_str += (
             4 * " "
-            + "{xc:26s} : {xc_x:9.4f}".format(xc="correlation", xc_x=E_xc["c"])
+            + "{xc:26s} : {xc_x:10.4f}".format(xc="correlation", xc_x=E_xc["c"])
             + spc
         )
 
@@ -347,7 +348,7 @@ class SCF:
         # total energy
         tot_E_str = (
             box_str
-            + "{tot:30s} : {E_tot:9.4f}".format(tot="Total energy", E_tot=energy.E_tot)
+            + "{tot:30s} : {E_tot:10.4f}".format(tot="Total energy", E_tot=energy.E_tot)
             + spc
             + box_str
         )
@@ -355,13 +356,13 @@ class SCF:
 
         # entropy (split into bound / unbound)
         ent = energy.entropy
-        ent_str = "{S:30s} : {S_x:9.4f}".format(S="Entropy", S_x=ent["tot"]) + spc
+        ent_str = "{S:30s} : {S_x:10.4f}".format(S="Entropy", S_x=ent["tot"]) + spc
         ent_str += (
-            4 * " " + "{S:26s} : {S_x:9.4f}".format(S="bound", S_x=ent["bound"]) + spc
+            4 * " " + "{S:26s} : {S_x:10.4f}".format(S="bound", S_x=ent["bound"]) + spc
         )
         ent_str += (
             4 * " "
-            + "{S:26s} : {S_x:9.4f}".format(S="unbound", S_x=ent["unbound"])
+            + "{S:26s} : {S_x:10.4f}".format(S="unbound", S_x=ent["unbound"])
             + spc
         )
 
@@ -370,7 +371,7 @@ class SCF:
         # total free energy F = E - T * S
         tot_F_str = (
             box_str
-            + "{F:30s} : {F_x:9.4f}".format(F="Total free energy", F_x=energy.F_tot)
+            + "{F:30s} : {F_x:10.4f}".format(F="Total free energy", F_x=energy.F_tot)
             + spc
             + box_str
         )
