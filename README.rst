@@ -5,6 +5,7 @@ to solve the electronic structure problem for single-element materials at finite
 
 More information on the average-atom methodology and Kohn--Sham density functional theory can be found (for example) in the following preprint_
 and references therein.
+
 .. _preprint: https://arxiv.org/abs/2103.09928
 
 
