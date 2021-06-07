@@ -166,7 +166,7 @@ class ISModel:
         print(scf_init)
 
         # initialize the convergence object
-        conv = convergence.SCF()
+        conv = convergence.SCF(xgrid)
 
         for iscf in range(config.scf_params["maxscf"]):
 

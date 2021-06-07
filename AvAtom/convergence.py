@@ -22,8 +22,9 @@ class SCF:
 
     """
 
-    def __init__(self):
+    def __init__(self, xgrid):
 
+        self._xgrid = xgrid
         self._energy = np.zeros((2))
         self._potential = np.zeros((2, config.spindims, config.grid_params["ngrid"]))
         self._density = np.zeros((2, config.spindims, config.grid_params["ngrid"]))
@@ -66,13 +67,13 @@ class SCF:
         # compute the change in potential
         dv = np.abs(self._potential[0] - self._potential[1])
         # compute the norm
-        norm_v = mathtools.int_sphere(np.abs(self._potential[0]), config.xgrid)
-        conv_vals["dpot"] = mathtools.int_sphere(dv, config.xgrid) / norm_v
+        norm_v = mathtools.int_sphere(np.abs(self._potential[0]), self._xgrid)
+        conv_vals["dpot"] = mathtools.int_sphere(dv, self._xgrid) / norm_v
 
         # compute the change in density
         dn = np.abs(self._density[0] - self._density[1])
         # integrate over sphere to return a number
-        conv_vals["drho"] = mathtools.int_sphere(dn, config.xgrid) / config.nele
+        conv_vals["drho"] = mathtools.int_sphere(dn, self._xgrid) / config.nele
 
         # reset the energy, potential and density attributes
         self._energy[1] = E_free
