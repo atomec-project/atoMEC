@@ -78,34 +78,24 @@ class ISModel:
         # Input variables
 
         # check the spin polarization
-        config.spinpol = spinpol
         self.spinpol = spinpol
 
-        # set the spinpol param (leading dimension for density, orbitals etc)
-        if config.spinpol == True:
-            config.spindims = 2
-        else:
-            config.spindims = 1
-
         # spin magnetization has to be compatible with total electron number
-        spinmag = check_inputs.Atom().check_spinmag(spinmag, atom.nele)
+        self.spinmag = check_inputs.Atom().check_spinmag(spinmag, atom.nele)
 
         # calculate electron number in (each) spin channel
-        config.nele = check_inputs.Atom().calc_nele(spinmag, atom.nele)
-        self.nele = config.nele
+        self.nele = check_inputs.Atom().calc_nele(self.spinmag, atom.nele, self.spinpol)
 
         # check the xc functionals
-        config.xfunc, config.cfunc = check_inputs.ISModel.check_xc(xfunc_id, cfunc_id)
-        self.xfunc_id = config.xfunc._xc_func_name
-        self.cfunc_id = config.cfunc._xc_func_name
+        xfunc, cfunc = check_inputs.ISModel.check_xc(xfunc_id, cfunc_id)
+        self.xfunc_id = xfunc._xc_func_name
+        self.cfunc_id = cfunc._xc_func_name
 
         # check the boundary condition
-        config.bc = check_inputs.ISModel.check_bc(bc)
-        self.bc = config.bc
+        self.bc = check_inputs.ISModel.check_bc(bc)
 
         # check the unbound electron treatment
-        config.unbound = check_inputs.ISModel.check_unbound(unbound)
-        self.unbound = config.unbound
+        self.unbound = check_inputs.ISModel.check_unbound(unbound)
 
         # write output information
         output_str = writeoutput.write_ISModel_data(self)
@@ -141,6 +131,28 @@ class ISModel:
         energy : obj
             Total energy object
         """
+
+        # define global parameters from self
+        config.spinpol = self.spinpol
+
+        # set the spindims param (leading dimension for density, orbitals etc)
+        if config.spinpol == True:
+            config.spindims = 2
+        else:
+            config.spindims = 1
+
+        # calculate electron number in (each) spin channel
+        nele_tot = np.sum(self.nele)
+        config.nele = check_inputs.Atom().calc_nele(
+            self.spinmag, nele_tot, self.spinpol
+        )
+
+        # boundary cond, unbound electrons, xc func objects
+        config.bc = self.bc
+        config.unbound = self.unbound
+        config.xfunc, config.cfunc = check_inputs.ISModel.check_xc(
+            self.xfunc_id, self.cfunc_id
+        )
 
         # reset global parameters if they are changed
         config.nmax = nmax

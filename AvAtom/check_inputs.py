@@ -189,15 +189,17 @@ class Atom:
 
         return spinmag
 
-    def calc_nele(self, spinmag, nele):
+    def calc_nele(self, spinmag, nele, spinpol):
         """
         Calculates the electron number in each spin channel from spinmag
         and total electron number
         """
 
-        if config.spindims == 1:
+        if not spinpol:
             nele = np.array([nele], dtype=int)
-        elif config.spindims == 2:
+        else:
+            print(nele + spinmag)
+            print(nele - spinmag)
             nele_up = (nele + spinmag) / 2
             nele_dw = (nele - spinmag) / 2
             nele = np.array([nele_up, nele_dw], dtype=int)

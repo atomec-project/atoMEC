@@ -102,7 +102,7 @@ def write_ISModel_data(ISModel):
 
     # number of electrons in each spin channel info
     nele = ISModel.nele
-    if config.spindims == 2:
+    if ISModel.spinpol:
         pre = "Number of up / down electrons"
         nele_str = "{preamble:30s}: {Nu} / {Nd}".format(
             preamble=pre, Nu=nele[0], Nd=nele[1]
