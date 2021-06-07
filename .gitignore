@@ -1,6 +1,16 @@
-AvAtom/__pycache__ # python cache folder
+# python cache folders
+*/__pycache__/*
 
 # emacs extension files
 *~
 *#
 #*
+
+# extra install folders
+build/
+install/
+dist/
+AvAtom.egg-info/
+
+# data / results files
+*.csv
