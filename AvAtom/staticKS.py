@@ -504,7 +504,7 @@ class Energy:
     def E_xc(self):
         if self._E_xc["xc"] == 0.0:
             # self._E_xc = xc.XCEnergy(self._dens, config.xfunc, config.cfunc).E_xc
-            self._E_xc = xc.E_xc(self._dens, config.xfunc, config.cfunc)
+            self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
         return self._E_xc
 
     def calc_E_kin(self, orbs):
