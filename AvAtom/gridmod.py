@@ -37,6 +37,11 @@ def grid_setup():
     xr = math.log(config.r_s)
 
     # initialize logarithmic grid
-    config.xgrid = np.linspace(xl, xr, config.grid_params["ngrid"])
+    xgrid = np.linspace(xl, xr, config.grid_params["ngrid"])
     # initialize real-space grid
-    config.rgrid = np.exp(config.xgrid)
+    rgrid = np.exp(xgrid)
+
+    config.xgrid = xgrid
+    config.rgrid = rgrid
+
+    return xgrid

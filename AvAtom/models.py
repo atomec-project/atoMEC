@@ -72,7 +72,7 @@ class ISModel:
             The boundary condition
         spinpol : bool
             Whether calculation will be spin-polarized
-        nele : numpy array
+        nele : ndarray
             Number of electrons in each spin channel (total if spinpol=False)
         unbound : str
             The treatment of unbound electrons
@@ -153,10 +153,10 @@ class ISModel:
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
 
         # set up the grids
-        gridmod.grid_setup()
+        xgrid = gridmod.grid_setup()
 
         # initialize orbitals
-        orbs = staticKS.Orbitals()
+        orbs = staticKS.Orbitals(xgrid)
         # use coulomb potential as initial guess
         v_init = staticKS.Potential.calc_v_en()
         orbs.compute(v_init, init=True)

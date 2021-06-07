@@ -23,11 +23,12 @@ class Orbitals:
     - occnums  (numpy array)    :   KS orbital occupation numbers
     """
 
-    def __init__(self):
+    def __init__(self, xgrid):
         """
         Initializes the orbital attributes to empty numpy arrays
         """
 
+        self._xgrid = xgrid
         self._eigfuncs = None
         self._eigvals = None
         self._occnums = None
@@ -69,7 +70,7 @@ class Orbitals:
         v[:] = potential
 
         # solve the KS equations
-        self._eigfuncs, self._eigvals = numerov.matrix_solve(v, config.xgrid)
+        self._eigfuncs, self._eigvals = numerov.matrix_solve(v, self._xgrid)
 
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals)
