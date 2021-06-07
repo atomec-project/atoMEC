@@ -14,6 +14,7 @@ First, clone the AvAtom repository and ``cd`` into the main directory.
 
 * Recommended : using Pipenv
 
+<<<<<<< HEAD
   The recommended way to install AvAtom is via Pipenv_
   which automatically creates a virtual environment and manages dependencies.
 
