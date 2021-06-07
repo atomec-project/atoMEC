@@ -12,7 +12,6 @@ import numpy as np
 from math import pi
 
 # internal packages
-import constants
 import unitconv
 import xc
 import config
@@ -138,7 +137,7 @@ class Atom:
         # volume in cm
         vol_cm = (4.0 * pi * rad_cm ** 3) / 3.0
         # atomic mass in g
-        mass_g = constants.mp_g * atom.at_mass
+        mass_g = config.mp_g * atom.at_mass
         # density in g cm^-3
         density = mass_g / vol_cm
 
@@ -150,7 +149,7 @@ class Atom:
         """
 
         # compute atomic mass in g
-        mass_g = constants.mp_g * atom.at_mass
+        mass_g = config.mp_g * atom.at_mass
         # compute volume and radius in cm^3/cm
         vol_cm = mass_g / density
         rad_cm = (3.0 * vol_cm / (4.0 * pi)) ** (1.0 / 3.0)
