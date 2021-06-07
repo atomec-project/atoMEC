@@ -158,7 +158,7 @@ class ISModel:
         # initialize orbitals
         orbs = staticKS.Orbitals(xgrid)
         # use coulomb potential as initial guess
-        v_init = staticKS.Potential.calc_v_en()
+        v_init = staticKS.Potential.calc_v_en(xgrid)
         orbs.compute(v_init, init=True)
 
         # occupy orbitals

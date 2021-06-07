@@ -285,6 +285,7 @@ class Potential:
             "xc": np.zeros_like(density.total),
         }
         self._density = density.total
+        self._xgrid = density._xgrid
 
     @property
     def v_s(self):
@@ -295,13 +296,13 @@ class Potential:
     @property
     def v_en(self):
         if np.all(self._v_en == 0.0):
-            self._v_en = self.calc_v_en()
+            self._v_en = self.calc_v_en(self._xgrid)
         return self._v_en
 
     @property
     def v_ha(self):
         if np.all(self._v_ha == 0.0):
-            self._v_ha = self.calc_v_ha(self._density)
+            self._v_ha = self.calc_v_ha(self._density, self._xgrid)
         return self._v_ha
 
     @property
@@ -311,22 +312,22 @@ class Potential:
         return self._v_xc
 
     @staticmethod
-    def calc_v_en():
+    def calc_v_en(xgrid):
         """
         Constructs the electron-nuclear potential
         v_en (x) = -Z * exp(-x)
         """
 
-        v_en = -config.Z * np.exp(-config.xgrid)
+        v_en = -config.Z * np.exp(-xgrid)
 
         return v_en
 
     @staticmethod
-    def calc_v_ha(density):
+    def calc_v_ha(density, xgrid):
         """
         Constructs the Hartree potential
         On the r-grid:
-        v_ha(r) = 4*pi* \int_0^r_s dr' n(r') r'^2 / max(r,r')
+        v_ha(r) = 4*pi* \int_0^rn_s dr' n(r') r'^2 / max(r,r')
         On the x-grid:
         v_ha(x) = 4*pi* { exp(-x) \int_x0^x dx' n(x') exp(3x')
                          - \int_x^log(r_s) dx' n(x') exp(2x') }
@@ -334,9 +335,6 @@ class Potential:
         Inputs:
         - density (np array)  : density
         """
-
-        # rename xgrid for ease
-        xgrid = config.xgrid
 
         # initialize v_ha
         v_ha = np.zeros_like(xgrid)
@@ -431,6 +429,7 @@ class Energy:
         # inputs
         self._orbs = orbs
         self._dens = dens.total
+        self._xgrid = dens._xgrid
 
         # initialize attributes
         self._F_tot = 0.0
@@ -468,13 +467,13 @@ class Energy:
     @property
     def E_en(self):
         if self._E_en == 0.0:
-            self._E_en = self.calc_E_en(self._dens)
+            self._E_en = self.calc_E_en(self._dens, self._xgrid)
         return self._E_en
 
     @property
     def E_ha(self):
         if self._E_ha == 0.0:
-            self._E_ha = self.calc_E_ha(self._dens)
+            self._E_ha = self.calc_E_ha(self._dens, self._xgrid)
         return self._E_ha
 
     @property
@@ -651,7 +650,7 @@ class Energy:
         return S_unbound
 
     @staticmethod
-    def calc_E_en(density):
+    def calc_E_en(density, xgrid):
         """
         Computes the electron-nuclear energy
         E_en = \int dr v_en(r) n(r)
@@ -664,13 +663,13 @@ class Energy:
         dens_tot = np.sum(density, axis=0)
 
         # compute the integral
-        v_en = Potential.calc_v_en()
-        E_en = mathtools.int_sphere(dens_tot * v_en, config.xgrid)
+        v_en = Potential.calc_v_en(xgrid)
+        E_en = mathtools.int_sphere(dens_tot * v_en, xgrid)
 
         return E_en
 
     @staticmethod
-    def calc_E_ha(density):
+    def calc_E_ha(density, xgrid):
         """
         Computes the Hartree energy
         E_ha = 1/2 \int dr \int dr' n(r)n(r')/|r-r'|
@@ -688,7 +687,7 @@ class Energy:
         dens_tot = np.sum(density, axis=0)
 
         # compute the integral
-        v_ha = Potential.calc_v_ha(density)
-        E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha, config.xgrid)
+        v_ha = Potential.calc_v_ha(density, xgrid)
+        E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha, xgrid)
 
         return E_ha
