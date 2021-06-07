@@ -1,4 +1,4 @@
-AvAtom: KS-DFT average atom code for warm dense matter
+AvAtom: KS-DFT average atom python code 
 ========================
 AvAtom is a python-based average-atom code for simulations of warm-dense matter. It uses Kohn--Sham density-functional theory, in combination with an average-atom approximation,
 to solve the electronic structure problem for single-element materials at finite temperature.
@@ -12,13 +12,12 @@ Installation
 ---------------
 First, clone the AvAtom repository and ``cd`` into the main directory.
 
-* Recommended : using Pipenv
+* Recommended : using Pipenv_
 
-  The recommended way to install AvAtom is via Pipenv_
-  which automatically creates a virtual environment and manages dependencies.
+  The recommended way to install AvAtom is via **Pipenv** which automatically creates a virtual environment and manages dependencies.
 
   #. First, install Pipenv if it is not already installed, for example via
-     *pip install pipenv* (or see Pipenv_ for installation instructions)
+     ``pip install pipenv`` (or see Pipenv_ for installation instructions)
   #. Next, install AvAtom and its dependencies with ``pipenv install``
   #. For example, type ``pipenv shell`` from the AvAtom directory to enter the AvAtom virtual environment
 
