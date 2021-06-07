@@ -85,12 +85,12 @@ def matrix_solve(v, xgrid):
             # sigma=0 seems to cause numerical issues so use a small offset
             eigs_up, vecs_up = eigs(H, k=config.nmax, M=B, which="LM", sigma=0.0001)
 
-            eigfuncs[i, l], eigvals[i, l] = update_orbs(vecs_up, eigs_up)
+            eigfuncs[i, l], eigvals[i, l] = update_orbs(vecs_up, eigs_up, xgrid)
 
     return eigfuncs, eigvals
 
 
-def update_orbs(l_eigfuncs, l_eigvals):
+def update_orbs(l_eigfuncs, l_eigvals, xgrid):
     """
     Sorts the eigenvalues and functions by ascending order in energy
     and normalizes the eigenfunctions within the Voronoi sphere
@@ -110,6 +110,6 @@ def update_orbs(l_eigfuncs, l_eigvals):
     if config.bc == "neumann":
         l_eigfuncs[-1] = l_eigfuncs[-2]
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
-    eigfuncs = mathtools.normalize_orbs(eigfuncs, config.xgrid)  # normalize
+    eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
 
     return eigfuncs, eigvals
