@@ -32,10 +32,9 @@ First, clone the AvAtom repository and ``cd`` into the main directory.
 
 Citing AvAtom
 ---------------
-The following papers and software should be cited in publications which use AvAtom:
+The following paper should be cited in publications which use AvAtom:
 
 #. Callow, T. J., Kraisler, E., Hansen, S. B., & Cangi, A. (2021). First-principles derivation and properties of density-functional average-atom models. arXiv preprint arXiv:2103.09928.
-#. `L. M. Mentel', *mendeleev* - A Python resource for properties of chemical elements, ions and isotopes. , 2014-- . Available at: https://github.com/lmmentel/mendeleev.
 
 
 
