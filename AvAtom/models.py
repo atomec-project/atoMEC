@@ -81,10 +81,12 @@ class ISModel:
         self.spinpol = check_inputs.ISModel.check_spinpol(spinpol)
 
         # spin magnetization has to be compatible with total electron number
-        self.spinmag = check_inputs.Atom().check_spinmag(spinmag, atom.nele)
+        self.spinmag = check_inputs.ISModel.check_spinmag(spinmag, atom.nele)
 
         # calculate electron number in (each) spin channel
-        self.nele = check_inputs.Atom().calc_nele(self.spinmag, atom.nele, self.spinpol)
+        self.nele = check_inputs.ISModel.calc_nele(
+            self.spinmag, atom.nele, self.spinpol
+        )
 
         # check the xc functionals
         xfunc, cfunc = check_inputs.ISModel.check_xc(xfunc_id, cfunc_id)
@@ -143,7 +145,7 @@ class ISModel:
 
         # calculate electron number in (each) spin channel
         nele_tot = np.sum(self.nele)
-        config.nele = check_inputs.Atom().calc_nele(
+        config.nele = check_inputs.ISModel.calc_nele(
             self.spinmag, nele_tot, self.spinpol
         )
 

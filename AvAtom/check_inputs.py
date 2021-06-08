@@ -158,52 +158,6 @@ class Atom:
 
         return radius
 
-    def check_spinmag(self, spinmag, nele):
-        """
-        Checks the spin magnetization is compatible with the total electron number
-        """
-        if isinstance(spinmag, int) == False:
-            raise InputError.spinmag_error(
-                "Spin magnetization is not a positive integer"
-            )
-
-        # computes the default value of spin magnetization
-        if spinmag == -1:
-            if nele % 2 == 0:
-                spinmag = 0
-            else:
-                spinmag = 1
-        elif spinmag > -1:
-            if nele % 2 == 0 and spinmag % 2 != 0:
-                raise InputError.spinmag_error(
-                    "Spin magnetization is not compatible with total electron number"
-                )
-            elif nele % 2 != 0 and spinmag % 2 == 0:
-                raise InputError.spinmag_error(
-                    "Spin magnetization is not compatible with total electron number"
-                )
-        else:
-            raise InputError.spinmag_error(
-                "Spin magnetization is not a positive integer"
-            )
-
-        return spinmag
-
-    def calc_nele(self, spinmag, nele, spinpol):
-        """
-        Calculates the electron number in each spin channel from spinmag
-        and total electron number
-        """
-
-        if not spinpol:
-            nele = np.array([nele], dtype=int)
-        else:
-            nele_up = (nele + spinmag) / 2
-            nele_dw = (nele - spinmag) / 2
-            nele = np.array([nele_up, nele_dw], dtype=int)
-
-        return nele
-
 
 class ISModel:
     """
@@ -354,6 +308,52 @@ class ISModel:
             raise InputError.spinpol_error("Spin polarization is not of type bool")
 
         return spinpol
+
+    def check_spinmag(spinmag, nele):
+        """
+        Checks the spin magnetization is compatible with the total electron number
+        """
+        if isinstance(spinmag, int) == False:
+            raise InputError.spinmag_error(
+                "Spin magnetization is not a positive integer"
+            )
+
+        # computes the default value of spin magnetization
+        if spinmag == -1:
+            if nele % 2 == 0:
+                spinmag = 0
+            else:
+                spinmag = 1
+        elif spinmag > -1:
+            if nele % 2 == 0 and spinmag % 2 != 0:
+                raise InputError.spinmag_error(
+                    "Spin magnetization is not compatible with total electron number"
+                )
+            elif nele % 2 != 0 and spinmag % 2 == 0:
+                raise InputError.spinmag_error(
+                    "Spin magnetization is not compatible with total electron number"
+                )
+        else:
+            raise InputError.spinmag_error(
+                "Spin magnetization is not a positive integer"
+            )
+
+        return spinmag
+
+    def calc_nele(spinmag, nele, spinpol):
+        """
+        Calculates the electron number in each spin channel from spinmag
+        and total electron number
+        """
+
+        if not spinpol:
+            nele = np.array([nele], dtype=int)
+        else:
+            nele_up = (nele + spinmag) / 2
+            nele_dw = (nele - spinmag) / 2
+            nele = np.array([nele_up, nele_dw], dtype=int)
+
+        return nele
 
 
 class EnergyCalcs:
