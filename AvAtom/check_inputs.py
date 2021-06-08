@@ -198,8 +198,6 @@ class Atom:
         if not spinpol:
             nele = np.array([nele], dtype=int)
         else:
-            print(nele + spinmag)
-            print(nele - spinmag)
             nele_up = (nele + spinmag) / 2
             nele_dw = (nele - spinmag) / 2
             nele = np.array([nele_up, nele_dw], dtype=int)
@@ -308,7 +306,7 @@ class ISModel:
 
         Raises
         ------
-            InputError
+        InputError
 
         Returns
         -------
@@ -334,6 +332,28 @@ class ISModel:
                 raise InputError.bc_error(err_msg)
 
         return bc
+
+    def check_spinpol(spinpol):
+        """
+        Parameters
+        ----------
+        spinpol : bool
+           spin polarized calculation
+
+        Returns
+        -------
+        spinpol : bool
+            same as input unless error raised
+
+        Raises
+        ------
+        InputError
+        """
+
+        if not isinstance(spinpol, bool):
+            raise InputError.spinpol_error("Spin polarization is not of type bool")
+
+        return spinpol
 
 
 class EnergyCalcs:
@@ -567,6 +587,23 @@ class InputError(Exception):
         """
 
         print("Error in boundary condition input: " + err_msg)
+        sys.exit("Exiting AvAtom")
+
+    def spinpol_error(err_msg):
+        """
+        Raises exception if spinpol not a boolean
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Raises
+        -------
+            InputError
+        """
+
+        print("Error in spin polarization input: " + err_msg)
         sys.exit("Exiting AvAtom")
 
     def grid_error(err_msg):

@@ -78,7 +78,7 @@ class ISModel:
         # Input variables
 
         # check the spin polarization
-        self.spinpol = spinpol
+        self.spinpol = check_inputs.ISModel.check_spinpol(spinpol)
 
         # spin magnetization has to be compatible with total electron number
         self.spinmag = check_inputs.Atom().check_spinmag(spinmag, atom.nele)
