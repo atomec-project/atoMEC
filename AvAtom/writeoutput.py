@@ -387,19 +387,28 @@ class SCF:
         eigval_tbl = ""
         occnum_tbl = ""
         for i in range(config.spindims):
-            headers = [n + 1 for n in range(config.nmax)]
-            headers[0] = "n=1"
-            RowIDs = [l for l in range(config.lmax)]
+
+            # truncate the table to include only one unbound state in each direction
+            lmax_new = np.amax(np.where(orbitals.eigvals[i] < 0)[0]) + 2
+            nmax_new = np.amax(np.where(orbitals.eigvals[i] < 0)[1]) + 2
+
+            # define row and column headers
+            headers = [n + 1 for n in range(nmax_new)]
+            headers[0] = "n=l+1"
+            RowIDs = [l for l in range(lmax_new)]
             RowIDs[0] = "l=0"
+
+            eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
+            occnums_new = orbitals.occnums[i, :lmax_new, :nmax_new]
 
             # the eigenvalue table
             eigval_tbl += (
                 tabulate.tabulate(
-                    orbitals.eigvals[i],
+                    eigvals_new,
                     headers,
                     tablefmt="presto",
-                    floatfmt="6.2f",
                     showindex=RowIDs,
+                    floatfmt="6.2f",
                     stralign="right",
                 )
                 + dblspc
@@ -408,7 +417,7 @@ class SCF:
             # the occnums table
             occnum_tbl += (
                 tabulate.tabulate(
-                    orbitals.occnums[i],
+                    occnums_new,
                     headers,
                     tablefmt="presto",
                     showindex=RowIDs,
