@@ -53,32 +53,34 @@ class Orbitals:
         """
 
         self._xgrid = xgrid
-        self._eigfuncs = None
-        self._eigvals = None
-        self._occnums = None
-        self._lbound = None
+        self._eigfuncs = np.zeros(
+            (config.spindims, config.lmax, config.nmax, config.grid_params["ngrid"])
+        )
+        self._eigvals = np.zeros((config.spindims, config.lmax, config.lmax))
+        self._occnums = np.zeros_like(self._eigvals)
+        self._lbound = np.zeros_like(self._eigvals)
 
     @property
     def eigvals(self):
-        if self._eigvals is None:
+        if np.all(self._eigvals == 0.0):
             raise Exception("Eigenvalues have not been initialized")
         return self._eigvals
 
     @property
     def eigfuncs(self):
-        if self._eigfuncs is None:
+        if np.all(self._eigfuncs == 0.0):
             raise Exception("Eigenfunctions have not been initialized")
         return self._eigfuncs
 
     @property
     def occnums(self):
-        if self._occnums is None:
+        if np.all(self._occnums == 0.0):
             raise Exception("Occnums have not been initialized")
         return self._occnums
 
     @property
     def lbound(self):
-        if self._lbound is None:
+        if np.all(self._lbound == 0.0):
             raise Exception("lbound has not been initialized")
         return self._lbound
 
