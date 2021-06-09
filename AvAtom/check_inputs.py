@@ -17,6 +17,11 @@ import xc
 import config
 
 
+# define some custom types
+
+intc = (int, np.integer)  # unfifying type for integers
+
+
 class Atom:
     """
     Checks the inputs from the BuildAtom class
@@ -48,7 +53,7 @@ class Atom:
         Checks the temperature is a float within a sensible range
         """
 
-        if not isinstance(temp, (float, int)):
+        if not isinstance(temp, (float, intc)):
             raise InputError.temp_error("temperature is not a number")
         else:
             # convert internal temperature to hartree
@@ -72,7 +77,7 @@ class Atom:
         """
         Checks the charge is an integer
         """
-        if isinstance(charge, int) == False:
+        if isinstance(charge, intc) == False:
             raise InputError.charge_error()
         else:
             return charge
@@ -94,7 +99,7 @@ class Atom:
 
     def check_radius(self, radius, units_radius):
 
-        if not isinstance(radius, (float, int)):
+        if not isinstance(radius, (float, intc)):
             raise InputError.density_error("Radius is not a number")
 
         else:
@@ -107,7 +112,7 @@ class Atom:
         return radius
 
     def check_density(self, density, units_density):
-        if not isinstance(density, (float, int)):
+        if not isinstance(density, (float, intc)):
             raise InputError.density_error("Density is not a number")
         else:
             if density > 100 or density < 0:
@@ -127,9 +132,9 @@ class Atom:
         - radius (float)    : voronoi sphere radius
         """
 
-        if isinstance(density, (float, int)) == False:
+        if isinstance(density, (float, intc)) == False:
             raise InputError.density_error("Density is not a number")
-        if not isinstance(radius, (float, int)):
+        if not isinstance(radius, (float, intc)):
             raise InputError.density_error("Radius is not a number")
         else:
             if units_radius == "angstrom" or units_radius == "ang":
@@ -349,7 +354,7 @@ class ISModel:
         """
         Checks the spin magnetization is compatible with the total electron number
         """
-        if isinstance(spinmag, int) == False:
+        if isinstance(spinmag, intc) == False:
             raise InputError.spinmag_error(
                 "Spin magnetization is not a positive integer"
             )
@@ -423,7 +428,7 @@ class EnergyCalcs:
             x0 = config.grid_params["x0"]
 
         # check that ngrid is an integer
-        if not isinstance(ngrid, int):
+        if not isinstance(ngrid, intc):
             raise InputError.grid_error("Number of grid points not an integer!")
         # check that ngrid is a positive number
         if ngrid < 0:
@@ -512,7 +517,7 @@ class EnergyCalcs:
 
         # check maxscf is an integer
         maxscf = scf_params["maxscf"]
-        if not isinstance(maxscf, int):
+        if not isinstance(maxscf, intc):
             raise InputError.SCF_error("maxscf is not an integer!")
         # check it is at least 1
         elif maxscf < 1:
