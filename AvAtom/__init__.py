@@ -72,34 +72,104 @@ class Atom:
         # print the initial spiel
         print("\n" + "Welcome to AvAtom! \n")
 
-        # Input variables
-        self.species = check_inputs.Atom().check_species(species)
-        self.temp = check_inputs.Atom().check_temp(temp, units_temp)
-        self.charge = check_inputs.Atom().check_charge(charge)
+        # input variables are checked later with getter / setter functions
+        self.species = species
+        self.units_temp = units_temp
+        self.temp = temp
+        self.charge = charge
+        self.units_radius = units_radius
+        self.units_density = units_density
 
-        # Fundamental atomic properties
-        self.at_chrg = self.species.atomic_number  # atomic number
-        config.Z = self.at_chrg
-        self.at_mass = self.species.atomic_weight  # atomic mass
-        self.nele = self.at_chrg + self.charge  # total electron number
-
-        # Check the radius and density
-        self.radius, self.density = check_inputs.Atom().check_density(
+        # radius and density need a special check to ensure compatibility
+        radius_check, density_check = check_inputs.Atom().check_rad_dens_init(
             self,
             radius,
             density,
-            units_radius,
-            units_density,
+            self.units_radius,
+            self.units_density,
         )
 
-        config.r_s = self.radius
-        self.volume = (4.0 * pi * self.radius ** 3.0) / 3.0
-        config.sph_vol = self.volume
-
-        # set temperature and inverse temperature
-        config.temp = self.temp
-        config.beta = 1.0 / self.temp
+        self.radius = radius_check
+        self.density = density_check
 
         # write output info
         output_str = writeoutput.write_atomic_data(self)
         print(output_str)
+
+    # below are the getter and setter attributes for all the class attributes
+
+    @property
+    def species(self):
+        return self._species
+
+    @species.setter
+    def species(self, species):
+        self._species = check_inputs.Atom().check_species(species)
+        self.at_chrg = self._species.atomic_number
+        self.at_mass = self._species.atomic_weight
+        config.Z = self.at_chrg
+
+    @property
+    def units_temp(self):
+        return self._units_temp
+
+    @units_temp.setter
+    def units_temp(self, units_temp):
+        self._units_temp = check_inputs.Atom().check_units_temp(units_temp)
+
+    @property
+    def temp(self):
+        return self._temp
+
+    @temp.setter
+    def temp(self, temp):
+        self._temp = check_inputs.Atom().check_temp(temp, self.units_temp)
+        config.temp = self._temp
+        config.beta = 1.0 / self._temp
+
+    @property
+    def charge(self):
+        return self._charge
+
+    @charge.setter
+    def charge(self, charge):
+        self._charge = check_inputs.Atom().check_charge(charge)
+        self.nele = self.at_chrg + self._charge
+
+    @property
+    def units_radius(self):
+        return self._units_radius
+
+    @units_radius.setter
+    def units_radius(self, units_radius):
+        self._units_radius = check_inputs.Atom().check_units_radius(units_radius)
+
+    @property
+    def units_density(self):
+        return self._units_density
+
+    @units_density.setter
+    def units_density(self, units_density):
+        self._units_density = check_inputs.Atom().check_units_density(units_density)
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, radius):
+        self._radius = check_inputs.Atom().check_radius(radius, self.units_radius)
+        self._density = check_inputs.Atom().radius_to_dens(self, self._radius)
+        config.r_s = self._radius
+        config.sph_vol = (4.0 * pi * self._radius ** 3.0) / 3.0
+
+    @property
+    def density(self):
+        return self._density
+
+    @density.setter
+    def density(self, density):
+        self._density = check_inputs.Atom().check_density(density, self.units_density)
+        self._radius = check_inputs.Atom().dens_to_radius(self, self._density)
+        config.r_s = self._radius
+        config.sph_vol = (4.0 * pi * self._radius ** 3.0) / 3.0
