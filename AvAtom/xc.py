@@ -96,22 +96,21 @@ def check_xc_func(xc_code, id_supp):
     # check the xc code is either a string descriptor or integer id
     if isinstance(xc_code, (str, int)) == False:
         err = 1
-        xc_func = 0
+        xc_func_id = 0
 
     # case when xc code is not a libxc functional
     xc_special_codes = ["hartree", "None"]
     if xc_code in xc_special_codes:
-        xc_func = XCFunc(xc_code)
+        xc_func_id = xc_code
         err = 0
 
     # make the libxc object functional
     else:
         # checks if the libxc code is recognised
         try:
-            if config.spinpol == True:
-                xc_func = pylibxc.LibXCFunctional(xc_code, "polarized")
-            else:
-                xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
+
+            # don't need to worry about polarization yet
+            xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
 
             # check the xc family is supported
             if xc_func._family in id_supp:
@@ -123,13 +122,23 @@ def check_xc_func(xc_code, id_supp):
             err = 2
             xc_func = 0
 
+    return xc_func._xc_func_name, err
+
+
+def set_xc_func(xc_code):
+
+    if config.spinpol:
+        xc_func = pylibxc.LibXCFunctional(xc_code, "polarized")
+    else:
+        xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
+
     # initialize the temperature if required
     xc_temp_funcs = ["lda_xc_gdsmfb", "lda_xc_ksdt", 577, 259]
 
     if xc_code in xc_temp_funcs:
         xc_func.set_ext_params([config.temp])
 
-    return xc_func, err
+    return xc_func
 
 
 def v_xc(density, xgrid, xfunc, cfunc):

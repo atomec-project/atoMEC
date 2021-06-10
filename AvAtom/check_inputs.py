@@ -205,7 +205,7 @@ class ISModel:
     Checks the inputs for the IS model class
     """
 
-    def check_xc(x_func, c_func):
+    def check_xc(xc_func, xc_type):
         """
         checks the exchange and correlation functionals are defined by libxc
         """
@@ -216,39 +216,29 @@ class ISModel:
         id_supp = [1]
 
         # check both the exchange and correlation functionals are valid
-        x_func, err_x = xc.check_xc_func(x_func, id_supp)
-        c_func, err_c = xc.check_xc_func(c_func, id_supp)
+        xc_func, err_xc = xc.check_xc_func(xc_func, id_supp)
 
-        if err_x == 1:
-            raise InputError.xc_error("x functional is not an id (int) or name (str)")
-        elif err_c == 1:
-            raise InputError.xc_error("c functional is not an id (int) or name (str)")
-        elif err_x == 2:
+        if err_xc == 1:
             raise InputError.xc_error(
-                "x functional is not a valid name or id.\n \
+                xctype + " functional is not an id (int) or name (str)"
+            )
+        elif err_xc == 2:
+            raise InputError.xc_error(
+                xc_type
+                + " functional is not a valid name or id.\n \
                 Please choose from the valid inputs listed here: \n\
                 https://www.tddft.org/programs/libxc/functionals/"
             )
-        elif err_c == 2:
+        elif err_xc == 3:
             raise InputError.xc_error(
-                "c functional is not a valid name or id. \n\
-                Please choose from the valid inputs listed here: \n\
-                https://www.tddft.org/programs/libxc/functionals/"
-            )
-        elif err_x == 3:
-            raise InputError.xc_error(
-                "This family of functionals is not yet supported by AvAtom. \n\
-                Supported families so far are: "
-                + " ".join(names_supp)
-            )
-        elif err_c == 3:
-            raise InputError.xc_error(
-                "This family of functionals is not yet supported by AvAtom. \n\
+                "This family of "
+                + xc_type
+                + " functionals is not yet supported by AvAtom. \n\
                 Supported families so far are: "
                 + " ".join(names_supp)
             )
 
-        return x_func, c_func
+        return xc_func
 
     def check_unbound(unbound):
         """

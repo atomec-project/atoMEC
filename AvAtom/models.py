@@ -11,6 +11,7 @@ import config
 import staticKS
 import convergence
 import writeoutput
+import xc
 
 
 class ISModel:
@@ -76,32 +77,81 @@ class ISModel:
         """
 
         # Input variables
-
-        # check the spin polarization
-        self.spinpol = check_inputs.ISModel.check_spinpol(spinpol)
-
-        # spin magnetization has to be compatible with total electron number
-        self.spinmag = check_inputs.ISModel.check_spinmag(spinmag, atom.nele)
-
-        # calculate electron number in (each) spin channel
-        self.nele = check_inputs.ISModel.calc_nele(
-            self.spinmag, atom.nele, self.spinpol
-        )
-
-        # check the xc functionals
-        xfunc, cfunc = check_inputs.ISModel.check_xc(xfunc_id, cfunc_id)
-        self.xfunc_id = xfunc._xc_func_name
-        self.cfunc_id = cfunc._xc_func_name
-
-        # check the boundary condition
-        self.bc = check_inputs.ISModel.check_bc(bc)
-
-        # check the unbound electron treatment
-        self.unbound = check_inputs.ISModel.check_unbound(unbound)
+        self.nele_tot = atom.nele
+        self.spinpol = spinpol
+        self.spinmag = spinmag
+        self.xfunc_id = xfunc_id
+        self.cfunc_id = cfunc_id
+        self.bc = bc
+        self.unbound = unbound
 
         # write output information
         output_str = writeoutput.write_ISModel_data(self)
         print(output_str)
+
+    @property
+    def spinpol(self):
+        return self._spinpol
+
+    @spinpol.setter
+    def spinpol(self, spinpol):
+        self._spinpol = check_inputs.ISModel.check_spinpol(spinpol)
+        # define the leading dimension for KS quantities (density, orbs, pot)
+        if self._spinpol:
+            config.spindims = 2
+        else:
+            config.spindims = 1
+
+    @property
+    def spinmag(self):
+        return self._spinmag
+
+    @spinmag.setter
+    def spinmag(self, spinmag):
+        self._spinmag = check_inputs.ISModel.check_spinmag(spinmag, self.nele_tot)
+        # compute the no of electrons in each spin channel
+        self.nele = check_inputs.ISModel.calc_nele(
+            self.spinmag, self.nele_tot, self.spinpol
+        )
+        config.nele = self.nele
+
+    @property
+    def xfunc_id(self):
+        return self._xfunc_id
+
+    @xfunc_id.setter
+    def xfunc_id(self, xfunc_id):
+        self._xfunc_id = check_inputs.ISModel.check_xc(xfunc_id, "exchange")
+        # define the exchange func object
+        config.xfunc = xc.set_xc_func(self._xfunc_id)
+
+    @property
+    def cfunc_id(self):
+        return self._cfunc_id
+
+    @cfunc_id.setter
+    def cfunc_id(self, cfunc_id):
+        self._cfunc_id = check_inputs.ISModel.check_xc(cfunc_id, "correlation")
+        # define the correlation func object
+        config.cfunc = xc.set_xc_func(self._cfunc_id)
+
+    @property
+    def bc(self):
+        return self._bc
+
+    @bc.setter
+    def bc(self, bc):
+        self._bc = check_inputs.ISModel.check_bc(bc)
+        config.bc = self._bc
+
+    @property
+    def unbound(self):
+        return self._unbound
+
+    @unbound.setter
+    def unbound(self, unbound):
+        self._unbound = check_inputs.ISModel.check_unbound(unbound)
+        config.unbound = self._unbound
 
     def CalcEnergy(self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}):
 
@@ -134,27 +184,9 @@ class ISModel:
             Total energy object
         """
 
-        # define global parameters from self
-        config.spinpol = self.spinpol
-
-        # set the spindims param (leading dimension for density, orbitals etc)
-        if config.spinpol == True:
-            config.spindims = 2
-        else:
-            config.spindims = 1
-
-        # calculate electron number in (each) spin channel
-        nele_tot = np.sum(self.nele)
-        config.nele = check_inputs.ISModel.calc_nele(
-            self.spinmag, nele_tot, self.spinpol
-        )
-
         # boundary cond, unbound electrons, xc func objects
         config.bc = self.bc
         config.unbound = self.unbound
-        config.xfunc, config.cfunc = check_inputs.ISModel.check_xc(
-            self.xfunc_id, self.cfunc_id
-        )
 
         # reset global parameters if they are changed
         config.nmax = nmax
