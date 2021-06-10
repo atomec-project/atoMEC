@@ -8,6 +8,7 @@ Routines for solving the KS equations via Numerov's method
 import numpy as np
 from scipy.sparse.linalg import eigsh, eigs
 from scipy.linalg import eigh, eig
+from joblib import Parallel, delayed
 
 # from staticKS import Orbitals
 
@@ -69,25 +70,36 @@ def matrix_solve(v, xgrid):
     T = -0.5 * p * A
 
     # A new Hamiltonian has to be re-constructed for every value of l and each spin channel if spin-polarized
-    for l in range(config.lmax):
+    for i in range(np.shape(v)[0]):
 
-        # diagonalize Hamiltonian using scipy
-        for i in range(np.shape(v)[0]):
+        X = Parallel(n_jobs=-1, max_nbytes=None)(
+            delayed(diag_H)(l, T, B, V_mat, v[i], xgrid, config.nmax)
+            for l in range(config.lmax)
+        )
 
-            # fill potential matrices
-            np.fill_diagonal(V_mat, v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
-
-            # construct Hamiltonians
-            H = T + B * V_mat
-
-            # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
-            # use `shift-invert mode' (sigma=0) and pick lowest magnitude ("LM") eigs
-            # sigma=0 seems to cause numerical issues so use a small offset
-            eigs_up, vecs_up = eigs(H, k=config.nmax, M=B, which="LM", sigma=0.0001)
-
-            eigfuncs[i, l], eigvals[i, l] = update_orbs(vecs_up, eigs_up, xgrid)
+        for l in range(config.lmax):
+            eigfuncs[i, l] = X[l][0]
+            eigvals[i, l] = X[l][1]
 
     return eigfuncs, eigvals
+
+
+def diag_H(l, T, B, V_mat, v, xgrid, nmax):
+
+    # fill potential matrices
+    np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
+
+    # construct Hamiltonians
+    H = T + B * V_mat
+
+    # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
+    # use `shift-invert mode' (sigma=0) and pick lowest magnitude ("LM") eigs
+    # sigma=0 seems to cause numerical issues so use a small offset
+    evals, evecs = eigs(H, k=nmax, M=B, which="LM", sigma=0.0001)
+
+    evecs, evals = update_orbs(evecs, evals, xgrid)
+
+    return evecs, evals
 
 
 def update_orbs(l_eigfuncs, l_eigvals, xgrid):
