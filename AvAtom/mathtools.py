@@ -169,7 +169,7 @@ def chem_pot(orbs):
                     x0=mu0[i],
                     args=(orbs.eigvals[i], orbs.lbound[i], config.nele[i]),
                     method="brentq",
-                    bracket=[-20, 20],
+                    bracket=[-40, 40],
                     options={"maxiter": 100},
                 )
                 mu[i] = soln.root
