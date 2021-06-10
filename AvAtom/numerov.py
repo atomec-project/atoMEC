@@ -70,24 +70,36 @@ def matrix_solve(v, xgrid):
     T = -0.5 * p * A
 
     # A new Hamiltonian has to be re-constructed for every value of l and each spin channel if spin-polarized
+    pmax = config.spindims * config.lmax
+    v_flat = np.zeros((pmax, N))
+
     for i in range(np.shape(v)[0]):
-
-        X = Parallel(n_jobs=-1, max_nbytes=None)(
-            delayed(diag_H)(l, T, B, V_mat, v[i], xgrid, config.nmax)
-            for l in range(config.lmax)
-        )
-
         for l in range(config.lmax):
-            eigfuncs[i, l] = X[l][0]
-            eigvals[i, l] = X[l][1]
+            v_flat[l + (i * config.lmax)] = v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(
+                -2 * xgrid
+            )
+
+    X = Parallel(n_jobs=-1, max_nbytes=None, backend="loky")(
+        delayed(diag_H)(p, T, B, V_mat, v_flat, xgrid, config.nmax) for p in range(pmax)
+    )
+
+    eigfuncs_flat = np.zeros((pmax, config.nmax, N))
+    eigvals_flat = np.zeros((pmax, config.nmax))
+    for p in range(pmax):
+        eigfuncs_flat[p] = X[p][0]
+        eigvals_flat[p] = X[p][1]
+
+    eigfuncs = eigfuncs_flat.reshape(config.spindims, config.lmax, config.nmax, N)
+    eigvals = eigvals_flat.reshape(config.spindims, config.lmax, config.nmax)
 
     return eigfuncs, eigvals
 
 
-def diag_H(l, T, B, V_mat, v, xgrid, nmax):
+def diag_H(p, T, B, V_mat, v, xgrid, nmax):
 
     # fill potential matrices
-    np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
+    # np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
+    np.fill_diagonal(V_mat, v[p])
 
     # construct Hamiltonians
     H = T + B * V_mat
