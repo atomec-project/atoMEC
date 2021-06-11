@@ -79,15 +79,15 @@ def matrix_solve(v, xgrid):
                 -2 * xgrid
             )
 
-    X = Parallel(n_jobs=-1, max_nbytes=None, backend="loky")(
-        delayed(diag_H)(p, T, B, V_mat, v_flat, xgrid, config.nmax) for p in range(pmax)
+    X = Parallel(n_jobs=2, mmap_mode="r+")(
+        delayed(diag_H)(q, T, B, V_mat, v_flat, xgrid, config.nmax) for q in range(pmax)
     )
 
     eigfuncs_flat = np.zeros((pmax, config.nmax, N))
     eigvals_flat = np.zeros((pmax, config.nmax))
-    for p in range(pmax):
-        eigfuncs_flat[p] = X[p][0]
-        eigvals_flat[p] = X[p][1]
+    for q in range(pmax):
+        eigfuncs_flat[q] = X[q][0]
+        eigvals_flat[q] = X[q][1]
 
     eigfuncs = eigfuncs_flat.reshape(config.spindims, config.lmax, config.nmax, N)
     eigvals = eigvals_flat.reshape(config.spindims, config.lmax, config.nmax)
@@ -104,10 +104,13 @@ def diag_H(p, T, B, V_mat, v, xgrid, nmax):
     # construct Hamiltonians
     H = T + B * V_mat
 
+    # initialize random starting vector
+    v0 = np.random.rand((np.size(v[p]))) ** -p
+
     # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
     # use `shift-invert mode' (sigma=0) and pick lowest magnitude ("LM") eigs
     # sigma=0 seems to cause numerical issues so use a small offset
-    evals, evecs = eigs(H, k=nmax, M=B, which="LM", sigma=0.0001)
+    evals, evecs = eigs(H, k=nmax, M=B, which="LM", sigma=0.0001, v0=v0)
 
     evecs, evals = update_orbs(evecs, evals, xgrid)
 
