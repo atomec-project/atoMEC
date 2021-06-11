@@ -17,6 +17,6 @@ setup(
     url="https://github.com/timcallow/AvAtom",
     license=license,
     packages=find_packages(exclude=("tests", "docs")),
-    install_requires=["numpy", "scipy", "mendeleev", "tabulate", "pylibxc2"],
+    install_requires=["numpy", "scipy", "mendeleev", "tabulate", "pylibxc2", "joblib"],
     python_requires=">=3.6",
 )
