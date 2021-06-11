@@ -79,8 +79,9 @@ def matrix_solve(v, xgrid):
                 -2 * xgrid
             )
 
-    X = Parallel(n_jobs=2, mmap_mode="r+")(
-        delayed(diag_H)(q, T, B, V_mat, v_flat, xgrid, config.nmax) for q in range(pmax)
+    X = Parallel(n_jobs=config.numcores, mmap_mode="r+")(
+        delayed(diag_H)(q, T, B, V_mat, v_flat, xgrid, config.nmax, config.bc)
+        for q in range(pmax)
     )
 
     eigfuncs_flat = np.zeros((pmax, config.nmax, N))
@@ -95,7 +96,7 @@ def matrix_solve(v, xgrid):
     return eigfuncs, eigvals
 
 
-def diag_H(p, T, B, V_mat, v, xgrid, nmax):
+def diag_H(p, T, B, V_mat, v, xgrid, nmax, bc):
 
     # fill potential matrices
     # np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
@@ -104,20 +105,17 @@ def diag_H(p, T, B, V_mat, v, xgrid, nmax):
     # construct Hamiltonians
     H = T + B * V_mat
 
-    # initialize random starting vector
-    v0 = np.random.rand((np.size(v[p]))) ** -p
-
     # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
     # use `shift-invert mode' (sigma=0) and pick lowest magnitude ("LM") eigs
     # sigma=0 seems to cause numerical issues so use a small offset
-    evals, evecs = eigs(H, k=nmax, M=B, which="LM", sigma=0.0001, v0=v0)
+    evals, evecs = eigs(H, k=nmax, M=B, which="LM", sigma=0.0001)
 
-    evecs, evals = update_orbs(evecs, evals, xgrid)
+    evecs, evals = update_orbs(evecs, evals, xgrid, bc)
 
     return evecs, evals
 
 
-def update_orbs(l_eigfuncs, l_eigvals, xgrid):
+def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     """
     Sorts the eigenvalues and functions by ascending order in energy
     and normalizes the eigenfunctions within the Voronoi sphere
@@ -134,7 +132,7 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid):
     idr = np.argsort(l_eigvals)
     eigvals = np.array(l_eigvals[idr].real)
     # under neumann bc the RHS pt is junk, convert to correct value
-    if config.bc == "neumann":
+    if bc == "neumann":
         l_eigfuncs[-1] = l_eigfuncs[-2]
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
     eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
