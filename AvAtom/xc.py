@@ -109,7 +109,6 @@ def check_xc_func(xc_code, id_supp):
         # checks if the libxc code is recognised
         try:
 
-            # don't need to worry about polarization yet
             xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
 
             # check the xc family is supported
@@ -127,7 +126,7 @@ def check_xc_func(xc_code, id_supp):
 
 def set_xc_func(xc_code):
 
-    if config.spinpol:
+    if config.spindims == 2:
         xc_func = pylibxc.LibXCFunctional(xc_code, "polarized")
     else:
         xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
