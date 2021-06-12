@@ -440,7 +440,7 @@ def density_to_csv(rgrid, density):
 
     fname = "density.csv"
 
-    if config.spinpol == True:
+    if config.spindims == 2:
         headstr = (
             "r"
             + 7 * " "
@@ -481,7 +481,7 @@ def potential_to_csv(rgrid, potential):
 
     fname = "potential.csv"
 
-    if config.spinpol == True:
+    if config.spindims == 2:
         headstr = (
             "r"
             + 7 * " "
