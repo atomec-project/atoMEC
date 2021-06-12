@@ -153,6 +153,7 @@ class ISModel:
         self._unbound = check_inputs.ISModel.check_unbound(unbound)
         config.unbound = self._unbound
 
+    @writeoutput.timing
     def CalcEnergy(self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}):
 
         """
