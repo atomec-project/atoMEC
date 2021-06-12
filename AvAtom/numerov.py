@@ -34,10 +34,6 @@ def matrix_solve(v, xgrid):
 
     N = config.grid_params["ngrid"]
 
-    # initialize the eigenfunctions and their eigenvalues
-    eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N))
-    eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
-
     # define the spacing of the xgrid
     dx = xgrid[1] - xgrid[0]
     # number of grid points
@@ -51,7 +47,6 @@ def matrix_solve(v, xgrid):
     I_zero = np.eye(N)
     I_plus = np.eye(N, k=1)
 
-    V_mat = np.zeros((N, N))
     p = np.zeros((N, N))  # transformation for kinetic term on log grid
     np.fill_diagonal(p, np.exp(-2 * xgrid))
 
@@ -69,34 +64,93 @@ def matrix_solve(v, xgrid):
     # construct kinetic energy matrix
     T = -0.5 * p * A
 
-    # A new Hamiltonian has to be re-constructed for every value of l and each spin channel if spin-polarized
-    pmax = config.spindims * config.lmax
-    v_flat = np.zeros((pmax, N))
+    if config.numcores > 1:
+        eigfuncs, eigvals = KS_matsolve_parallel(T, A, B, v, xgrid)
+    else:
+        eigfuncs, eigvals = KS_matsolve_serial(T, A, B, v, xgrid)
 
+    return eigfuncs, eigvals
+
+
+def KS_matsolve_parallel(T, A, B, v, xgrid):
+
+    # compute the number of grid points
+    N = np.size(xgrid)
+    # initialize empty potential matrix
+    V_mat = np.zeros((N, N))
+
+    # Compute the number pmax of distinct diagonizations to be solved
+    pmax = config.spindims * config.lmax
+
+    # now flatten the potential matrix over spins
+    v_flat = np.zeros((pmax, N))
     for i in range(np.shape(v)[0]):
         for l in range(config.lmax):
             v_flat[l + (i * config.lmax)] = v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(
                 -2 * xgrid
             )
 
+    # set up the parallel job
     X = Parallel(n_jobs=config.numcores, mmap_mode="r+")(
-        delayed(diag_H)(q, T, B, V_mat, v_flat, xgrid, config.nmax, config.bc)
+        delayed(diag_H)(q, T, B, v_flat, xgrid, config.nmax, config.bc)
         for q in range(pmax)
     )
 
+    # retrieve the eigfuncs and eigvals from the joblib output
     eigfuncs_flat = np.zeros((pmax, config.nmax, N))
     eigvals_flat = np.zeros((pmax, config.nmax))
     for q in range(pmax):
         eigfuncs_flat[q] = X[q][0]
         eigvals_flat[q] = X[q][1]
 
+    # unflatten eigfuncs / eigvals so they return to original shape
     eigfuncs = eigfuncs_flat.reshape(config.spindims, config.lmax, config.nmax, N)
     eigvals = eigvals_flat.reshape(config.spindims, config.lmax, config.nmax)
 
     return eigfuncs, eigvals
 
 
-def diag_H(p, T, B, V_mat, v, xgrid, nmax, bc):
+def KS_matsolve_serial(T, A, B, v, xgrid):
+
+    # compute the number of grid points
+    N = np.size(xgrid)
+    # initialize empty potential matrix
+    V_mat = np.zeros((N, N))
+
+    # initialize the eigenfunctions and their eigenvalues
+    eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N))
+    eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
+
+    # A new Hamiltonian has to be re-constructed for every value of l and each spin channel if spin-polarized
+    for l in range(config.lmax):
+
+        # diagonalize Hamiltonian using scipy
+        for i in range(np.shape(v)[0]):
+
+            # fill potential matrices
+            np.fill_diagonal(V_mat, v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
+
+            # construct Hamiltonians
+            H = T + B * V_mat
+
+            # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
+            # use `shift-invert mode' (sigma=0) and pick lowest magnitude ("LM") eigs
+            # sigma=0 seems to cause numerical issues so use a small offset
+            eigs_up, vecs_up = eigs(H, k=config.nmax, M=B, which="LM", sigma=0.0001)
+
+            eigfuncs[i, l], eigvals[i, l] = update_orbs(
+                vecs_up, eigs_up, xgrid, config.bc
+            )
+
+    return eigfuncs, eigvals
+
+
+def diag_H(p, T, B, v, xgrid, nmax, bc):
+
+    # compute the number of grid points
+    N = np.size(xgrid)
+    # initialize empty potential matrix
+    V_mat = np.zeros((N, N))
 
     # fill potential matrices
     # np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
