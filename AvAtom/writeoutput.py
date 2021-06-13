@@ -391,8 +391,12 @@ class SCF:
         for i in range(config.spindims):
 
             # truncate the table to include only one unbound state in each direction
-            lmax_new = np.amax(np.where(orbitals.eigvals[i] < 0)[0]) + 2
-            nmax_new = np.amax(np.where(orbitals.eigvals[i] < 0)[1]) + 2
+            lmax_new = min(
+                np.amax(np.where(orbitals.eigvals[i] < 0)[0]) + 2, config.lmax
+            )
+            nmax_new = min(
+                np.amax(np.where(orbitals.eigvals[i] < 0)[1]) + 2, config.nmax
+            )
 
             # define row and column headers
             headers = [n + 1 for n in range(nmax_new)]
