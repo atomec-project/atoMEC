@@ -35,6 +35,8 @@ class Atom:
         The units of radius, must be one of "ang" or "bohr"
     units_density : str, optional
         The units of density, currently only "g/cm3" is supported
+    write_output : bool, optional
+        Whether to print atomic information, defaults True
 
     Attributes
     ----------
@@ -55,6 +57,8 @@ class Atom:
         The atomic mass
     nele : int
         The total electron number
+    info : str
+        Information about the atom
     """
 
     def __init__(
@@ -67,6 +71,7 @@ class Atom:
         units_temp="ha",
         units_radius="bohr",
         units_density="g/cm3",
+        write_info=True,
     ):
 
         # print the initial spiel
@@ -92,9 +97,8 @@ class Atom:
         self.radius = radius_check
         self.density = density_check
 
-        # write output info
-        output_str = writeoutput.write_atomic_data(self)
-        print(output_str)
+        if write_info:
+            print(self.info)
 
     # below are the getter and setter attributes for all the class attributes
 
@@ -105,9 +109,16 @@ class Atom:
     @species.setter
     def species(self, species):
         self._species = check_inputs.Atom().check_species(species)
-        self.at_chrg = self._species.atomic_number
-        self.at_mass = self._species.atomic_weight
-        config.Z = self.at_chrg
+
+    @property
+    def at_chrg(self):
+        chrg = self.species.atomic_number
+        config.Z = chrg
+        return chrg
+
+    @property
+    def at_mass(self):
+        return self.species.atomic_weight
 
     @property
     def units_temp(self):
@@ -134,7 +145,10 @@ class Atom:
     @charge.setter
     def charge(self, charge):
         self._charge = check_inputs.Atom().check_charge(charge)
-        self.nele = self.at_chrg + self._charge
+
+    @property
+    def nele(self):
+        return self.at_chrg + self._charge
 
     @property
     def units_radius(self):
@@ -173,3 +187,8 @@ class Atom:
         self._radius = check_inputs.Atom().dens_to_radius(self, self._density)
         config.r_s = self._radius
         config.sph_vol = (4.0 * pi * self._radius ** 3.0) / 3.0
+
+    @property
+    def info(self):
+        # write output info
+        return writeoutput.write_atomic_data(self)
