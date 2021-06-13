@@ -12,6 +12,9 @@ import numpy as np
 import config
 import mathtools
 
+# list of special codes for functionals not defined by libxc
+xc_special_codes = ["hartree", "None"]
+
 
 class XCFunc:
     """
@@ -98,10 +101,9 @@ def check_xc_func(xc_code, id_supp):
         err = 1
         xc_func_id = 0
 
-    # case when xc code is not a libxc functional
-    xc_special_codes = ["hartree", "None"]
+    # when xc code is one of the special avatom defined functionals
     if xc_code in xc_special_codes:
-        xc_func_id = xc_code
+        xc_func_name = xc_code
         err = 0
 
     # make the libxc object functional
@@ -121,19 +123,27 @@ def check_xc_func(xc_code, id_supp):
             err = 2
             xc_func = 0
 
-    return xc_func._xc_func_name, err
+        xc_func_name = xc_func._xc_func_name
+
+    return xc_func_name, err
 
 
 def set_xc_func(xc_code):
 
-    if config.spindims == 2:
-        xc_func = pylibxc.LibXCFunctional(xc_code, "polarized")
+    # when xc code is one of the special avatom defined functionals
+    if xc_code in xc_special_codes:
+        xc_func = XCFunc(xc_code)
+        err = 0
+
     else:
-        xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
+        # whether the xc functional is spin polarized
+        if config.spindims == 2:
+            xc_func = pylibxc.LibXCFunctional(xc_code, "polarized")
+        else:
+            xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
 
     # initialize the temperature if required
     xc_temp_funcs = ["lda_xc_gdsmfb", "lda_xc_ksdt", 577, 259]
-
     if xc_code in xc_temp_funcs:
         xc_func.set_ext_params([config.temp])
 
@@ -200,7 +210,7 @@ def calc_xc(density, xgrid, xcfunc, xctype):
 
     # case where there is no xc func
     if xcfunc._number == 0:
-        xc_arr = 0.0
+        xc_arr[:] = 0.0
 
     # special case in which xc = -hartree
     elif xcfunc._number == -1:
