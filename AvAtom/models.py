@@ -102,6 +102,22 @@ class ISModel:
         else:
             config.spindims = 1
 
+        # reset electron number if it changes
+        try:
+            self.nele = check_inputs.ISModel.calc_nele(
+                self.spinmag, self.nele_tot, self.spinpol
+            )
+            config.nele = self.nele
+        except AttributeError:
+            print("can't set the number of electrons")
+
+        # reset the x and c functionals if spinpol changes
+        try:
+            config.xfunc = xc.set_xc_func(self._xfunc_id)
+            config.cfunc = xc.set_xc_func(self._cfunc_id)
+        except AttributeError:
+            pass
+
     @property
     def spinmag(self):
         return self._spinmag
