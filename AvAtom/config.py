@@ -19,3 +19,6 @@ grid_params = {"ngrid": 1000, "x0": -12}
 conv_params = {"econv": 1.0e-5, "nconv": 1.0e-4, "vconv": 1.0e-4}
 # scf parameters
 scf_params = {"maxscf": 50, "mixfrac": 0.3}
+
+# parallelization
+numcores = 0  # defaults to serial

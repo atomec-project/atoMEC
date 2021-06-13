@@ -3,6 +3,8 @@ Handles all output, writing to files etc
 """
 
 # standard libs
+from functools import wraps
+import time
 
 # external libs
 import numpy as np
@@ -510,3 +512,16 @@ def potential_to_csv(rgrid, potential):
     np.savetxt(fname, data, fmt="%8.3e", header=headstr)
 
     return
+
+
+# timing wrapper
+def timing(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        ts = time.time()
+        result = f(*args, **kw)
+        te = time.time()
+        print("func:%r took: %2.4f sec" % (f.__name__, te - ts))
+        return result
+
+    return wrap
