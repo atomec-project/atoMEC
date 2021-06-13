@@ -24,18 +24,11 @@ class ISModel:
         spinpol=config.spinpol,
         spinmag=-1,
         unbound=config.unbound,
+        write_info=True,
     ):
         """
         Defines the parameters used for an energy calculation.
         These are choices for the theoretical model, not numerical parameters for implementation
-
-        Inputs (all optional):
-        - xfunc    (str)   : code for libxc exchange functional     (use "None" for no exchange func)
-        - cfunc    (str)   : code for libxc correlation functional  (use "None" for no correlation func)
-        - bc       (int)   : choice of boundary condition (1 or 2)
-        - spinpol  (bool)  : spin-polarized calculation
-        - spinmag (int)    : spin-magentization
-        - unbound  (str)   : treatment of unbound electrons
 
         Parameters
         ----------
@@ -59,7 +52,9 @@ class ISModel:
         unbound : str, optional
             The way in which the unbound electron density is computed
             Default : "ideal"
-
+        write_info : bool, optional
+            Writes information about the model parameters
+            Default : True
         Attributes
         ----------
         xfunc : str
@@ -74,6 +69,8 @@ class ISModel:
             Number of electrons in each spin channel (total if spinpol=False)
         unbound : str
             The treatment of unbound electrons
+        info : str
+            Information about all the model parameters
         """
 
         # Input variables
@@ -85,9 +82,9 @@ class ISModel:
         self.bc = bc
         self.unbound = unbound
 
-        # write output information
-        output_str = writeoutput.write_ISModel_data(self)
-        print(output_str)
+        # print the information
+        if write_info:
+            print(self.info)
 
     @property
     def spinpol(self):
@@ -102,14 +99,14 @@ class ISModel:
         else:
             config.spindims = 1
 
-        # reset electron number if it changes
         try:
+            # compute the no of electrons in each spin channel
             self.nele = check_inputs.ISModel.calc_nele(
                 self.spinmag, self.nele_tot, self.spinpol
             )
             config.nele = self.nele
         except AttributeError:
-            print("can't set the number of electrons")
+            pass
 
         # reset the x and c functionals if spinpol changes
         try:
@@ -125,11 +122,14 @@ class ISModel:
     @spinmag.setter
     def spinmag(self, spinmag):
         self._spinmag = check_inputs.ISModel.check_spinmag(spinmag, self.nele_tot)
-        # compute the no of electrons in each spin channel
-        self.nele = check_inputs.ISModel.calc_nele(
-            self.spinmag, self.nele_tot, self.spinpol
-        )
-        config.nele = self.nele
+        try:
+            # compute the no of electrons in each spin channel
+            self.nele = check_inputs.ISModel.calc_nele(
+                self.spinmag, self.nele_tot, self.spinpol
+            )
+            config.nele = self.nele
+        except AttributeError:
+            pass
 
     @property
     def xfunc_id(self):
@@ -169,8 +169,14 @@ class ISModel:
         self._unbound = check_inputs.ISModel.check_unbound(unbound)
         config.unbound = self._unbound
 
+    @property
+    def info(self):
+        return writeoutput.write_ISModel_data(self)
+
     @writeoutput.timing
-    def CalcEnergy(self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}):
+    def CalcEnergy(
+        self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}, write_info=True
+    ):
 
         """
         Runs a self-consistent calculation to minimize the Kohn--Sham free energy functional
@@ -194,7 +200,9 @@ class ISModel:
             dictionary for scf cycle parameters as follows
             {'maxscf'   (int)    : maximum number of scf cycles
              'mixfrac'  (float)  : density mixing fraction}
-
+        write_info : bool, optional
+            prints the scf cycle and final parameters
+            defaults to True
         Returns
         -------
         energy : obj
