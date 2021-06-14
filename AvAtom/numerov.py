@@ -84,11 +84,11 @@ def matrix_solve(v, xgrid):
     # construct kinetic energy matrix
     T = -0.5 * p * A
 
-    # solve in serial or parallel - serial only used for debugging purposes
+    # solve in serial or parallel - serial mostly useful for debugging
     if config.numcores > 0:
         eigfuncs, eigvals = KS_matsolve_parallel(T, B, v, xgrid)
     else:
-        eigfuncs, eigvals = _KS_matsolve_serial(T, B, v, xgrid)
+        eigfuncs, eigvals = KS_matsolve_serial(T, B, v, xgrid)
 
     return eigfuncs, eigvals
 
