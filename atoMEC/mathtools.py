@@ -78,13 +78,23 @@ def int_sphere(fx, xgrid):
 
 def laplace(y, x, axis=-1):
     """
-    Computes the second-order derivative d^2 y / dx^2
+    Computes the second-order derivative d^2 y(x) / dx^2
     over the chosen axis of the input array
 
-    Inputs:
-    - y (np array)    : function on which differential is computed
-    - x (np array)    : grid for differentation
-    - axis (int)      : axis to differentiate on (defaults to last)
+    Parameters
+    ----------
+    y : ndarray
+        array y(x) on which laplacian is computed
+    x : ndarray
+        x array
+    axis: int, optional
+        axis over which derivatives are taken
+        default : -1
+
+    Returns
+    -------
+    grad2_y : ndarray
+        the laplacian of y
     """
 
     # first compute the first-order gradient
@@ -98,16 +108,28 @@ def laplace(y, x, axis=-1):
 
 def fermi_dirac(eps, mu, beta, n=0):
     """
-    Computes the Fermi-Dirac function
-    f_fd = (eps)^(n/2) / (1 + exp(beta(eps-mu))
+    Computes the Fermi-Dirac function, see notes
 
-    Inputs:
-    - mu   (float)     : chemical potential
-    - beta (float)     : inverse temperature
-    - eps  (np array)  : energy
-    - n    (int)       : power to which energy is raised (opt)
-    Returns:
-    - f_fd (float)     : fermi_dirac occupation
+    Parameters
+    ----------
+    mu : array_like
+        the chemical potential
+    beta : float
+        the inverse potential
+    eps : array_like
+        the energies
+    n : int
+        energy is raised to power n/2 in the numerator (see notes)
+
+    Returns
+    -------
+    f_fd : array_like
+        the fermi dirac occupation(s)
+
+    Notes
+    -----
+    The FD function is defined as:
+    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{(n/2)}{1+\exp(1+\beta(\epsilon - \mu))}
     """
 
     # dfn the exponential function
@@ -123,15 +145,27 @@ def fermi_dirac(eps, mu, beta, n=0):
 
 def fd_int_complete(mu, beta, n):
     """
-    Computes complete Fermi-Dirac integrals of the form
-    I_(n/2)(mu, beta) = \int_0^inf \de e^(n/2) f_fd(mu, e, beta)
+    Computes complete Fermi-Dirac integrals (see notes)
 
-    Inputs:
-    - mu (float) : chemical potential
-    - beta (float)  : inverse temperature
-    - n (int)       : order of integral I_(n/2)
+    Parameters
+    ----------
+    mu : float
+        chemical potential
+    beta: float
+        inverse temperature
+    n : int
+        order of Fermi-Dirac integral (see notes)
+
     Returns
-    - I_n (float)   : fd integral
+    -------
+    I_n : float
+        the complete fermi-dirac integral
+
+    Notes
+    -----
+    Complete Fermi-Dirac integrals are of the form
+    .. math:: I_(n)(\mu,\beta) = \int_0^\inf \dd{\epsilon} \epsilon^(n/2) f_fd(\mu,\epsilon,\beta)
+    where n is the order of the integral
     """
 
     # use scipy quad integration routine
@@ -147,14 +181,24 @@ def fd_int_complete(mu, beta, n):
 
 def chem_pot(orbs):
     """
-    Determines the chemical potential by enforcing charge neutrality
-    Finds the roots of the eqn:
-    \sum_{nl} (2l+1) f_fd(e_nl,beta,mu) + N_ub(beta,mu) - N_e = 0
+    Determines the chemical potential by enforcing charge neutrality (see notes)
+    Uses scipy.optimize.root_scalar with brentq implementation
 
-    Inputs:
-    - orbs (object)           : the orbitals object
-    Returns:
-    - mu (list of floats)         : chem pot for each spin
+    Parameters
+    ----------
+    orbs : object(staticKS.Orbitals)
+        the orbitals object
+
+    Returns
+    -------
+    mu : array_like
+        chemical potential (spin-dependent)
+
+    Notes
+    -----
+    Finds the roots of the eqn:
+    ..math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e = 0
+    The number of unbound electrons N_{ub} depends on the implementation choice
     """
 
     mu = config.mu
@@ -175,12 +219,38 @@ def chem_pot(orbs):
                 mu[i] = soln.root
             # in case there are no electrons in one spin channel
             else:
-                mu[i] = 1000
+                mu[i] = np.inf
 
     return mu
 
 
 def f_root_id(mu, eigvals, lbound, nele):
+    """
+    Functional input for the chemical potential root finding function
+    with the ideal approximation for unbound electrons (see notes)
+
+    Parameters
+    ----------
+    mu : array_like
+        chemical potential
+    eigvals : ndarray
+        the energy eigenvalues
+    lbound : ndarray
+        the lbound [(2l+1)*Theta(e)] matrix
+    nele : union(int, float)
+        the number of electrons for given spin
+
+    Returns
+    -------
+    f_root : float
+       the difference of the predicted electron number with given mu
+       and the actual electron number
+
+    Notes
+    -----
+    The returned function is
+    ..math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e
+    """
 
     # caluclate the contribution from the bound electrons
     if nele != 0:
@@ -196,4 +266,6 @@ def f_root_id(mu, eigvals, lbound, nele):
     contrib_unbound = prefac * fd_int_complete(mu, config.beta, 1.0)
 
     # return the function whose roots are to be found
-    return contrib_bound + contrib_unbound - nele
+    f_root = contrib_bound + contrib_unbound - nele
+
+    return f_root
