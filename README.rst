@@ -30,7 +30,7 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   #. ``pip install .``
   
 
-Citing atomEC
+Citing atoMEC
 ---------------
 The following paper should be cited in publications which use atoMEC:
 
