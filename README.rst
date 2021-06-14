@@ -1,6 +1,6 @@
-AvAtom: KS-DFT average atom python code 
+atoMEC: Average-atom code for Matter under Extreme Conditions
 ========================
-AvAtom is a python-based average-atom code for simulations of warm-dense matter. It uses Kohn--Sham density-functional theory, in combination with an average-atom approximation,
+atoMEC is a python-based average-atom code for simulations of warm-dense matter. It uses Kohn--Sham density-functional theory, in combination with an average-atom approximation,
 to solve the electronic structure problem for single-element materials at finite temperature.
 
 More information on the average-atom methodology and Kohn--Sham density functional theory can be found (for example) in the following preprint_
@@ -11,7 +11,7 @@ and references therein.
 
 Installation
 ---------------
-First, clone the AvAtom repository and ``cd`` into the main directory.
+First, clone the atoMEC repository and ``cd`` into the main directory.
 
 * Recommended : using Pipenv_
 
@@ -20,7 +20,7 @@ First, clone the AvAtom repository and ``cd`` into the main directory.
   #. First, install Pipenv if it is not already installed, for example via
      ``pip install pipenv`` (or see Pipenv_ for installation instructions)
   #. Next, install AvAtom and its dependencies with ``pipenv install``
-  #. For example, type ``pipenv shell`` from the AvAtom directory to enter the AvAtom virtual environment
+  #. For example, type ``pipenv shell`` from the atoMEC directory to enter the atoMEC virtual environment
 
 .. _Pipenv: https://pypi.org/project/pipenv/    
 
@@ -30,9 +30,9 @@ First, clone the AvAtom repository and ``cd`` into the main directory.
   #. ``pip install .``
   
 
-Citing AvAtom
+Citing atomEC
 ---------------
-The following paper should be cited in publications which use AvAtom:
+The following paper should be cited in publications which use atoMEC:
 
 #. Callow, T. J., Kraisler, E., Hansen, S. B., & Cangi, A. (2021). First-principles derivation and properties of density-functional average-atom models. arXiv preprint arXiv:2103.09928.
 
