@@ -1,5 +1,4 @@
-atoMEC
-Average-atom code for Matter under Extreme Conditions
+atoMEC: Average-atom code for Matter under Extreme Conditions
 ========================
 atoMEC is a python-based average-atom code for simulations of warm-dense matter. It uses Kohn--Sham density-functional theory, in combination with an average-atom approximation,
 to solve the electronic structure problem for single-element materials at finite temperature.
