@@ -75,7 +75,7 @@ class Atom:
     ):
 
         # print the initial spiel
-        print("\n" + "Welcome to AvAtom! \n")
+        print("\n" + "Welcome to atoMEC! \n")
 
         # input variables are checked later with getter / setter functions
         self.species = species

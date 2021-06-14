@@ -233,7 +233,7 @@ class ISModel:
             raise InputError.xc_error(
                 "This family of "
                 + xc_type
-                + " functionals is not yet supported by AvAtom. \n\
+                + " functionals is not yet supported by atoMEC. \n\
                 Supported families so far are: "
                 + " ".join(names_supp)
             )
@@ -539,7 +539,7 @@ class InputError(Exception):
 
         print("Error in atomic species input: " + err_msg)
         print("Species must be a chemical symbol, e.g. 'He'")
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def temp_error(err_msg):
         """
@@ -550,14 +550,14 @@ class InputError(Exception):
         """
         print("Error in temperature input: " + err_msg)
         print("Temperature should be >0 and given in units of eV")
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def charge_error():
         """
         Raises an exception if charge is not an integer
         """
         print("Error in charge input: charge is not an integer")
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def density_error(err_msg):
         """
@@ -567,7 +567,7 @@ class InputError(Exception):
         - err_msg (str)     : error message printed
         """
         print("Error in density input: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def spinmag_error(err_msg):
         """
@@ -575,7 +575,7 @@ class InputError(Exception):
         """
 
         print("Error in spinmag input: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def xc_error(err_msg):
 
@@ -584,7 +584,7 @@ class InputError(Exception):
         """
 
         print("Error in xc input: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def unbound_error(err_msg):
         """
@@ -601,7 +601,7 @@ class InputError(Exception):
         """
 
         print("Error in unbound electron input: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def bc_error(err_msg):
         """
@@ -618,7 +618,7 @@ class InputError(Exception):
         """
 
         print("Error in boundary condition input: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def spinpol_error(err_msg):
         """
@@ -635,7 +635,7 @@ class InputError(Exception):
         """
 
         print("Error in spin polarization input: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def grid_error(err_msg):
         """
@@ -652,7 +652,7 @@ class InputError(Exception):
         """
 
         print("Error in grid inputs: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def conv_error(err_msg):
         """
@@ -669,7 +669,7 @@ class InputError(Exception):
         """
 
         print("Error in convergence inputs: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
     def SCF_error(err_msg):
         """
@@ -686,7 +686,7 @@ class InputError(Exception):
         """
 
         print("Error in scf_params input: " + err_msg)
-        sys.exit("Exiting AvAtom")
+        sys.exit("Exiting atoMEC")
 
 
 class InputWarning:
@@ -706,7 +706,7 @@ class InputWarning:
             "Warning: this input temperature is very "
             + err
             + ". Proceeding anyway, but results may not be accurate. \n"
-            + "Normal temperature range for AvAtom is 0.01 -- 100 eV \n"
+            + "Normal temperature range for atoMEC is 0.01 -- 100 eV \n"
         )
         return warning
 

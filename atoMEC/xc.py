@@ -101,7 +101,7 @@ def check_xc_func(xc_code, id_supp):
         err = 1
         xc_func_id = 0
 
-    # when xc code is one of the special avatom defined functionals
+    # when xc code is one of the special atoMEC defined functionals
     if xc_code in xc_special_codes:
         xc_func_name = xc_code
         err = 0
@@ -130,7 +130,7 @@ def check_xc_func(xc_code, id_supp):
 
 def set_xc_func(xc_code):
 
-    # when xc code is one of the special avatom defined functionals
+    # when xc code is one of the special atoMEC defined functionals
     if xc_code in xc_special_codes:
         xc_func = XCFunc(xc_code)
         err = 0

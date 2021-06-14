@@ -209,7 +209,7 @@ class Density:
 
         # first of all construct the density
         # rho_b(r) = \sum_{n,l} (2l+1) f_{nl} |R_{nl}(r)|^2
-        # occnums in AvAtom are defined as (2l+1)*f_{nl}
+        # occnums in atoMEC are defined as (2l+1)*f_{nl}
 
         # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
         orbs_R = np.exp(-xgrid / 2.0) * orbs.eigfuncs
