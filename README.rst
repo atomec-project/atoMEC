@@ -29,6 +29,10 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   #. ``python setup.py install``
   #. ``pip install .``
   
+* Add the atoMEC main directory to your PYTHONPATH
+
+* Try running the tests and report any problems
+  
 
 Citing atoMEC
 ---------------
