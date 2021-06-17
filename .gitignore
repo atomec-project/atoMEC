@@ -10,7 +10,7 @@
 build/
 install/
 dist/
-AvAtom.egg-info/
+atoMEC.egg-info/
 
 # data / results files
 *.csv
