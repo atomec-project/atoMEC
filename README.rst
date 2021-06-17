@@ -15,11 +15,11 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
 
 * Recommended : using Pipenv_
 
-  The recommended way to install AvAtom is via **Pipenv** which automatically creates a virtual environment and manages dependencies.
+  The recommended way to install atoMEC is via **Pipenv** which automatically creates a virtual environment and manages dependencies.
 
   #. First, install Pipenv if it is not already installed, for example via
      ``pip install pipenv`` (or see Pipenv_ for installation instructions)
-  #. Next, install AvAtom and its dependencies with ``pipenv install``
+  #. Next, install atoMEC and its dependencies with ``pipenv install``
   #. For example, type ``pipenv shell`` from the atoMEC directory to enter the atoMEC virtual environment
 
 .. _Pipenv: https://pypi.org/project/pipenv/    
@@ -28,6 +28,10 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   
   #. ``python setup.py install``
   #. ``pip install .``
+  
+* Add the atoMEC main directory to your PYTHONPATH
+
+* Try running the tests and report any problems
   
 
 Citing atoMEC
