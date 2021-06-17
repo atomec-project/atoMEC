@@ -286,7 +286,14 @@ class ISModel:
         # write the potential to file
         writeoutput.potential_to_csv(rgrid, pot)
 
-        return energy
+        output_dict = {
+            "energy": energy,
+            "density": rho,
+            "potential": pot,
+            "orbitals": orbs,
+        }
+
+        return output_dict
 
 
 # scf_string = self.print_scf_complete(conv_vals)
