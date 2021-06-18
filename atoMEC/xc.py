@@ -9,8 +9,8 @@ import pylibxc
 import numpy as np
 
 # internal libs
-import config
-import mathtools
+from . import config
+from . import mathtools
 
 # list of special codes for functionals not defined by libxc
 xc_special_codes = ["hartree", "None"]
@@ -217,7 +217,7 @@ def calc_xc(density, xgrid, xcfunc, xctype):
     elif xcfunc._number == -1:
 
         # import the staticKS module
-        import staticKS
+        from . import staticKS
 
         if xctype == "v_xc":
             xc_arr[:] = -staticKS.Potential.calc_v_ha(density, xgrid)

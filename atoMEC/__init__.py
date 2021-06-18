@@ -5,10 +5,10 @@ from math import pi
 import mendeleev
 
 # global imports
-import config
-import check_inputs
-from models import *
-import writeoutput
+from . import config
+from . import check_inputs
+from .models import *
+from . import writeoutput
 
 
 class Atom:

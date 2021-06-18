@@ -6,12 +6,12 @@ from mendeleev import element
 from math import pi, log
 
 # import internal packages
-import check_inputs
-import config
-import staticKS
-import convergence
-import writeoutput
-import xc
+from . import check_inputs
+from . import config
+from . import staticKS
+from . import convergence
+from . import writeoutput
+from . import xc
 
 
 class ISModel:
