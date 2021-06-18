@@ -9,8 +9,8 @@ import pylibxc
 import numpy as np
 
 # internal libs
-import config
-import mathtools
+from . import config
+from . import mathtools
 
 # list of special codes for functionals not defined by libxc
 xc_special_codes = ["hartree", "None"]
