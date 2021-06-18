@@ -11,8 +11,8 @@ import numpy as np
 import tabulate
 
 # internal libs
-import unitconv
-import config
+from . import unitconv
+from . import config
 
 # define some line spacings
 spc = "\n"
