@@ -217,7 +217,7 @@ def calc_xc(density, xgrid, xcfunc, xctype):
     elif xcfunc._number == -1:
 
         # import the staticKS module
-        import staticKS
+        from . import staticKS
 
         if xctype == "v_xc":
             xc_arr[:] = -staticKS.Potential.calc_v_ha(density, xgrid)
