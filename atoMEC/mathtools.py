@@ -11,7 +11,7 @@ import numpy as np
 from scipy import optimize, integrate
 
 # internal libraries
-import config
+from . import config
 
 
 def normalize_orbs(eigfuncs_x, xgrid):
