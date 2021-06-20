@@ -43,6 +43,10 @@ napoleon_numpy_docstring = True
 
 autodoc_mock_imports = [
     'mendeleev',
+    'sqlalchemy',
+    'pylibxc',
+    'joblib',
+    'tabulate',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
