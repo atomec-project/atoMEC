@@ -8,8 +8,8 @@ Module which handles convergence routines
 import numpy as np
 
 # internal modules
-import mathtools
-import config
+from . import mathtools
+from . import config
 
 
 class SCF:

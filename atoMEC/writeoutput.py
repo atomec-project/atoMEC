@@ -11,8 +11,8 @@ import numpy as np
 import tabulate
 
 # internal libs
-import unitconv
-import config
+from . import unitconv
+from . import config
 
 # define some line spacings
 spc = "\n"
@@ -414,7 +414,7 @@ class SCF:
                     headers,
                     tablefmt="presto",
                     showindex=RowIDs,
-                    floatfmt="6.2f",
+                    floatfmt="7.3f",
                     stralign="right",
                 )
                 + dblspc
@@ -427,7 +427,7 @@ class SCF:
                     headers,
                     tablefmt="presto",
                     showindex=RowIDs,
-                    floatfmt="6.2f",
+                    floatfmt="7.3f",
                     stralign="right",
                 )
                 + dblspc
