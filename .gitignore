@@ -14,3 +14,7 @@ atoMEC.egg-info/
 
 # data / results files
 *.csv
+
+# Sphinx documentation
+docs/_build/
+docs/source/api/
