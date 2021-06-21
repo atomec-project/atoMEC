@@ -6,12 +6,12 @@ from mendeleev import element
 from math import pi, log
 
 # import internal packages
-import check_inputs
-import config
-import staticKS
-import convergence
-import writeoutput
-import xc
+from . import check_inputs
+from . import config
+from . import staticKS
+from . import convergence
+from . import writeoutput
+from . import xc
 
 
 class ISModel:
@@ -286,7 +286,14 @@ class ISModel:
         # write the potential to file
         writeoutput.potential_to_csv(rgrid, pot)
 
-        return energy
+        output_dict = {
+            "energy": energy,
+            "density": rho,
+            "potential": pot,
+            "orbitals": orbs,
+        }
+
+        return output_dict
 
 
 # scf_string = self.print_scf_complete(conv_vals)

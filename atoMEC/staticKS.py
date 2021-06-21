@@ -9,10 +9,10 @@ import numpy as np
 from math import sqrt, pi, exp
 
 # internal modules
-import config
-import numerov
-import mathtools
-import xc
+from . import config
+from . import numerov
+from . import mathtools
+from . import xc
 
 # the logarithmic grid
 def log_grid(x_r):

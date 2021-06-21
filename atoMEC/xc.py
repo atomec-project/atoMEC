@@ -9,8 +9,8 @@ import pylibxc
 import numpy as np
 
 # internal libs
-import config
-import mathtools
+from . import config
+from . import mathtools
 
 # list of special codes for functionals not defined by libxc
 xc_special_codes = ["hartree", "None"]
@@ -116,14 +116,14 @@ def check_xc_func(xc_code, id_supp):
             # check the xc family is supported
             if xc_func._family in id_supp:
                 err = 0
+                xc_func_name = xc_func._xc_func_name
             else:
                 err = 3
-                xc_func = 0
+                xc_func_name = None
+
         except KeyError:
             err = 2
-            xc_func = 0
-
-        xc_func_name = xc_func._xc_func_name
+            xc_func_name = None
 
     return xc_func_name, err
 
@@ -133,7 +133,6 @@ def set_xc_func(xc_code):
     # when xc code is one of the special atoMEC defined functionals
     if xc_code in xc_special_codes:
         xc_func = XCFunc(xc_code)
-        err = 0
 
     else:
         # whether the xc functional is spin polarized
@@ -141,11 +140,6 @@ def set_xc_func(xc_code):
             xc_func = pylibxc.LibXCFunctional(xc_code, "polarized")
         else:
             xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
-
-    # initialize the temperature if required
-    xc_temp_funcs = ["lda_xc_gdsmfb", "lda_xc_ksdt", 577, 259]
-    if xc_code in xc_temp_funcs:
-        xc_func.set_ext_params([config.temp])
 
     return xc_func
 
@@ -202,6 +196,13 @@ def calc_xc(density, xgrid, xcfunc, xctype):
     by xc type
     """
 
+    # initialize the temperature if required
+    # this would be better placed in the set_xc_func routine;
+    # but for now that does not respond to a change in the atomic temperature
+    xc_temp_funcs = ["lda_xc_gdsmfb", "lda_xc_ksdt"]
+    if xcfunc._xc_func_name in xc_temp_funcs:
+        xcfunc.set_ext_params([config.temp])
+
     # determine the dimensions of the xc_arr based on xctype
     if xctype == "e_xc":
         xc_arr = np.zeros((config.grid_params["ngrid"]))
@@ -216,7 +217,7 @@ def calc_xc(density, xgrid, xcfunc, xctype):
     elif xcfunc._number == -1:
 
         # import the staticKS module
-        import staticKS
+        from . import staticKS
 
         if xctype == "v_xc":
             xc_arr[:] = -staticKS.Potential.calc_v_ha(density, xgrid)

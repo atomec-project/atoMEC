@@ -12,9 +12,9 @@ import numpy as np
 from math import pi
 
 # internal packages
-import unitconv
-import xc
-import config
+from . import unitconv
+from . import xc
+from . import config
 
 
 # define some custom types

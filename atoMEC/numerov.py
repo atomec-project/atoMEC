@@ -15,9 +15,9 @@ from joblib import Parallel, delayed, dump, load
 # from staticKS import Orbitals
 
 # internal libs
-import config
-import mathtools
-import writeoutput
+from . import config
+from . import mathtools
+from . import writeoutput
 
 
 # @writeoutput.timing
