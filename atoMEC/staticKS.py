@@ -17,6 +17,8 @@ import xc
 # the logarithmic grid
 def log_grid(x_r):
     """
+    Sets up the logarithmic (and real) grid, defined up to x_r.
+
     Parameters
     ----------
     x_r : float
@@ -41,16 +43,21 @@ def log_grid(x_r):
 
 class Orbitals:
     """
-    The orbitals object has the following attributes:
-    - eigfuncs (numpy array)    :   the orbitals defined on the numerical grid
-    - eigvals  (numpy array)    :   KS orbital eigenvalues
-    - occnums  (numpy array)    :   KS orbital occupation numbers
+    Class holding the KS orbitals, associated quantities and relevant routines.
+
+    Attributes
+    ----------
+    eigfuncs : ndarray
+        the KS radial eigenfunctions on the logarithmic grid
+    eigvals : ndarray
+        the KS eigenvalues
+    occnums : ndarray
+        the KS orbital occupation numbers including degeneracy (see notes)
+    lbound : ndarray
+        matrix (2l+1) * \Theta(\eps) where \Theta is the step function
     """
 
     def __init__(self, xgrid):
-        """
-        Initializes the orbital attributes to empty numpy arrays
-        """
 
         self._xgrid = xgrid
         self._eigfuncs = np.zeros(
@@ -62,31 +69,42 @@ class Orbitals:
 
     @property
     def eigvals(self):
+        """KS eigenvalues"""
         if np.all(self._eigvals == 0.0):
             raise Exception("Eigenvalues have not been initialized")
         return self._eigvals
 
     @property
     def eigfuncs(self):
+        """KS eigenfunctions"""
         if np.all(self._eigfuncs == 0.0):
             raise Exception("Eigenfunctions have not been initialized")
         return self._eigfuncs
 
     @property
     def occnums(self):
+        """KS occupation numbers"""
         if np.all(self._occnums == 0.0):
             raise Exception("Occnums have not been initialized")
         return self._occnums
 
     @property
     def lbound(self):
+        """Matrix denoting bound eigenvalues and their degeneracies"""
         if np.all(self._lbound == 0.0):
             raise Exception("lbound has not been initialized")
         return self._lbound
 
     def compute(self, potential, init=False):
         """
-        Compute the orbitals and their eigenvalues with the given potential
+        Compute the orbitals and their eigenvalues with the given potential.
+
+        Parameters
+        ----------
+        potential : ndarray
+            the KS (or alternatively chosen) potential
+        init : bool, optional
+            whether orbitals are being computed for first time
         """
 
         # ensure the potential has the correct dimensions
@@ -109,9 +127,7 @@ class Orbitals:
 
     def occupy(self):
         """
-        Occupies the orbitals according to Fermi Dirac statistics.
-        The chemical potential is calculated to satisfy charge neutrality
-        within the Voronoi sphere
+        Occupies the KS orbitals according to Fermi-Dirac statistics.
         """
 
         # compute the chemical potential using the eigenvalues
@@ -120,10 +136,26 @@ class Orbitals:
         # compute the occupation numbers using the chemical potential
         self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
 
+        return
+
     @staticmethod
     def calc_occnums(eigvals, lbound, mu):
         """
-        Computes the Fermi-Dirac occupations for the eigenvalues
+        Computes the Fermi-Dirac occupations for the eigenvalues.
+
+        Parameters
+        ----------
+        eigvals : ndarray
+            the KS eigenvalues
+        lbound : ndarray
+            the array of bound eigenvalues
+        mu : aray_like
+            the chemical potential
+
+        Returns
+        -------
+        occnums : ndarray
+            the orbital occupations multiplied with (2l+1) degeneracy
         """
 
         occnums = np.zeros_like(eigvals)
@@ -139,8 +171,20 @@ class Orbitals:
     @staticmethod
     def make_lbound(eigvals):
         """
-        Constructs the 'lbound' attribute
-        For each spin channel, lbound(l,n)=(2l+1)*Theta(eps_n)
+        Construct the lbound matrix which denotes the bound states
+        and their degeneracies.
+
+        For each spin channel, lbound(l,n) = (2l+1) * Theta(eps_{nl})
+
+        Parameters
+        ----------
+        eigvals : ndarray
+            the KS orbital eigenvalues
+
+        Returns
+        -------
+        lbound_mat : ndarray
+            the lbound matrix
         """
 
         lbound_mat = np.zeros_like(eigvals)
@@ -155,12 +199,18 @@ class Orbitals:
 
 class Density:
     """
-    The Density object has the following attributes:
-    - rho_tot (np array)       : the total density n(r)
-    - rho_bound (np array)     : the bound part of the density n(r)
-    - rho_unbound (np array)   : the unbound part of the density n(r)
-    - N_bound (np array)       : the number of bound electrons
-    - N_unbound (np array)     : the number of unbound electrons
+    Holds the static KS density and routines required to compute its components
+
+    Attributes
+    ----------
+    total : ndarray
+        the total KS density n(r) or n(x)
+    bound : dict of ndarrays
+        contains the keys "rho" and "N" denoting the bound density
+        and number of bound electrons respectively
+    unbound : dict of ndarrays
+        contains the keys "rho" and "N" denoting the unbound density
+        and number of unbound electrons respectively
     """
 
     def __init__(self, orbs):
@@ -199,10 +249,20 @@ class Density:
     @staticmethod
     def construct_rho_bound(orbs, xgrid):
         """
-        Constructs the bound part of the density
+        Construct the bound part of the density
 
-        Inputs:
-        - orbs (object)    : the orbitals object
+        Parameters
+        ----------
+        orbs : ndarray
+            the radial eigenfunctions on the xgrid
+        xgrid : ndarray
+            the logarithmic grid
+
+        Returns
+        -------
+        rho_bound : dict of ndarrays
+            contains the keys "rho" and "N" denoting the bound density
+            and number of bound electrons respectively
         """
 
         bound = {}  # initialize empty dict
@@ -226,7 +286,20 @@ class Density:
     @staticmethod
     def construct_rho_unbound(orbs):
         """
-        Constructs the bound part of the density
+        Construct the unbound part of the density
+
+        Parameters
+        ----------
+        orbs : ndarray
+            the radial eigenfunctions on the xgrid
+        xgrid : ndarray
+            the logarithmic grid
+
+        Returns
+        -------
+        rho_unbound : dict of ndarrays
+            contains the keys "rho" and "N" denoting the unbound density
+            and number of unbound electrons respectively
         """
 
         rho_unbound = np.zeros((config.spindims, config.grid_params["ngrid"]))
@@ -255,11 +328,19 @@ class Density:
 
 class Potential:
     """
-    The potential object has the following attributes:
-    - v_s   (np array)    : KS potential
-    - v_en  (np array)    : electron-nuclear potential
-    - v_ha   (np array)    : Hartree potential
-    - v_xc  (np array)    : xc-potential
+    Holds the KS potential and the routines required to compute it
+
+    Attributes
+    ----------
+    v_s : ndarray
+        the full KS potential v_s = v_en + v_ha + v_xc
+    v_en : ndarray
+        the electron-nuclear potential
+    v_ha : ndarray
+        the hartree potential
+    v_xc : dict of ndarrays
+        the xc-potential, contains the keys "x", "c" and "xc"
+        denoting exchange, correlation, and exchange + correlation respectively
     """
 
     def __init__(self, density):
@@ -313,15 +394,22 @@ class Potential:
     @staticmethod
     def calc_v_ha(density, xgrid):
         """
-        Constructs the Hartree potential
-        On the r-grid:
-        v_ha(r) = 4*pi* \int_0^rn_s dr' n(r') r'^2 / max(r,r')
-        On the x-grid:
-        v_ha(x) = 4*pi* { exp(-x) \int_x0^x dx' n(x') exp(3x')
-                         - \int_x^log(r_s) dx' n(x') exp(2x') }
+        Constructs the Hartree potential (see notes)
+        
+        Parameters
+        ----------
+        density : ndarray
+            the total KS density
+        xgrid : ndarray
+            the logarithmic grid
 
-        Inputs:
-        - density (np array)  : density
+        Notes
+        -----
+        v_ha is defined on the r-grid as:
+        .. math :: v_{ha}(r) = 4\pi*\int_0^r dr' n(r') \frac{r'^2}{\max(r,r')}
+        On the x-grid:
+        .. math :: v_{ha}(x) = 4\pi {exp(-x) \int_{x0}^x dx' n(x') exp(3x') \\
+                               - \int_x^log(r_s) dx' n(x') exp(2x') }
         """
 
         # initialize v_ha
@@ -354,24 +442,23 @@ class Potential:
 
 class Energy:
     """
-    Holds the energy which includes the following attributes
-    Note:
-    F = E - TS
-    E = E_kin + E_en + E_ha + E_xc
+    Holds information about the KS total energy and relevant routines
 
-    - F_tot (dict np arrays)    : the total free energy F
-      contains: F, E, S
-    - E_kin (dict np arrays)    : the kinetic energy E_kin
-      contains: bound, unbound
-    - E_en (np array)           : the electron-nuclear energy E_en
-    - E_ha (np array)           : the Hartree energy E_ha
-    - E_xc (dict np arrays)     : the xc energy
-      contains : xc, x, c
-
-    Inputs:
-    - orbs (object)          : the orbitals object
-    - dens  (object)         : the density object
-    - pot (object)           : the potential object
+    Parameters
+    ----------
+    F_tot : dict of floats
+        contains the total free energy "F" = E - T*S;
+        the total energy "E" = T_s + E_en + E_ha + F_xc
+        and the total entropy "S"
+    E_kin : dict of floats
+        the kinetic energy, split into "bound" and "unbound" terms
+    E_en : float
+        the electron-nuclear energy
+    E_ha : float
+        the Hartree energy
+    E_xc : dict of floats
+        the exchange correlation energy containing the keys
+        "x", "c" and "xc" for exchange, correlation, and exchange + correlation
     """
 
     def __init__(self, orbs, dens):
