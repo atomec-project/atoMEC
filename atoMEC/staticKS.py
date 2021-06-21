@@ -17,7 +17,7 @@ from . import xc
 # the logarithmic grid
 def log_grid(x_r):
     """
-    Sets up the logarithmic (and real) grid, defined up to x_r.
+    Set up the logarithmic (and real) grid, defined up to x_r
 
     Parameters
     ----------
@@ -43,7 +43,7 @@ def log_grid(x_r):
 
 class Orbitals:
     """
-    Class holding the KS orbitals, associated quantities and relevant routines.
+    Class holding the KS orbitals, associated quantities and relevant routines
 
     Attributes
     ----------
@@ -97,7 +97,7 @@ class Orbitals:
 
     def compute(self, potential, init=False):
         """
-        Compute the orbitals and their eigenvalues with the given potential.
+        Compute the orbitals and their eigenvalues with the given potential
 
         Parameters
         ----------
@@ -105,6 +105,10 @@ class Orbitals:
             the KS (or alternatively chosen) potential
         init : bool, optional
             whether orbitals are being computed for first time
+
+        Returns
+        -------
+        None
         """
 
         # ensure the potential has the correct dimensions
@@ -127,7 +131,15 @@ class Orbitals:
 
     def occupy(self):
         """
-        Occupies the KS orbitals according to Fermi-Dirac statistics.
+        Occupy the KS orbitals according to Fermi-Dirac statistics
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
 
         # compute the chemical potential using the eigenvalues
@@ -406,9 +418,9 @@ class Potential:
         Notes
         -----
         v_ha is defined on the r-grid as:
-        .. math :: v_{ha}(r) = 4\pi*\int_0^r dr' n(r') \frac{r'^2}{\max(r,r')}
+        .. math:: v_{ha}(r) = 4\pi*\int_0^r dr' n(r') \frac{r'^2}{\max(r,r')}
         On the x-grid:
-        .. math :: v_{ha}(x) = 4\pi {exp(-x) \int_{x0}^x dx' n(x') exp(3x') \\
+        .. math:: v_{ha}(x) = 4\pi {exp(-x) \int_{x0}^x dx' n(x') exp(3x') \\
                                - \int_x^log(r_s) dx' n(x') exp(2x') }
         """
 
@@ -444,7 +456,7 @@ class Energy:
     """
     Holds information about the KS total energy and relevant routines
 
-    Parameters
+    Attributes
     ----------
     F_tot : dict of floats
         contains the total free energy "F" = E - T*S;
@@ -498,7 +510,7 @@ class Energy:
     @property
     def E_kin(self):
         if self._E_kin["tot"] == 0.0:
-            self._E_kin = self.calc_E_kin(self._orbs)
+            self._E_kin = self.calc_E_kin(self._orbs, self._xgrid)
         return self._E_kin
 
     @property
@@ -516,30 +528,37 @@ class Energy:
     @property
     def E_xc(self):
         if self._E_xc["xc"] == 0.0:
-            # self._E_xc = xc.XCEnergy(self._dens, config.xfunc, config.cfunc).E_xc
             self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
         return self._E_xc
 
-    def calc_E_kin(self, orbs):
+    def calc_E_kin(self, orbs, xgrid):
         """
-        Kinetic energy computation is in general different
-        for bound and unbound components.
-        This wrapper calls the respective functions
+        Compute the kinetic energy
 
-        Inputs:
-        - orbs (object)                : the orbitals object
-        Returns:
-        - E_kin (dict of np arrays)    : kinetic energy
-          E_kin = {"bound" : E_b, "unbound" : E_ub}
+        Kinetic energy is in general different for bound and unbound components.
+        This routine is a wrapper calling the respective functions
+
+        Parameters
+        ----------
+        orbs : object
+            the KS orbitals object
+
+        xgrid : ndarray
+            the logarithmic grid
+
+        Returns
+        -------
+        E_kin : dict of ndarrays
+            Contains "total", "bound" and "unbound" keys
         """
 
         E_kin = {}
 
         # bound part
-        E_kin["bound"] = self.calc_E_kin_bound(orbs)
+        E_kin["bound"] = self.calc_E_kin_bound(orbs, xgrid)
 
         # unbound part
-        E_kin["unbound"] = self.calc_E_kin_unbound(orbs)
+        E_kin["unbound"] = self.calc_E_kin_unbound(orbs, xgrid)
 
         # total
         E_kin["tot"] = E_kin["bound"] + E_kin["unbound"]
@@ -547,44 +566,63 @@ class Energy:
         return E_kin
 
     @staticmethod
-    def calc_E_kin_bound(orbs):
+    def calc_E_kin_bound(orbs, xgrid):
         """
-        Computes the kinetic energy contribution from the bound electrons
+        Compute the kinetic energy contribution from the bound electrons
 
-        Inputs:
-        - orbs (object)        : the orbitals object
-        Returns:
-        - E_kin_bound (float)  : kinetic energy
+        Parameters
+        ----------
+        orbs : object
+            the KS orbitals object
+        xgrid : ndarray
+            the logarithmic grid
+
+        Returns
+        -------
+        E_kin_bound : float
+            the bound kinetic energy
         """
 
         # compute the grad^2 component
-        grad2_orbs = mathtools.laplace(orbs.eigfuncs, orbs._xgrid)
+        grad2_orbs = mathtools.laplace(orbs.eigfuncs, xgrid)
 
         # compute the (l+1/2)^2 component
         l_arr = np.array([(l + 0.5) ** 2.0 for l in range(config.lmax)])
         lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, orbs.eigfuncs)
 
         # add together and multiply by eigfuncs*exp(-3x)
-        prefac = np.exp(-3.0 * orbs._xgrid) * orbs.eigfuncs
+        prefac = np.exp(-3.0 * xgrid) * orbs.eigfuncs
         kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
 
         # multiply and sum over occupation numbers
         e_kin_dens = np.einsum("ijk,ijkl->l", orbs.occnums, kin_orbs)
 
         # integrate over sphere
-        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens, orbs._xgrid)
+        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens, xgrid)
 
         return E_kin_bound
 
     @staticmethod
-    def calc_E_kin_unbound(orbs):
+    def calc_E_kin_unbound(orbs, xgrid):
         """
-        Computes the unbound contribution to the kinetic energy
+        Parameters
+        ----------
+        orbs : object
+            the KS orbitals object
+        xgrid : ndarray
+            the logarithmic grid
 
-        Inputs:
-        - orbs (object)          : the orbitals object
-        Returns:
-        - E_kin_unbound (float)  : the unbound K.E.
+        Returns
+        -------
+        E_kin_unbound : float
+            the unbound kinetic energy
+
+        Notes
+        -----
+        Currently only "ideal" (uniform) approximation for unbound electrons supported.
+
+        .. math:: T_{ub} = \sum_\sigma \frac{N^\sigma V}{\sqrt(2)\pi^2} I_{3/2}(\mu,\beta),
+        where :math: 'I_{3/2}(\mu,\beta)' denotes the complete Fermi-Diract integral
         """
 
         # currently only ideal treatment supported
@@ -600,11 +638,20 @@ class Energy:
 
     def calc_entropy(self, orbs):
         """
-        Entropy is in general computed differently for bound / unbound orbitals
-        This wrapper calls the respective bound and unbound components
+        Compute the KS entropy
 
-        Inputs
-        - orbs (object)      : the orbitals object
+        Entropy is in general different for bound and unbound orbitals.
+        This function is a wrapper which calls the respective functions
+
+        Parameters
+        ----------
+        orbs : object
+            the KS orbitals object
+
+        Returns
+        -------
+        S : dict of floats
+           contains "total", "bound" and "unbound" keys
         """
 
         S = {}
@@ -623,14 +670,24 @@ class Energy:
     @staticmethod
     def calc_S_bound(orbs):
         """
-        Computes the contribution of the bound states to the entropy
-        S_bo = -\sum_{s,l,n} (2l+1) [ f_{nls} log(f_{nls})
-                                     + (1-f_{nls}) (log(1-f_{nls}) ]
-
-        Inputs:
-        - orbs (object)      : the orbitals object
+        Computes the contribution of the bound states to the entropy (see notes)
+        
+        Parameters
+        ----------
+        orbs : object
+            the KS orbitals object
+        
         Returns
-        - S_bound (float)    : the bound contribution to entropy
+        -------
+        S : float
+            the bound contribution to the entropy
+
+        Notes
+        -----
+        The entropy of non-interacting (KS) electrons is given by:
+
+        .. math:: S_{b} = -\sum_{s,l,n} (2l+1) [ f_{nls} log(f_{nls}) \\
+                                     + (1-f_{nls}) (log(1-f_{nls}) ]
         """
 
         # the occupation numbers are stored as f'_{nl}=f_{nl}*(2l+1)
@@ -663,10 +720,22 @@ class Energy:
         """
         Computes the unbound contribution to the entropy
 
-        Inputs:
-        - orbs (object)          : the orbitals object
-        Returns:
-        - S_unbound (float)      : the unbound entropy
+        Parameters
+        ----------
+        orbs : object
+            the KS orbitals object
+
+        Returns
+        -------
+        S_unbound : float
+            the unbound entropy term
+
+        Notes
+        -----
+        Currently only "ideal" (uniform) treatment of unbound electrons is supported.
+
+        .. math:: S_{ub} = \sum_\sigma \frac{V}{\sqrt{2}\pi^2}
+        where :math: 'I_{1/2}' is the complete Fermi-Dirac integral of order 1/2
         """
 
         # currently only ideal treatment supported
@@ -690,10 +759,24 @@ class Energy:
     def calc_E_en(density, xgrid):
         """
         Computes the electron-nuclear energy
-        E_en = \int dr v_en(r) n(r)
 
-        Inputs:
-        - density (np array) : density
+        Parameters
+        ----------
+        density : ndarray
+            the (spin) KS density
+        xgrid : ndarray
+            the logarithmic grid
+
+        Returns
+        -------
+        E_en : float
+             the electron-nuclear energy
+
+        Notes
+        -----
+        Electron-nuclear energy is given by
+        .. math:: E_{en} = 4\pi\int_0^{r_s} \dd{r} r^2 n(r) v_{en}(r),
+        where :math: 'r_s' denotes the radius of the sphere of interest
         """
 
         # sum the density over the spin axes to get the total density
@@ -708,16 +791,23 @@ class Energy:
     @staticmethod
     def calc_E_ha(density, xgrid):
         """
-        Computes the Hartree energy
-        E_ha = 1/2 \int dr \int dr' n(r)n(r')/|r-r'|
-        Uses the pre-computed hartree potential
-        E_ha = 1/2 /int dr n(r) v_ha(r)
+        Parameters
+        ----------
+        density : ndarray
+            the (spin) KS density
+        xgrid : ndarray
+            the logarithmic grid
 
-        Inputs:
-        - density (np array)    : the density object
-        - pot  (object)         : the potential object
-        Returns:
-        - E_ha (float)       : the hartree energy
+        Returns
+        -------
+        E_ha : float
+            the Hartree energy
+
+        Notes
+        -----
+        The Hartree energy is given by
+        .. math:: E_{ha} = 2\pi \int\dd{r}_0^{r_s} r^2 n(r) v_{ha}(r),
+        where :math: 'v_{ha}(r)' is the Hartree potential
         """
 
         # sum density over spins to get total density
