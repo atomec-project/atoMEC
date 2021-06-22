@@ -39,11 +39,11 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   
   And add `atoMEC` to your `PYTHONPATH`
   
-* Try running the [examples](tests) and report any problems
+* Try running the [examples](examples) and report any problems
 
 ## Running
 You can familiarize yourself with the usage of this package by running
-the [examples](tests).
+the [examples](examples).
 
 ## Contributing to atoMEC
 We welcome your contributions, please adhere to the following guidelines when contributing to the code:
