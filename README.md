@@ -15,18 +15,42 @@ This repository is structured as follows:
 ├── atoMEC : source code
 ├── docs : sphinx documentation
 ├── examples : useful examples to get you started with the package
-└── test : test scripts used during development, will hold tests for CI in the future
+└── tests : test scripts used during development, will hold tests for CI in the future
 ```
 
-## Contributing to atoMEC
-We welcome your contributions. Please refer to [Contributing to atoMEC](docs/source/CONTRIBUTE.md) to review our guidelines on contributing code to the repository.
+
 
 ## Installation
-Please refer to [Installation of atoMEC](docs/source/install/README.md).
+First, clone the atoMEC repository and ``cd`` into the main directory.
+
+* Recommended : using [pipenv](https://pypi.org/project/pipenv/)
+
+  This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies.
+  
+  1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for    installation instructions)
+  2. Next, install `atoMEC` and its dependencies with `pipenv install`
+  3. Add `atoMEC` to your `PYTHONPATH`
+  4. Use `pipenv shell` or `pipenv run` to enter or run scripts from the `atoMEC` virtual environment
+
+* Alternatively, use one of the standard techniques:
+  
+  1. ``python setup.py install``
+  2. ``pip install .``
+  
+  And add `atoMEC` to your `PYTHONPATH`
+  
+* Try running the [examples](tests) and report any problems
 
 ## Running
 You can familiarize yourself with the usage of this package by running
-the [examples](examples).
+the [examples](tests).
+
+## Contributing to atoMEC
+We welcome your contributions, please adhere to the following guidelines when contributing to the code:
+* In general, contributors should develop on branches based off of `develop` and merge requests should be to `develop`
+* Please choose a descriptive branch name
+* Branches from `develop` to `master` will be done after prior consultation of the core development team
+* Merges from `develop` to `master` are only done for code releases. This way we always have a clean `master` that reflects the current release
 
 ## Developers
 ### Scientific Supervision
