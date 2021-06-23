@@ -68,7 +68,7 @@ def int_sphere(fx, xgrid):
     -----
     The integral formula is given by
 
-    .. math:: I = 4 \pi \int \dd{x} e^{3x} f(x)
+    .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)
     """
 
     func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
@@ -130,7 +130,7 @@ def fermi_dirac(eps, mu, beta, n=0):
     Notes
     -----
     The FD function is defined as:
-    
+
     .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+\beta(\epsilon - \mu))}
     """
 
@@ -166,8 +166,11 @@ def fd_int_complete(mu, beta, n):
     Notes
     -----
     Complete Fermi-Dirac integrals are of the form
-    
-    .. math:: I_{n}(\mu,\beta) = \int_0^\inf \dd{\epsilon} \epsilon^{n/2} f_fd(\mu,\epsilon,\beta)
+
+    .. math::
+
+        I_{n}(\mu,\beta)=\int_0^\infty\mathrm{d}\epsilon\ \epsilon^{n/2}f_{fd}(\mu,\epsilon,\beta)
+
     where n is the order of the integral
     """
 
@@ -200,9 +203,9 @@ def chem_pot(orbs):
     Notes
     -----
     Finds the roots of equation
-    
+
     .. math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e = 0.
-    
+
     The number of unbound electrons :math:`N_{ub}` depends on the implementation choice.
     """
 
@@ -241,7 +244,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     eigvals : ndarray
         the energy eigenvalues
     lbound : ndarray
-        the lbound [(2l+1)*Theta(e)] matrix
+        the lbound matrix :math:`(2l+1)\Theta(\epsilon_{nl}^\sigma)`
     nele : union(int, float)
         the number of electrons for given spin
 
@@ -254,7 +257,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     Notes
     -----
     The returned function is
-    
+
     .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e
     """
 
