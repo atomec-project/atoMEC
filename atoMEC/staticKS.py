@@ -419,10 +419,10 @@ class Potential:
 
         Notes
         -----
-        v_ha is defined on the r-grid as:
+        :math:`v_\mathm{ha}` is defined on the r-grid as:
 
         .. math:: 
-            v_\mathrm{ha}(r) = 4\pi*\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}
+            v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}
         On the x-grid:
 
         .. math:: 
@@ -751,7 +751,7 @@ class Energy:
         Currently only "ideal" (uniform) treatment of unbound electrons is supported.
 
         .. math::
-            S_{ub} = \sum_\sigma \frac{V}{\sqrt{2}\pi^2} I_{1/2}(\mu,\beta)
+            S_\mathrm{ub} = \sum_\sigma \frac{V}{\sqrt{2}\pi^2} I_{1/2}(\mu,\beta)
         where :math:`I_{1/2}(\mu,\beta)` is the complete Fermi-Dirac integral of order 1/2
         """
 
@@ -828,7 +828,7 @@ class Energy:
 
         .. math:: E_\mathrm{ha} = 2\pi\int_0^{r_s}\mathrm{d}r r^2 n(r) v_\mathrm{ha}(r),
 
-        where :math:`v_{ha}(r)` is the Hartree potential
+        where :math:`v_\mathrm{ha}(r)` is the Hartree potential
         """
 
         # sum density over spins to get total density
