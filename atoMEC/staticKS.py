@@ -419,7 +419,7 @@ class Potential:
 
         Notes
         -----
-        :math:`v_\mathm{ha}` is defined on the r-grid as:
+        :math:`v_\mathrm{ha}` is defined on the r-grid as:
 
         .. math:: 
             v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}
