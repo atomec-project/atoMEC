@@ -48,11 +48,12 @@ def matrix_solve(v, xgrid):
     The matrix diagonalization is of the form:
 
     .. math:: 
-        \hat{H} \ket{X} = \lambda \hat{B} \ket{X}\ , \\
-        \hat{H} = \hat{T} + \hat{B}\times\hat{V}\ ,\\
-        \hat{T} = -0.5\times\hat{p}\times\hat{A}\ .
+    
+        \hat{H} \lvert X \rangle &= \lambda \hat{B} \lvert X \rangle\ , \\
+        \hat{H}                  &= \hat{T} + \hat{B}\times\hat{V}\ ,   \\
+        \hat{T}                  &= -0.5\times\hat{p}\times\hat{A}\ .
 
-    where :math:`\hat{p}=\exp(-2*x)`.
+    where :math:`\hat{p}=\exp(-2x)`.
     See the referenced paper for the definitions of the matrices :math:`\hat{A}`
     and :math:`\hat{B}`.
     """
