@@ -85,14 +85,16 @@ class Orbitals:
     def occnums(self):
         """KS occupation numbers"""
         if np.all(self._occnums == 0.0):
-            raise Exception("Occnums have not been initialized")
+            # raise Exception("Occnums have not been initialized")
+            self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
         return self._occnums
 
     @property
     def lbound(self):
         """Matrix denoting bound eigenvalues and their degeneracies"""
         if np.all(self._lbound == 0.0):
-            raise Exception("lbound has not been initialized")
+            # raise Exception("lbound has not been initialized")
+            self._lbound = self.make_lbound(self.eigvals)
         return self._lbound
 
     def compute(self, potential, init=False):

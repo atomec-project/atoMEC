@@ -15,13 +15,13 @@ from . import config
 
 
 def normalize_orbs(eigfuncs_x, xgrid):
-    """
+    r"""
     Normalizes the KS orbitals within the chosen sphere
 
     Parameters
     ----------
     eigfuncs : ndarray
-        The radial KS eigenfunctions :math: 'X_{nl}^{\sigma}(x)'
+        The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`
     xgrid : ndarray
         The logarithmic grid over which normalization is performed
 
@@ -48,7 +48,7 @@ def normalize_orbs(eigfuncs_x, xgrid):
 
 
 def int_sphere(fx, xgrid):
-    """
+    r"""
     Computes integrals over the sphere defined by the logarithmic
     grid provided as input
 
@@ -67,7 +67,8 @@ def int_sphere(fx, xgrid):
     Notes
     -----
     The integral formula is given by
-    .. math:: I = 4 \pi \int \dd{x} e^{3x} f(x)
+
+    .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)
     """
 
     func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
@@ -77,8 +78,8 @@ def int_sphere(fx, xgrid):
 
 
 def laplace(y, x, axis=-1):
-    """
-    Computes the second-order derivative d^2 y(x) / dx^2
+    r"""
+    Computes the second-order derivative :math:`d^2 y(x) / dx^2`
     over the chosen axis of the input array
 
     Parameters
@@ -107,7 +108,7 @@ def laplace(y, x, axis=-1):
 
 
 def fermi_dirac(eps, mu, beta, n=0):
-    """
+    r"""
     Computes the Fermi-Dirac function, see notes
 
     Parameters
@@ -129,7 +130,8 @@ def fermi_dirac(eps, mu, beta, n=0):
     Notes
     -----
     The FD function is defined as:
-    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{(n/2)}{1+\exp(1+\beta(\epsilon - \mu))}
+
+    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+\beta(\epsilon - \mu))}
     """
 
     # dfn the exponential function
@@ -144,7 +146,7 @@ def fermi_dirac(eps, mu, beta, n=0):
 
 
 def fd_int_complete(mu, beta, n):
-    """
+    r"""
     Computes complete Fermi-Dirac integrals (see notes)
 
     Parameters
@@ -164,7 +166,11 @@ def fd_int_complete(mu, beta, n):
     Notes
     -----
     Complete Fermi-Dirac integrals are of the form
-    .. math:: I_(n)(\mu,\beta) = \int_0^\inf \dd{\epsilon} \epsilon^(n/2) f_fd(\mu,\epsilon,\beta)
+
+    .. math::
+
+        I_{n}(\mu,\beta)=\int_0^\infty\mathrm{d}\epsilon\ \epsilon^{n/2}f_{fd}(\mu,\epsilon,\beta)
+
     where n is the order of the integral
     """
 
@@ -180,7 +186,7 @@ def fd_int_complete(mu, beta, n):
 
 
 def chem_pot(orbs):
-    """
+    r"""
     Determines the chemical potential by enforcing charge neutrality (see notes)
     Uses scipy.optimize.root_scalar with brentq implementation
 
@@ -196,9 +202,11 @@ def chem_pot(orbs):
 
     Notes
     -----
-    Finds the roots of the eqn:
-    ..math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e = 0
-    The number of unbound electrons N_{ub} depends on the implementation choice
+    Finds the roots of equation
+
+    .. math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e = 0.
+
+    The number of unbound electrons :math:`N_{ub}` depends on the implementation choice.
     """
 
     mu = config.mu
@@ -225,7 +233,7 @@ def chem_pot(orbs):
 
 
 def f_root_id(mu, eigvals, lbound, nele):
-    """
+    r"""
     Functional input for the chemical potential root finding function
     with the ideal approximation for unbound electrons (see notes)
 
@@ -236,7 +244,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     eigvals : ndarray
         the energy eigenvalues
     lbound : ndarray
-        the lbound [(2l+1)*Theta(e)] matrix
+        the lbound matrix :math:`(2l+1)\Theta(\epsilon_{nl}^\sigma)`
     nele : union(int, float)
         the number of electrons for given spin
 
@@ -249,7 +257,8 @@ def f_root_id(mu, eigvals, lbound, nele):
     Notes
     -----
     The returned function is
-    ..math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e
+
+    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e
     """
 
     # caluclate the contribution from the bound electrons
