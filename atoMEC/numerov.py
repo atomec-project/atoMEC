@@ -22,7 +22,7 @@ from . import writeoutput
 
 # @writeoutput.timing
 def matrix_solve(v, xgrid):
-    """
+    r"""
     Solves the radial KS equation using an implementation of Numerov's method using matrix diagonalization (see notes)
 
     Parameters
@@ -46,10 +46,15 @@ def matrix_solve(v, xgrid):
     American Journal of Physics 80, 1017-1019 (2012) https://doi.org/10.1119/1.4748813
 
     The matrix diagonalization is of the form:
-    ..math :: \hat{H} \ket{X} = \lambda \hat{B} \ket{X}
-    ..math :: \hat{H} = \hat{T} + \hat{B}\hat{V},\ \hat{T} = -0.5*\hat{p}*\hat{A}
-    See the referenced paper for the definitions of the matrices :math: '\hat{A}'
-    and :math: 'hat{B}'
+
+    .. math:: 
+        \hat{H} \ket{X} = \lambda \hat{B} \ket{X}\ , \\
+        \hat{H} = \hat{T} + \hat{B}\times\hat{V}\ ,\\
+        \hat{T} = -0.5\times\hat{p}\times\hat{A}\ .
+
+    where :math:`\hat{p}=\exp(-2*x)`.
+    See the referenced paper for the definitions of the matrices :math:`\hat{A}`
+    and :math:`\hat{B}`.
     """
 
     N = config.grid_params["ngrid"]
