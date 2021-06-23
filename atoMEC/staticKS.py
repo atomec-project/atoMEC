@@ -42,7 +42,7 @@ def log_grid(x_r):
 
 
 class Orbitals:
-    """
+    r"""
     Class holding the KS orbitals, associated quantities and relevant routines
 
     Attributes
@@ -54,7 +54,7 @@ class Orbitals:
     occnums : ndarray
         the KS orbital occupation numbers including degeneracy (see notes)
     lbound : ndarray
-        matrix (2l+1) * \Theta(\eps) where \Theta is the step function
+        matrix :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
     """
 
     def __init__(self, xgrid):
@@ -184,11 +184,11 @@ class Orbitals:
 
     @staticmethod
     def make_lbound(eigvals):
-        """
+        r"""
         Construct the lbound matrix which denotes the bound states
         and their degeneracies.
 
-        For each spin channel, lbound(l,n) = (2l+1) * Theta(eps_{nl})
+        For each spin channel, :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
 
         Parameters
         ----------
@@ -347,7 +347,7 @@ class Potential:
     Attributes
     ----------
     v_s : ndarray
-        the full KS potential v_s = v_en + v_ha + v_xc
+        the full KS potential :math:`v_\mathrm{s} = v_\mathrm{en} + v_\mathrm{ha} + v_\mathrm{xc}`
     v_en : ndarray
         the electron-nuclear potential
     v_ha : ndarray
@@ -396,9 +396,9 @@ class Potential:
 
     @staticmethod
     def calc_v_en(xgrid):
-        """
+        r"""
         Constructs the electron-nuclear potential
-        v_en (x) = -Z * exp(-x)
+        :math:`v_\mathrm{en} (x) = -Z * \exp(-x)`
         """
 
         v_en = -config.Z * np.exp(-xgrid)
@@ -407,7 +407,7 @@ class Potential:
 
     @staticmethod
     def calc_v_ha(density, xgrid):
-        """
+        r"""
         Constructs the Hartree potential (see notes)
         
         Parameters
@@ -419,11 +419,15 @@ class Potential:
 
         Notes
         -----
-        v_ha is defined on the r-grid as:
-        .. math:: v_{ha}(r) = 4\pi*\int_0^r dr' n(r') \frac{r'^2}{\max(r,r')}
+        :math:`v_\mathm{ha}` is defined on the r-grid as:
+
+        .. math:: 
+            v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}
         On the x-grid:
-        .. math:: v_{ha}(x) = 4\pi {exp(-x) \int_{x0}^x dx' n(x') exp(3x') \\
-                               - \int_x^log(r_s) dx' n(x') exp(2x') }
+
+        .. math:: 
+            v_\mathrm{ha}(x) = 4\pi\Big\{\exp(-x)\int_{x0}^x \mathrm{d}x' n(x') \exp(3x') \\
+                               -\int_x^{\log(r_s)} \mathrm{d}x' n(x') \exp(2x') \Big\}
         """
 
         # initialize v_ha
@@ -455,15 +459,16 @@ class Potential:
 
 
 class Energy:
-    """
+    r"""
     Holds information about the KS total energy and relevant routines
 
     Attributes
     ----------
     F_tot : dict of floats
-        contains the total free energy "F" = E - T*S;
-        the total energy "E" = T_s + E_en + E_ha + F_xc
-        and the total entropy "S"
+        contains the keys "F", "E" and "S" for free energy, internal energy and
+        total entropy. See notes for definitions of F and E.
+
+
     E_kin : dict of floats
         the kinetic energy, split into "bound" and "unbound" terms
     E_en : float
@@ -473,6 +478,14 @@ class Energy:
     E_xc : dict of floats
         the exchange correlation energy containing the keys
         "x", "c" and "xc" for exchange, correlation, and exchange + correlation
+
+    Notes
+    -----
+    The free energy :math:`F` and internal energy :math:`E` are defined as
+
+    .. math::
+        F &= E - TS \\
+        E &= T_\mathrm{s} + E_\mathrm{en} + E_\mathrm{ha} + F_\mathrm{xc}
     """
 
     def __init__(self, orbs, dens):
@@ -606,7 +619,7 @@ class Energy:
 
     @staticmethod
     def calc_E_kin_unbound(orbs, xgrid):
-        """
+        r"""
         Parameters
         ----------
         orbs : object
@@ -623,8 +636,9 @@ class Energy:
         -----
         Currently only "ideal" (uniform) approximation for unbound electrons supported.
 
-        .. math:: T_{ub} = \sum_\sigma \frac{N^\sigma V}{\sqrt(2)\pi^2} I_{3/2}(\mu,\beta),
-        where :math: 'I_{3/2}(\mu,\beta)' denotes the complete Fermi-Diract integral
+        .. math::
+            T_\mathrm{ub} = \sum_\sigma \frac{N^\sigma\times V}{\sqrt{2}\pi^2} I_{3/2}(\mu,\beta),
+        where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
 
         # currently only ideal treatment supported
@@ -671,14 +685,14 @@ class Energy:
 
     @staticmethod
     def calc_S_bound(orbs):
-        """
+        r"""
         Computes the contribution of the bound states to the entropy (see notes)
-        
+
         Parameters
         ----------
         orbs : object
             the KS orbitals object
-        
+
         Returns
         -------
         S : float
@@ -688,8 +702,8 @@ class Energy:
         -----
         The entropy of non-interacting (KS) electrons is given by:
 
-        .. math:: S_{b} = -\sum_{s,l,n} (2l+1) [ f_{nls} log(f_{nls}) \\
-                                     + (1-f_{nls}) (log(1-f_{nls}) ]
+        .. math::
+            S_\mathrm{b} = -\sum_{s,l,n} (2l+1) [ f_{nls} \log(f_{nls}) + (1-f_{nls}) (\log(1-f_{nls}) ]
         """
 
         # the occupation numbers are stored as f'_{nl}=f_{nl}*(2l+1)
@@ -719,7 +733,7 @@ class Energy:
 
     @staticmethod
     def calc_S_unbound(orbs):
-        """
+        r"""
         Computes the unbound contribution to the entropy
 
         Parameters
@@ -736,8 +750,9 @@ class Energy:
         -----
         Currently only "ideal" (uniform) treatment of unbound electrons is supported.
 
-        .. math:: S_{ub} = \sum_\sigma \frac{V}{\sqrt{2}\pi^2}
-        where :math: 'I_{1/2}' is the complete Fermi-Dirac integral of order 1/2
+        .. math::
+            S_\mathrm{ub} = \sum_\sigma \frac{V}{\sqrt{2}\pi^2} I_{1/2}(\mu,\beta)
+        where :math:`I_{1/2}(\mu,\beta)` is the complete Fermi-Dirac integral of order 1/2
         """
 
         # currently only ideal treatment supported
@@ -759,7 +774,7 @@ class Energy:
 
     @staticmethod
     def calc_E_en(density, xgrid):
-        """
+        r"""
         Computes the electron-nuclear energy
 
         Parameters
@@ -777,8 +792,10 @@ class Energy:
         Notes
         -----
         Electron-nuclear energy is given by
-        .. math:: E_{en} = 4\pi\int_0^{r_s} \dd{r} r^2 n(r) v_{en}(r),
-        where :math: 'r_s' denotes the radius of the sphere of interest
+
+        .. math:: E_{en} = 4\pi\int_0^{r_s} \mathrm{d}{r} r^2 n(r) v_{en}(r),
+
+        where :math:`r_s` denotes the radius of the sphere of interest
         """
 
         # sum the density over the spin axes to get the total density
@@ -792,7 +809,7 @@ class Energy:
 
     @staticmethod
     def calc_E_ha(density, xgrid):
-        """
+        r"""
         Parameters
         ----------
         density : ndarray
@@ -808,8 +825,10 @@ class Energy:
         Notes
         -----
         The Hartree energy is given by
-        .. math:: E_{ha} = 2\pi \int\dd{r}_0^{r_s} r^2 n(r) v_{ha}(r),
-        where :math: 'v_{ha}(r)' is the Hartree potential
+
+        .. math:: E_\mathrm{ha} = 2\pi\int_0^{r_s}\mathrm{d}r r^2 n(r) v_\mathrm{ha}(r),
+
+        where :math:`v_\mathrm{ha}(r)` is the Hartree potential
         """
 
         # sum density over spins to get total density
