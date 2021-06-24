@@ -19,68 +19,56 @@ xc_special_codes = ["hartree", "None"]
 class XCFunc:
     """
     Class which defines the XCFunc object for 'special' (non-libxc) funcs
-    Desgined to align with some proprerties of libxc func objects
+
+    This is desgined to align with some proprerties of libxc func objects
+    in order to make certain general calls more straightforward
 
     Parameters
     ----------
     xc_code: str
-         The string identifier for the x/c func
+         the string identifier for the x/c func
 
-    Attributes
-    ----------
+    Notes
+    -----
+    The XCFunc object contains no public attributes, but it does contain
+    the following private attributes (named so to match libxc):
+
+    _xc_code : str
+        the string identifier for the x/c functional (not a libxc attribute)
     _xc_func_name : str
-         String which describes the functional
+         name of the functional
     _number : int
-        Functional id
+        functional id
     _family : str
-        The family to which the xc functional belongs
+        the family to which the xc functional belongs
     """
 
     def __init__(self, xc_code):
-        self._xc_func_name = self.get_name(xc_code)
-        self._number = self.get_id(xc_code)
+        self._xc_code = xc_code
         self._family = "special"
 
+        self.__xc_func_name = None
+        self.__number = None
+
     # defines the xc functional name
-    @staticmethod
-    def get_name(xc_code):
-        """
-        Parameters
-        ----------
-        xc_code : str
-            String defining the xc functional
+    @property
+    def _xc_func_name(self):
+        if self.__xc_func_name == None:
+            if self._xc_code == "hartree":
+                self.__xc_name = "- hartree"
+            elif self._xc_code == "None":
+                self.__xc_name = "none"
+        return self.__xc_name
 
-        Returns
-        -------
-        str:
-            A name identifying the functional
-        """
-        if xc_code == "hartree":
-            xc_name = "- hartree"
-        elif xc_code == "None":
-            xc_name = "none"
-        return xc_name
-
-    @staticmethod
-    # defines an id for the xc functional
-    def get_id(xc_code):
-        """
-        Parameters
-        ----------
-        xc_code : str
-            String defining the xc functional
-
-        Returns
-        -------
-        int:
-            A number identifying the functional
-        """
-
-        if xc_code == "hartree":
-            xc_number = -1
-        elif xc_code == "None":
-            xc_number = 0
-        return xc_number
+    # defines the number id for the xc functional
+    @property
+    def _number(self):
+        if self.__number == None:
+            if self._xc_code == "hartree":
+                self.__xc_number = -1
+            elif self._xc_code == "None":
+                self.__xc_number = 0
+        return self.__xc_number
 
 
 def check_xc_func(xc_code, id_supp):
