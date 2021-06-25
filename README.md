@@ -30,17 +30,10 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies.
   
   1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for    installation instructions)
-  2. Next, install `atoMEC` and its dependencies with `pipenv install`
-  3. Add `atoMEC` to your `PYTHONPATH`
-  4. Use `pipenv shell` or `pipenv run` to enter or run scripts from the `atoMEC` virtual environment
+  2. Next, install `atoMEC`'s dependencies with `pipenv install`
+  3. Use `pipenv shell` to activate the virtual environment and install atoMEC with `pip install -e .`
+  4. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python example/simply.py`
 
-* Alternatively, use one of the standard techniques:
-  
-  1. ``python setup.py install``
-  2. ``pip install .``
-  
-  And add `atoMEC` to your `PYTHONPATH`
-  
 * Try running the [examples](examples) and report any problems
 
 ## Running
