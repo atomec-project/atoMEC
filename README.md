@@ -34,11 +34,10 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   3. Use `pipenv shell` to activate the virtual environment and install atoMEC with `pip install -e .`
   4. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python example/simply.py`
 
-* Try running the [examples](examples) and report any problems
+* Try running the examples in `examples/` and report any problems
 
 ## Running
-You can familiarize yourself with the usage of this package by running
-the [examples](examples).
+You can familiarize yourself with the usage of this package by running the example scripts in `examples/`.
 
 ## Contributing to atoMEC
 We welcome your contributions, please adhere to the following guidelines when contributing to the code:
