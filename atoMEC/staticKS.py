@@ -215,7 +215,10 @@ class Density:
     """
     Holds the static KS density and routines required to compute its components
 
+    Parameters
     ----------
+    orbs : type
+        Description of `orbs`.
     """
 
     def __init__(self, orbs):
