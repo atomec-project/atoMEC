@@ -485,15 +485,17 @@ class EnergyCalcs:
         Parameters
         ----------
         input_params : dict
-            Can contain the keys "maxscf" and "mixfrac" for max scf cycle
+            Can contain the keys `maxscf` and `mixfrac` for max scf cycle
             and potential mixing fraction
 
         Returns
         -------
         scf_params : dict
             A dictionary with the following scf parameters
-            {'maxscf'   (int)    : max number scf cycles
-             'mixfrac'  (int)    : mixing fraction}
+            {
+            `maxscf`   (``int``)    : max number scf cycles,
+            `mixfrac`  (``int``)    : mixing fraction
+            }
         """
 
         scf_params = {}

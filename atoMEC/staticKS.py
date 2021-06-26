@@ -409,7 +409,7 @@ class Potential:
     def calc_v_ha(density, xgrid):
         r"""
         Constructs the Hartree potential (see notes)
-        
+
         Parameters
         ----------
         density : ndarray
@@ -421,11 +421,11 @@ class Potential:
         -----
         :math:`v_\mathrm{ha}` is defined on the r-grid as:
 
-        .. math:: 
+        .. math::
             v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}
         On the x-grid:
 
-        .. math:: 
+        .. math::
             v_\mathrm{ha}(x) = 4\pi\Big\{\exp(-x)\int_{x0}^x \mathrm{d}x' n(x') \exp(3x') \\
                                -\int_x^{\log(r_s)} \mathrm{d}x' n(x') \exp(2x') \Big\}
         """
@@ -557,7 +557,6 @@ class Energy:
         ----------
         orbs : object
             the KS orbitals object
-
         xgrid : ndarray
             the logarithmic grid
 
@@ -620,6 +619,8 @@ class Energy:
     @staticmethod
     def calc_E_kin_unbound(orbs, xgrid):
         r"""
+
+
         Parameters
         ----------
         orbs : object
@@ -638,6 +639,7 @@ class Energy:
 
         .. math::
             T_\mathrm{ub} = \sum_\sigma \frac{N^\sigma\times V}{\sqrt{2}\pi^2} I_{3/2}(\mu,\beta),
+
         where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
 
@@ -752,6 +754,7 @@ class Energy:
 
         .. math::
             S_\mathrm{ub} = \sum_\sigma \frac{V}{\sqrt{2}\pi^2} I_{1/2}(\mu,\beta)
+
         where :math:`I_{1/2}(\mu,\beta)` is the complete Fermi-Dirac integral of order 1/2
         """
 
