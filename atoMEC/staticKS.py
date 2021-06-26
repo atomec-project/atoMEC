@@ -215,20 +215,10 @@ class Density:
     """
     Holds the static KS density and routines required to compute its components
 
-    Attributes
     ----------
-    total : ndarray
-        the total KS density n(r) or n(x)
-    bound : dict of ndarrays
-        contains the keys "rho" and "N" denoting the bound density
-        and number of bound electrons respectively
-    unbound : dict of ndarrays
-        contains the keys "rho" and "N" denoting the unbound density
-        and number of unbound electrons respectively
     """
 
     def __init__(self, orbs):
-
         self._xgrid = orbs._xgrid
         self._total = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self._bound = {
@@ -244,18 +234,25 @@ class Density:
 
     @property
     def total(self):
+        """ndarray: Total KS density :math:`n(r)` or :math:`n(x)`"""
         if np.all(self._total == 0.0):
             self._total = self.bound["rho"] + self.unbound["rho"]
         return self._total
 
     @property
     def bound(self):
+        """dict of ndarrays: Contains the keys "rho" and "N" denoting the bound
+        density and number of bound electrons respectively
+        """
         if np.all(self._bound["rho"] == 0.0):
             self._bound = self.construct_rho_bound(self._orbs, self._xgrid)
         return self._bound
 
     @property
     def unbound(self):
+        """dict of ndarrays: contains the keys "rho" and "N" denoting the
+        unbound density and number of unbound electrons respectively
+        """
         if np.all(self._unbound["rho"]) == 0.0:
             self._unbound = self.construct_rho_unbound(self._orbs)
         return self._unbound
