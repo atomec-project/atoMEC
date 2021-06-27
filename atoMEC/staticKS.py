@@ -330,21 +330,7 @@ class Density:
 
 
 class Potential:
-    """
-    Holds the KS potential and the routines required to compute it
-
-    Attributes
-    ----------
-    v_s : ndarray
-        the full KS potential :math:`v_\mathrm{s} = v_\mathrm{en} + v_\mathrm{ha} + v_\mathrm{xc}`
-    v_en : ndarray
-        the electron-nuclear potential
-    v_ha : ndarray
-        the hartree potential
-    v_xc : dict of ndarrays
-        the xc-potential, contains the keys "x", "c" and "xc"
-        denoting exchange, correlation, and exchange + correlation respectively
-    """
+    """Holds the KS potential and the routines required to compute it"""
 
     def __init__(self, density):
 
@@ -361,24 +347,29 @@ class Potential:
 
     @property
     def v_s(self):
+        r"""ndarray: the full KS potential :math:`v_\mathrm{s} = v_\mathrm{en} + v_\mathrm{ha} + v_\mathrm{xc}`"""
         if np.all(self._v_s == 0.0):
             self._v_s = self.v_en + self.v_ha + self.v_xc["xc"]
         return self._v_s
 
     @property
     def v_en(self):
+        r"""ndarray: the electron-nuclear potential"""
         if np.all(self._v_en == 0.0):
             self._v_en = self.calc_v_en(self._xgrid)
         return self._v_en
 
     @property
     def v_ha(self):
+        r"""ndarray: the Hartree potential"""
         if np.all(self._v_ha == 0.0):
             self._v_ha = self.calc_v_ha(self._density, self._xgrid)
         return self._v_ha
 
     @property
     def v_xc(self):
+        r"""dict of ndarrays: the xc-potential, contains the keys "x", "c" and "xc"
+        denoting exchange, correlation, and exchange + correlation respectively"""
         if np.all(self._v_xc["xc"] == 0.0):
             self._v_xc = xc.v_xc(self._density, self._xgrid, config.xfunc, config.cfunc)
         return self._v_xc
@@ -412,11 +403,12 @@ class Potential:
 
         .. math::
             v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}
+
         On the x-grid:
 
         .. math::
             v_\mathrm{ha}(x) = 4\pi\Big\{\exp(-x)\int_{x0}^x \mathrm{d}x' n(x') \exp(3x') \\
-                               -\int_x^{\log(r_s)} \mathrm{d}x' n(x') \exp(2x') \Big\}
+            -\int_x^{\log(r_s)} \mathrm{d}x' n(x') \exp(2x') \Big\}
         """
 
         # initialize v_ha
