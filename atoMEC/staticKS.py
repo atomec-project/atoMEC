@@ -206,7 +206,7 @@ class Density:
 
     Parameters
     ----------
-    orbs : :obj:`staticKS.Orbitals`
+    orbs : :obj:`Orbitals`
         The KS orbitals object
     """
 
@@ -520,7 +520,7 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
         xgrid : ndarray
             the logarithmic grid
@@ -551,7 +551,7 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
         xgrid : ndarray
             the logarithmic grid
@@ -588,7 +588,7 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
         xgrid : ndarray
             the logarithmic grid
@@ -628,7 +628,7 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
 
         Returns
@@ -657,7 +657,7 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
 
         Returns
@@ -705,7 +705,7 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
 
         Returns
