@@ -442,31 +442,6 @@ class Potential:
 class Energy:
     r"""
     Holds information about the KS total energy and relevant routines
-
-    Attributes
-    ----------
-    F_tot : dict of floats
-        contains the keys "F", "E" and "S" for free energy, internal energy and
-        total entropy. See notes for definitions of F and E.
-
-
-    E_kin : dict of floats
-        the kinetic energy, split into "bound" and "unbound" terms
-    E_en : float
-        the electron-nuclear energy
-    E_ha : float
-        the Hartree energy
-    E_xc : dict of floats
-        the exchange correlation energy containing the keys
-        "x", "c" and "xc" for exchange, correlation, and exchange + correlation
-
-    Notes
-    -----
-    The free energy :math:`F` and internal energy :math:`E` are defined as
-
-    .. math::
-        F &= E - TS \\
-        E &= T_\mathrm{s} + E_\mathrm{en} + E_\mathrm{ha} + F_\mathrm{xc}
     """
 
     def __init__(self, orbs, dens):
@@ -487,42 +462,51 @@ class Energy:
 
     @property
     def F_tot(self):
+        r"""dict of floats: contains the keys "F", "E" and "S" for free energy, internal energy and
+        total entropy. :math:`F = E - TS`"""
         if self._F_tot == 0.0:
             self._F_tot = self.E_tot - config.temp * self.entropy["tot"]
         return self._F_tot
 
     @property
     def E_tot(self):
+        r"""float: the total KS internal energy :math:`E=T_\mathrm{s}+E_\mathrm{en}+E_\mathrm{ha}+F_\mathrm{xc}`"""
         if self._E_tot == 0.0:
             self._E_tot = self.E_kin["tot"] + self.E_en + self.E_ha + self.E_xc["xc"]
         return self._E_tot
 
     @property
     def entropy(self):
+        """dict of floats: total entropy containing "bound" and "unbound" keys"""
         if self._entropy["tot"] == 0.0:
             self._entropy = self.calc_entropy(self._orbs)
         return self._entropy
 
     @property
     def E_kin(self):
+        """dict of floats: KS kinetic energy containing "bound" and "unbound" keys"""
         if self._E_kin["tot"] == 0.0:
             self._E_kin = self.calc_E_kin(self._orbs, self._xgrid)
         return self._E_kin
 
     @property
     def E_en(self):
+        """float: the electron-nuclear energy"""
         if self._E_en == 0.0:
             self._E_en = self.calc_E_en(self._dens, self._xgrid)
         return self._E_en
 
     @property
     def E_ha(self):
+        """float: the Hartree energy"""
         if self._E_ha == 0.0:
             self._E_ha = self.calc_E_ha(self._dens, self._xgrid)
         return self._E_ha
 
     @property
     def E_xc(self):
+        """dict of floats: the xc energy, containing keys "x", "c" and "xc"
+        for exchange, correlation and exchange + correlation respectively"""
         if self._E_xc["xc"] == 0.0:
             self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
         return self._E_xc
