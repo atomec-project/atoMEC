@@ -233,7 +233,7 @@ class Density:
 
     @property
     def bound(self):
-        """dict of ndarrays: Contains the keys "rho" and "N" denoting the bound
+        """dict of ndarrays: Contains the keys `rho` and `N` denoting the bound
         density and number of bound electrons respectively
         """
         if np.all(self._bound["rho"] == 0.0):
@@ -242,7 +242,7 @@ class Density:
 
     @property
     def unbound(self):
-        """dict of ndarrays: contains the keys "rho" and "N" denoting the
+        """dict of ndarrays: contains the keys `rho` and `N` denoting the
         unbound density and number of unbound electrons respectively
         """
         if np.all(self._unbound["rho"]) == 0.0:
@@ -264,7 +264,7 @@ class Density:
         Returns
         -------
         rho_bound : dict of ndarrays
-            contains the keys "rho" and "N" denoting the bound density
+            contains the keys `rho` and `N` denoting the bound density
             and number of bound electrons respectively
         """
 
@@ -301,7 +301,7 @@ class Density:
         Returns
         -------
         rho_unbound : dict of ndarrays
-            contains the keys "rho" and "N" denoting the unbound density
+            contains the keys `rho` and `N` denoting the unbound density
             and number of unbound electrons respectively
         """
 
@@ -368,7 +368,7 @@ class Potential:
 
     @property
     def v_xc(self):
-        r"""dict of ndarrays: the xc-potential, contains the keys "x", "c" and "xc"
+        r"""dict of ndarrays: the xc-potential, contains the keys `x`, `c` and `xc`
         denoting exchange, correlation, and exchange + correlation respectively"""
         if np.all(self._v_xc["xc"] == 0.0):
             self._v_xc = xc.v_xc(self._density, self._xgrid, config.xfunc, config.cfunc)
@@ -462,7 +462,7 @@ class Energy:
 
     @property
     def F_tot(self):
-        r"""dict of floats: contains the keys "F", "E" and "S" for free energy, internal energy and
+        r"""dict of floats: contains the keys `F`, `E` and `S` for free energy, internal energy and
         total entropy. :math:`F = E - TS`"""
         if self._F_tot == 0.0:
             self._F_tot = self.E_tot - config.temp * self.entropy["tot"]
@@ -477,14 +477,14 @@ class Energy:
 
     @property
     def entropy(self):
-        """dict of floats: total entropy containing "bound" and "unbound" keys"""
+        """dict of floats: total entropy containing `bound` and `unbound` keys"""
         if self._entropy["tot"] == 0.0:
             self._entropy = self.calc_entropy(self._orbs)
         return self._entropy
 
     @property
     def E_kin(self):
-        """dict of floats: KS kinetic energy containing "bound" and "unbound" keys"""
+        """dict of floats: KS kinetic energy containing `bound` and `unbound` keys"""
         if self._E_kin["tot"] == 0.0:
             self._E_kin = self.calc_E_kin(self._orbs, self._xgrid)
         return self._E_kin
@@ -505,7 +505,7 @@ class Energy:
 
     @property
     def E_xc(self):
-        """dict of floats: the xc energy, containing keys "x", "c" and "xc"
+        """dict of floats: the xc energy, containing keys `x`, `c` and `xc`
         for exchange, correlation and exchange + correlation respectively"""
         if self._E_xc["xc"] == 0.0:
             self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
@@ -528,7 +528,7 @@ class Energy:
         Returns
         -------
         E_kin : dict of ndarrays
-            Contains "total", "bound" and "unbound" keys
+            Contains `tot`, `bound` and `unbound` keys
         """
 
         E_kin = {}
@@ -634,7 +634,7 @@ class Energy:
         Returns
         -------
         S : dict of floats
-           contains "total", "bound" and "unbound" keys
+           contains `tot`, `bound` and `unbound` keys
         """
 
         S = {}
