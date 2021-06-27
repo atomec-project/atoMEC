@@ -42,20 +42,7 @@ def log_grid(x_r):
 
 
 class Orbitals:
-    r"""
-    Class holding the KS orbitals, associated quantities and relevant routines
-
-    Attributes
-    ----------
-    eigfuncs : ndarray
-        the KS radial eigenfunctions on the logarithmic grid
-    eigvals : ndarray
-        the KS eigenvalues
-    occnums : ndarray
-        the KS orbital occupation numbers including degeneracy (see notes)
-    lbound : ndarray
-        matrix :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
-    """
+    """Class holding the KS orbitals, associated quantities and relevant routines"""
 
     def __init__(self, xgrid):
 
@@ -69,21 +56,22 @@ class Orbitals:
 
     @property
     def eigvals(self):
-        """KS eigenvalues"""
+        r"""ndarray: the KS eigenvalues :math:`\epsilon_{nl}^\sigma`"""
         if np.all(self._eigvals == 0.0):
             raise Exception("Eigenvalues have not been initialized")
         return self._eigvals
 
     @property
     def eigfuncs(self):
-        """KS eigenfunctions"""
+        r"""ndarray: the radial KS eigenfunctions on the logarithmic grid
+        :math:`X_{nl}^{\sigma}(r)`"""
         if np.all(self._eigfuncs == 0.0):
             raise Exception("Eigenfunctions have not been initialized")
         return self._eigfuncs
 
     @property
     def occnums(self):
-        """KS occupation numbers"""
+        r"""ndarray: the KS occupation numbers multiplied by the :obj:`lbound` matrix"""
         if np.all(self._occnums == 0.0):
             # raise Exception("Occnums have not been initialized")
             self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
@@ -91,7 +79,8 @@ class Orbitals:
 
     @property
     def lbound(self):
-        """Matrix denoting bound eigenvalues and their degeneracies"""
+        r"""ndarray: matrix denoting bound eigenvalues and their degeneracies (DOS).
+        The matrix takes the form :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`"""
         if np.all(self._lbound == 0.0):
             # raise Exception("lbound has not been initialized")
             self._lbound = self.make_lbound(self.eigvals)
