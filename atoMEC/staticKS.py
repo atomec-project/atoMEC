@@ -584,7 +584,7 @@ class Energy:
     @staticmethod
     def calc_E_kin_unbound(orbs, xgrid):
         r"""
-
+        Compute the contribution from unbound (continuum) electrons to kinetic energy.
 
         Parameters
         ----------
