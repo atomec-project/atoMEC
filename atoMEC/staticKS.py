@@ -217,8 +217,8 @@ class Density:
 
     Parameters
     ----------
-    orbs : type
-        Description of `orbs`.
+    orbs : :obj:`staticKS.Orbitals`
+        The KS orbitals object
     """
 
     def __init__(self, orbs):
