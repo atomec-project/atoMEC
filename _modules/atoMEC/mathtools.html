@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>atoMEC.mathtools &mdash; atoMEC  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> atoMEC
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">atoMEC</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">atoMEC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../atoMEC.html">atoMEC</a> &raquo;</li>
+        
+      <li>atoMEC.mathtools</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for atoMEC.mathtools</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Low-level module containing various mathematical functions</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># standard libraries</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">exp</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="c1"># external libraries</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span><span class="p">,</span> <span class="n">integrate</span>
+
+<span class="c1"># internal libraries</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
+
+
+<div class="viewcode-block" id="normalize_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.normalize_orbs">[docs]</a><span class="k">def</span> <span class="nf">normalize_orbs</span><span class="p">(</span><span class="n">eigfuncs_x</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalizes the KS orbitals within the chosen sphere</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eigfuncs : ndarray</span>
+<span class="sd">        The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        The logarithmic grid over which normalization is performed</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigfuncs_x_norm : ndarray</span>
+<span class="sd">        The radial KS eigenfunctions normalized over the chosen sphere</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize the normalized eigenfunctions</span>
+    <span class="n">eigfuncs_x_norm</span> <span class="o">=</span> <span class="n">eigfuncs_x</span>
+
+    <span class="c1"># loop over the eigenfunctions</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs_x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="c1"># compute the mod squared eigenvalues</span>
+        <span class="n">eigfuncs_sq</span> <span class="o">=</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="c1"># compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2</span>
+        <span class="n">exp_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">ampsq</span> <span class="o">=</span> <span class="n">int_sphere</span><span class="p">(</span><span class="n">exp_x</span> <span class="o">*</span> <span class="n">eigfuncs_sq</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="c1"># normalize eigenfunctions</span>
+        <span class="n">eigfuncs_x_norm</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">ampsq</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">eigfuncs_x_norm</span></div>
+
+
+<div class="viewcode-block" id="int_sphere"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.int_sphere">[docs]</a><span class="k">def</span> <span class="nf">int_sphere</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes integrals over the sphere defined by the logarithmic</span>
+<span class="sd">    grid provided as input</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fx : array_like</span>
+<span class="sd">        The function (array) to be integrated</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        The logarithmic radial grid</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    I_sph : float</span>
+<span class="sd">        The value of the integrand</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The integral formula is given by</span>
+
+<span class="sd">    .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">func_int</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">fx</span>
+    <span class="n">I_sph</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">func_int</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">I_sph</span></div>
+
+
+<div class="viewcode-block" id="laplace"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.laplace">[docs]</a><span class="k">def</span> <span class="nf">laplace</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the second-order derivative :math:`d^2 y(x) / dx^2`</span>
+<span class="sd">    over the chosen axis of the input array</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : ndarray</span>
+<span class="sd">        array y(x) on which laplacian is computed</span>
+<span class="sd">    x : ndarray</span>
+<span class="sd">        x array</span>
+<span class="sd">    axis: int, optional</span>
+<span class="sd">        axis over which derivatives are taken</span>
+<span class="sd">        default : -1</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    grad2_y : ndarray</span>
+<span class="sd">        the laplacian of y</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># first compute the first-order gradient</span>
+    <span class="n">grad1_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+    <span class="c1"># now compute the second-order gradient</span>
+    <span class="n">grad2_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">grad1_y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">grad2_y</span></div>
+
+
+<div class="viewcode-block" id="fermi_dirac"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.fermi_dirac">[docs]</a><span class="k">def</span> <span class="nf">fermi_dirac</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the Fermi-Dirac function, see notes</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mu : array_like</span>
+<span class="sd">        the chemical potential</span>
+<span class="sd">    beta : float</span>
+<span class="sd">        the inverse potential</span>
+<span class="sd">    eps : array_like</span>
+<span class="sd">        the energies</span>
+<span class="sd">    n : int</span>
+<span class="sd">        energy is raised to power n/2 in the numerator (see notes)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_fd : array_like</span>
+<span class="sd">        the fermi dirac occupation(s)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The FD function is defined as:</span>
+
+<span class="sd">    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+\beta(\epsilon - \mu))}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># dfn the exponential function</span>
+    <span class="c1"># ignore warnings here</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">over</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+        <span class="n">fn_exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">beta</span> <span class="o">*</span> <span class="p">(</span><span class="n">eps</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)),</span> <span class="mf">1e12</span><span class="p">)</span>
+
+    <span class="c1"># fermi_dirac dist</span>
+    <span class="n">f_fd</span> <span class="o">=</span> <span class="p">(</span><span class="n">eps</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">fn_exp</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">f_fd</span></div>
+
+
+<div class="viewcode-block" id="fd_int_complete"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.fd_int_complete">[docs]</a><span class="k">def</span> <span class="nf">fd_int_complete</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes complete Fermi-Dirac integrals (see notes)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mu : float</span>
+<span class="sd">        chemical potential</span>
+<span class="sd">    beta: float</span>
+<span class="sd">        inverse temperature</span>
+<span class="sd">    n : int</span>
+<span class="sd">        order of Fermi-Dirac integral (see notes)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    I_n : float</span>
+<span class="sd">        the complete fermi-dirac integral</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Complete Fermi-Dirac integrals are of the form</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        I_{n}(\mu,\beta)=\int_0^\infty\mathrm{d}\epsilon\ \epsilon^{n/2}f_{fd}(\mu,\epsilon,\beta)</span>
+
+<span class="sd">    where n is the order of the integral</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># use scipy quad integration routine</span>
+    <span class="n">limup</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># ignore integration warnings (omnipresent because of inf upper limit)</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="n">I_n</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">fermi_dirac</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">limup</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">I_n</span></div>
+
+
+<div class="viewcode-block" id="chem_pot"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.chem_pot">[docs]</a><span class="k">def</span> <span class="nf">chem_pot</span><span class="p">(</span><span class="n">orbs</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines the chemical potential by enforcing charge neutrality (see notes)</span>
+<span class="sd">    Uses scipy.optimize.root_scalar with brentq implementation</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    orbs : object(staticKS.Orbitals)</span>
+<span class="sd">        the orbitals object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    mu : array_like</span>
+<span class="sd">        chemical potential (spin-dependent)</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Finds the roots of equation</span>
+
+<span class="sd">    .. math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e = 0.</span>
+
+<span class="sd">    The number of unbound electrons :math:`N_{ub}` depends on the implementation choice.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span>
+    <span class="n">mu0</span> <span class="o">=</span> <span class="n">mu</span>  <span class="c1"># set initial guess to existing value of chem pot</span>
+
+    <span class="c1"># so far only the ideal treatment for unbound electrons is implemented</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">soln</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">root_scalar</span><span class="p">(</span>
+                    <span class="n">f_root_id</span><span class="p">,</span>
+                    <span class="n">x0</span><span class="o">=</span><span class="n">mu0</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">orbs</span><span class="o">.</span><span class="n">lbound</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;brentq&quot;</span><span class="p">,</span>
+                    <span class="n">bracket</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="mi">40</span><span class="p">],</span>
+                    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
+                <span class="p">)</span>
+                <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">root</span>
+            <span class="c1"># in case there are no electrons in one spin channel</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="k">return</span> <span class="n">mu</span></div>
+
+
+<div class="viewcode-block" id="f_root_id"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.f_root_id">[docs]</a><span class="k">def</span> <span class="nf">f_root_id</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">lbound</span><span class="p">,</span> <span class="n">nele</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Functional input for the chemical potential root finding function</span>
+<span class="sd">    with the ideal approximation for unbound electrons (see notes)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mu : array_like</span>
+<span class="sd">        chemical potential</span>
+<span class="sd">    eigvals : ndarray</span>
+<span class="sd">        the energy eigenvalues</span>
+<span class="sd">    lbound : ndarray</span>
+<span class="sd">        the lbound matrix :math:`(2l+1)\Theta(\epsilon_{nl}^\sigma)`</span>
+<span class="sd">    nele : union(int, float)</span>
+<span class="sd">        the number of electrons for given spin</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_root : float</span>
+<span class="sd">       the difference of the predicted electron number with given mu</span>
+<span class="sd">       and the actual electron number</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The returned function is</span>
+
+<span class="sd">    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># caluclate the contribution from the bound electrons</span>
+    <span class="k">if</span> <span class="n">nele</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">occnums</span> <span class="o">=</span> <span class="n">lbound</span> <span class="o">*</span> <span class="n">fermi_dirac</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+        <span class="n">contrib_bound</span> <span class="o">=</span> <span class="n">occnums</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">contrib_bound</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># now compute the contribution from the unbound electrons</span>
+    <span class="c1"># this function uses the ideal approximation</span>
+
+    <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">contrib_unbound</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">fd_int_complete</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="c1"># return the function whose roots are to be found</span>
+    <span class="n">f_root</span> <span class="o">=</span> <span class="n">contrib_bound</span> <span class="o">+</span> <span class="n">contrib_unbound</span> <span class="o">-</span> <span class="n">nele</span>
+
+    <span class="k">return</span> <span class="n">f_root</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, CASUS.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

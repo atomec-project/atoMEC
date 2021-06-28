@@ -1,0 +1,524 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>atoMEC.numerov &mdash; atoMEC  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> atoMEC
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">atoMEC</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">atoMEC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../atoMEC.html">atoMEC</a> &raquo;</li>
+        
+      <li>atoMEC.numerov</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for atoMEC.numerov</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Routines for solving the KS equations via Numerov&#39;s method</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># standard libs</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="c1"># external libs</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">import</span> <span class="n">eigsh</span><span class="p">,</span> <span class="n">eigs</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">eigh</span><span class="p">,</span> <span class="n">eig</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span><span class="p">,</span> <span class="n">dump</span><span class="p">,</span> <span class="n">load</span>
+
+<span class="c1"># from staticKS import Orbitals</span>
+
+<span class="c1"># internal libs</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mathtools</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">writeoutput</span>
+
+
+<span class="c1"># @writeoutput.timing</span>
+<div class="viewcode-block" id="matrix_solve"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.matrix_solve">[docs]</a><span class="k">def</span> <span class="nf">matrix_solve</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves the radial KS equation using an implementation of Numerov&#39;s method using matrix diagonalization (see notes)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    v : ndarray</span>
+<span class="sd">        the KS potential on the log grid</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        the logarithmic grid</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigfuncs : ndarray</span>
+<span class="sd">        the radial KS eigenfunctions on the log grid</span>
+<span class="sd">    eigvals : ndarray</span>
+<span class="sd">        the KS eigenvalues</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The implementation is based on the following paper:</span>
+<span class="sd">    M. Pillai, J. Goglio, and T. G. Walker , &quot;Matrix Numerov method for solving Schrödinger’s equation&quot;,</span>
+<span class="sd">    American Journal of Physics 80, 1017-1019 (2012) https://doi.org/10.1119/1.4748813</span>
+
+<span class="sd">    The matrix diagonalization is of the form:</span>
+
+<span class="sd">    .. math:: </span>
+<span class="sd">    </span>
+<span class="sd">        \hat{H} \lvert X \rangle &amp;= \lambda \hat{B} \lvert X \rangle\ , \\</span>
+<span class="sd">        \hat{H}                  &amp;= \hat{T} + \hat{B}\times\hat{V}\ ,   \\</span>
+<span class="sd">        \hat{T}                  &amp;= -0.5\times\hat{p}\times\hat{A}\ .</span>
+
+<span class="sd">    where :math:`\hat{p}=\exp(-2x)`.</span>
+<span class="sd">    See the referenced paper for the definitions of the matrices :math:`\hat{A}`</span>
+<span class="sd">    and :math:`\hat{B}`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]</span>
+
+    <span class="c1"># define the spacing of the xgrid</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># number of grid points</span>
+
+    <span class="c1"># Set-up the following matrix diagonalization problem</span>
+    <span class="c1"># H*|u&gt;=E*B*|u&gt;; H=T+B*V; T=-p*A</span>
+    <span class="c1"># |u&gt; is related to the radial eigenfunctions R(r) via R(x)=exp(x/2)u(x)</span>
+
+    <span class="c1"># off-diagonal matrices</span>
+    <span class="n">I_minus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">k</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">I_zero</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">I_plus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>  <span class="c1"># transformation for kinetic term on log grid</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">))</span>
+
+    <span class="c1"># see referenced paper for definitions of A and B matrices</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">((</span><span class="n">I_minus</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">I_zero</span> <span class="o">+</span> <span class="n">I_plus</span><span class="p">)</span> <span class="o">/</span> <span class="n">dx</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">((</span><span class="n">I_minus</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">I_zero</span> <span class="o">+</span> <span class="n">I_plus</span><span class="p">)</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+
+    <span class="c1"># von neumann boundary conditions</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;neumann&quot;</span><span class="p">:</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">dx</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mf">12.0</span>
+
+    <span class="c1"># construct kinetic energy matrix</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">A</span>
+
+    <span class="c1"># solve in serial or parallel - serial mostly useful for debugging</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">numcores</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_parallel</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_serial</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span></div>
+
+
+<div class="viewcode-block" id="KS_matsolve_parallel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_parallel">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_parallel</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves the KS matrix diagonalization by parallelizing over</span>
+<span class="sd">    config.ncores cores</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    T : ndarray</span>
+<span class="sd">        kinetic energy array</span>
+<span class="sd">    B : ndarray</span>
+<span class="sd">        off-diagonal array (for RHS of eigenvalue problem)</span>
+<span class="sd">    v : ndarray</span>
+<span class="sd">        KS potential array</span>
+<span class="sd">    xgrid: ndarray</span>
+<span class="sd">        the logarithmic grid</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigfuncs : ndarray</span>
+<span class="sd">        radial KS wfns</span>
+<span class="sd">    eigvals : ndarray</span>
+<span class="sd">        KS eigenvalues</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># compute the number of grid points</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+    <span class="c1"># initialize empty potential matrix</span>
+    <span class="n">V_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+
+    <span class="c1"># Compute the number pmax of distinct diagonizations to be solved</span>
+    <span class="n">pmax</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
+
+    <span class="c1"># now flatten the potential matrix over spins</span>
+    <span class="n">v_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
+            <span class="n">v_flat</span><span class="p">[</span><span class="n">l</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span>
+            <span class="p">)</span>
+
+    <span class="c1"># make temporary folder to store arrays</span>
+    <span class="n">joblib_folder</span> <span class="o">=</span> <span class="s2">&quot;./joblib_memmap&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">joblib_folder</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># dump and load the large numpy arrays from file</span>
+    <span class="n">data_filename_memmap</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">joblib_folder</span><span class="p">,</span> <span class="s2">&quot;data_memmap&quot;</span><span class="p">)</span>
+    <span class="n">dump</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v_flat</span><span class="p">),</span> <span class="n">data_filename_memmap</span><span class="p">)</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v_flat</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">data_filename_memmap</span><span class="p">,</span> <span class="n">mmap_mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+
+    <span class="c1"># set up the parallel job</span>
+    <span class="k">with</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">numcores</span><span class="p">)</span> <span class="k">as</span> <span class="n">parallel</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">parallel</span><span class="p">(</span>
+            <span class="n">delayed</span><span class="p">(</span><span class="n">diag_H</span><span class="p">)(</span><span class="n">q</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v_flat</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pmax</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># remove the joblib arrays</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">joblib_folder</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not clean-up automatically.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># retrieve the eigfuncs and eigvals from the joblib output</span>
+    <span class="n">eigfuncs_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+    <span class="n">eigvals_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pmax</span><span class="p">):</span>
+        <span class="n">eigfuncs_flat</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">eigvals_flat</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># unflatten eigfuncs / eigvals so they return to original shape</span>
+    <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">eigfuncs_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+    <span class="n">eigvals</span> <span class="o">=</span> <span class="n">eigvals_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span></div>
+
+
+<div class="viewcode-block" id="KS_matsolve_serial"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_serial">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_serial</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solves the KS equations via matrix diagonalization in serial</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    T : ndarray</span>
+<span class="sd">        kinetic energy array</span>
+<span class="sd">    B : ndarray</span>
+<span class="sd">        off-diagonal array (for RHS of eigenvalue problem)</span>
+<span class="sd">    v : ndarray</span>
+<span class="sd">        KS potential array</span>
+<span class="sd">    xgrid: ndarray</span>
+<span class="sd">        the logarithmic grid</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigfuncs : ndarray</span>
+<span class="sd">        radial KS wfns</span>
+<span class="sd">    eigvals : ndarray</span>
+<span class="sd">        KS eigenvalues</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># compute the number of grid points</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+    <span class="c1"># initialize empty potential matrix</span>
+    <span class="n">V_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+
+    <span class="c1"># initialize the eigenfunctions and their eigenvalues</span>
+    <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+    <span class="n">eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">))</span>
+
+    <span class="c1"># A new Hamiltonian has to be re-constructed for every value of l and each spin channel if spin-polarized</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
+
+        <span class="c1"># diagonalize Hamiltonian using scipy</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+
+            <span class="c1"># fill potential matrices</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">V_mat</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">))</span>
+
+            <span class="c1"># construct Hamiltonians</span>
+            <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">V_mat</span>
+
+            <span class="c1"># we seek the lowest nmax eigenvalues from sparse matrix diagonalization</span>
+            <span class="c1"># use `shift-invert mode&#39; (sigma=0) and pick lowest magnitude (&quot;LM&quot;) eigs</span>
+            <span class="c1"># sigma=0 seems to cause numerical issues so use a small offset</span>
+            <span class="n">eigs_up</span><span class="p">,</span> <span class="n">vecs_up</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+
+            <span class="n">eigfuncs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span> <span class="n">eigvals</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span>
+                <span class="n">vecs_up</span><span class="p">,</span> <span class="n">eigs_up</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span></div>
+
+
+<div class="viewcode-block" id="diag_H"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.diag_H">[docs]</a><span class="k">def</span> <span class="nf">diag_H</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">bc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Diagonilizes the Hamiltonian for the input potential v[p] using scipy&#39;s</span>
+<span class="sd">    sparse matrix solver scipy.sparse.linalg.eigs</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p : int</span>
+<span class="sd">       the desired index of the input array v to solve for</span>
+<span class="sd">    T : ndarray</span>
+<span class="sd">        the kinetic energy matrix</span>
+<span class="sd">    B : ndarray</span>
+<span class="sd">        the off diagonal matrix multiplying V and RHS</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        the logarithmic grid</span>
+<span class="sd">    nmax : int</span>
+<span class="sd">        number of eigenvalues returned by the sparse matrix diagonalization</span>
+<span class="sd">    bc : str</span>
+<span class="sd">        the boundary condition</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    evecs : ndarray</span>
+<span class="sd">        the KS radial eigenfunctions</span>
+<span class="sd">    evals : ndarray</span>
+<span class="sd">        the KS eigenvalues</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># compute the number of grid points</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+    <span class="c1"># initialize empty potential matrix</span>
+    <span class="n">V_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+
+    <span class="c1"># fill potential matrices</span>
+    <span class="c1"># np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">V_mat</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">p</span><span class="p">])</span>
+
+    <span class="c1"># construct Hamiltonians</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">V_mat</span>
+
+    <span class="c1"># we seek the lowest nmax eigenvalues from sparse matrix diagonalization</span>
+    <span class="c1"># use `shift-invert mode&#39; (sigma=0) and pick lowest magnitude (&quot;LM&quot;) eigs</span>
+    <span class="c1"># sigma=0 seems to cause numerical issues so use a small offset</span>
+    <span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+
+    <span class="c1"># sort and normalize</span>
+    <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span><span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span></div>
+
+
+<div class="viewcode-block" id="update_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.update_orbs">[docs]</a><span class="k">def</span> <span class="nf">update_orbs</span><span class="p">(</span><span class="n">l_eigfuncs</span><span class="p">,</span> <span class="n">l_eigvals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sorts the eigenvalues and functions by ascending order in energy and normalizes the eigenfunctions</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    l_eigfuncs : ndarray</span>
+<span class="sd">        input (unsorted and unnormalized) eigenfunctions (for given l and spin)</span>
+<span class="sd">    l_eigvals : ndarray</span>
+<span class="sd">        input (unsorted) eigenvalues (for given l and spin)</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        the logarithmic grid</span>
+<span class="sd">    bc : str</span>
+<span class="sd">        the boundary condition</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigfuncs : ndarray</span>
+<span class="sd">        sorted and normalized eigenfunctions</span>
+<span class="sd">    eigvals : ndarray</span>
+<span class="sd">        sorted eigenvalues in ascending energy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Sort eigenvalues in ascending order</span>
+    <span class="n">idr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">l_eigvals</span><span class="p">)</span>
+    <span class="n">eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">l_eigvals</span><span class="p">[</span><span class="n">idr</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+    <span class="c1"># under neumann bc the RHS pt is junk, convert to correct value</span>
+    <span class="k">if</span> <span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;neumann&quot;</span><span class="p">:</span>
+        <span class="n">l_eigfuncs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_eigfuncs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">l_eigfuncs</span><span class="o">.</span><span class="n">real</span><span class="p">)[</span><span class="n">idr</span><span class="p">])</span>
+    <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">normalize_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>  <span class="c1"># normalize</span>
+
+    <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, CASUS.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

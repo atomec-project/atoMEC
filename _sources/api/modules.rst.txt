@@ -1,0 +1,7 @@
+atoMEC
+======
+
+.. toctree::
+   :maxdepth: 4
+
+   atoMEC

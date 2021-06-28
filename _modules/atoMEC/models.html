@@ -1,0 +1,511 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>atoMEC.models &mdash; atoMEC  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> atoMEC
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">atoMEC</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">atoMEC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../atoMEC.html">atoMEC</a> &raquo;</li>
+        
+      <li>atoMEC.models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for atoMEC.models</h1><div class="highlight"><pre>
+<span></span><span class="c1"># import standard packages</span>
+
+<span class="c1"># import external packages</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">mendeleev</span> <span class="kn">import</span> <span class="n">element</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">log</span>
+
+<span class="c1"># import internal packages</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">check_inputs</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">staticKS</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">convergence</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">writeoutput</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">xc</span>
+
+
+<div class="viewcode-block" id="ISModel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel">[docs]</a><span class="k">class</span> <span class="nc">ISModel</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">atom</span><span class="p">,</span>
+        <span class="n">xfunc_id</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">xfunc_id</span><span class="p">,</span>
+        <span class="n">cfunc_id</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">cfunc_id</span><span class="p">,</span>
+        <span class="n">bc</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">,</span>
+        <span class="n">spinpol</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">spinpol</span><span class="p">,</span>
+        <span class="n">spinmag</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">unbound</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">unbound</span><span class="p">,</span>
+        <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the parameters used for an energy calculation.</span>
+<span class="sd">        These are choices for the theoretical model, not numerical parameters for implementation</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        atom : obj</span>
+<span class="sd">            The atom object</span>
+<span class="sd">        xfunc : Union[str,int], optional</span>
+<span class="sd">            The exchange functional, can be the libxc code or string, or special internal value</span>
+<span class="sd">            Default : &quot;lda_x&quot;</span>
+<span class="sd">        cfunc : Union[str,int], optional</span>
+<span class="sd">            The correlation functional, can be the libxc code or string, or special internal value</span>
+<span class="sd">            Default : &quot;lda_c_pw&quot;</span>
+<span class="sd">        bc : str, optional</span>
+<span class="sd">            The boundary condition, can be &quot;dirichlet&quot; or &quot;neumann&quot;</span>
+<span class="sd">            Default : &quot;dirichlet&quot;</span>
+<span class="sd">        spinpol : bool, optional</span>
+<span class="sd">            Whether to run a spin-polarized calculation</span>
+<span class="sd">            Default : False</span>
+<span class="sd">        spinmag : int, optional</span>
+<span class="sd">            The spin-magentization</span>
+<span class="sd">            Default: 0 for nele even, 1 for nele odd</span>
+<span class="sd">        unbound : str, optional</span>
+<span class="sd">            The way in which the unbound electron density is computed</span>
+<span class="sd">            Default : &quot;ideal&quot;</span>
+<span class="sd">        write_info : bool, optional</span>
+<span class="sd">            Writes information about the model parameters</span>
+<span class="sd">            Default : True</span>
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xfunc : str</span>
+<span class="sd">            The (short-hand) name of the exchange functional</span>
+<span class="sd">        cfunc : str</span>
+<span class="sd">            The (short-hand) name of the correlation functional</span>
+<span class="sd">        bc : str</span>
+<span class="sd">            The boundary condition</span>
+<span class="sd">        spinpol : bool</span>
+<span class="sd">            Whether calculation will be spin-polarized</span>
+<span class="sd">        nele : ndarray</span>
+<span class="sd">            Number of electrons in each spin channel (total if spinpol=False)</span>
+<span class="sd">        unbound : str</span>
+<span class="sd">            The treatment of unbound electrons</span>
+<span class="sd">        info : str</span>
+<span class="sd">            Information about all the model parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Input variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nele_tot</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">nele</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spinpol</span> <span class="o">=</span> <span class="n">spinpol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spinmag</span> <span class="o">=</span> <span class="n">spinmag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xfunc_id</span> <span class="o">=</span> <span class="n">xfunc_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfunc_id</span> <span class="o">=</span> <span class="n">cfunc_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="n">bc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unbound</span> <span class="o">=</span> <span class="n">unbound</span>
+
+        <span class="c1"># print the information</span>
+        <span class="k">if</span> <span class="n">write_info</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">spinpol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spinpol</span>
+
+    <span class="nd">@spinpol</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">spinpol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spinpol</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spinpol</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">check_spinpol</span><span class="p">(</span><span class="n">spinpol</span><span class="p">)</span>
+        <span class="c1"># define the leading dimension for KS quantities (density, orbs, pot)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spinpol</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># compute the no of electrons in each spin channel</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nele</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">calc_nele</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">spinmag</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nele_tot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">spinpol</span>
+            <span class="p">)</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">nele</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nele</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># reset the x and c functionals if spinpol changes</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">set_xc_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xfunc_id</span><span class="p">)</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">set_xc_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cfunc_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">spinmag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spinmag</span>
+
+    <span class="nd">@spinmag</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">spinmag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spinmag</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_spinmag</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">check_spinmag</span><span class="p">(</span><span class="n">spinmag</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nele_tot</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># compute the no of electrons in each spin channel</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nele</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">calc_nele</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">spinmag</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nele_tot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">spinpol</span>
+            <span class="p">)</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">nele</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nele</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">xfunc_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xfunc_id</span>
+
+    <span class="nd">@xfunc_id</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">xfunc_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xfunc_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xfunc_id</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">check_xc</span><span class="p">(</span><span class="n">xfunc_id</span><span class="p">,</span> <span class="s2">&quot;exchange&quot;</span><span class="p">)</span>
+        <span class="c1"># define the exchange func object</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">set_xc_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xfunc_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cfunc_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfunc_id</span>
+
+    <span class="nd">@cfunc_id</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">cfunc_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfunc_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cfunc_id</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">check_xc</span><span class="p">(</span><span class="n">cfunc_id</span><span class="p">,</span> <span class="s2">&quot;correlation&quot;</span><span class="p">)</span>
+        <span class="c1"># define the correlation func object</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">set_xc_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cfunc_id</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bc</span>
+
+    <span class="nd">@bc</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">bc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bc</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bc</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">check_bc</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bc</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unbound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span>
+
+    <span class="nd">@unbound</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">unbound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unbound</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">check_unbound</span><span class="p">(</span><span class="n">unbound</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">write_ISModel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ISModel.CalcEnergy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel.CalcEnergy">[docs]</a>    <span class="nd">@writeoutput</span><span class="o">.</span><span class="n">timing</span>
+    <span class="k">def</span> <span class="nf">CalcEnergy</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">grid_params</span><span class="o">=</span><span class="p">{},</span> <span class="n">conv_params</span><span class="o">=</span><span class="p">{},</span> <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span> <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run a self-consistent calculation to minimize the Kohn-Sham free energy functional</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nmax : int</span>
+<span class="sd">            maximum no. eigenvalues to compute for each value of angular momentum</span>
+<span class="sd">        lmax : int</span>
+<span class="sd">            maximum no. angular momentum eigenfunctions to consider</span>
+<span class="sd">        grid_params : dict, optional</span>
+<span class="sd">            dictionary of grid parameters as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `ngrid` (``int``)   : number of grid points,</span>
+<span class="sd">            `x0`    (``float``) : LHS grid point takes form</span>
+<span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified</span>
+<span class="sd">            }</span>
+<span class="sd">        conv_params : dict, optional</span>
+<span class="sd">            dictionary of convergence parameters as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `econv` (``float``) : convergence for total energy,</span>
+<span class="sd">            `nconv` (``float``) : convergence for density,</span>
+<span class="sd">            `vconv` (``float``) : convergence for electron number</span>
+<span class="sd">            }</span>
+<span class="sd">        scf_params : dict, optional</span>
+<span class="sd">            dictionary for scf cycle parameters as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `maxscf`  (``int``)   : maximum number of scf cycles,</span>
+<span class="sd">            `mixfrac` (``float``) : density mixing fraction</span>
+<span class="sd">            }</span>
+<span class="sd">        write_info : bool, optional</span>
+<span class="sd">            prints the scf cycle and final parameters</span>
+<span class="sd">            defaults to True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        energy : obj</span>
+<span class="sd">            Total energy object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># boundary cond, unbound electrons, xc func objects</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unbound</span>
+
+        <span class="c1"># reset global parameters if they are changed</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">nmax</span> <span class="o">=</span> <span class="n">nmax</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">lmax</span> <span class="o">=</span> <span class="n">lmax</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_grid_params</span><span class="p">(</span><span class="n">grid_params</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">conv_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_conv_params</span><span class="p">(</span><span class="n">conv_params</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">scf_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_scf_params</span><span class="p">(</span><span class="n">scf_params</span><span class="p">)</span>
+
+        <span class="c1"># set up the xgrid and rgrid</span>
+        <span class="n">xgrid</span><span class="p">,</span> <span class="n">rgrid</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">log_grid</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">r_s</span><span class="p">))</span>
+
+        <span class="c1"># initialize orbitals</span>
+        <span class="n">orbs</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Orbitals</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="c1"># use coulomb potential as initial guess</span>
+        <span class="n">v_init</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_init</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># occupy orbitals</span>
+        <span class="n">orbs</span><span class="o">.</span><span class="n">occupy</span><span class="p">()</span>
+
+        <span class="c1"># write the initial spiel</span>
+        <span class="n">scf_init</span> <span class="o">=</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">write_init</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">scf_init</span><span class="p">)</span>
+
+        <span class="c1"># initialize the convergence object</span>
+        <span class="n">conv</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">SCF</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">iscf</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">scf_params</span><span class="p">[</span><span class="s2">&quot;maxscf&quot;</span><span class="p">]):</span>
+
+            <span class="c1"># construct density</span>
+            <span class="n">rho</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Density</span><span class="p">(</span><span class="n">orbs</span><span class="p">)</span>
+
+            <span class="c1"># construct potential</span>
+            <span class="n">pot</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
+
+            <span class="c1"># compute energies</span>
+            <span class="n">energy</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Energy</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
+            <span class="n">E_free</span> <span class="o">=</span> <span class="n">energy</span><span class="o">.</span><span class="n">F_tot</span>
+
+            <span class="c1"># mix potential</span>
+            <span class="k">if</span> <span class="n">iscf</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">scf_params</span><span class="p">[</span><span class="s2">&quot;mixfrac&quot;</span><span class="p">]</span>
+                <span class="n">v_s</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">pot</span><span class="o">.</span><span class="n">v_s</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">v_s_old</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">v_s</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">v_s</span>
+
+            <span class="c1"># update the orbitals with the KS potential</span>
+            <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_s</span><span class="p">)</span>
+            <span class="n">orbs</span><span class="o">.</span><span class="n">occupy</span><span class="p">()</span>
+
+            <span class="c1"># update old potential</span>
+            <span class="n">v_s_old</span> <span class="o">=</span> <span class="n">v_s</span>
+
+            <span class="c1"># test convergence</span>
+            <span class="n">conv_vals</span> <span class="o">=</span> <span class="n">conv</span><span class="o">.</span><span class="n">check_conv</span><span class="p">(</span><span class="n">E_free</span><span class="p">,</span> <span class="n">v_s</span><span class="p">,</span> <span class="n">rho</span><span class="o">.</span><span class="n">total</span><span class="p">,</span> <span class="n">iscf</span><span class="p">)</span>
+
+            <span class="c1"># write scf output</span>
+            <span class="n">scf_string</span> <span class="o">=</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">write_cycle</span><span class="p">(</span><span class="n">iscf</span><span class="p">,</span> <span class="n">E_free</span><span class="p">,</span> <span class="n">conv_vals</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">scf_string</span><span class="p">)</span>
+
+            <span class="c1"># exit if converged</span>
+            <span class="k">if</span> <span class="n">conv_vals</span><span class="p">[</span><span class="s2">&quot;complete&quot;</span><span class="p">]:</span>
+                <span class="k">break</span>
+
+        <span class="c1"># write final output</span>
+        <span class="n">scf_final</span> <span class="o">=</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">SCF</span><span class="p">()</span><span class="o">.</span><span class="n">write_final</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">conv_vals</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">scf_final</span><span class="p">)</span>
+
+        <span class="c1"># write the density to file</span>
+        <span class="n">writeoutput</span><span class="o">.</span><span class="n">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
+
+        <span class="c1"># write the potential to file</span>
+        <span class="n">writeoutput</span><span class="o">.</span><span class="n">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+
+        <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">energy</span><span class="p">,</span>
+            <span class="s2">&quot;density&quot;</span><span class="p">:</span> <span class="n">rho</span><span class="p">,</span>
+            <span class="s2">&quot;potential&quot;</span><span class="p">:</span> <span class="n">pot</span><span class="p">,</span>
+            <span class="s2">&quot;orbitals&quot;</span><span class="p">:</span> <span class="n">orbs</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">output_dict</span></div></div>
+
+
+<span class="c1"># scf_string = self.print_scf_complete(conv_vals)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, CASUS.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

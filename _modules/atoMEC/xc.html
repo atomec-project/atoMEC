@@ -1,0 +1,448 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>atoMEC.xc &mdash; atoMEC  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> atoMEC
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">atoMEC</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">atoMEC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../atoMEC.html">atoMEC</a> &raquo;</li>
+        
+      <li>atoMEC.xc</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for atoMEC.xc</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Handles everything connected to the exchange-correlation term</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># standard libs</span>
+
+<span class="c1"># external libs</span>
+<span class="kn">import</span> <span class="nn">pylibxc</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># internal libs</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mathtools</span>
+
+<span class="c1"># list of special codes for functionals not defined by libxc</span>
+<span class="n">xc_special_codes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;hartree&quot;</span><span class="p">,</span> <span class="s2">&quot;None&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="XCFunc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.XCFunc">[docs]</a><span class="k">class</span> <span class="nc">XCFunc</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class which defines the XCFunc object for &#39;special&#39; (non-libxc) funcs</span>
+<span class="sd">    Desgined to align with some proprerties of libxc func objects</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xc_code: str</span>
+<span class="sd">         The string identifier for the x/c func</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    _xc_func_name : str</span>
+<span class="sd">         String which describes the functional</span>
+<span class="sd">    _number : int</span>
+<span class="sd">        Functional id</span>
+<span class="sd">    _family : str</span>
+<span class="sd">        The family to which the xc functional belongs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xc_func_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_id</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_family</span> <span class="o">=</span> <span class="s2">&quot;special&quot;</span>
+
+    <span class="c1"># defines the xc functional name</span>
+<div class="viewcode-block" id="XCFunc.get_name"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.XCFunc.get_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xc_code : str</span>
+<span class="sd">            String defining the xc functional</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str:</span>
+<span class="sd">            A name identifying the functional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">xc_code</span> <span class="o">==</span> <span class="s2">&quot;hartree&quot;</span><span class="p">:</span>
+            <span class="n">xc_name</span> <span class="o">=</span> <span class="s2">&quot;- hartree&quot;</span>
+        <span class="k">elif</span> <span class="n">xc_code</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+            <span class="n">xc_name</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+        <span class="k">return</span> <span class="n">xc_name</span></div>
+
+<div class="viewcode-block" id="XCFunc.get_id"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.XCFunc.get_id">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="c1"># defines an id for the xc functional</span>
+    <span class="k">def</span> <span class="nf">get_id</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xc_code : str</span>
+<span class="sd">            String defining the xc functional</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int:</span>
+<span class="sd">            A number identifying the functional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">xc_code</span> <span class="o">==</span> <span class="s2">&quot;hartree&quot;</span><span class="p">:</span>
+            <span class="n">xc_number</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">xc_code</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+            <span class="n">xc_number</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">xc_number</span></div></div>
+
+
+<div class="viewcode-block" id="check_xc_func"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.check_xc_func">[docs]</a><span class="k">def</span> <span class="nf">check_xc_func</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">id_supp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks there is a valid libxc code (or &quot;None&quot; for no x/c term)</span>
+<span class="sd">    Then initializes the libxc object</span>
+
+<span class="sd">    Inputs:</span>
+<span class="sd">    - xc_code (str / int)     : the name or id of the libxc functional</span>
+<span class="sd">    - id_supp (int)           : list of supported xc family ids</span>
+<span class="sd">    Returns:</span>
+<span class="sd">    - xc_func (object / int)  : the xc functional object from libxc (or 0)</span>
+<span class="sd">    - err (int)               : the error code</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># check the xc code is either a string descriptor or integer id</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">xc_func_id</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># when xc code is one of the special atoMEC defined functionals</span>
+    <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">in</span> <span class="n">xc_special_codes</span><span class="p">:</span>
+        <span class="n">xc_func_name</span> <span class="o">=</span> <span class="n">xc_code</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># make the libxc object functional</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># checks if the libxc code is recognised</span>
+        <span class="k">try</span><span class="p">:</span>
+
+            <span class="n">xc_func</span> <span class="o">=</span> <span class="n">pylibxc</span><span class="o">.</span><span class="n">LibXCFunctional</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="s2">&quot;unpolarized&quot;</span><span class="p">)</span>
+
+            <span class="c1"># check the xc family is supported</span>
+            <span class="k">if</span> <span class="n">xc_func</span><span class="o">.</span><span class="n">_family</span> <span class="ow">in</span> <span class="n">id_supp</span><span class="p">:</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">xc_func_name</span> <span class="o">=</span> <span class="n">xc_func</span><span class="o">.</span><span class="n">_xc_func_name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">err</span> <span class="o">=</span> <span class="mi">3</span>
+                <span class="n">xc_func_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">xc_func_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">xc_func_name</span><span class="p">,</span> <span class="n">err</span></div>
+
+
+<div class="viewcode-block" id="set_xc_func"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.set_xc_func">[docs]</a><span class="k">def</span> <span class="nf">set_xc_func</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+
+    <span class="c1"># when xc code is one of the special atoMEC defined functionals</span>
+    <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">in</span> <span class="n">xc_special_codes</span><span class="p">:</span>
+        <span class="n">xc_func</span> <span class="o">=</span> <span class="n">XCFunc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># whether the xc functional is spin polarized</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">xc_func</span> <span class="o">=</span> <span class="n">pylibxc</span><span class="o">.</span><span class="n">LibXCFunctional</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="s2">&quot;polarized&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xc_func</span> <span class="o">=</span> <span class="n">pylibxc</span><span class="o">.</span><span class="n">LibXCFunctional</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="s2">&quot;unpolarized&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">xc_func</span></div>
+
+
+<div class="viewcode-block" id="v_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.v_xc">[docs]</a><span class="k">def</span> <span class="nf">v_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper function which computes the exchange and correlation potentials</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize the _v_xc dict (leading underscore to distinguish from function name)</span>
+    <span class="n">_v_xc</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># compute the exchange potential</span>
+    <span class="n">_v_xc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">)</span>
+
+    <span class="c1"># compute the correlation potential</span>
+    <span class="n">_v_xc</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">,</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">)</span>
+
+    <span class="c1"># sum to get the total xc potential</span>
+    <span class="n">_v_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_v_xc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">_v_xc</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">_v_xc</span></div>
+
+
+<div class="viewcode-block" id="E_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.E_xc">[docs]</a><span class="k">def</span> <span class="nf">E_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper function which computes the exchange and correlation energies</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize the _E_xc dict (leading underscore to distinguish from function name)</span>
+    <span class="n">_E_xc</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># get the total density</span>
+    <span class="n">dens_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># compute the exchange energy</span>
+    <span class="n">ex_libxc</span> <span class="o">=</span> <span class="n">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">)</span>
+    <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">ex_libxc</span> <span class="o">*</span> <span class="n">dens_tot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+    <span class="c1"># compute the correlation energy</span>
+    <span class="n">ec_libxc</span> <span class="o">=</span> <span class="n">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">,</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">)</span>
+    <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">ec_libxc</span> <span class="o">*</span> <span class="n">dens_tot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+    <span class="c1"># sum to get the total xc potential</span>
+    <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">_E_xc</span></div>
+
+
+<div class="viewcode-block" id="calc_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.calc_xc">[docs]</a><span class="k">def</span> <span class="nf">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xcfunc</span><span class="p">,</span> <span class="n">xctype</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the xc energy density and potential</span>
+<span class="sd">    Returns either the energy or potential depending what is requested</span>
+<span class="sd">    by xc type</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initialize the temperature if required</span>
+    <span class="c1"># this would be better placed in the set_xc_func routine;</span>
+    <span class="c1"># but for now that does not respond to a change in the atomic temperature</span>
+    <span class="n">xc_temp_funcs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lda_xc_gdsmfb&quot;</span><span class="p">,</span> <span class="s2">&quot;lda_xc_ksdt&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">_xc_func_name</span> <span class="ow">in</span> <span class="n">xc_temp_funcs</span><span class="p">:</span>
+        <span class="n">xcfunc</span><span class="o">.</span><span class="n">set_ext_params</span><span class="p">([</span><span class="n">config</span><span class="o">.</span><span class="n">temp</span><span class="p">])</span>
+
+    <span class="c1"># determine the dimensions of the xc_arr based on xctype</span>
+    <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">:</span>
+        <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]))</span>
+    <span class="k">elif</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">:</span>
+        <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density</span><span class="p">)</span>
+
+    <span class="c1"># case where there is no xc func</span>
+    <span class="k">if</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">_number</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">xc_arr</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># special case in which xc = -hartree</span>
+    <span class="k">elif</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">_number</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+
+        <span class="c1"># import the staticKS module</span>
+        <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">staticKS</span>
+
+        <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">:</span>
+            <span class="n">xc_arr</span><span class="p">[:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">:</span>
+            <span class="n">xc_arr</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># lda</span>
+        <span class="k">if</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">_family</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># lda just needs density as input</span>
+            <span class="c1"># messy transformation for libxc - why isn&#39;t tranpose working??</span>
+            <span class="n">rho_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+                <span class="n">rho_libxc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">inp</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="n">rho_libxc</span><span class="p">}</span>
+            <span class="c1"># compute the xc potential and energy density</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+            <span class="c1"># extract the energy density</span>
+            <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">:</span>
+                <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;zk&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">:</span>
+                <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;vrho&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">xc_arr</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, CASUS.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

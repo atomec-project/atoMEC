@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Welcome to atoMEC’s documentation! &mdash; atoMEC  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="atoMEC" href="api/modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> atoMEC
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">atoMEC</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">atoMEC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Welcome to atoMEC’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="tex2jax_ignore mathjax_ignore section" id="welcome-to-atomec-s-documentation">
+<h1>Welcome to atoMEC’s documentation!<a class="headerlink" href="#welcome-to-atomec-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="image" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a>
+<a class="reference external" href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a></p>
+</div>
+<div class="tex2jax_ignore mathjax_ignore section" id="atomec-average-atom-code-for-matter-under-extreme-conditions">
+<h1>atoMEC: Average-Atom Code for Matter under Extreme Conditions<a class="headerlink" href="#atomec-average-atom-code-for-matter-under-extreme-conditions" title="Permalink to this headline">¶</a></h1>
+<p>atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
+It is designed as an open-source and modular python package.</p>
+<p>atoMEC uses Kohn-Sham density functional theory, in combination with an average-atom approximation,
+to solve the electronic structure problem for single-element materials at finite temperature.</p>
+<p>More information on the average-atom methodology and Kohn-Sham density functional theory can be found (for example) in this <a class="reference external" href="https://arxiv.org/abs/2103.09928">preprint</a> and references therein.</p>
+<p>This repository is structured as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── atoMEC : source code
+├── docs : sphinx documentation
+├── examples : useful examples to get you started with the package
+└── tests : test scripts used during development, will hold tests for CI in the future
+</pre></div>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>First, clone the atoMEC repository and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the main directory.</p>
+<ul>
+<li><p>Recommended : using <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a></p>
+<p>This route is recommended because <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> automatically creates a virtual environment and manages dependencies.</p>
+<ol class="simple">
+<li><p>First, install <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> if it is not already installed, for example via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pipenv</span></code> (or see <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a> for    installation instructions)</p></li>
+<li><p>Next, install <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code>’s dependencies with <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">install</span></code></p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">shell</span></code> to activate the virtual environment and install atoMEC with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p></li>
+<li><p>Now run scripts from inside the <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code> virtual environment, e.g. <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">examples/simple.py</span></code></p></li>
+</ol>
+</li>
+<li><p>Try running the examples in <code class="docutils literal notranslate"><span class="pre">examples/</span></code> and report any problems</p></li>
+</ul>
+</div>
+<div class="section" id="running">
+<h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
+<p>You can familiarize yourself with the usage of this package by running the example scripts in <code class="docutils literal notranslate"><span class="pre">examples/</span></code>.</p>
+</div>
+<div class="section" id="contributing-to-atomec">
+<h2>Contributing to atoMEC<a class="headerlink" href="#contributing-to-atomec" title="Permalink to this headline">¶</a></h2>
+<p>We welcome your contributions, please adhere to the following guidelines when contributing to the code:</p>
+<ul class="simple">
+<li><p>In general, contributors should develop on branches based off of <code class="docutils literal notranslate"><span class="pre">develop</span></code> and merge requests should be to <code class="docutils literal notranslate"><span class="pre">develop</span></code></p></li>
+<li><p>Please choose a descriptive branch name</p></li>
+<li><p>Merges from <code class="docutils literal notranslate"><span class="pre">develop</span></code> to <code class="docutils literal notranslate"><span class="pre">master</span></code> will be done after prior consultation of the core development team</p></li>
+<li><p>Merges from <code class="docutils literal notranslate"><span class="pre">develop</span></code> to <code class="docutils literal notranslate"><span class="pre">master</span></code> are only done for code releases. This way we always have a clean <code class="docutils literal notranslate"><span class="pre">master</span></code> that reflects the current release</p></li>
+<li><p>Code should be formatted using <a class="reference external" href="https://pypi.org/project/black/">black</a> style</p></li>
+</ul>
+<div class="section" id="build-documentation-locally-for-developers">
+<h3>Build documentation locally (for developers)<a class="headerlink" href="#build-documentation-locally-for-developers" title="Permalink to this headline">¶</a></h3>
+<p>Install the prerequisites:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ pip install -r docs/requirements.txt
+</pre></div>
+</div>
+<ol class="simple">
+<li><p>Change into <code class="docutils literal notranslate"><span class="pre">docs/</span></code> folder.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">apidocs</span></code>.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code>. This creates a <code class="docutils literal notranslate"><span class="pre">_build</span></code> folder inside <code class="docutils literal notranslate"><span class="pre">docs</span></code>. You may also want to use <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span> <span class="pre">SPHINXOPTS=&quot;-W&quot;</span></code> sometimes. This treats warnings as errors and stops the output at first occurence of an error (useful for debugging rST syntax).</p></li>
+<li><p>Open <code class="docutils literal notranslate"><span class="pre">docs/_build/html/index.html</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">clean</span></code> if required (e.g. after fixing erros) and building again.</p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="developers">
+<h2>Developers<a class="headerlink" href="#developers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="scientific-supervision">
+<h3>Scientific Supervision<a class="headerlink" href="#scientific-supervision" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Attila Cangi (<a class="reference external" href="https://www.casus.science/">Center for Advanced Systems Understanding</a>)</p></li>
+<li><p>Eli Kraisler (<a class="reference external" href="https://en.huji.ac.il/en">Hebrew University of Jerusalem</a>)</p></li>
+</ul>
+</div>
+<div class="section" id="core-developers-and-maintainers">
+<h3>Core Developers and Maintainers<a class="headerlink" href="#core-developers-and-maintainers" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Tim Callow (<a class="reference external" href="https://www.casus.science/">Center for Advanced Systems Understanding</a>)</p></li>
+<li><p>Daniel Kotik (<a class="reference external" href="https://www.casus.science/">Center for Advanced Systems Understanding</a>)</p></li>
+</ul>
+</div>
+<div class="section" id="contributions">
+<h3>Contributions<a class="headerlink" href="#contributions" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Nathan Rahat (<a class="reference external" href="https://en.huji.ac.il/en">Hebrew University of Jerusalem</a>)</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="citing-atomec">
+<h2>Citing atoMEC<a class="headerlink" href="#citing-atomec" title="Permalink to this headline">¶</a></h2>
+<p>The following paper should be cited in publications which use atoMEC:</p>
+<p>T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021). First-principles derivation and properties of density-functional average-atom models. arXiv preprint <a class="reference external" href="https://arxiv.org/abs/2103.09928">arXiv:2103.09928</a>.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/modules.html">atoMEC</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="tex2jax_ignore mathjax_ignore section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="api/modules.html" class="btn btn-neutral float-right" title="atoMEC" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, CASUS.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

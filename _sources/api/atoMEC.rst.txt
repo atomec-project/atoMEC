@@ -1,0 +1,93 @@
+atoMEC package
+==============
+
+Submodules
+----------
+
+atoMEC.check\_inputs module
+---------------------------
+
+.. automodule:: atoMEC.check_inputs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.config module
+--------------------
+
+.. automodule:: atoMEC.config
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.convergence module
+-------------------------
+
+.. automodule:: atoMEC.convergence
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.mathtools module
+-----------------------
+
+.. automodule:: atoMEC.mathtools
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.models module
+--------------------
+
+.. automodule:: atoMEC.models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.numerov module
+---------------------
+
+.. automodule:: atoMEC.numerov
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.staticKS module
+----------------------
+
+.. automodule:: atoMEC.staticKS
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.unitconv module
+----------------------
+
+.. automodule:: atoMEC.unitconv
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.writeoutput module
+-------------------------
+
+.. automodule:: atoMEC.writeoutput
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atoMEC.xc module
+----------------
+
+.. automodule:: atoMEC.xc
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: atoMEC
+   :members:
+   :undoc-members:
+   :show-inheritance:
