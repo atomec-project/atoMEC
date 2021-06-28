@@ -156,7 +156,7 @@ class Atom:
 
     @property
     def radius(self):
-        r"""float: radius of the Wigner-Seitz sphere, defined as :math:`0.5*a_i`,
+        r"""float: radius of the Wigner-Seitz sphere, defined as :math:`a_i /2`,
         where :math:`a_i` is the average inter-atomic distance"""
         return self._radius
 
@@ -169,7 +169,7 @@ class Atom:
 
     @property
     def density(self):
-        """float: the mass density of the material in units :math:`\mathrm{g\ cm}^{-3}`"""
+        r"""float: the mass density of the material in units :math:`\mathrm{g\ cm}^{-3}`"""
         return self._density
 
     @density.setter
