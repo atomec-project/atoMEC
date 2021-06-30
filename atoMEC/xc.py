@@ -1,5 +1,19 @@
 """
-Handles everything connected to the exchange-correlation term
+The xc module handles everything connected to the exchange-correlation energy and potential.
+
+Mostly it sets up inputs and makes appropriate calls to the libxc package.
+
+Classes
+-------
+XCFunc : handles atoMEC-defined functionals (not part of libxc package)
+
+Functions
+---------
+check_xc_func : checks the xc func input is recognised and valid for atoMEC
+set_xc_func   : initializes the xc functional object
+v_xc          : returns the xc potential on the grid
+E_xc          : returns the xc energy
+calc_xc       : computes the xc energy or potential depending on arguments
 """
 
 # standard libs
@@ -18,7 +32,7 @@ xc_special_codes = ["hartree", "None"]
 
 class XCFunc:
     """
-    Class which defines the XCFunc object for 'special' (non-libxc) funcs
+    Defines the XCFunc object for 'special' (non-libxc) funcs.
 
     This is desgined to align with some proprerties of libxc func objects
     in order to make certain general calls more straightforward
@@ -73,17 +87,20 @@ class XCFunc:
 
 def check_xc_func(xc_code, id_supp):
     """
-    Checks there is a valid libxc code (or "None" for no x/c term)
-    Then initializes the libxc object
+    Check the xc input string or id is valid.
 
-    Inputs:
-    - xc_code (str / int)     : the name or id of the libxc functional
-    - id_supp (int)           : list of supported xc family ids
-    Returns:
-    - xc_func (object / int)  : the xc functional object from libxc (or 0)
-    - err (int)               : the error code
+    Parameters
+    ----------
+    xc_code: str or int
+        the name or libxc id of the xc functional
+    id_supp: list of ints
+        supported families of xc functional
+
+    Returns
+    -------
+    xc_func_name: str or None
+        the xc functional name
     """
-
     # check the xc code is either a string descriptor or integer id
     if isinstance(xc_code, (str, int)) == False:
         err = 1
@@ -117,7 +134,18 @@ def check_xc_func(xc_code, id_supp):
 
 
 def set_xc_func(xc_code):
+    """
+    Initialize the xc functional object.
 
+    Parameters
+    ----------
+    xc_code: str or int
+        the name or id of the libxc functional
+
+    Returns
+    -------
+    xc_func: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
+    """
     # when xc code is one of the special atoMEC defined functionals
     if xc_code in xc_special_codes:
         xc_func = XCFunc(xc_code)
@@ -134,9 +162,25 @@ def set_xc_func(xc_code):
 
 def v_xc(density, xgrid, xfunc, cfunc):
     """
-    Wrapper function which computes the exchange and correlation potentials
-    """
+    Retrive the xc potential.
 
+    Parameters
+    ----------
+    density: ndarray
+        the KS density on the log grid
+    xgrid: ndarray
+        the log grid
+    xfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
+        the exchange functional object
+    cfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
+        the correlation functional object
+
+    Returns
+    -------
+    _v_xc: dict of ndarrays
+        dictionary containing terms `x`, `c` and `xc` for exchange, correlation
+        and exchange + correlation respectively
+    """
     # initialize the _v_xc dict (leading underscore to distinguish from function name)
     _v_xc = {}
 
@@ -154,9 +198,25 @@ def v_xc(density, xgrid, xfunc, cfunc):
 
 def E_xc(density, xgrid, xfunc, cfunc):
     """
-    Wrapper function which computes the exchange and correlation energies
-    """
+    Retrieve the xc energy.
 
+    Parameters
+    ----------
+    density: ndarray
+        the KS density on the log grid
+    xgrid: ndarray
+        the log grid
+    xfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
+        the exchange functional object
+    cfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
+        the correlation functional object
+
+    Returns
+    -------
+    _E_xc: dict of floats
+        dictionary containing terms `x`, `c` and `xc` for exchange, correlation
+        and exchange + correlation respectively
+    """
     # initialize the _E_xc dict (leading underscore to distinguish from function name)
     _E_xc = {}
 
@@ -179,11 +239,24 @@ def E_xc(density, xgrid, xfunc, cfunc):
 
 def calc_xc(density, xgrid, xcfunc, xctype):
     """
-    Computes the xc energy density and potential
-    Returns either the energy or potential depending what is requested
-    by xc type
-    """
+    Compute the x/c energy density or potential depending on `xctype` input.
 
+    Parameters
+    ----------
+    density: ndarray
+        the KS density on the log grid
+    xgrid: ndarray
+        the log grid
+    xcfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
+        the exchange or correlation functional object
+    xctype: str
+        the quantity to return, `e_xc` for energy density or `v_xc` for potential
+
+    Returns
+    -------
+    xc_arr: ndarray
+        xc energy density or potential depending on `xctype`
+    """
     # initialize the temperature if required
     # this would be better placed in the set_xc_func routine;
     # but for now that does not respond to a change in the atomic temperature
