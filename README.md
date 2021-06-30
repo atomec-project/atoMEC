@@ -2,10 +2,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
-
 # atoMEC: Average-Atom Code for Matter under Extreme Conditions
-atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter. 
-It is designed as an open-source and modular python package. 
+atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
+It is designed as an open-source and modular python package.
 
 atoMEC uses Kohn-Sham density functional theory, in combination with an average-atom approximation,
 to solve the electronic structure problem for single-element materials at finite temperature.
@@ -21,14 +20,13 @@ This repository is structured as follows:
 ```
 
 
-
 ## Installation
 First, clone the atoMEC repository and ``cd`` into the main directory.
 
 * Recommended : using [pipenv](https://pypi.org/project/pipenv/)
 
   This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies.
-  
+
   1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for    installation instructions)
   2. Next, install `atoMEC`'s dependencies with `pipenv install`
   3. Use `pipenv shell` to activate the virtual environment and install atoMEC with `pip install -e .`
@@ -46,6 +44,19 @@ We welcome your contributions, please adhere to the following guidelines when co
 * Merges from `develop` to `master` will be done after prior consultation of the core development team
 * Merges from `develop` to `master` are only done for code releases. This way we always have a clean `master` that reflects the current release
 * Code should be formatted using [black](https://pypi.org/project/black/) style
+
+### Build documentation locally (for developers)
+
+Install the prerequisites:
+```sh
+$ pip install -r docs/requirements.txt
+```
+
+1. Change into `docs/` folder.
+2. Run `make apidocs`.
+3. Run `make html`. This creates a `_build` folder inside `docs`. You may also want to use `make html SPHINXOPTS="-W"` sometimes. This treats warnings as errors and stops the output at first occurence of an error (useful for debugging rST syntax).
+4. Open `docs/_build/html/index.html`.
+5. `make clean` if required (e.g. after fixing erros) and building again.
 
 ## Developers
 ### Scientific Supervision
