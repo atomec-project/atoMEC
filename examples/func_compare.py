@@ -7,7 +7,7 @@ from atoMEC import Atom, models, config
 config.numcores = 0
 
 # initialize the atom
-atom = Atom("H", radius=4.0, temp=10, units_temp="eV")
+atom = Atom("H", radius=4.0, temp=0.01)
 
 # set up the model with lda exchange and correlation
 # also use spin polarization

@@ -179,7 +179,7 @@ class ISModel:
     ):
 
         """
-        Run a self-consistent calculation to minimize the Kohn--Sham free energy functional
+        Run a self-consistent calculation to minimize the Kohn-Sham free energy functional
 
         Parameters
         ----------
@@ -189,20 +189,28 @@ class ISModel:
             maximum no. angular momentum eigenfunctions to consider
         grid_params : dict, optional
             dictionary of grid parameters as follows:
-            {'ngrid'    (int)    : number of grid points
-             'x0'       (float)  : LHS grid point takes form r0=exp(x0); x0 can be specified }
+            {
+            `ngrid` (``int``)   : number of grid points,
+            `x0`    (``float``) : LHS grid point takes form
+            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            }
         conv_params : dict, optional
             dictionary of convergence parameters as follows:
-            {'econv'    (float)  : convergence for total energy
-             'nconv'    (float)  : convergence for density
-             'vconv'  (float)  : convergence for electron number}
+            {
+            `econv` (``float``) : convergence for total energy,
+            `nconv` (``float``) : convergence for density,
+            `vconv` (``float``) : convergence for electron number
+            }
         scf_params : dict, optional
             dictionary for scf cycle parameters as follows:
-            {'maxscf'   (int)    : maximum number of scf cycles
-             'mixfrac'  (float)  : density mixing fraction}
+            {
+            `maxscf`  (``int``)   : maximum number of scf cycles,
+            `mixfrac` (``float``) : density mixing fraction
+            }
         write_info : bool, optional
             prints the scf cycle and final parameters
             defaults to True
+
         Returns
         -------
         energy : obj
