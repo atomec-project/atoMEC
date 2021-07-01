@@ -102,8 +102,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.staticKS">atoMEC.staticKS module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.unitconv">atoMEC.unitconv module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.writeoutput">atoMEC.writeoutput module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.xc">atoMEC.xc module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-atoMEC">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.xc">atoMEC.xc module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-atoMEC">Module contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Classes</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -1777,132 +1784,170 @@ and formatted occupation numbers table occnum_tbl</p>
 </div>
 <div class="section" id="module-atoMEC.xc">
 <span id="atomec-xc-module"></span><h2>atoMEC.xc module<a class="headerlink" href="#module-atoMEC.xc" title="Permalink to this headline">¶</a></h2>
-<p>Handles everything connected to the exchange-correlation term</p>
+<p>The xc module handles everything connected to the exchange-correlation energy and potential.</p>
+<p>Mostly it sets up inputs and makes appropriate calls to the libxc package.</p>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<p>XCFunc : handles atoMEC-defined functionals (not part of libxc package)</p>
+</div>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<p>check_xc_func : checks the xc func input is recognised and valid for atoMEC
+set_xc_func   : initializes the xc functional object
+v_xc          : returns the xc potential on the grid
+E_xc          : returns the xc energy
+calc_xc       : computes the xc energy or potential depending on arguments</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.xc.XCFunc">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">XCFunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xc_code</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#XCFunc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.XCFunc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Class which defines the XCFunc object for ‘special’ (non-libxc) funcs
-Desgined to align with some proprerties of libxc func objects</p>
+<p>Defines the XCFunc object for ‘special’ (non-libxc) funcs.</p>
+<p>This is desgined to align with some proprerties of libxc func objects
+in order to make certain general calls more straightforward</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>xc_code</strong> (<em>str</em>) – The string identifier for the x/c func</p>
+<dd class="field-odd"><p><strong>xc_code</strong> (<em>str</em>) – the string identifier for the x/c func</p>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="atoMEC.xc.XCFunc._xc_func_name">
-<span class="sig-name descname"><span class="pre">_xc_func_name</span></span><a class="headerlink" href="#atoMEC.xc.XCFunc._xc_func_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>String which describes the functional</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
+<p class="rubric">Notes</p>
+<p>The XCFunc object contains no public attributes, but it does contain
+the following private attributes (named so to match libxc):</p>
+<dl class="simple">
+<dt>_xc_code<span class="classifier">str</span></dt><dd><p>the string identifier for the x/c functional (not a libxc attribute)</p>
+</dd>
+<dt>_xc_func_name<span class="classifier">str</span></dt><dd><p>name of the functional</p>
+</dd>
+<dt>_number<span class="classifier">int</span></dt><dd><p>functional id</p>
+</dd>
+<dt>_family<span class="classifier">str</span></dt><dd><p>the family to which the xc functional belongs</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="atoMEC.xc.XCFunc._number">
-<span class="sig-name descname"><span class="pre">_number</span></span><a class="headerlink" href="#atoMEC.xc.XCFunc._number" title="Permalink to this definition">¶</a></dt>
-<dd><p>Functional id</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="atoMEC.xc.XCFunc._family">
-<span class="sig-name descname"><span class="pre">_family</span></span><a class="headerlink" href="#atoMEC.xc.XCFunc._family" title="Permalink to this definition">¶</a></dt>
-<dd><p>The family to which the xc functional belongs</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="atoMEC.xc.XCFunc.get_id">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xc_code</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#XCFunc.get_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.XCFunc.get_id" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>xc_code</strong> (<em>str</em>) – String defining the xc functional</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A number identifying the functional</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="atoMEC.xc.XCFunc.get_name">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xc_code</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#XCFunc.get_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.XCFunc.get_name" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>xc_code</strong> (<em>str</em>) – String defining the xc functional</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A name identifying the functional</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.xc.E_xc">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">E_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfunc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#E_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.E_xc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper function which computes the exchange and correlation energies</p>
+<dd><p>Retrieve the xc energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log grid</p></li>
+<li><p><strong>xfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the exchange functional object</p></li>
+<li><p><strong>cfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the correlation functional object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>_E_xc</strong> – dictionary containing terms <cite>x</cite>, <cite>c</cite> and <cite>xc</cite> for exchange, correlation
+and exchange + correlation respectively</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict of floats</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.xc.calc_xc">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">calc_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xcfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xctype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#calc_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.calc_xc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the xc energy density and potential
-Returns either the energy or potential depending what is requested
-by xc type</p>
+<dd><p>Compute the x/c energy density or potential depending on <cite>xctype</cite> input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log grid</p></li>
+<li><p><strong>xcfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the exchange or correlation functional object</p></li>
+<li><p><strong>xctype</strong> (<em>str</em>) – the quantity to return, <cite>e_xc</cite> for energy density or <cite>v_xc</cite> for potential</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>xc_arr</strong> – xc energy density or potential depending on <cite>xctype</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.xc.check_xc_func">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">check_xc_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xc_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_supp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#check_xc_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.check_xc_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks there is a valid libxc code (or “None” for no x/c term)
-Then initializes the libxc object</p>
-<p>Inputs:
-- xc_code (str / int)     : the name or id of the libxc functional
-- id_supp (int)           : list of supported xc family ids
-Returns:
-- xc_func (object / int)  : the xc functional object from libxc (or 0)
-- err (int)               : the error code</p>
+<dd><p>Check the xc input string or id is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xc_code</strong> (<em>str</em><em> or </em><em>int</em>) – the name or libxc id of the xc functional</p></li>
+<li><p><strong>id_supp</strong> (<em>list of ints</em>) – supported families of xc functional</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>xc_func_name</strong> – the xc functional name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.xc.set_xc_func">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">set_xc_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xc_code</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#set_xc_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.set_xc_func" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Initialize the xc functional object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xc_code</strong> (<em>str</em><em> or </em><em>int</em>) – the name or id of the libxc functional</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>xc_func</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.xc.v_xc">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">v_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfunc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#v_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.v_xc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper function which computes the exchange and correlation potentials</p>
+<dd><p>Retrive the xc potential.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log grid</p></li>
+<li><p><strong>xfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the exchange functional object</p></li>
+<li><p><strong>cfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the correlation functional object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>_v_xc</strong> – dictionary containing terms <cite>x</cite>, <cite>c</cite> and <cite>xc</cite> for exchange, correlation
+and exchange + correlation respectively</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict of ndarrays</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
+</div>
 <div class="section" id="module-atoMEC">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-atoMEC" title="Permalink to this headline">¶</a></h2>
+<p>atoMEC: Average-atom code for matter under extreme conditions.</p>
+<p>Copyright (c) 2021 (in alphabetical order), Tim Callow, Attila Cangi, Eli Kraisler
+All rights reserved.</p>
+<p>atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
+Please see the README or the project wiki (<a class="reference external" href="https://atomec-project.github.io/atoMEC/">https://atomec-project.github.io/atoMEC/</a>) for more information.</p>
+<div class="section" id="id1">
+<h3>Classes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Atom : the main object for atoMEC calculations, containing information about physical material properties</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.Atom">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.</span></span><span class="sig-name descname"><span class="pre">Atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units_temp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ha'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bohr'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'g/cm3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC.html#Atom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.Atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>The Atom class defines the main atom object containing the key information about the
-atomic species, temperature, density etc</p>
+<p>The principal object in atoMEC calculations which defines the physical material properties.</p>
+<p>The <cite>Atom</cite> contains key information about the physical properties of the material
+such as temperature, density, and charge. It does not contain any information about approximations or choices of model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1922,7 +1967,7 @@ where a_i is the average inter-atomic distance</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.at_chrg">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">at_chrg</span></span><a class="headerlink" href="#atoMEC.Atom.at_chrg" title="Permalink to this definition">¶</a></dt>
-<dd><p>the atomic charge Z</p>
+<dd><p>the atomic charge Z.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>int</p>
@@ -1933,7 +1978,7 @@ where a_i is the average inter-atomic distance</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.at_mass">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">at_mass</span></span><a class="headerlink" href="#atoMEC.Atom.at_mass" title="Permalink to this definition">¶</a></dt>
-<dd><p>the atomic mass (in a.u.)</p>
+<dd><p>the atomic mass (in a.u.).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>float</p>
@@ -1944,7 +1989,7 @@ where a_i is the average inter-atomic distance</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.charge">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">charge</span></span><a class="headerlink" href="#atoMEC.Atom.charge" title="Permalink to this definition">¶</a></dt>
-<dd><p>the net charge of the atom</p>
+<dd><p>the net charge of the atom.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>int</p>
@@ -1955,7 +2000,7 @@ where a_i is the average inter-atomic distance</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.density">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">density</span></span><a class="headerlink" href="#atoMEC.Atom.density" title="Permalink to this definition">¶</a></dt>
-<dd><p>the mass density of the material in units <span class="math notranslate nohighlight">\(\mathrm{g\ cm}^{-3}\)</span></p>
+<dd><p>the mass density of the material in units <span class="math notranslate nohighlight">\(\mathrm{g\ cm}^{-3}\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>float</p>
@@ -1966,7 +2011,7 @@ where a_i is the average inter-atomic distance</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.info">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#atoMEC.Atom.info" title="Permalink to this definition">¶</a></dt>
-<dd><p>formatted information about the <a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a>’s attributes</p>
+<dd><p>formatted information about the <a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a>’s attributes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>str</p>
@@ -1977,8 +2022,8 @@ where a_i is the average inter-atomic distance</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.nele">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">nele</span></span><a class="headerlink" href="#atoMEC.Atom.nele" title="Permalink to this definition">¶</a></dt>
-<dd><p>the number of electrons in the atom, given by the
-sum of <a class="reference internal" href="#atoMEC.Atom.at_chrg" title="atoMEC.Atom.at_chrg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">at_chrg</span></code></a> and <a class="reference internal" href="#atoMEC.Atom.charge" title="atoMEC.Atom.charge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">charge</span></code></a></p>
+<dd><p>the number of electrons in the atom.</p>
+<p>The total electron number is given by the sum of <a class="reference internal" href="#atoMEC.Atom.at_chrg" title="atoMEC.Atom.at_chrg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">at_chrg</span></code></a> and <a class="reference internal" href="#atoMEC.Atom.charge" title="atoMEC.Atom.charge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">charge</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>int</p>
@@ -1989,8 +2034,9 @@ sum of <a class="reference internal" href="#atoMEC.Atom.at_chrg" title="atoMEC.A
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.radius">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">radius</span></span><a class="headerlink" href="#atoMEC.Atom.radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>radius of the Wigner-Seitz sphere, defined as <span class="math notranslate nohighlight">\(a_i /2\)</span>,
-where <span class="math notranslate nohighlight">\(a_i\)</span> is the average inter-atomic distance</p>
+<dd><p>radius of the Wigner-Seitz sphere.</p>
+<p>The radius is defined as <span class="math notranslate nohighlight">\(a_i /2\)</span>,
+where <span class="math notranslate nohighlight">\(a_i\)</span> is the average inter-atomic distance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>float</p>
@@ -2001,7 +2047,7 @@ where <span class="math notranslate nohighlight">\(a_i\)</span> is the average i
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.species">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">species</span></span><a class="headerlink" href="#atoMEC.Atom.species" title="Permalink to this definition">¶</a></dt>
-<dd><p>the chemical symbol for the atomic species</p>
+<dd><p>the chemical symbol for the atomic species.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>str</p>
@@ -2012,7 +2058,7 @@ where <span class="math notranslate nohighlight">\(a_i\)</span> is the average i
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.temp">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">temp</span></span><a class="headerlink" href="#atoMEC.Atom.temp" title="Permalink to this definition">¶</a></dt>
-<dd><p>the electronic temperature in Hartree</p>
+<dd><p>the electronic temperature in Hartree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>float</p>
@@ -2023,7 +2069,7 @@ where <span class="math notranslate nohighlight">\(a_i\)</span> is the average i
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.units_density">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">units_density</span></span><a class="headerlink" href="#atoMEC.Atom.units_density" title="Permalink to this definition">¶</a></dt>
-<dd><p>the units of the atomic density</p>
+<dd><p>the units of the atomic density.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>str</p>
@@ -2034,7 +2080,7 @@ where <span class="math notranslate nohighlight">\(a_i\)</span> is the average i
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.units_radius">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">units_radius</span></span><a class="headerlink" href="#atoMEC.Atom.units_radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>the units of the atomic radius</p>
+<dd><p>the units of the atomic radius.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>str</p>
@@ -2045,7 +2091,7 @@ where <span class="math notranslate nohighlight">\(a_i\)</span> is the average i
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.units_temp">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">units_temp</span></span><a class="headerlink" href="#atoMEC.Atom.units_temp" title="Permalink to this definition">¶</a></dt>
-<dd><p>the units of temperature</p>
+<dd><p>the units of temperature.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>str</p>
@@ -2055,6 +2101,7 @@ where <span class="math notranslate nohighlight">\(a_i\)</span> is the average i
 
 </dd></dl>
 
+</div>
 </div>
 </div>
 

@@ -157,7 +157,21 @@
             
   <h1>Source code for atoMEC.xc</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Handles everything connected to the exchange-correlation term</span>
+<span class="sd">The xc module handles everything connected to the exchange-correlation energy and potential.</span>
+
+<span class="sd">Mostly it sets up inputs and makes appropriate calls to the libxc package.</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">XCFunc : handles atoMEC-defined functionals (not part of libxc package)</span>
+
+<span class="sd">Functions</span>
+<span class="sd">---------</span>
+<span class="sd">check_xc_func : checks the xc func input is recognised and valid for atoMEC</span>
+<span class="sd">set_xc_func   : initializes the xc functional object</span>
+<span class="sd">v_xc          : returns the xc potential on the grid</span>
+<span class="sd">E_xc          : returns the xc energy</span>
+<span class="sd">calc_xc       : computes the xc energy or potential depending on arguments</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># standard libs</span>
@@ -176,84 +190,75 @@
 
 <div class="viewcode-block" id="XCFunc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.XCFunc">[docs]</a><span class="k">class</span> <span class="nc">XCFunc</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Class which defines the XCFunc object for &#39;special&#39; (non-libxc) funcs</span>
-<span class="sd">    Desgined to align with some proprerties of libxc func objects</span>
+<span class="sd">    Defines the XCFunc object for &#39;special&#39; (non-libxc) funcs.</span>
+
+<span class="sd">    This is desgined to align with some proprerties of libxc func objects</span>
+<span class="sd">    in order to make certain general calls more straightforward</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    xc_code: str</span>
-<span class="sd">         The string identifier for the x/c func</span>
+<span class="sd">         the string identifier for the x/c func</span>
 
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The XCFunc object contains no public attributes, but it does contain</span>
+<span class="sd">    the following private attributes (named so to match libxc):</span>
+
+<span class="sd">    _xc_code : str</span>
+<span class="sd">        the string identifier for the x/c functional (not a libxc attribute)</span>
 <span class="sd">    _xc_func_name : str</span>
-<span class="sd">         String which describes the functional</span>
+<span class="sd">         name of the functional</span>
 <span class="sd">    _number : int</span>
-<span class="sd">        Functional id</span>
+<span class="sd">        functional id</span>
 <span class="sd">    _family : str</span>
-<span class="sd">        The family to which the xc functional belongs</span>
+<span class="sd">        the family to which the xc functional belongs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xc_code</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_xc_func_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_id</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">=</span> <span class="n">xc_code</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_family</span> <span class="o">=</span> <span class="s2">&quot;special&quot;</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">__xc_func_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__number</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="c1"># defines the xc functional name</span>
-<div class="viewcode-block" id="XCFunc.get_name"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.XCFunc.get_name">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        xc_code : str</span>
-<span class="sd">            String defining the xc functional</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_xc_func_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__xc_func_name</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">==</span> <span class="s2">&quot;hartree&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__xc_name</span> <span class="o">=</span> <span class="s2">&quot;- hartree&quot;</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__xc_name</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__xc_name</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str:</span>
-<span class="sd">            A name identifying the functional</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">xc_code</span> <span class="o">==</span> <span class="s2">&quot;hartree&quot;</span><span class="p">:</span>
-            <span class="n">xc_name</span> <span class="o">=</span> <span class="s2">&quot;- hartree&quot;</span>
-        <span class="k">elif</span> <span class="n">xc_code</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-            <span class="n">xc_name</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
-        <span class="k">return</span> <span class="n">xc_name</span></div>
-
-<div class="viewcode-block" id="XCFunc.get_id"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.XCFunc.get_id">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="c1"># defines an id for the xc functional</span>
-    <span class="k">def</span> <span class="nf">get_id</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        xc_code : str</span>
-<span class="sd">            String defining the xc functional</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        int:</span>
-<span class="sd">            A number identifying the functional</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="n">xc_code</span> <span class="o">==</span> <span class="s2">&quot;hartree&quot;</span><span class="p">:</span>
-            <span class="n">xc_number</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="k">elif</span> <span class="n">xc_code</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
-            <span class="n">xc_number</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="n">xc_number</span></div></div>
+    <span class="c1"># defines the number id for the xc functional</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__number</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">==</span> <span class="s2">&quot;hartree&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__xc_number</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__xc_number</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__xc_number</span></div>
 
 
 <div class="viewcode-block" id="check_xc_func"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.check_xc_func">[docs]</a><span class="k">def</span> <span class="nf">check_xc_func</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="n">id_supp</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Checks there is a valid libxc code (or &quot;None&quot; for no x/c term)</span>
-<span class="sd">    Then initializes the libxc object</span>
+<span class="sd">    Check the xc input string or id is valid.</span>
 
-<span class="sd">    Inputs:</span>
-<span class="sd">    - xc_code (str / int)     : the name or id of the libxc functional</span>
-<span class="sd">    - id_supp (int)           : list of supported xc family ids</span>
-<span class="sd">    Returns:</span>
-<span class="sd">    - xc_func (object / int)  : the xc functional object from libxc (or 0)</span>
-<span class="sd">    - err (int)               : the error code</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xc_code: str or int</span>
+<span class="sd">        the name or libxc id of the xc functional</span>
+<span class="sd">    id_supp: list of ints</span>
+<span class="sd">        supported families of xc functional</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xc_func_name: str or None</span>
+<span class="sd">        the xc functional name</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># check the xc code is either a string descriptor or integer id</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
         <span class="n">err</span> <span class="o">=</span> <span class="mi">1</span>
@@ -287,7 +292,18 @@
 
 
 <div class="viewcode-block" id="set_xc_func"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.set_xc_func">[docs]</a><span class="k">def</span> <span class="nf">set_xc_func</span><span class="p">(</span><span class="n">xc_code</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the xc functional object.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xc_code: str or int</span>
+<span class="sd">        the name or id of the libxc functional</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xc_func: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># when xc code is one of the special atoMEC defined functionals</span>
     <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">in</span> <span class="n">xc_special_codes</span><span class="p">:</span>
         <span class="n">xc_func</span> <span class="o">=</span> <span class="n">XCFunc</span><span class="p">(</span><span class="n">xc_code</span><span class="p">)</span>
@@ -304,9 +320,25 @@
 
 <div class="viewcode-block" id="v_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.v_xc">[docs]</a><span class="k">def</span> <span class="nf">v_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wrapper function which computes the exchange and correlation potentials</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    Retrive the xc potential.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    density: ndarray</span>
+<span class="sd">        the KS density on the log grid</span>
+<span class="sd">    xgrid: ndarray</span>
+<span class="sd">        the log grid</span>
+<span class="sd">    xfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`</span>
+<span class="sd">        the exchange functional object</span>
+<span class="sd">    cfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`</span>
+<span class="sd">        the correlation functional object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    _v_xc: dict of ndarrays</span>
+<span class="sd">        dictionary containing terms `x`, `c` and `xc` for exchange, correlation</span>
+<span class="sd">        and exchange + correlation respectively</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># initialize the _v_xc dict (leading underscore to distinguish from function name)</span>
     <span class="n">_v_xc</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -324,9 +356,25 @@
 
 <div class="viewcode-block" id="E_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.E_xc">[docs]</a><span class="k">def</span> <span class="nf">E_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wrapper function which computes the exchange and correlation energies</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    Retrieve the xc energy.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    density: ndarray</span>
+<span class="sd">        the KS density on the log grid</span>
+<span class="sd">    xgrid: ndarray</span>
+<span class="sd">        the log grid</span>
+<span class="sd">    xfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`</span>
+<span class="sd">        the exchange functional object</span>
+<span class="sd">    cfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`</span>
+<span class="sd">        the correlation functional object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    _E_xc: dict of floats</span>
+<span class="sd">        dictionary containing terms `x`, `c` and `xc` for exchange, correlation</span>
+<span class="sd">        and exchange + correlation respectively</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># initialize the _E_xc dict (leading underscore to distinguish from function name)</span>
     <span class="n">_E_xc</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -349,11 +397,24 @@
 
 <div class="viewcode-block" id="calc_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.calc_xc">[docs]</a><span class="k">def</span> <span class="nf">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xcfunc</span><span class="p">,</span> <span class="n">xctype</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes the xc energy density and potential</span>
-<span class="sd">    Returns either the energy or potential depending what is requested</span>
-<span class="sd">    by xc type</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    Compute the x/c energy density or potential depending on `xctype` input.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    density: ndarray</span>
+<span class="sd">        the KS density on the log grid</span>
+<span class="sd">    xgrid: ndarray</span>
+<span class="sd">        the log grid</span>
+<span class="sd">    xcfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`</span>
+<span class="sd">        the exchange or correlation functional object</span>
+<span class="sd">    xctype: str</span>
+<span class="sd">        the quantity to return, `e_xc` for energy density or `v_xc` for potential</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xc_arr: ndarray</span>
+<span class="sd">        xc energy density or potential depending on `xctype`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># initialize the temperature if required</span>
     <span class="c1"># this would be better placed in the set_xc_func routine;</span>
     <span class="c1"># but for now that does not respond to a change in the atomic temperature</span>
