@@ -42,10 +42,12 @@ napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
 autodoc_mock_imports = [
-    'mendeleev',
-    'sqlalchemy',
-    'pylibxc',
     'joblib',
+    'mendeleev',
+    'numpy',
+    'pylibxc',
+    'scipy',
+    'sqlalchemy',
     'tabulate',
 ]
 
