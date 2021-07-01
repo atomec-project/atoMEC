@@ -49,8 +49,10 @@ class SCF:
         -------
         conv_vals : dict
             Dictionary of convergence parameters as follows:
-            {'conv_energy' : float, 'conv_rho' : ndarray,
-             'conv_pot' : ndarray, 'complete' : bool}
+            {
+            `conv_energy` : ``float``,   `conv_rho` : ``ndarray``,
+            `conv_pot`    : ``ndarray``, `complete` : ``bool``
+            }
 
         """
 
