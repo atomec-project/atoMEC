@@ -232,8 +232,8 @@ class ISModel:
             {
             `energy` (:obj:`staticKS.Energy`)       : total energy object,
             `density` (:obj:`staticKS.Density`)     : density object,
-            `potential` (obj:`staticKS.Potential`)  : potential object,
-            `orbitals` (obj:`staticKS.Orbitals`)    : orbitals object
+            `potential` (:obj:`staticKS.Potential`)  : potential object,
+            `orbitals` (:obj:`staticKS.Orbitals`)    : orbitals object
             }
         """
         # boundary cond, unbound electrons, xc func objects
