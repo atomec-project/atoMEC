@@ -227,8 +227,14 @@ class ISModel:
 
         Returns
         -------
-        energy : obj
-            Total energy object
+        output_dict : dict
+            dictionary containing final KS quantities as follows:
+            {
+            `energy` (:obj:`staticKS.Energy`)       : total energy object,
+            `density` (:obj:`staticKS.Density`)     : density object,
+            `potential` (obj:`staticKS.Potential`)  : potential object,
+            `orbitals` (obj:`staticKS.Orbitals`)    : orbitals object
+            }
         """
         # boundary cond, unbound electrons, xc func objects
         config.bc = self.bc
