@@ -39,10 +39,10 @@ class ISModel:
     ----------
     atom : :obj:`Atom`
         The :obj:`Atom` object
-    xfunc : str or int, optional
+    xfunc_id : str or int, optional
         The exchange functional, can be the libxc code or string, or special internal value
         Default : "lda_x"
-    cfunc : str or int, optional
+    cfunc_id : str or int, optional
         The correlation functional, can be the libxc code or string, or special internal value
         Default : "lda_c_pw"
     bc : str, optional
