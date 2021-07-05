@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Compares dirichlet and neumann boundary conditions for Aluminium
 """

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Compares lda and 'exact' xc functional for Hydrogen
 """
