@@ -1,9 +1,25 @@
-"""
-Low-level module containing various mathematical functions
+r"""
+Low-level module containing miscalleneous mathematical functions.
+
+Functions
+---------
+normalize_orbs: normalize KS orbitals within defined sphere
+
+int_sphere: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
+
+lapalce: compute the second-order derivative :math:`d^2 y(x) / dx^2`
+
+fermi_dirac: compute the Fermi-Dirac occupation function (for given order n)
+
+fd_int_complete: compute the complete Fermi-Dirac integral (for given order n)
+
+chem_pot: compute the chemical potential by enforcing charge neutrality
+
+f_root_id: make root input function for chem_pot with ideal approx for free electrons
 """
 
 # standard libraries
-from math import sqrt, pi, exp
+from math import sqrt, pi
 import warnings
 
 # external libraries
