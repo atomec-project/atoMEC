@@ -42,20 +42,7 @@ def log_grid(x_r):
 
 
 class Orbitals:
-    """
-    Class holding the KS orbitals, associated quantities and relevant routines
-
-    Attributes
-    ----------
-    eigfuncs : ndarray
-        the KS radial eigenfunctions on the logarithmic grid
-    eigvals : ndarray
-        the KS eigenvalues
-    occnums : ndarray
-        the KS orbital occupation numbers including degeneracy (see notes)
-    lbound : ndarray
-        matrix (2l+1) * \Theta(\eps) where \Theta is the step function
-    """
+    """Class holding the KS orbitals, associated quantities and relevant routines"""
 
     def __init__(self, xgrid):
 
@@ -69,21 +56,22 @@ class Orbitals:
 
     @property
     def eigvals(self):
-        """KS eigenvalues"""
+        r"""ndarray: the KS eigenvalues :math:`\epsilon_{nl}^\sigma`"""
         if np.all(self._eigvals == 0.0):
             raise Exception("Eigenvalues have not been initialized")
         return self._eigvals
 
     @property
     def eigfuncs(self):
-        """KS eigenfunctions"""
+        r"""ndarray: the radial KS eigenfunctions on the logarithmic grid
+        :math:`X_{nl}^{\sigma}(r)`"""
         if np.all(self._eigfuncs == 0.0):
             raise Exception("Eigenfunctions have not been initialized")
         return self._eigfuncs
 
     @property
     def occnums(self):
-        """KS occupation numbers"""
+        r"""ndarray: the KS occupation numbers multiplied by the :obj:`lbound` matrix"""
         if np.all(self._occnums == 0.0):
             # raise Exception("Occnums have not been initialized")
             self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
@@ -91,7 +79,8 @@ class Orbitals:
 
     @property
     def lbound(self):
-        """Matrix denoting bound eigenvalues and their degeneracies"""
+        r"""ndarray: matrix denoting bound eigenvalues and their degeneracies (DOS).
+        The matrix takes the form :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`"""
         if np.all(self._lbound == 0.0):
             # raise Exception("lbound has not been initialized")
             self._lbound = self.make_lbound(self.eigvals)
@@ -184,11 +173,11 @@ class Orbitals:
 
     @staticmethod
     def make_lbound(eigvals):
-        """
+        r"""
         Construct the lbound matrix which denotes the bound states
         and their degeneracies.
 
-        For each spin channel, lbound(l,n) = (2l+1) * Theta(eps_{nl})
+        For each spin channel, :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
 
         Parameters
         ----------
@@ -215,20 +204,13 @@ class Density:
     """
     Holds the static KS density and routines required to compute its components
 
-    Attributes
+    Parameters
     ----------
-    total : ndarray
-        the total KS density n(r) or n(x)
-    bound : dict of ndarrays
-        contains the keys "rho" and "N" denoting the bound density
-        and number of bound electrons respectively
-    unbound : dict of ndarrays
-        contains the keys "rho" and "N" denoting the unbound density
-        and number of unbound electrons respectively
+    orbs : :obj:`Orbitals`
+        The KS orbitals object
     """
 
     def __init__(self, orbs):
-
         self._xgrid = orbs._xgrid
         self._total = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self._bound = {
@@ -244,18 +226,25 @@ class Density:
 
     @property
     def total(self):
+        """ndarray: Total KS density :math:`n(r)` or :math:`n(x)`"""
         if np.all(self._total == 0.0):
             self._total = self.bound["rho"] + self.unbound["rho"]
         return self._total
 
     @property
     def bound(self):
+        """dict of ndarrays: Contains the keys `rho` and `N` denoting the bound
+        density and number of bound electrons respectively
+        """
         if np.all(self._bound["rho"] == 0.0):
             self._bound = self.construct_rho_bound(self._orbs, self._xgrid)
         return self._bound
 
     @property
     def unbound(self):
+        """dict of ndarrays: contains the keys `rho` and `N` denoting the
+        unbound density and number of unbound electrons respectively
+        """
         if np.all(self._unbound["rho"]) == 0.0:
             self._unbound = self.construct_rho_unbound(self._orbs)
         return self._unbound
@@ -275,7 +264,7 @@ class Density:
         Returns
         -------
         rho_bound : dict of ndarrays
-            contains the keys "rho" and "N" denoting the bound density
+            contains the keys `rho` and `N` denoting the bound density
             and number of bound electrons respectively
         """
 
@@ -312,7 +301,7 @@ class Density:
         Returns
         -------
         rho_unbound : dict of ndarrays
-            contains the keys "rho" and "N" denoting the unbound density
+            contains the keys `rho` and `N` denoting the unbound density
             and number of unbound electrons respectively
         """
 
@@ -341,21 +330,7 @@ class Density:
 
 
 class Potential:
-    """
-    Holds the KS potential and the routines required to compute it
-
-    Attributes
-    ----------
-    v_s : ndarray
-        the full KS potential v_s = v_en + v_ha + v_xc
-    v_en : ndarray
-        the electron-nuclear potential
-    v_ha : ndarray
-        the hartree potential
-    v_xc : dict of ndarrays
-        the xc-potential, contains the keys "x", "c" and "xc"
-        denoting exchange, correlation, and exchange + correlation respectively
-    """
+    """Holds the KS potential and the routines required to compute it"""
 
     def __init__(self, density):
 
@@ -372,33 +347,38 @@ class Potential:
 
     @property
     def v_s(self):
+        r"""ndarray: the full KS potential :math:`v_\mathrm{s} = v_\mathrm{en} + v_\mathrm{ha} + v_\mathrm{xc}`"""
         if np.all(self._v_s == 0.0):
             self._v_s = self.v_en + self.v_ha + self.v_xc["xc"]
         return self._v_s
 
     @property
     def v_en(self):
+        r"""ndarray: the electron-nuclear potential"""
         if np.all(self._v_en == 0.0):
             self._v_en = self.calc_v_en(self._xgrid)
         return self._v_en
 
     @property
     def v_ha(self):
+        r"""ndarray: the Hartree potential"""
         if np.all(self._v_ha == 0.0):
             self._v_ha = self.calc_v_ha(self._density, self._xgrid)
         return self._v_ha
 
     @property
     def v_xc(self):
+        r"""dict of ndarrays: the xc-potential, contains the keys `x`, `c` and `xc`
+        denoting exchange, correlation, and exchange + correlation respectively"""
         if np.all(self._v_xc["xc"] == 0.0):
             self._v_xc = xc.v_xc(self._density, self._xgrid, config.xfunc, config.cfunc)
         return self._v_xc
 
     @staticmethod
     def calc_v_en(xgrid):
-        """
+        r"""
         Constructs the electron-nuclear potential
-        v_en (x) = -Z * exp(-x)
+        :math:`v_\mathrm{en} (x) = -Z * \exp(-x)`
         """
 
         v_en = -config.Z * np.exp(-xgrid)
@@ -407,9 +387,9 @@ class Potential:
 
     @staticmethod
     def calc_v_ha(density, xgrid):
-        """
+        r"""
         Constructs the Hartree potential (see notes)
-        
+
         Parameters
         ----------
         density : ndarray
@@ -419,11 +399,16 @@ class Potential:
 
         Notes
         -----
-        v_ha is defined on the r-grid as:
-        .. math:: v_{ha}(r) = 4\pi*\int_0^r dr' n(r') \frac{r'^2}{\max(r,r')}
+        :math:`v_\mathrm{ha}` is defined on the r-grid as:
+
+        .. math::
+            v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}
+
         On the x-grid:
-        .. math:: v_{ha}(x) = 4\pi {exp(-x) \int_{x0}^x dx' n(x') exp(3x') \\
-                               - \int_x^log(r_s) dx' n(x') exp(2x') }
+
+        .. math::
+            v_\mathrm{ha}(x) = 4\pi\Big\{\exp(-x)\int_{x0}^x \mathrm{d}x' n(x') \exp(3x') \\
+            -\int_x^{\log(r_s)} \mathrm{d}x' n(x') \exp(2x') \Big\}
         """
 
         # initialize v_ha
@@ -455,24 +440,8 @@ class Potential:
 
 
 class Energy:
-    """
+    r"""
     Holds information about the KS total energy and relevant routines
-
-    Attributes
-    ----------
-    F_tot : dict of floats
-        contains the total free energy "F" = E - T*S;
-        the total energy "E" = T_s + E_en + E_ha + F_xc
-        and the total entropy "S"
-    E_kin : dict of floats
-        the kinetic energy, split into "bound" and "unbound" terms
-    E_en : float
-        the electron-nuclear energy
-    E_ha : float
-        the Hartree energy
-    E_xc : dict of floats
-        the exchange correlation energy containing the keys
-        "x", "c" and "xc" for exchange, correlation, and exchange + correlation
     """
 
     def __init__(self, orbs, dens):
@@ -493,42 +462,51 @@ class Energy:
 
     @property
     def F_tot(self):
+        r"""dict of floats: contains the keys `F`, `E` and `S` for free energy, internal energy and
+        total entropy. :math:`F = E - TS`"""
         if self._F_tot == 0.0:
             self._F_tot = self.E_tot - config.temp * self.entropy["tot"]
         return self._F_tot
 
     @property
     def E_tot(self):
+        r"""float: the total KS internal energy :math:`E=T_\mathrm{s}+E_\mathrm{en}+E_\mathrm{ha}+F_\mathrm{xc}`"""
         if self._E_tot == 0.0:
             self._E_tot = self.E_kin["tot"] + self.E_en + self.E_ha + self.E_xc["xc"]
         return self._E_tot
 
     @property
     def entropy(self):
+        """dict of floats: total entropy containing `bound` and `unbound` keys"""
         if self._entropy["tot"] == 0.0:
             self._entropy = self.calc_entropy(self._orbs)
         return self._entropy
 
     @property
     def E_kin(self):
+        """dict of floats: KS kinetic energy containing `bound` and `unbound` keys"""
         if self._E_kin["tot"] == 0.0:
             self._E_kin = self.calc_E_kin(self._orbs, self._xgrid)
         return self._E_kin
 
     @property
     def E_en(self):
+        """float: the electron-nuclear energy"""
         if self._E_en == 0.0:
             self._E_en = self.calc_E_en(self._dens, self._xgrid)
         return self._E_en
 
     @property
     def E_ha(self):
+        """float: the Hartree energy"""
         if self._E_ha == 0.0:
             self._E_ha = self.calc_E_ha(self._dens, self._xgrid)
         return self._E_ha
 
     @property
     def E_xc(self):
+        """dict of floats: the xc energy, containing keys `x`, `c` and `xc`
+        for exchange, correlation and exchange + correlation respectively"""
         if self._E_xc["xc"] == 0.0:
             self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
         return self._E_xc
@@ -542,16 +520,15 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
-
         xgrid : ndarray
             the logarithmic grid
 
         Returns
         -------
         E_kin : dict of ndarrays
-            Contains "total", "bound" and "unbound" keys
+            Contains `tot`, `bound` and `unbound` keys
         """
 
         E_kin = {}
@@ -574,7 +551,7 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
         xgrid : ndarray
             the logarithmic grid
@@ -606,10 +583,12 @@ class Energy:
 
     @staticmethod
     def calc_E_kin_unbound(orbs, xgrid):
-        """
+        r"""
+        Compute the contribution from unbound (continuum) electrons to kinetic energy.
+
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
         xgrid : ndarray
             the logarithmic grid
@@ -623,8 +602,10 @@ class Energy:
         -----
         Currently only "ideal" (uniform) approximation for unbound electrons supported.
 
-        .. math:: T_{ub} = \sum_\sigma \frac{N^\sigma V}{\sqrt(2)\pi^2} I_{3/2}(\mu,\beta),
-        where :math: 'I_{3/2}(\mu,\beta)' denotes the complete Fermi-Diract integral
+        .. math::
+            T_\mathrm{ub} = \sum_\sigma \frac{N^\sigma\times V}{\sqrt{2}\pi^2} I_{3/2}(\mu,\beta),
+
+        where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
 
         # currently only ideal treatment supported
@@ -647,13 +628,13 @@ class Energy:
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
 
         Returns
         -------
         S : dict of floats
-           contains "total", "bound" and "unbound" keys
+           contains `tot`, `bound` and `unbound` keys
         """
 
         S = {}
@@ -671,14 +652,14 @@ class Energy:
 
     @staticmethod
     def calc_S_bound(orbs):
-        """
+        r"""
         Computes the contribution of the bound states to the entropy (see notes)
-        
+
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
-        
+
         Returns
         -------
         S : float
@@ -688,8 +669,8 @@ class Energy:
         -----
         The entropy of non-interacting (KS) electrons is given by:
 
-        .. math:: S_{b} = -\sum_{s,l,n} (2l+1) [ f_{nls} log(f_{nls}) \\
-                                     + (1-f_{nls}) (log(1-f_{nls}) ]
+        .. math::
+            S_\mathrm{b} = -\sum_{s,l,n} (2l+1) [ f_{nls} \log(f_{nls}) + (1-f_{nls}) (\log(1-f_{nls}) ]
         """
 
         # the occupation numbers are stored as f'_{nl}=f_{nl}*(2l+1)
@@ -719,12 +700,12 @@ class Energy:
 
     @staticmethod
     def calc_S_unbound(orbs):
-        """
+        r"""
         Computes the unbound contribution to the entropy
 
         Parameters
         ----------
-        orbs : object
+        orbs : :obj:`Orbitals`
             the KS orbitals object
 
         Returns
@@ -736,8 +717,10 @@ class Energy:
         -----
         Currently only "ideal" (uniform) treatment of unbound electrons is supported.
 
-        .. math:: S_{ub} = \sum_\sigma \frac{V}{\sqrt{2}\pi^2}
-        where :math: 'I_{1/2}' is the complete Fermi-Dirac integral of order 1/2
+        .. math::
+            S_\mathrm{ub} = \sum_\sigma \frac{V}{\sqrt{2}\pi^2} I_{1/2}(\mu,\beta)
+
+        where :math:`I_{1/2}(\mu,\beta)` is the complete Fermi-Dirac integral of order 1/2
         """
 
         # currently only ideal treatment supported
@@ -759,7 +742,7 @@ class Energy:
 
     @staticmethod
     def calc_E_en(density, xgrid):
-        """
+        r"""
         Computes the electron-nuclear energy
 
         Parameters
@@ -777,8 +760,10 @@ class Energy:
         Notes
         -----
         Electron-nuclear energy is given by
-        .. math:: E_{en} = 4\pi\int_0^{r_s} \dd{r} r^2 n(r) v_{en}(r),
-        where :math: 'r_s' denotes the radius of the sphere of interest
+
+        .. math:: E_{en} = 4\pi\int_0^{r_s} \mathrm{d}{r} r^2 n(r) v_{en}(r),
+
+        where :math:`r_s` denotes the radius of the sphere of interest
         """
 
         # sum the density over the spin axes to get the total density
@@ -792,7 +777,7 @@ class Energy:
 
     @staticmethod
     def calc_E_ha(density, xgrid):
-        """
+        r"""
         Parameters
         ----------
         density : ndarray
@@ -808,8 +793,10 @@ class Energy:
         Notes
         -----
         The Hartree energy is given by
-        .. math:: E_{ha} = 2\pi \int\dd{r}_0^{r_s} r^2 n(r) v_{ha}(r),
-        where :math: 'v_{ha}(r)' is the Hartree potential
+
+        .. math:: E_\mathrm{ha} = 2\pi\int_0^{r_s}\mathrm{d}r r^2 n(r) v_\mathrm{ha}(r),
+
+        where :math:`v_\mathrm{ha}(r)` is the Hartree potential
         """
 
         # sum density over spins to get total density

@@ -42,12 +42,16 @@ napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
 autodoc_mock_imports = [
-    'mendeleev',
-    'sqlalchemy',
-    'pylibxc',
     'joblib',
+    'mendeleev',
+    'numpy',
+    'pylibxc',
+    'scipy',
+    'sqlalchemy',
     'tabulate',
 ]
+
+autodoc_member_order = 'groupwise'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

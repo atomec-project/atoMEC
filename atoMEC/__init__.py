@@ -1,3 +1,17 @@
+"""
+atoMEC: Average-atom code for matter under extreme conditions.
+
+Copyright (c) 2021 (in alphabetical order), Tim Callow, Attila Cangi, Eli Kraisler
+All rights reserved.
+
+atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
+Please see the README or the project wiki (https://atomec-project.github.io/atoMEC/) for more information.
+
+Classes
+-------
+Atom : the main object for atoMEC calculations, containing information about physical material properties
+"""
+
 # standard libraries
 from math import pi
 
@@ -12,9 +26,11 @@ from . import writeoutput
 
 
 class Atom:
-    """
-    The Atom class defines the main atom object containing the key information about the
-    atomic species, temperature, density etc
+    r"""
+    The principal object in atoMEC calculations which defines the physical material properties.
+
+    The `Atom` contains key information about the physical properties of the material
+    such as temperature, density, and charge. It does not contain any information about approximations or choices of model.
 
     Parameters
     ----------
@@ -26,7 +42,7 @@ class Atom:
         The radius of the Wigner-Seitz sphere, defined as 0.5*a_i,
         where a_i is the average inter-atomic distance
     density : float, optional
-        The mass density of the material in g cm^-3
+        The mass density of the material in :math:`\mathrm{g\ cm}^{-3}`
     charge : int, optional
         The overall net charge
     units_temp : str, optional
@@ -37,28 +53,6 @@ class Atom:
         The units of density, currently only "g/cm3" is supported
     write_output : bool, optional
         Whether to print atomic information, defaults True
-
-    Attributes
-    ----------
-    species : str
-        The chemical symbol for the atomic species
-    temp : float
-        The electronic temperature in hartree
-    radius : float
-        The radius of the Wigner-Seitz sphere, defined as 0.5*a_i,
-        where a_i is the average inter-atomic distance
-    density : float
-        The mass density of the material in g cm^-3
-    charge : int, optional
-        The overall net charge
-    at_chrg : int
-        The atomic number Z
-    at_mass : float
-        The atomic mass
-    nele : int
-        The total electron number
-    info : str
-        Information about the atom
     """
 
     def __init__(
@@ -104,6 +98,7 @@ class Atom:
 
     @property
     def species(self):
+        """str: the chemical symbol for the atomic species."""
         return self._species
 
     @species.setter
@@ -112,16 +107,19 @@ class Atom:
 
     @property
     def at_chrg(self):
+        """int: the atomic charge Z."""
         chrg = self.species.atomic_number
         config.Z = chrg
         return chrg
 
     @property
     def at_mass(self):
+        """float: the atomic mass (in a.u.)."""
         return self.species.atomic_weight
 
     @property
     def units_temp(self):
+        """str: the units of temperature."""
         return self._units_temp
 
     @units_temp.setter
@@ -130,6 +128,7 @@ class Atom:
 
     @property
     def temp(self):
+        """float: the electronic temperature in Hartree."""
         return self._temp
 
     @temp.setter
@@ -140,6 +139,7 @@ class Atom:
 
     @property
     def charge(self):
+        """int: the net charge of the atom."""
         return self._charge
 
     @charge.setter
@@ -148,10 +148,15 @@ class Atom:
 
     @property
     def nele(self):
+        """int: the number of electrons in the atom.
+
+        The total electron number is given by the sum of :obj:`at_chrg` and :obj:`charge`.
+        """
         return self.at_chrg + self._charge
 
     @property
     def units_radius(self):
+        """str: the units of the atomic radius."""
         return self._units_radius
 
     @units_radius.setter
@@ -160,6 +165,7 @@ class Atom:
 
     @property
     def units_density(self):
+        """str: the units of the atomic density."""
         return self._units_density
 
     @units_density.setter
@@ -168,6 +174,11 @@ class Atom:
 
     @property
     def radius(self):
+        r"""float: radius of the Wigner-Seitz sphere.
+
+        The radius is defined as :math:`a_i /2`,
+        where :math:`a_i` is the average inter-atomic distance.
+        """
         return self._radius
 
     @radius.setter
@@ -179,6 +190,7 @@ class Atom:
 
     @property
     def density(self):
+        r"""float: the mass density of the material in units :math:`\mathrm{g\ cm}^{-3}`."""
         return self._density
 
     @density.setter
@@ -190,5 +202,6 @@ class Atom:
 
     @property
     def info(self):
+        """str: formatted information about the :obj:`Atom`'s attributes."""
         # write output info
         return writeoutput.write_atomic_data(self)
