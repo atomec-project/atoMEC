@@ -183,6 +183,7 @@ class ISModel:
         scf_params={},
         force_bound=[],
         write_info=True,
+        verbosity=0,
     ):
 
         """
@@ -258,6 +259,12 @@ class ISModel:
         conv = convergence.SCF(xgrid)
 
         for iscf in range(config.scf_params["maxscf"]):
+
+            # print orbitals and occupations
+            if verbosity == 1:
+                eigs, occs = writeoutput.SCF.write_orb_info(orbs)
+                print("\n" + "Orbital eigenvalues (Ha) :" + "\n\n" + eigs)
+                print("Orbital occupations (2l+1) * f_{nl} :" + "\n\n" + occs)
 
             # construct density
             rho = staticKS.Density(orbs)
