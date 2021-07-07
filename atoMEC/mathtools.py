@@ -3,7 +3,7 @@ Low-level module containing miscalleneous mathematical functions.
 
 Functions
 ---------
-normalize_orbs: normalize KS orbitals within defined sphere
+:func:`normalize_orbs`: normalize KS orbitals within defined sphere
 
 int_sphere: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
 
