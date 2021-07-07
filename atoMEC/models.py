@@ -190,7 +190,14 @@ class ISModel:
 
     @writeoutput.timing
     def CalcEnergy(
-        self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}, write_info=True
+        self,
+        nmax,
+        lmax,
+        grid_params={},
+        conv_params={},
+        scf_params={},
+        force_bound=[],
+        write_info=True,
     ):
         r"""
         Run a self-consistent calculation to minimize the Kohn-Sham free energy functional.
@@ -247,6 +254,9 @@ class ISModel:
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
 
+        # experimental change
+        config.force_bound = force_bound
+
         # set up the xgrid and rgrid
         xgrid, rgrid = staticKS.log_grid(log(config.r_s))
 
@@ -302,6 +312,10 @@ class ISModel:
             # exit if converged
             if conv_vals["complete"]:
                 break
+
+        # compute final density and energy
+        rho = staticKS.Density(orbs)
+        energy = staticKS.Energy(orbs, rho)
 
         # write final output
         scf_final = writeoutput.SCF().write_final(energy, orbs, rho, conv_vals)
