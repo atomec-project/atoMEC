@@ -1,9 +1,26 @@
-"""
-Low-level module containing various mathematical functions
+r"""
+Low-level module containing miscalleneous mathematical functions.
+
+Functions
+---------
+:func:`normalize_orbs`: normalize KS orbitals within defined sphere
+
+:func:`int_sphere`: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
+
+:func:`laplace`: compute the second-order derivative :math:`d^2 y(x) / dx^2`
+
+:func:`fermi_dirac`: compute the Fermi-Dirac occupation function (for given order n)
+
+:func:`fd_int_complete`: compute the complete Fermi-Dirac integral (for given order n)
+
+:func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
+
+:func:`f_root_id`: make root input function for chem_pot with ideal approx for 
+free electrons
 """
 
 # standard libraries
-from math import sqrt, pi, exp
+from math import sqrt, pi
 import warnings
 
 # external libraries
@@ -16,7 +33,7 @@ from . import config
 
 def normalize_orbs(eigfuncs_x, xgrid):
     r"""
-    Normalizes the KS orbitals within the chosen sphere
+    Normalize the KS orbitals within the chosen sphere.
 
     Parameters
     ----------
@@ -30,7 +47,6 @@ def normalize_orbs(eigfuncs_x, xgrid):
     eigfuncs_x_norm : ndarray
         The radial KS eigenfunctions normalized over the chosen sphere
     """
-
     # initialize the normalized eigenfunctions
     eigfuncs_x_norm = eigfuncs_x
 
@@ -49,8 +65,9 @@ def normalize_orbs(eigfuncs_x, xgrid):
 
 def int_sphere(fx, xgrid):
     r"""
-    Computes integrals over the sphere defined by the logarithmic
-    grid provided as input
+    Compute integral over sphere defined by input grid.
+
+    The integral is performed on the logarithmic grid (see notes).
 
     Parameters
     ----------
@@ -70,7 +87,6 @@ def int_sphere(fx, xgrid):
 
     .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)
     """
-
     func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
     I_sph = np.trapz(func_int, xgrid)
 
@@ -79,8 +95,9 @@ def int_sphere(fx, xgrid):
 
 def laplace(y, x, axis=-1):
     r"""
-    Computes the second-order derivative :math:`d^2 y(x) / dx^2`
-    over the chosen axis of the input array
+    Compute the second-order derivative :math:`d^2 y(x) / dx^2`.
+
+    Derivative can be computed over any given axis.
 
     Parameters
     ----------
@@ -97,7 +114,6 @@ def laplace(y, x, axis=-1):
     grad2_y : ndarray
         the laplacian of y
     """
-
     # first compute the first-order gradient
     grad1_y = np.gradient(y, x, edge_order=2, axis=axis)
 
@@ -109,7 +125,7 @@ def laplace(y, x, axis=-1):
 
 def fermi_dirac(eps, mu, beta, n=0):
     r"""
-    Computes the Fermi-Dirac function, see notes
+    Compute the Fermi-Dirac function, see notes for functional form.
 
     Parameters
     ----------
@@ -131,9 +147,9 @@ def fermi_dirac(eps, mu, beta, n=0):
     -----
     The FD function is defined as:
 
-    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+\beta(\epsilon - \mu))}
+    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+
+        \beta(\epsilon - \mu))}
     """
-
     # dfn the exponential function
     # ignore warnings here
     with np.errstate(over="ignore"):
@@ -147,7 +163,7 @@ def fermi_dirac(eps, mu, beta, n=0):
 
 def fd_int_complete(mu, beta, n):
     r"""
-    Computes complete Fermi-Dirac integrals (see notes)
+    Compute complete Fermi-Dirac integral for given order (see notes for function form).
 
     Parameters
     ----------
@@ -169,11 +185,11 @@ def fd_int_complete(mu, beta, n):
 
     .. math::
 
-        I_{n}(\mu,\beta)=\int_0^\infty\mathrm{d}\epsilon\ \epsilon^{n/2}f_{fd}(\mu,\epsilon,\beta)
+        I_{n}(\mu,\beta)=\int_0^\infty\mathrm{d}\epsilon\ \epsilon^{n/2}f_{fd}
+        (\mu,\epsilon,\beta)
 
     where n is the order of the integral
     """
-
     # use scipy quad integration routine
     limup = np.inf
 
@@ -187,12 +203,13 @@ def fd_int_complete(mu, beta, n):
 
 def chem_pot(orbs):
     r"""
-    Determines the chemical potential by enforcing charge neutrality (see notes)
-    Uses scipy.optimize.root_scalar with brentq implementation
+    Determine the chemical potential by enforcing charge neutrality (see notes).
+
+    Uses scipy.optimize.root_scalar with brentq implementation.
 
     Parameters
     ----------
-    orbs : object(staticKS.Orbitals)
+    orbs : staticKS.Orbitals
         the orbitals object
 
     Returns
@@ -204,11 +221,11 @@ def chem_pot(orbs):
     -----
     Finds the roots of equation
 
-    .. math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e = 0.
+    .. math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +
+        N_{ub}(\beta,\mu) - N_e = 0.
 
     The number of unbound electrons :math:`N_{ub}` depends on the implementation choice.
     """
-
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
 
@@ -234,8 +251,9 @@ def chem_pot(orbs):
 
 def f_root_id(mu, eigvals, lbound, nele):
     r"""
-    Functional input for the chemical potential root finding function
-    with the ideal approximation for unbound electrons (see notes)
+    Functional input for the chemical potential root finding function (ideal approx).
+
+    See notes for function returned, the ideal approximation is used for free electrons.
 
     Parameters
     ----------
@@ -258,9 +276,9 @@ def f_root_id(mu, eigvals, lbound, nele):
     -----
     The returned function is
 
-    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e
+    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +
+        N_{ub}(\beta,\mu) - N_e
     """
-
     # caluclate the contribution from the bound electrons
     if nele != 0:
         occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
