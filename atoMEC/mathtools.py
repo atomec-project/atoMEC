@@ -209,7 +209,7 @@ def chem_pot(orbs):
 
     Parameters
     ----------
-    orbs : :class:`staticKS.Orbitals`
+    orbs : staticKS.Orbitals
         the orbitals object
 
     Returns
