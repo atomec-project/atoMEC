@@ -175,10 +175,18 @@ class ISModel:
 
     @writeoutput.timing
     def CalcEnergy(
-        self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}, write_info=True
+        self,
+        nmax,
+        lmax,
+        grid_params={},
+        conv_params={},
+        scf_params={},
+        force_bound=[],
+        write_info=True,
+        verbosity=0,
     ):
 
-        """
+        r"""
         Run a self-consistent calculation to minimize the Kohn-Sham free energy functional
 
         Parameters
@@ -207,6 +215,15 @@ class ISModel:
             `maxscf`  (``int``)   : maximum number of scf cycles,
             `mixfrac` (``float``) : density mixing fraction
             }
+        force_bound : list of list of ints, optional
+            force certain levels to be bound, for example:
+            `force_bound = [0, 1, 0]`
+            forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be always
+            bound even if it has positive energy. This prevents convergence issues.
+        verbosity : int, optional
+            how much information is printed at each SCF cycle.
+            `verbosity=0` prints the total energy and convergence values (default).
+            `verbosity=1` prints the above and the KS eigenvalues and occupations.
         write_info : bool, optional
             prints the scf cycle and final parameters
             defaults to True
@@ -228,6 +245,9 @@ class ISModel:
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
 
+        # experimental change
+        config.force_bound = force_bound
+
         # set up the xgrid and rgrid
         xgrid, rgrid = staticKS.log_grid(log(config.r_s))
 
@@ -248,6 +268,12 @@ class ISModel:
         conv = convergence.SCF(xgrid)
 
         for iscf in range(config.scf_params["maxscf"]):
+
+            # print orbitals and occupations
+            if verbosity == 1:
+                eigs, occs = writeoutput.SCF.write_orb_info(orbs)
+                print("\n" + "Orbital eigenvalues (Ha) :" + "\n\n" + eigs)
+                print("Orbital occupations (2l+1) * f_{nl} :" + "\n\n" + occs)
 
             # construct density
             rho = staticKS.Density(orbs)
@@ -283,6 +309,10 @@ class ISModel:
             # exit if converged
             if conv_vals["complete"]:
                 break
+
+        # compute final density and energy
+        rho = staticKS.Density(orbs)
+        energy = staticKS.Energy(orbs, rho)
 
         # write final output
         scf_final = writeoutput.SCF().write_final(energy, orbs, rho, conv_vals)
