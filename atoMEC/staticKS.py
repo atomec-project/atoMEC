@@ -78,7 +78,7 @@ class Orbitals:
 
     @property
     def eigvals(self):
-        r"""ndarray: the KS eigenvalues :math:`\epsilon_{nl}^\sigma`."""
+        r"""ndarray: The KS eigenvalues :math:`\epsilon_{nl}^\sigma`."""
         if np.all(self._eigvals == 0.0):
             raise Exception("Eigenvalues have not been initialized")
         return self._eigvals
@@ -86,7 +86,7 @@ class Orbitals:
     @property
     def eigfuncs(self):
         r"""
-        ndarray: the radial KS eigenfunctions on the logarithmic grid.
+        ndarray: The radial KS eigenfunctions on the logarithmic grid.
 
         Related to real-grid KS radial orbitals by
         :math:`X_{nl}^{\sigma}(x)=e^{x/2} R_{nl}^{\sigma}(r).`
@@ -834,7 +834,6 @@ class Energy:
     @staticmethod
     def calc_E_ha(density, xgrid):
         r"""
-
         Compute the Hartree energy.
 
         Parameters
