@@ -195,7 +195,7 @@ class Atom:
 
     @density.setter
     def density(self, density):
-        self._density = check_inputs.Atom().check_density(density, self.units_density)
+        self._density = check_inputs.Atom().check_density(density)
         self._radius = check_inputs.Atom().dens_to_radius(self, self._density)
         config.r_s = self._radius
         config.sph_vol = (4.0 * pi * self._radius ** 3.0) / 3.0

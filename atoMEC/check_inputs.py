@@ -23,18 +23,27 @@ intc = (int, np.integer)  # unfifying type for integers
 
 
 class Atom:
-    """
-    Checks the inputs from the BuildAtom class
-    """
+    """Check the inputs from the Atom class."""
 
     def check_species(self, species):
         """
-        Checks the species is a string and corresponds to an actual element
+        Check the species is a string and corresponds to an actual element.
 
-        Inputs:
-        - species (str)    : chemical symbol for atomic species
+        Parameters
+        ----------
+        species : str
+            chemical symbol for atomic species
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        InputError.species_error
+            Chemical symbol is not valid
         """
-        if isinstance(species, str) == False:
+        if not isinstance(species, str):
             raise InputError.species_error("element is not a string")
         else:
             try:
@@ -43,6 +52,24 @@ class Atom:
                 raise InputError.species_error("invalid element")
 
     def check_units_temp(self, units_temp):
+        """
+        Check the units of temperature are accepted.
+
+        Parameters
+        ----------
+        units_temp : str
+            units of temperature
+
+        Returns
+        -------
+        units_temp : str
+            units of temperature (if valid input) converted to lowercase
+
+        Raises
+        ------
+        InputError.temp_error
+            unit of temperature is not accepted, i.e. not one of "ha", "ev" or "k"
+        """
         units_accepted = ["ha", "ev", "k"]
         if units_temp.lower() not in units_accepted:
             raise InputError.temp_error("units of temperature are not recognised")
@@ -50,9 +77,27 @@ class Atom:
 
     def check_temp(self, temp, units_temp):
         """
-        Checks the temperature is a float within a sensible range
-        """
+        Check the temperature is a float within a sensible range.
 
+        Parameters
+        ----------
+        temp : float
+             temperature (in any accepted units)
+        units_temp : str
+            units of temperature
+
+        Returns
+        -------
+        temp : float
+            temperature in units of Hartree
+
+        Raises
+        ------
+        InputError.temp_error
+            input temperature is not a positive number
+        InputWarning.temp_warning
+            input temperature is not inside a well-tested range
+        """
         if not isinstance(temp, (float, intc)):
             raise InputError.temp_error("temperature is not a number")
         else:
@@ -75,21 +120,73 @@ class Atom:
 
     def check_charge(self, charge):
         """
-        Checks the charge is an integer
+        Check the net charge is an integer.
+
+        Parameters
+        ----------
+        charge : int
+            the net charge
+
+        Returns
+        -------
+        charge : int
+            the net charge (if input valid)
+
+        Raises
+        ------
+        InputError.charge_error
+            if charge is not an integer
         """
-        if isinstance(charge, intc) == False:
+        if not isinstance(charge, intc):
             raise InputError.charge_error()
         else:
             return charge
 
     def check_units_radius(self, units_radius):
+        """
+        Check the units of radius are accepted.
+
+        Parameters
+        ----------
+        units_radius : str
+            units of radius
+
+        Returns
+        -------
+        units_radius : str
+            units of radius (if accepted) converted to lowercase
+
+        Raises
+        ------
+        InputError.density_error
+            if units of radius are not one of "bohr", "angstrom" or "ang"
+        """
         radius_units_accepted = ["bohr", "angstrom", "ang"]
         if units_radius.lower() not in radius_units_accepted:
             raise InputError.density_error("Radius units not recognised")
 
-        return units_radius.lower()
+        units_radius = units_radius.lower()
+        return units_radius
 
     def check_units_density(self, units_density):
+        """
+        Check the units of density are accepted.
+
+        Parameters
+        ----------
+        units_density : str
+            units of density
+
+        Returns
+        -------
+        units_density : str
+            units of density (if accepted) converted to lowercase
+
+        Raises
+        ------
+        InputError.density_error
+            if units of density are not one of "g/cm3" or "gcm3"
+        """
         density_units_accepted = ["g/cm3", "gcm3"]
 
         if units_density.lower() not in density_units_accepted:
@@ -98,7 +195,26 @@ class Atom:
         return units_density.lower()
 
     def check_radius(self, radius, units_radius):
+        """
+        Check the Wigner-Seitz radius is valid and reasonable.
 
+        Parameters
+        ----------
+        radius : float or int
+            Wigner-Seitz radius (in input units)
+        units_radius : str
+            input units of radius
+
+        Returns
+        -------
+        radius : float
+             Wigner-Seitz radius in Hartree units (Bohr)
+
+        Raises
+        ------
+        InputError.density_error
+            if the radius is not a positive number > 0.1
+        """
         if not isinstance(radius, (float, intc)):
             raise InputError.density_error("Radius is not a number")
 
@@ -111,7 +227,25 @@ class Atom:
                 )
         return radius
 
-    def check_density(self, density, units_density):
+    def check_density(self, density):
+        """
+        Check the mass density is valid and reasonable.
+
+        Parameters
+        ----------
+        density : float or int
+            mass density (in g/cm^3)
+
+        Returns
+        -------
+        density : float
+            mass density (in g/cm^3) if input accepted
+
+        Raises
+        ------
+        InputError.density_error
+            if the density is not a positive number <= 100
+        """
         if not isinstance(density, (float, intc)):
             raise InputError.density_error("Density is not a number")
         else:
@@ -124,15 +258,35 @@ class Atom:
 
     def check_rad_dens_init(self, atom, radius, density, units_radius, units_density):
         """
-        Checks that the density or radius is specified
+        Check that at least one of radius or density is specified and reasonable.
 
-        Inputs:
-        - atom (object)     : atom object
-        - density (float)   : material density
-        - radius (float)    : voronoi sphere radius
+        In case both are specified, check they are compatible.
+
+        Parameters
+        ----------
+        Atom : Atom
+            the main Atom object
+        radius : float or int
+            Wigner-Seitz radius
+        density : float or int
+            mass density
+        units_radius : str
+            units of radius
+        units_density : str
+            units of density
+
+        Returns
+        -------
+        radius, density : tuple of floats
+            the Wigner-Seitz radius and mass density if inputs are valid
+
+        Raises
+        ------
+        InputError.density_error
+            if neither density nor radius is not given, or if one is invalid,
+            or if both are given and they are incompatible
         """
-
-        if isinstance(density, (float, intc)) == False:
+        if not isinstance(density, (float, intc)):
             raise InputError.density_error("Density is not a number")
         if not isinstance(radius, (float, intc)):
             raise InputError.density_error("Radius is not a number")
@@ -157,7 +311,8 @@ class Atom:
                 density_test = self.radius_to_dens(atom, radius)
                 if abs((density_test - density) / density) > 5e-2:
                     raise InputError.density_error(
-                        "Both radius and density are specified but they are not compatible"
+                        "Both radius and density are specified but they are not"
+                        " compatible"
                     )
                 else:
                     density = density_test
@@ -170,9 +325,20 @@ class Atom:
 
     def radius_to_dens(self, atom, radius):
         """
-        Convert the Voronoi sphere radius to a mass density
-        """
+        Convert the Voronoi sphere radius to a mass density.
 
+        Parameters
+        ----------
+        atom : Atom
+            the main Atom object
+        radius : float
+            the Wigner-Seitz radius
+
+        Returns
+        -------
+        density : float
+            the mass density
+        """
         # radius in cm
         rad_cm = radius / unitconv.cm_to_bohr
         # volume in cm
@@ -186,9 +352,20 @@ class Atom:
 
     def dens_to_radius(self, atom, density):
         """
-        Convert the material density to Voronoi sphere radius
-        """
+        Convert the mass density to a Wigner-Seitz radius.
 
+        Parameters
+        ----------
+        atom : Atom
+            the main Atom object
+        density : float
+            the mass density
+
+        Returns
+        -------
+        radius : float
+            the Wigner-Seitz radius
+        """
         # compute atomic mass in g
         mass_g = config.mp_g * atom.at_mass
         # compute volume and radius in cm^3/cm
@@ -225,17 +402,16 @@ class ISModel:
         elif err_xc == 2:
             raise InputError.xc_error(
                 xc_type
-                + " functional is not a valid name or id.\n \
-                Please choose from the valid inputs listed here: \n\
-                https://www.tddft.org/programs/libxc/functionals/"
+                + " functional is not a valid name or id.\n                 Please"
+                " choose from the valid inputs listed here: \n               "
+                " https://www.tddft.org/programs/libxc/functionals/"
             )
         elif err_xc == 3:
             raise InputError.xc_error(
                 "This family of "
                 + xc_type
-                + " functionals is not yet supported by atoMEC. \n\
-                Supported families so far are: "
-                + " ".join(names_supp)
+                + " functionals is not yet supported by atoMEC. \n               "
+                " Supported families so far are: " + " ".join(names_supp)
             )
 
         return xc_func
@@ -272,9 +448,8 @@ class ISModel:
         else:
             if unbound not in unbound_permitted:
                 err_msg = (
-                    "Treatment of unbound electrons not recognised. \n \
-                Allowed treatments are: "
-                    + [ub for ub in unbound_permitted]
+                    "Treatment of unbound electrons not recognised. \n                "
+                    " Allowed treatments are: " + [ub for ub in unbound_permitted]
                 )
                 raise InputError.unbound_error(err_msg)
 
@@ -310,9 +485,8 @@ class ISModel:
         else:
             if bc not in bcs_permitted:
                 err_msg = (
-                    "Boundary condition is not recognised. \n \
-                Allowed boundary conditions are: "
-                    + [b for b in bcs_permitted]
+                    "Boundary condition is not recognised. \n                 Allowed"
+                    " boundary conditions are: " + [b for b in bcs_permitted]
                 )
                 raise InputError.bc_error(err_msg)
 
@@ -722,6 +896,7 @@ class InputWarning:
             + ". Proceeding anyway, but results may be "
             + err2
             + "\n"
-            + "Suggested grid range is between 1000-5000 but should be tested wrt convergence \n"
+            + "Suggested grid range is between 1000-5000 but should be tested wrt"
+            " convergence \n"
         )
         return warning
