@@ -1,5 +1,16 @@
 """
-This module checks inputs for errors
+The check_inputs module checks the validity of all user-defined inputs.
+
+If inputs are invalid, InputError exceptions are raised. It also assigns
+appropriate default inputs where none are supplied.
+
+Classes
+-------
+* :class:`Atom` : Check the inputs from the main Atom class.
+* :class:`ISModel` : Check the inputs from the models.ISModel class.
+* :class:`EnergyCalcs` : Check the inputs from the models.ISModel.CalcEnergy function.
+* :class:`InputError` : Exit atoMEC and print relevant input error message.
+* :class:`InputWarning` : Warn if inputs are considered outside of typical ranges.
 """
 
 # standard python packages
@@ -228,18 +239,18 @@ class Atom:
         return radius
 
     def check_density(self, density):
-        """
+        r"""
         Check the mass density is valid and reasonable.
 
         Parameters
         ----------
         density : float or int
-            mass density (in g/cm^3)
+            mass density (in :math:`\mathrm{g\ cm}^{-3}`)
 
         Returns
         -------
         density : float
-            mass density (in g/cm^3) if input accepted
+            mass density (in :math:`\mathrm{g\ cm}^{-3}`) if input accepted
 
         Raises
         ------
