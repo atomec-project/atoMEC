@@ -774,28 +774,37 @@ class EnergyCalcs:
 
 
 class InputError(Exception):
-    """
-    Handles errors in inputs
-    """
+    """Exit atoMEC and print relevant input error message."""
 
     def species_error(err_msg):
         """
-        Raises an exception if there is an invalid species
+        Raise an exception if there is an invalid species.
 
-        Inputs:
-        - err_msg (str)     : error message printed
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
         """
-
         print("Error in atomic species input: " + err_msg)
         print("Species must be a chemical symbol, e.g. 'He'")
         sys.exit("Exiting atoMEC")
 
     def temp_error(err_msg):
         """
-        Raises an exception if temperature is not a float
+        Raise an exception if temperature is not a float.
 
-        Inputs:
-        - err_msg (str)     : error message printed
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
         """
         print("Error in temperature input: " + err_msg)
         print("Temperature should be >0 and given in units of eV")
@@ -803,153 +812,180 @@ class InputError(Exception):
 
     def charge_error():
         """
-        Raises an exception if charge is not an integer
+        Raise an exception if charge is not an integer.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
         print("Error in charge input: charge is not an integer")
         sys.exit("Exiting atoMEC")
 
     def density_error(err_msg):
         """
-        Raises an exception if density is not a float or negative
+        Raise an exception if density is not a float or negative.
 
-        Inputs:
-        - err_msg (str)     : error message printed
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
         """
         print("Error in density input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def spinmag_error(err_msg):
         """
-        Raises an exception if density is not a float or negative
-        """
+        Raise an exception if density is not a float or negative.
 
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
+        """
         print("Error in spinmag input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def xc_error(err_msg):
-
         """
-        Raises an exception if density is not a float or negative
-        """
+        Raise an exception if density is not a float or negative.
 
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
+        """
         print("Error in xc input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def unbound_error(err_msg):
         """
-        Raises exception if unbound not str or in permitted values
+        Raise exception if unbound not str or in permitted values.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in unbound electron input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def bc_error(err_msg):
         """
-        Raises exception if unbound not str or in permitted values
+        Raise exception if unbound not str or in permitted values.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in boundary condition input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def spinpol_error(err_msg):
         """
-        Raises exception if spinpol not a boolean
+        Raise exception if spinpol not a boolean.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in spin polarization input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def grid_error(err_msg):
         """
-        Raises exception if error in grid inputs
+        Raise exception if error in grid inputs.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in grid inputs: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def conv_error(err_msg):
         """
-        Raises exception if error in convergence inputs
+        Raise exception if error in convergence inputs.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in convergence inputs: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def SCF_error(err_msg):
         """
-        Raises exception if error in convergence inputs
+        Raise exception if error in SCF inputs.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in scf_params input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
 
 class InputWarning:
-    """
-    Warns user if inputs are considered outside of typical ranges, but proceeds anyway
-    """
+    """Warn if inputs are considered outside of typical ranges, but proceed anyway."""
 
     def temp_warning(err):
         """
-        Warning if temperature outside of sensible range
+        Warn if temperature outside of sensible range.
 
-        Inputs:
-        - temp (float)    : temperature in units of eV
-        - err (str)       : "high" or "low"
+        Parameters
+        ----------
+        err : str
+            custom part of error message
+
+        Returns
+        -------
+        warning : str
+            full errror message
         """
         warning = (
             "Warning: this input temperature is very "
@@ -961,7 +997,19 @@ class InputWarning:
 
     def ngrid_warning(err1, err2):
         """
-        Warning if grid params outside of sensible range
+        Warn if grid params outside of sensible range.
+
+        Parameters
+        ----------
+        err1 : str
+            first custom part of error message
+        err2 : str
+            second custom part of error message
+
+        Returns
+        -------
+        warning : str
+            full error message
         """
         warning = (
             "Warning: number of grid points is very "
