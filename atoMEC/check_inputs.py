@@ -378,15 +378,30 @@ class Atom:
 
 
 class ISModel:
-    """
-    Checks the inputs for the IS model class
-    """
+    """Check the inputs for the IS model class."""
 
     def check_xc(xc_func, xc_type):
         """
-        checks the exchange and correlation functionals are defined by libxc
-        """
+        Check the exchange and correlation functionals are accepted.
 
+        Parameters
+        ----------
+        xc_func : str or int
+            the libxc name or id of the x/c functional
+        xc_type : str
+            type i.e. "exchange" or "correlation"
+
+        Returns
+        -------
+        xc_func : str
+            the libxc name of the x/c functional (if valid input)
+
+        Raises
+        ------
+        InputError.xc_error
+            if xc functional is not a valid libxc input or is not supported
+            by the current version of atoMEC
+        """
         # supported families of libxc functional by name
         names_supp = ["lda"]
         # supported families of libxc functional by id
@@ -397,7 +412,7 @@ class ISModel:
 
         if err_xc == 1:
             raise InputError.xc_error(
-                xctype + " functional is not an id (int) or name (str)"
+                xc_type + " functional is not an id (int) or name (str)"
             )
         elif err_xc == 2:
             raise InputError.xc_error(
@@ -418,23 +433,23 @@ class ISModel:
 
     def check_unbound(unbound):
         """
-        Checks the input for the unbound electrons
+        Check the unbound electron input is accepted.
 
         Parameters
         ----------
         unbound : str
             defines the treatment of the unbound electrons
 
-        Raises
-        ------
-            InputError
-
         Returns
         -------
-        str:
-            description of unbound electron treatment
-        """
+        unbound : str
+            treatment of unbound electrons (if input valid)
 
+        Raises
+        ------
+        InputError.unbound_error
+            if the treatment of unbound electrons is not a valid input
+        """
         # list all possible treatments for unbound electrons
         unbound_permitted = ["ideal"]
 
@@ -457,23 +472,24 @@ class ISModel:
 
     def check_bc(bc):
         """
-        Checks the boundary condition is permitted
+        Check the boundary condition is accepted.
 
         Parameters
         ----------
         bc : str
-            defines the boundary condition used to solve KS eqns
-
-        Raises
-        ------
-        InputError
+            the boundary condition used to solve KS eqns
+            (can be either "dirichlet" or "neumann")
 
         Returns
         -------
-        str:
-            boundary condition used to solve KS eqns
-        """
+        bc : str
+            the boundary condition used to solve KS eqns (lowercase)
 
+        Raises
+        ------
+        InputError.bc_error
+            if the boundary condition is not recognised
+        """
         # list permitted boundary conditions
         bcs_permitted = ["dirichlet", "neumann"]
 
@@ -494,10 +510,12 @@ class ISModel:
 
     def check_spinpol(spinpol):
         """
+        Check the spin polarization is a boolean.
+
         Parameters
         ----------
         spinpol : bool
-           spin polarized calculation
+           whether spin polarized calculation is done
 
         Returns
         -------
@@ -506,9 +524,9 @@ class ISModel:
 
         Raises
         ------
-        InputError
+        InputError.spinpol_error
+            if the spin polarization is not a bool
         """
-
         if not isinstance(spinpol, bool):
             raise InputError.spinpol_error("Spin polarization is not of type bool")
 
@@ -516,9 +534,28 @@ class ISModel:
 
     def check_spinmag(spinmag, nele):
         """
-        Checks the spin magnetization is compatible with the total electron number
+        Check the spin magnetization is compatible with the total electron number.
+
+        Also compute a default value if none is specified.
+
+        Parameters
+        ----------
+        spinmag : int
+            the spin magnetization (e.g. 1 for a doublet state)
+        nele : int
+            the total number of electrons
+
+        Returns
+        -------
+        spinmag : int
+            the spin magnetization if input valid
+
+        Raises
+        ------
+        InputError.spinmag_error
+            if spinmag input is not an integer or incompatible with electron number
         """
-        if isinstance(spinmag, intc) == False:
+        if not isinstance(spinmag, intc):
             raise InputError.spinmag_error(
                 "Spin magnetization is not a positive integer"
             )
@@ -547,10 +584,23 @@ class ISModel:
 
     def calc_nele(spinmag, nele, spinpol):
         """
-        Calculates the electron number in each spin channel from spinmag
-        and total electron number
-        """
+        Calculate the electron number in each spin channel (if spin polarized).
 
+        Parameters
+        ----------
+        spinmag : int
+            the spin magnetization
+        nele : int
+            total electron number
+        spinpol : bool
+            spin polarization
+
+        Returns
+        -------
+        nele : array of ints
+            number of electrons in each spin channel if spin-polarized, else
+            just total electron number
+        """
         if not spinpol:
             nele = np.array([nele], dtype=int)
         else:
@@ -562,24 +612,36 @@ class ISModel:
 
 
 class EnergyCalcs:
+    """Check inputs for CalcEnergy calculations."""
+
     @staticmethod
     def check_grid_params(grid_params):
-        """
-        Checks grid parameters are reasonable, or assigns if empty
+        r"""
+        Check grid parameters are reasonable, or assigns if empty.
 
         Parameters
         ----------
         grid_params : dict
-            Can contain the keys "ngrid" (int, number of grid points)
-            and "x0" (float, LHS grid point for log grid)
+            Can contain the keys `ngrid` (``int``, number of grid points)
+            and `x0` (`float`, LHS grid point for log grid)
 
         Returns
         -------
-        dict
-          {'ngrid'    (int)    : number of grid points
-           'x0'       (float)  : LHS grid point takes form r0=exp(x0); x0 can be specified }
-        """
+        grid_params : dict
+            dictionary of grid parameters as follows:
+            {
+            `ngrid` (``int``)   : number of grid points,
+            `x0`    (``float``) : LHS grid point takes form
+            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            }
 
+        Raises
+        ------
+        InputError.grid_error
+            if grid inputs are invalid or outside a reasonable range
+        InputError.ngrid_warning
+            if `ngrid` is outside a reasonable convergence range
+        """
         # First assign the keys ngrid and x0 if they are not given
         try:
             ngrid = grid_params["ngrid"]
@@ -615,22 +677,29 @@ class EnergyCalcs:
     @staticmethod
     def check_conv_params(input_params):
         """
-        Checks convergence parameters are reasonable, or assigns if empty
+        Check convergence parameters are reasonable, or assigns if empty.
 
         Parameters
         ----------
         input_params : dict of floats
-            Can contain the keys "econv", "nconv" and "vconv", for energy,
+            Can contain the keys `econv`, `nconv` and `vconv`, for energy,
             density and potential convergence parameters
 
         Returns
         -------
-        dict
-          {'econv'    (float)    : energy convergence
-           'nconv'    (float)    : density convergence
-           'vconv'    (float)    : potential convergence}
-        """
+        conv_params : dict of floats
+            dictionary of convergence parameters as follows:
+            {
+            `econv` (``float``) : convergence for total energy,
+            `nconv` (``float``) : convergence for density,
+            `vconv` (``float``) : convergence for electron number
+            }
 
+        Raises
+        ------
+        InputError.conv_error
+            if a convergence parameter is invalid (not float or negative).
+        """
         conv_params = {}
         # loop through the convergence parameters
         for conv in ["econv", "nconv", "vconv"]:
@@ -654,24 +723,28 @@ class EnergyCalcs:
     @staticmethod
     def check_scf_params(input_params):
         """
-        Checks convergence parameters are reasonable, or assigns if empty
+        Check scf parameters are reasonable, or assigns if empty.
 
         Parameters
         ----------
         input_params : dict
-            Can contain the keys `maxscf` and `mixfrac` for max scf cycle
+            can contain the keys `maxscf` and `mixfrac` for max scf cycle
             and potential mixing fraction
 
         Returns
         -------
         scf_params : dict
-            A dictionary with the following scf parameters
+            dictionary with the following keys:
             {
             `maxscf`   (``int``)    : max number scf cycles,
-            `mixfrac`  (``int``)    : mixing fraction
+            `mixfrac`  (``float``)    : mixing fraction
             }
-        """
 
+        Raises
+        ------
+        InputError.SCF_error
+            if the SCF parameters are not of correct type or in valid range
+        """
         scf_params = {}
 
         # assign value to scf param if it is not specified
