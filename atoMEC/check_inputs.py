@@ -275,7 +275,7 @@ class Atom:
 
         Parameters
         ----------
-        Atom : Atom
+        Atom : __init__.Atom
             the main Atom object
         radius : float or int
             Wigner-Seitz radius
@@ -340,7 +340,7 @@ class Atom:
 
         Parameters
         ----------
-        atom : Atom
+        atom : __init__.Atom
             the main Atom object
         radius : float
             the Wigner-Seitz radius
@@ -367,7 +367,7 @@ class Atom:
 
         Parameters
         ----------
-        atom : Atom
+        atom : __init__.Atom
             the main Atom object
         density : float
             the mass density
