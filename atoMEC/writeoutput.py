@@ -1,5 +1,17 @@
 """
-Handles all output, writing to files etc
+Contains the routines which generate printed output (to screen and separate files).
+
+Classes
+-------
+* :class:`SCF` : Write information about the self-consistent field (SCF) cycle.
+
+Functions
+---------
+* :func:`write_atomic_data` : Write information about the main Atom object.
+* :func:`write_ISModel_data` : Write information about the IS model.
+* :func:`density_to_csv` : Write the KS density to file.
+* :func:`potential_to_csv` : Write the KS potential to file.
+* :func:`timing`: Generate timing information for given input function.
 """
 
 # standard libs
@@ -21,19 +33,18 @@ dblspc = "\n \n"
 
 def write_atomic_data(atom):
     """
-    Writes information about the atomic object
+    Write information about the main Atom object.
 
     Parameters
     ----------
-    atom : obj
-        the Atom object
+    atom : __init__.Atom
+        the main Atom object
 
     Returns
     -------
     output_str : str
         formatted description of the Atom attributes
     """
-
     # the initial spiel
     init_str = "Atomic information:" + dblspc
 
@@ -81,11 +92,11 @@ def write_atomic_data(atom):
 
 def write_ISModel_data(ISModel):
     """
-    Writes information about the approximations used for the IS model
+    Write information about the approximations used for the IS model.
 
     Parameters
     ----------
-    ISModel : obj
+    ISModel : models.ISModel
         The ISModel object
 
     Returns
@@ -139,17 +150,22 @@ def write_ISModel_data(ISModel):
 
 
 class SCF:
+    """Write information about the self-consistent field (SCF) cycle."""
+
     @staticmethod
     def write_init():
         """
-        The initial spiel for an SCF calculation
+        Write the initial spiel for an SCF calculation.
+
+        Parameters
+        ----------
+        None
 
         Returns
         -------
         output_str : str
             header string for SCF cycle
         """
-
         # the initial message
         init_str = "Starting SCF energy calculation" + dblspc
 
@@ -177,7 +193,7 @@ class SCF:
     @staticmethod
     def write_cycle(iscf, E_free, conv_vals):
         """
-        The output string for each SCF iteration
+        Write output string for each SCF iteration.
 
         Parameters
         ----------
@@ -193,7 +209,6 @@ class SCF:
         output_str : str
             free energy and convergence values for the i-th iteration
         """
-
         termspc = 3 * " "
 
         iscf_str = "{i:4d}".format(i=iscf)
@@ -208,15 +223,15 @@ class SCF:
 
     def write_final(self, energy, orbitals, density, conv_vals):
         """
-        Writes final post-SCF information about energy, orbitals and convergence
+        Write final post-SCF information about energy, orbitals and convergence.
 
         Parameters
         ----------
-        energy : obj
+        energy : staticKS.Energy
             the energy object
-        orbitals : obj
+        orbitals : staticKS.Orbitals
             the orbitals object
-        density: obj
+        density: staticKS.Density
             the density object
         conv_vals : dict
             dictionary of convergence values
@@ -227,7 +242,6 @@ class SCF:
             information about whether the calculation converged, the final energies
             (broken down into components), and the orbital energies and occupations
         """
-
         output_str = 65 * "-" + spc
 
         # write whether convergence cycle succesfully completed
@@ -275,11 +289,11 @@ class SCF:
     @staticmethod
     def write_final_energies(energy):
         """
-        Formatted KS energy information
+        Write formatted KS energy information (by component).
 
         Parameters
-        ---------
-        energy : obj
+        ----------
+        energy : staticKS.Energy
             the KS energy object
 
         Returns
@@ -287,7 +301,6 @@ class SCF:
         output_str : str
             formatted output string of energies by component
         """
-
         output_str = "Final energies (Ha)" + dblspc
         box_str = 45 * "-" + spc
         output_str += box_str
@@ -385,14 +398,14 @@ class SCF:
     @staticmethod
     def write_orb_info(orbitals):
         """
-        Formatted KS orbital information.
+        Write formatted KS orbital information.
 
         Information up to to the highest occupied level +1 (for both n and l)
         is included; remaining levels are truncated.
 
         Parameters
         ----------
-        orbitals : obj
+        orbitals : staticKS.Orbitals
             the KS orbitals object
 
         Returns
@@ -401,7 +414,6 @@ class SCF:
             a tuple containing formatted eigenvalue table eigval_tbl,
             and formatted occupation numbers table occnum_tbl
         """
-
         # loop over the spin dimensions
         eigval_tbl = ""
         occnum_tbl = ""
@@ -459,16 +471,15 @@ class SCF:
 
 def density_to_csv(rgrid, density):
     """
-    Write the density (on the r-grid) to file
+    Write the density (on the r-grid) to file.
 
     Parameters
     ----------
     rgrid : ndarray
         real-space grid
-    density : obj
+    density : staticKS.Density
         the KS density object
     """
-
     fname = "density.csv"
 
     if config.spindims == 2:
@@ -506,16 +517,15 @@ def density_to_csv(rgrid, density):
 
 def potential_to_csv(rgrid, potential):
     """
-    Write the potential (on the r-grid) to file
+    Write the potential (on the r-grid) to file.
 
     Parameters
     ----------
     rgrid : ndarray
         real-space grid
-    density : obj
+    density : staticKS.Potential
         the KS potential object
     """
-
     fname = "potential.csv"
 
     if config.spindims == 2:
@@ -554,7 +564,7 @@ def potential_to_csv(rgrid, potential):
 # timing wrapper
 def timing(f):
     """
-    Wrapper for timing functions
+    Generate timing information for given input function.
 
     Parameters
     ----------
