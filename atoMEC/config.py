@@ -1,6 +1,4 @@
-"""
-Configuration file to store global parameters
-"""
+"""Configuration file to store global parameters."""
 
 # physical constants
 mp_g = 1.6726219e-24  # mass of proton in grams
