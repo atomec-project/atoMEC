@@ -1,22 +1,22 @@
 """
 atoMEC: Average-atom code for matter under extreme conditions.
 
-Copyright (c) 2021 (in alphabetical order), Tim Callow, Attila Cangi, Eli Kraisler
+Copyright (c) 2021 (in alphabetical order), Tim Callow, Attila Cangi, Eli Kraisler.
 All rights reserved.
 
-atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
-Please see the README or the project wiki (https://atomec-project.github.io/atoMEC/) for more information.
+atoMEC is a python-based average-atom code for simulations of high energy density \
+phenomena such as in warm dense matter.
+Please see the README or the project wiki (https://atomec-project.github.io/atoMEC/) \
+for more information.
 
 Classes
 -------
-Atom : the main object for atoMEC calculations, containing information about physical material properties
+* :class:`Atom` : the main object for atoMEC calculations, containing information \
+about physical material properties
 """
 
 # standard libraries
 from math import pi
-
-# external libraries
-import mendeleev
 
 # global imports
 from . import config
@@ -27,10 +27,12 @@ from . import writeoutput
 
 class Atom:
     r"""
-    The principal object in atoMEC calculations which defines the physical material properties.
+    The principal object in atoMEC calculations which defines the physical material \
+    properties.
 
     The `Atom` contains key information about the physical properties of the material
-    such as temperature, density, and charge. It does not contain any information about approximations or choices of model.
+    such as temperature, density, and charge. It does not contain any information \
+    about approximations or choices of model.
 
     Parameters
     ----------
