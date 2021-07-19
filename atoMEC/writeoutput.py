@@ -37,7 +37,7 @@ def write_atomic_data(atom):
 
     Parameters
     ----------
-    atom : __init__.Atom
+    atom : atoMEC.Atom
         the main Atom object
 
     Returns
