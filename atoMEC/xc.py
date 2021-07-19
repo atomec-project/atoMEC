@@ -1,19 +1,20 @@
 """
-The xc module handles everything connected to the exchange-correlation energy and potential.
+The xc module handles everything connected to the exchange-correlation energy and \
+potential.
 
 Mostly it sets up inputs and makes appropriate calls to the libxc package.
 
 Classes
 -------
-XCFunc : handles atoMEC-defined functionals (not part of libxc package)
+* :class:`XCFunc` : handles atoMEC-defined functionals (not part of libxc package)
 
 Functions
 ---------
-check_xc_func : checks the xc func input is recognised and valid for atoMEC
-set_xc_func   : initializes the xc functional object
-v_xc          : returns the xc potential on the grid
-E_xc          : returns the xc energy
-calc_xc       : computes the xc energy or potential depending on arguments
+* :func:`check_xc_func` : check the xc func input is recognised and valid for atoMEC
+* :func:`set_xc_func`   : initialize the xc functional object
+* :func:`v_xc`          : return the xc potential on the grid
+* :func:`E_xc`          : return the xc energy
+* :func:`calc_xc`       : compute the xc energy or potential depending on arguments
 """
 
 # standard libs
