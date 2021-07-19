@@ -40,8 +40,8 @@ class ISModel:
 
     Parameters
     ----------
-    atom : :obj:`Atom`
-        The :obj:`Atom` object
+    atom : atoMEC.Atom
+        The main atom object
     xfunc_id : str or int, optional
         The exchange functional, can be the libxc code or string, \
         or special internal value
