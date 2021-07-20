@@ -200,8 +200,9 @@ class ISModel:
         write_info=True,
         verbosity=0,
     ):
+
         r"""
-        Run a self-consistent calculation to minimize the Kohn-Sham free energy functional.
+        Run a self-consistent calculation to minimize the Kohn-Sham free energy functional
 
         Parameters
         ----------
@@ -229,6 +230,15 @@ class ISModel:
             `maxscf`  (``int``)   : maximum number of scf cycles,
             `mixfrac` (``float``) : density mixing fraction
             }
+        force_bound : list of list of ints, optional
+            force certain levels to be bound, for example:
+            `force_bound = [0, 1, 0]`
+            forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be always
+            bound even if it has positive energy. This prevents convergence issues.
+        verbosity : int, optional
+            how much information is printed at each SCF cycle.
+            `verbosity=0` prints the total energy and convergence values (default).
+            `verbosity=1` prints the above and the KS eigenvalues and occupations.
         write_info : bool, optional
             prints the scf cycle and final parameters
             defaults to True

@@ -199,7 +199,8 @@ class Orbitals:
             )
 
         # force bound levels if there are convergence issues
-        if config.force_bound != []:
+
+        if config.force_bound:
             for levels in config.force_bound:
                 sp = levels[0]
                 l = levels[1]
