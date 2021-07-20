@@ -1,5 +1,5 @@
 """
-The xc module handles everything connected to the exchange-correlation energy and \
+The xc module handles everything connected to the exchange-correlation energy and
 potential.
 
 Mostly it sets up inputs and makes appropriate calls to the libxc package.

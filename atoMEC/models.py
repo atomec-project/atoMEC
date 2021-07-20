@@ -1,7 +1,7 @@
 """
 Contains models used to compute properties of interest from the Atom object.
 
-So far, the only model implemented is the ISModel. More models will be added in future\
+So far, the only model implemented is the ISModel. More models will be added in future
 releases.
 
 Classes
@@ -31,11 +31,11 @@ class ISModel:
     The implementation in atoMEC is based on the model described in the pre-print:
 
     T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).
-    First-principles derivation and properties of density-functional \
+    First-principles derivation and properties of density-functional
     average-atom models. arXiv preprint arXiv:2103.09928.
 
-    Parameter inputs for this model are related to particular choices of approximation,\
-    e.g. boundary conditions or exchange-correlation functional, rather than \
+    Parameter inputs for this model are related to particular choices of approximation,
+    e.g. boundary conditions or exchange-correlation functional, rather than
     fundamental physical properties.
 
     Parameters
@@ -43,7 +43,7 @@ class ISModel:
     atom : atoMEC.Atom
         The main atom object
     xfunc_id : str or int, optional
-        The exchange functional, can be the libxc code or string, \
+        The exchange functional, can be the libxc code or string,
         or special internal value
         Default : "lda_x"
     cfunc_id : str or int, optional
