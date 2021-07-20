@@ -704,7 +704,7 @@ class Energy:
         g_nls = orbs.lbound * (term1 + term2)
 
         # sum over all quantum numbers to get the total entropy
-        S_bound = np.sum(g_nls)
+        S_bound = -np.sum(g_nls)
 
         return S_bound
 
