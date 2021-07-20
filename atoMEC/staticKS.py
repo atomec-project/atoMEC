@@ -742,7 +742,7 @@ class Energy:
                         (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
                     )
 
-                    S_unbound -= prefac * mathtools.fd_int_complete(
+                    S_unbound -= prefac * mathtools.ideal_entropy_int(
                         config.mu[i], config.beta, 1.0
                     )
                 else:
