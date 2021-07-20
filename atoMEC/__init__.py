@@ -27,8 +27,7 @@ from . import writeoutput
 
 class Atom:
     r"""
-    The principal object in atoMEC calculations which defines the physical material \
-    properties.
+    The principal object in atoMEC calculations which defines the material properties.
 
     The `Atom` contains key information about the physical properties of the material
     such as temperature, density, and charge. It does not contain any information \

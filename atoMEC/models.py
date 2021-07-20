@@ -197,8 +197,7 @@ class ISModel:
         self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}, write_info=True
     ):
         r"""
-        Run a self-consistent calculation to minimize the Kohn-Sham free energy \
-        functional.
+        Run a self-consistent calculation to minimize the Kohn-Sham free energy.
 
         Parameters
         ----------
