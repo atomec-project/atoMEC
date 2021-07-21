@@ -662,7 +662,8 @@ class Energy:
         Currently only "ideal" (uniform) approximation for unbound electrons supported.
 
         .. math::
-            T_\mathrm{ub} = \sum_\sigma \frac{N^\sigma\times V}{\sqrt{2}\pi^2} I_{3/2}(\mu,\beta),
+            T_\mathrm{ub} = \sum_\sigma \frac{N^\sigma\times V}{\sqrt{2}\pi^2}\
+            I_{3/2}(\mu,\beta),
 
         where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
