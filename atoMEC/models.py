@@ -47,7 +47,8 @@ class ISModel:
         or special internal value
         Default : "lda_x"
     cfunc_id : str or int, optional
-        The correlation functional, can be the libxc code or string, or special internal value
+        The correlation functional, can be the libxc code or string, or special
+        internal value
         Default : "lda_c_pw"
     bc : str, optional
         The boundary condition, can be "dirichlet" or "neumann"
@@ -130,7 +131,7 @@ class ISModel:
 
     @property
     def spinmag(self):
-        """int: the spin magentization (difference in number of up/down spin electrons)."""
+        """int: the spin magentization (difference in no. up/down spin electrons)."""
         return self._spinmag
 
     @spinmag.setter
@@ -169,7 +170,7 @@ class ISModel:
 
     @property
     def bc(self):
-        """str: the boundary condition for solving the KS equations in a finite sphere."""
+        """str: boundary condition for solving the KS equations in a finite sphere."""
         return self._bc
 
     @bc.setter
@@ -258,6 +259,7 @@ class ISModel:
         orbs = staticKS.Orbitals(xgrid)
         # use coulomb potential as initial guess
         v_init = staticKS.Potential.calc_v_en(xgrid)
+        v_s_old = v_init  # initialize the old potential
         orbs.compute(v_init, init=True)
 
         # occupy orbitals
