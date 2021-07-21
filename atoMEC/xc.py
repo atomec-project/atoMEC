@@ -69,7 +69,7 @@ class XCFunc:
     # defines the xc functional name
     @property
     def _xc_func_name(self):
-        if self.__xc_func_name == None:
+        if self.__xc_func_name is None:
             if self._xc_code == "hartree":
                 self.__xc_name = "- hartree"
             elif self._xc_code == "None":
@@ -79,7 +79,7 @@ class XCFunc:
     # defines the number id for the xc functional
     @property
     def _number(self):
-        if self.__number == None:
+        if self.__number is None:
             if self._xc_code == "hartree":
                 self.__xc_number = -1
             elif self._xc_code == "None":
@@ -104,7 +104,7 @@ def check_xc_func(xc_code, id_supp):
         the xc functional name
     """
     # check the xc code is either a string descriptor or integer id
-    if isinstance(xc_code, (str, int)) == False:
+    if not isinstance(xc_code, (str, int)):
         err = 1
         xc_func_id = 0
 
