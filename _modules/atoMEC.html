@@ -157,36 +157,36 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">atoMEC: Average-atom code for matter under extreme conditions.</span>
 
-<span class="sd">Copyright (c) 2021 (in alphabetical order), Tim Callow, Attila Cangi, Eli Kraisler</span>
+<span class="sd">Copyright (c) 2021 (in alphabetical order), Tim Callow, Attila Cangi, Eli Kraisler.</span>
 <span class="sd">All rights reserved.</span>
 
-<span class="sd">atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.</span>
-<span class="sd">Please see the README or the project wiki (https://atomec-project.github.io/atoMEC/) for more information.</span>
+<span class="sd">atoMEC is a python-based average-atom code for simulations of high energy density \</span>
+<span class="sd">phenomena such as in warm dense matter.</span>
+<span class="sd">Please see the README or the project wiki (https://atomec-project.github.io/atoMEC/) \</span>
+<span class="sd">for more information.</span>
 
 <span class="sd">Classes</span>
 <span class="sd">-------</span>
-<span class="sd">Atom : the main object for atoMEC calculations, containing information about physical material properties</span>
+<span class="sd">* :class:`Atom` : the main object for atoMEC calculations, containing information \</span>
+<span class="sd">about physical material properties</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># standard libraries</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span>
 
-<span class="c1"># external libraries</span>
-<span class="kn">import</span> <span class="nn">mendeleev</span>
-
 <span class="c1"># global imports</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">check_inputs</span>
-<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">writeoutput</span>
 
 
 <div class="viewcode-block" id="Atom"><a class="viewcode-back" href="../api/atoMEC.html#atoMEC.Atom">[docs]</a><span class="k">class</span> <span class="nc">Atom</span><span class="p">:</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The principal object in atoMEC calculations which defines the physical material properties.</span>
+<span class="sd">    The principal object in atoMEC calculations which defines the material properties.</span>
 
 <span class="sd">    The `Atom` contains key information about the physical properties of the material</span>
-<span class="sd">    such as temperature, density, and charge. It does not contain any information about approximations or choices of model.</span>
+<span class="sd">    such as temperature, density, and charge. It does not contain any information \</span>
+<span class="sd">    about approximations or choices of model.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -306,7 +306,8 @@
     <span class="k">def</span> <span class="nf">nele</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;int: the number of electrons in the atom.</span>
 
-<span class="sd">        The total electron number is given by the sum of :obj:`at_chrg` and :obj:`charge`.</span>
+<span class="sd">        The total electron number is given by the sum of :obj:`at_chrg`</span>
+<span class="sd">        and :obj:`charge`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_chrg</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_charge</span>
 
@@ -346,12 +347,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the mass density of the material in units :math:`\mathrm{g\ cm}^{-3}`.&quot;&quot;&quot;</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the mass density of the material in :math:`\mathrm{g\ cm}^{-3}`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_density</span>
 
     <span class="nd">@density</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_density</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">Atom</span><span class="p">()</span><span class="o">.</span><span class="n">check_density</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_density</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_density</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">Atom</span><span class="p">()</span><span class="o">.</span><span class="n">check_density</span><span class="p">(</span><span class="n">density</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">Atom</span><span class="p">()</span><span class="o">.</span><span class="n">dens_to_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">r_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span>
         <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">**</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.0</span>

@@ -157,7 +157,15 @@
             
   <h1>Source code for atoMEC.convergence</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Module which handles convergence routines</span>
+<span class="sd">Contains classes and functions used to compute and store aspects related to convergence.</span>
+
+<span class="sd">So far, the only procedure requring convergence is the static SCF cycle. More will \</span>
+<span class="sd">be added in future.</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">* :class:`SCF` : holds the SCF convergence attributes and calculates them for the \</span>
+<span class="sd">given cycle</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># standard libraries</span>
@@ -172,7 +180,7 @@
 
 <div class="viewcode-block" id="SCF"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.convergence.SCF">[docs]</a><span class="k">class</span> <span class="nc">SCF</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Convergence attributes and functions related to SCF energy procedures</span>
+<span class="sd">    Convergence attributes and functions related to SCF energy procedures.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -189,8 +197,11 @@
 
 <div class="viewcode-block" id="SCF.check_conv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.convergence.SCF.check_conv">[docs]</a>    <span class="k">def</span> <span class="nf">check_conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">E_free</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="n">iscf</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes the changes in energy, integrated density and integrated potential</span>
-<span class="sd">        and checks if they satisfy the proscribed convergence parameters</span>
+<span class="sd">        Compute and check the changes in energy, integrated density and integrated \</span>
+<span class="sd">        potential.</span>
+
+<span class="sd">        If the convergence tolerances are all simultaneously satisfied, the `complete` \</span>
+<span class="sd">        variable returns `True` as the SCF cycle is complete.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -211,9 +222,7 @@
 <span class="sd">            `conv_energy` : ``float``,   `conv_rho` : ``ndarray``,</span>
 <span class="sd">            `conv_pot`    : ``ndarray``, `complete` : ``bool``</span>
 <span class="sd">            }</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">conv_vals</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># first update the energy, potential and density attributes</span>
@@ -233,7 +242,7 @@
         <span class="c1"># compute the change in density</span>
         <span class="n">dn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="c1"># integrate over sphere to return a number</span>
-        <span class="c1"># note we add a small constant to avoid errors if there are no electrons in one spin channel</span>
+        <span class="c1"># add a small constant to avoid errors if no electrons in one spin channel</span>
         <span class="n">conv_vals</span><span class="p">[</span><span class="s2">&quot;drho&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">nele</span> <span class="o">+</span> <span class="mf">1e-3</span><span class="p">)</span>
 
         <span class="c1"># reset the energy, potential and density attributes</span>

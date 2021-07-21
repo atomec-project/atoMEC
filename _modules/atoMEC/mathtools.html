@@ -156,12 +156,22 @@
            <div itemprop="articleBody">
             
   <h1>Source code for atoMEC.mathtools</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Low-level module containing various mathematical functions</span>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Low-level module containing miscalleneous mathematical functions.</span>
+
+<span class="sd">Functions</span>
+<span class="sd">---------</span>
+<span class="sd">* :func:`normalize_orbs`: normalize KS orbitals within defined sphere</span>
+<span class="sd">* :func:`int_sphere`: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`</span>
+<span class="sd">* :func:`laplace`: compute the second-order derivative :math:`d^2 y(x) / dx^2`</span>
+<span class="sd">* :func:`fermi_dirac`: compute the Fermi-Dirac occupation function for given order `n`</span>
+<span class="sd">* :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`</span>
+<span class="sd">* :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality</span>
+<span class="sd">* :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># standard libraries</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">exp</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
 <span class="c1"># external libraries</span>
@@ -174,7 +184,7 @@
 
 <div class="viewcode-block" id="normalize_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.normalize_orbs">[docs]</a><span class="k">def</span> <span class="nf">normalize_orbs</span><span class="p">(</span><span class="n">eigfuncs_x</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Normalizes the KS orbitals within the chosen sphere</span>
+<span class="sd">    Normalize the KS orbitals within the chosen sphere.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -188,7 +198,6 @@
 <span class="sd">    eigfuncs_x_norm : ndarray</span>
 <span class="sd">        The radial KS eigenfunctions normalized over the chosen sphere</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># initialize the normalized eigenfunctions</span>
     <span class="n">eigfuncs_x_norm</span> <span class="o">=</span> <span class="n">eigfuncs_x</span>
 
@@ -207,8 +216,9 @@
 
 <div class="viewcode-block" id="int_sphere"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.int_sphere">[docs]</a><span class="k">def</span> <span class="nf">int_sphere</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes integrals over the sphere defined by the logarithmic</span>
-<span class="sd">    grid provided as input</span>
+<span class="sd">    Compute integral over sphere defined by input grid.</span>
+
+<span class="sd">    The integral is performed on the logarithmic grid (see notes).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -228,7 +238,6 @@
 
 <span class="sd">    .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">func_int</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">fx</span>
     <span class="n">I_sph</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">func_int</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
@@ -237,8 +246,9 @@
 
 <div class="viewcode-block" id="laplace"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.laplace">[docs]</a><span class="k">def</span> <span class="nf">laplace</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes the second-order derivative :math:`d^2 y(x) / dx^2`</span>
-<span class="sd">    over the chosen axis of the input array</span>
+<span class="sd">    Compute the second-order derivative :math:`d^2 y(x) / dx^2`.</span>
+
+<span class="sd">    Derivative can be computed over any given axis.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -255,7 +265,6 @@
 <span class="sd">    grad2_y : ndarray</span>
 <span class="sd">        the laplacian of y</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># first compute the first-order gradient</span>
     <span class="n">grad1_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
 
@@ -267,7 +276,7 @@
 
 <div class="viewcode-block" id="fermi_dirac"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.fermi_dirac">[docs]</a><span class="k">def</span> <span class="nf">fermi_dirac</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes the Fermi-Dirac function, see notes</span>
+<span class="sd">    Compute the Fermi-Dirac function, see notes for functional form.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -289,9 +298,9 @@
 <span class="sd">    -----</span>
 <span class="sd">    The FD function is defined as:</span>
 
-<span class="sd">    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+\beta(\epsilon - \mu))}</span>
+<span class="sd">    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+</span>
+<span class="sd">        \beta(\epsilon - \mu))}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># dfn the exponential function</span>
     <span class="c1"># ignore warnings here</span>
     <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">over</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
@@ -305,7 +314,7 @@
 
 <div class="viewcode-block" id="fd_int_complete"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.fd_int_complete">[docs]</a><span class="k">def</span> <span class="nf">fd_int_complete</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Computes complete Fermi-Dirac integrals (see notes)</span>
+<span class="sd">    Compute complete Fermi-Dirac integral for given order (see notes for function form).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -327,11 +336,11 @@
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        I_{n}(\mu,\beta)=\int_0^\infty\mathrm{d}\epsilon\ \epsilon^{n/2}f_{fd}(\mu,\epsilon,\beta)</span>
+<span class="sd">        I_{n}(\mu,\beta)=\int_0^\infty\mathrm{d}\epsilon\ \epsilon^{n/2}f_{fd}</span>
+<span class="sd">        (\mu,\epsilon,\beta)</span>
 
 <span class="sd">    where n is the order of the integral</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># use scipy quad integration routine</span>
     <span class="n">limup</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
@@ -345,12 +354,13 @@
 
 <div class="viewcode-block" id="chem_pot"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.chem_pot">[docs]</a><span class="k">def</span> <span class="nf">chem_pot</span><span class="p">(</span><span class="n">orbs</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Determines the chemical potential by enforcing charge neutrality (see notes)</span>
-<span class="sd">    Uses scipy.optimize.root_scalar with brentq implementation</span>
+<span class="sd">    Determine the chemical potential by enforcing charge neutrality (see notes).</span>
+
+<span class="sd">    Uses scipy.optimize.root_scalar with brentq implementation.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    orbs : object(staticKS.Orbitals)</span>
+<span class="sd">    orbs : staticKS.Orbitals</span>
 <span class="sd">        the orbitals object</span>
 
 <span class="sd">    Returns</span>
@@ -362,11 +372,11 @@
 <span class="sd">    -----</span>
 <span class="sd">    Finds the roots of equation</span>
 
-<span class="sd">    .. math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e = 0.</span>
+<span class="sd">    .. math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +</span>
+<span class="sd">        N_{ub}(\beta,\mu) - N_e = 0.</span>
 
 <span class="sd">    The number of unbound electrons :math:`N_{ub}` depends on the implementation choice.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">mu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span>
     <span class="n">mu0</span> <span class="o">=</span> <span class="n">mu</span>  <span class="c1"># set initial guess to existing value of chem pot</span>
 
@@ -392,8 +402,9 @@
 
 <div class="viewcode-block" id="f_root_id"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.f_root_id">[docs]</a><span class="k">def</span> <span class="nf">f_root_id</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">lbound</span><span class="p">,</span> <span class="n">nele</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Functional input for the chemical potential root finding function</span>
-<span class="sd">    with the ideal approximation for unbound electrons (see notes)</span>
+<span class="sd">    Functional input for the chemical potential root finding function (ideal approx).</span>
+
+<span class="sd">    See notes for function returned, the ideal approximation is used for free electrons.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -416,9 +427,9 @@
 <span class="sd">    -----</span>
 <span class="sd">    The returned function is</span>
 
-<span class="sd">    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e</span>
+<span class="sd">    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +</span>
+<span class="sd">        N_{ub}(\beta,\mu) - N_e</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># caluclate the contribution from the bound electrons</span>
     <span class="k">if</span> <span class="n">nele</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">occnums</span> <span class="o">=</span> <span class="n">lbound</span> <span class="o">*</span> <span class="n">fermi_dirac</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>

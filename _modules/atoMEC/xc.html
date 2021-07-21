@@ -157,21 +157,23 @@
             
   <h1>Source code for atoMEC.xc</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">The xc module handles everything connected to the exchange-correlation energy and potential.</span>
+<span class="sd">The xc module calculates exchange-correlation energies and potentials.</span>
 
 <span class="sd">Mostly it sets up inputs and makes appropriate calls to the libxc package.</span>
+<span class="sd">It also includes a class for customized xc-functionals and checks the</span>
+<span class="sd">validity of inputs.</span>
 
 <span class="sd">Classes</span>
 <span class="sd">-------</span>
-<span class="sd">XCFunc : handles atoMEC-defined functionals (not part of libxc package)</span>
+<span class="sd">* :class:`XCFunc` : handles atoMEC-defined functionals (not part of libxc package)</span>
 
 <span class="sd">Functions</span>
 <span class="sd">---------</span>
-<span class="sd">check_xc_func : checks the xc func input is recognised and valid for atoMEC</span>
-<span class="sd">set_xc_func   : initializes the xc functional object</span>
-<span class="sd">v_xc          : returns the xc potential on the grid</span>
-<span class="sd">E_xc          : returns the xc energy</span>
-<span class="sd">calc_xc       : computes the xc energy or potential depending on arguments</span>
+<span class="sd">* :func:`check_xc_func` : check the xc func input is recognised and valid for atoMEC</span>
+<span class="sd">* :func:`set_xc_func`   : initialize the xc functional object</span>
+<span class="sd">* :func:`v_xc`          : return the xc potential on the grid</span>
+<span class="sd">* :func:`E_xc`          : return the xc energy</span>
+<span class="sd">* :func:`calc_xc`       : compute the xc energy or potential depending on arguments</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># standard libs</span>
@@ -225,7 +227,7 @@
     <span class="c1"># defines the xc functional name</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_xc_func_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__xc_func_name</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__xc_func_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">==</span> <span class="s2">&quot;hartree&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__xc_name</span> <span class="o">=</span> <span class="s2">&quot;- hartree&quot;</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
@@ -235,7 +237,7 @@
     <span class="c1"># defines the number id for the xc functional</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__number</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">==</span> <span class="s2">&quot;hartree&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__xc_number</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xc_code</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
@@ -260,9 +262,8 @@
 <span class="sd">        the xc functional name</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># check the xc code is either a string descriptor or integer id</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
         <span class="n">err</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">xc_func_id</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="c1"># when xc code is one of the special atoMEC defined functionals</span>
     <span class="k">if</span> <span class="n">xc_code</span> <span class="ow">in</span> <span class="n">xc_special_codes</span><span class="p">:</span>

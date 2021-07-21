@@ -156,12 +156,22 @@
            <div itemprop="articleBody">
             
   <h1>Source code for atoMEC.models</h1><div class="highlight"><pre>
-<span></span><span class="c1"># import standard packages</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contains models used to compute properties of interest from the Atom object.</span>
+
+<span class="sd">So far, the only model implemented is the ISModel. More models will be added in future</span>
+<span class="sd">releases.</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">* :class:`ISModel` : Ion-sphere type model, static properties such as KS orbitals, \</span>
+<span class="sd">density and energy are directly computed</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># import standard packages</span>
 
 <span class="c1"># import external packages</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">mendeleev</span> <span class="kn">import</span> <span class="n">element</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span>
 
 <span class="c1"># import internal packages</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">check_inputs</span>
@@ -173,6 +183,57 @@
 
 
 <div class="viewcode-block" id="ISModel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel">[docs]</a><span class="k">class</span> <span class="nc">ISModel</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The ISModel represents a particular family of AA models known as ion-sphere models.</span>
+
+<span class="sd">    The implementation in atoMEC is based on the model described in [1]_.</span>
+
+<span class="sd">    Parameter inputs for this model are related to particular choices of approximation,</span>
+<span class="sd">    e.g. boundary conditions or exchange-correlation functional, rather than</span>
+<span class="sd">    fundamental physical properties.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atom : atoMEC.Atom</span>
+<span class="sd">        The main atom object</span>
+<span class="sd">    xfunc_id : str or int, optional</span>
+<span class="sd">        The exchange functional, can be the libxc code or string,</span>
+<span class="sd">        or special internal value</span>
+<span class="sd">        Default : &quot;lda_x&quot;</span>
+<span class="sd">    cfunc_id : str or int, optional</span>
+<span class="sd">        The correlation functional, can be the libxc code or string, or special</span>
+<span class="sd">        internal value</span>
+<span class="sd">        Default : &quot;lda_c_pw&quot;</span>
+<span class="sd">    bc : str, optional</span>
+<span class="sd">        The boundary condition, can be &quot;dirichlet&quot; or &quot;neumann&quot;</span>
+<span class="sd">        Default : &quot;dirichlet&quot;</span>
+<span class="sd">    spinpol : bool, optional</span>
+<span class="sd">        Whether to run a spin-polarized calculation</span>
+<span class="sd">        Default : False</span>
+<span class="sd">    spinmag : int, optional</span>
+<span class="sd">        The spin-magentization</span>
+<span class="sd">        Default: 0 for nele even, 1 for nele odd</span>
+<span class="sd">    unbound : str, optional</span>
+<span class="sd">        The way in which the unbound electron density is computed</span>
+<span class="sd">        Default : &quot;ideal&quot;</span>
+<span class="sd">    write_info : bool, optional</span>
+<span class="sd">        Writes information about the model parameters</span>
+<span class="sd">        Default : True</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nele_tot: int</span>
+<span class="sd">        total number of electrons</span>
+<span class="sd">    nele: array_like</span>
+<span class="sd">        number of electrons per spin channel (or total if spin unpolarized)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).</span>
+<span class="sd">       First-principles derivation and properties of density-functional</span>
+<span class="sd">       average-atom models, `arXiv:2103.09928 &lt;https://arxiv.org/abs/2103.09928&gt;`__.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">atom</span><span class="p">,</span>
@@ -184,52 +245,6 @@
         <span class="n">unbound</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">unbound</span><span class="p">,</span>
         <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Defines the parameters used for an energy calculation.</span>
-<span class="sd">        These are choices for the theoretical model, not numerical parameters for implementation</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        atom : obj</span>
-<span class="sd">            The atom object</span>
-<span class="sd">        xfunc : Union[str,int], optional</span>
-<span class="sd">            The exchange functional, can be the libxc code or string, or special internal value</span>
-<span class="sd">            Default : &quot;lda_x&quot;</span>
-<span class="sd">        cfunc : Union[str,int], optional</span>
-<span class="sd">            The correlation functional, can be the libxc code or string, or special internal value</span>
-<span class="sd">            Default : &quot;lda_c_pw&quot;</span>
-<span class="sd">        bc : str, optional</span>
-<span class="sd">            The boundary condition, can be &quot;dirichlet&quot; or &quot;neumann&quot;</span>
-<span class="sd">            Default : &quot;dirichlet&quot;</span>
-<span class="sd">        spinpol : bool, optional</span>
-<span class="sd">            Whether to run a spin-polarized calculation</span>
-<span class="sd">            Default : False</span>
-<span class="sd">        spinmag : int, optional</span>
-<span class="sd">            The spin-magentization</span>
-<span class="sd">            Default: 0 for nele even, 1 for nele odd</span>
-<span class="sd">        unbound : str, optional</span>
-<span class="sd">            The way in which the unbound electron density is computed</span>
-<span class="sd">            Default : &quot;ideal&quot;</span>
-<span class="sd">        write_info : bool, optional</span>
-<span class="sd">            Writes information about the model parameters</span>
-<span class="sd">            Default : True</span>
-<span class="sd">        Attributes</span>
-<span class="sd">        ----------</span>
-<span class="sd">        xfunc : str</span>
-<span class="sd">            The (short-hand) name of the exchange functional</span>
-<span class="sd">        cfunc : str</span>
-<span class="sd">            The (short-hand) name of the correlation functional</span>
-<span class="sd">        bc : str</span>
-<span class="sd">            The boundary condition</span>
-<span class="sd">        spinpol : bool</span>
-<span class="sd">            Whether calculation will be spin-polarized</span>
-<span class="sd">        nele : ndarray</span>
-<span class="sd">            Number of electrons in each spin channel (total if spinpol=False)</span>
-<span class="sd">        unbound : str</span>
-<span class="sd">            The treatment of unbound electrons</span>
-<span class="sd">        info : str</span>
-<span class="sd">            Information about all the model parameters</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Input variables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nele_tot</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">nele</span>
@@ -246,6 +261,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">spinpol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;bool: Whether calculation will be spin-polarized.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spinpol</span>
 
     <span class="nd">@spinpol</span><span class="o">.</span><span class="n">setter</span>
@@ -275,6 +291,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">spinmag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;int: the spin magentization (difference in no. up/down spin electrons).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spinmag</span>
 
     <span class="nd">@spinmag</span><span class="o">.</span><span class="n">setter</span>
@@ -291,6 +308,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xfunc_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;str: exchange functional shorthand id.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xfunc_id</span>
 
     <span class="nd">@xfunc_id</span><span class="o">.</span><span class="n">setter</span>
@@ -301,6 +319,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">cfunc_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;str: correlation functional shorthand id.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cfunc_id</span>
 
     <span class="nd">@cfunc_id</span><span class="o">.</span><span class="n">setter</span>
@@ -311,6 +330,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">bc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;str: boundary condition for solving the KS equations in a finite sphere.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bc</span>
 
     <span class="nd">@bc</span><span class="o">.</span><span class="n">setter</span>
@@ -320,6 +340,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">unbound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;str: the treatment of unbound (free) electrons.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span>
 
     <span class="nd">@unbound</span><span class="o">.</span><span class="n">setter</span>
@@ -329,15 +350,15 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;str: formatted description of the ISModel attributes.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">write_ISModel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ISModel.CalcEnergy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel.CalcEnergy">[docs]</a>    <span class="nd">@writeoutput</span><span class="o">.</span><span class="n">timing</span>
     <span class="k">def</span> <span class="nf">CalcEnergy</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">grid_params</span><span class="o">=</span><span class="p">{},</span> <span class="n">conv_params</span><span class="o">=</span><span class="p">{},</span> <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span> <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
-
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Run a self-consistent calculation to minimize the Kohn-Sham free energy functional</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run a self-consistent calculation to minimize the Kohn-Sham free energy.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -371,10 +392,15 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        energy : obj</span>
-<span class="sd">            Total energy object</span>
+<span class="sd">        output_dict : dict</span>
+<span class="sd">            dictionary containing final KS quantities as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `energy` (:obj:`staticKS.Energy`)       : total energy object,</span>
+<span class="sd">            `density` (:obj:`staticKS.Density`)     : density object,</span>
+<span class="sd">            `potential` (:obj:`staticKS.Potential`)  : potential object,</span>
+<span class="sd">            `orbitals` (:obj:`staticKS.Orbitals`)    : orbitals object</span>
+<span class="sd">            }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># boundary cond, unbound electrons, xc func objects</span>
         <span class="n">config</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span>
         <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unbound</span>
@@ -393,6 +419,7 @@
         <span class="n">orbs</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Orbitals</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
         <span class="c1"># use coulomb potential as initial guess</span>
         <span class="n">v_init</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">v_s_old</span> <span class="o">=</span> <span class="n">v_init</span>  <span class="c1"># initialize the old potential</span>
         <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_init</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># occupy orbitals</span>
@@ -460,9 +487,6 @@
         <span class="p">}</span>
 
         <span class="k">return</span> <span class="n">output_dict</span></div></div>
-
-
-<span class="c1"># scf_string = self.print_scf_complete(conv_vals)</span>
 </pre></div>
 
            </div>

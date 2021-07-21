@@ -157,7 +157,19 @@
             
   <h1>Source code for atoMEC.check_inputs</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This module checks inputs for errors</span>
+<span class="sd">The check_inputs module checks the validity of all user-defined inputs.</span>
+
+<span class="sd">If inputs are invalid, InputError exceptions are raised. It also assigns</span>
+<span class="sd">appropriate default inputs where none are supplied.</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">* :class:`Atom` : Check the inputs from the :class:`atoMEC.Atom` object.</span>
+<span class="sd">* :class:`ISModel` : Check the inputs from the :obj:`atoMEC.models.ISModel` class.</span>
+<span class="sd">* :class:`EnergyCalcs` : Check the inputs from the\</span>
+<span class="sd"> :func:`atoMEC.models.ISModel.CalcEnergy` function.</span>
+<span class="sd">* :class:`InputError` : Exit atoMEC and print relevant input error message.</span>
+<span class="sd">* :class:`InputWarning` : Warn if inputs are considered outside of typical ranges.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># standard python packages</span>
@@ -181,18 +193,27 @@
 
 
 <div class="viewcode-block" id="Atom"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom">[docs]</a><span class="k">class</span> <span class="nc">Atom</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Checks the inputs from the BuildAtom class</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Check the inputs from the Atom class.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Atom.check_species"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_species">[docs]</a>    <span class="k">def</span> <span class="nf">check_species</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">species</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks the species is a string and corresponds to an actual element</span>
+<span class="sd">        Check the species is a string and corresponds to an actual element.</span>
 
-<span class="sd">        Inputs:</span>
-<span class="sd">        - species (str)    : chemical symbol for atomic species</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        species : str</span>
+<span class="sd">            chemical symbol for atomic species</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.species_error</span>
+<span class="sd">            Chemical symbol is not valid</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">species_error</span><span class="p">(</span><span class="s2">&quot;element is not a string&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -201,6 +222,24 @@
                 <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">species_error</span><span class="p">(</span><span class="s2">&quot;invalid element&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Atom.check_units_temp"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_units_temp">[docs]</a>    <span class="k">def</span> <span class="nf">check_units_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units_temp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the units of temperature are accepted.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        units_temp : str</span>
+<span class="sd">            units of temperature</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        units_temp : str</span>
+<span class="sd">            units of temperature (if valid input) converted to lowercase</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.temp_error</span>
+<span class="sd">            unit of temperature is not accepted, i.e. not one of &quot;ha&quot;, &quot;ev&quot; or &quot;k&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">units_accepted</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ha&quot;</span><span class="p">,</span> <span class="s2">&quot;ev&quot;</span><span class="p">,</span> <span class="s2">&quot;k&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">units_temp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">units_accepted</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">temp_error</span><span class="p">(</span><span class="s2">&quot;units of temperature are not recognised&quot;</span><span class="p">)</span>
@@ -208,9 +247,27 @@
 
 <div class="viewcode-block" id="Atom.check_temp"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_temp">[docs]</a>    <span class="k">def</span> <span class="nf">check_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">units_temp</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks the temperature is a float within a sensible range</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Check the temperature is a float within a sensible range.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        temp : float</span>
+<span class="sd">             temperature (in any accepted units)</span>
+<span class="sd">        units_temp : str</span>
+<span class="sd">            units of temperature</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        temp : float</span>
+<span class="sd">            temperature in units of Hartree</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.temp_error</span>
+<span class="sd">            input temperature is not a positive number</span>
+<span class="sd">        InputWarning.temp_warning</span>
+<span class="sd">            input temperature is not inside a well-tested range</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">intc</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">temp_error</span><span class="p">(</span><span class="s2">&quot;temperature is not a number&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -233,21 +290,73 @@
 
 <div class="viewcode-block" id="Atom.check_charge"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_charge">[docs]</a>    <span class="k">def</span> <span class="nf">check_charge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">charge</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks the charge is an integer</span>
+<span class="sd">        Check the net charge is an integer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        charge : int</span>
+<span class="sd">            the net charge</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        charge : int</span>
+<span class="sd">            the net charge (if input valid)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.charge_error</span>
+<span class="sd">            if charge is not an integer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">charge</span><span class="p">,</span> <span class="n">intc</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">charge</span><span class="p">,</span> <span class="n">intc</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">charge_error</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">charge</span></div>
 
 <div class="viewcode-block" id="Atom.check_units_radius"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_units_radius">[docs]</a>    <span class="k">def</span> <span class="nf">check_units_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units_radius</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the units of radius are accepted.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        units_radius : str</span>
+<span class="sd">            units of radius</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        units_radius : str</span>
+<span class="sd">            units of radius (if accepted) converted to lowercase</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.density_error</span>
+<span class="sd">            if units of radius are not one of &quot;bohr&quot;, &quot;angstrom&quot; or &quot;ang&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">radius_units_accepted</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;bohr&quot;</span><span class="p">,</span> <span class="s2">&quot;angstrom&quot;</span><span class="p">,</span> <span class="s2">&quot;ang&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">units_radius</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">radius_units_accepted</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">density_error</span><span class="p">(</span><span class="s2">&quot;Radius units not recognised&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">units_radius</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
+        <span class="n">units_radius</span> <span class="o">=</span> <span class="n">units_radius</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">units_radius</span></div>
 
 <div class="viewcode-block" id="Atom.check_units_density"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_units_density">[docs]</a>    <span class="k">def</span> <span class="nf">check_units_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units_density</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the units of density are accepted.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        units_density : str</span>
+<span class="sd">            units of density</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        units_density : str</span>
+<span class="sd">            units of density (if accepted) converted to lowercase</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.density_error</span>
+<span class="sd">            if units of density are not one of &quot;g/cm3&quot; or &quot;gcm3&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">density_units_accepted</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;g/cm3&quot;</span><span class="p">,</span> <span class="s2">&quot;gcm3&quot;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">units_density</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">density_units_accepted</span><span class="p">:</span>
@@ -256,7 +365,26 @@
         <span class="k">return</span> <span class="n">units_density</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Atom.check_radius"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_radius">[docs]</a>    <span class="k">def</span> <span class="nf">check_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">units_radius</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the Wigner-Seitz radius is valid and reasonable.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        radius : float or int</span>
+<span class="sd">            Wigner-Seitz radius (in input units)</span>
+<span class="sd">        units_radius : str</span>
+<span class="sd">            input units of radius</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        radius : float</span>
+<span class="sd">             Wigner-Seitz radius in Hartree units (Bohr)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.density_error</span>
+<span class="sd">            if the radius is not a positive number &gt; 0.1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">intc</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">density_error</span><span class="p">(</span><span class="s2">&quot;Radius is not a number&quot;</span><span class="p">)</span>
 
@@ -269,7 +397,25 @@
                 <span class="p">)</span>
         <span class="k">return</span> <span class="n">radius</span></div>
 
-<div class="viewcode-block" id="Atom.check_density"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_density">[docs]</a>    <span class="k">def</span> <span class="nf">check_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">units_density</span><span class="p">):</span>
+<div class="viewcode-block" id="Atom.check_density"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_density">[docs]</a>    <span class="k">def</span> <span class="nf">check_density</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the mass density is valid and reasonable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        density : float or int</span>
+<span class="sd">            mass density (in :math:`\mathrm{g\ cm}^{-3}`)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        density : float</span>
+<span class="sd">            mass density (in :math:`\mathrm{g\ cm}^{-3}`) if input accepted</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.density_error</span>
+<span class="sd">            if the density is not a positive number &lt;= 100</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">intc</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">density_error</span><span class="p">(</span><span class="s2">&quot;Density is not a number&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -282,15 +428,35 @@
 
 <div class="viewcode-block" id="Atom.check_rad_dens_init"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.check_rad_dens_init">[docs]</a>    <span class="k">def</span> <span class="nf">check_rad_dens_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">,</span> <span class="n">radius</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">units_radius</span><span class="p">,</span> <span class="n">units_density</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks that the density or radius is specified</span>
+<span class="sd">        Check that at least one of radius or density is specified and reasonable.</span>
 
-<span class="sd">        Inputs:</span>
-<span class="sd">        - atom (object)     : atom object</span>
-<span class="sd">        - density (float)   : material density</span>
-<span class="sd">        - radius (float)    : voronoi sphere radius</span>
+<span class="sd">        In case both are specified, check they are compatible.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Atom : atoMEC.Atom</span>
+<span class="sd">            the main Atom object</span>
+<span class="sd">        radius : float or int</span>
+<span class="sd">            Wigner-Seitz radius</span>
+<span class="sd">        density : float or int</span>
+<span class="sd">            mass density</span>
+<span class="sd">        units_radius : str</span>
+<span class="sd">            units of radius</span>
+<span class="sd">        units_density : str</span>
+<span class="sd">            units of density</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        radius, density : tuple of floats</span>
+<span class="sd">            the Wigner-Seitz radius and mass density if inputs are valid</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.density_error</span>
+<span class="sd">            if neither density nor radius is not given, or if one is invalid,</span>
+<span class="sd">            or if both are given and they are incompatible</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">intc</span><span class="p">))</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">intc</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">density_error</span><span class="p">(</span><span class="s2">&quot;Density is not a number&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">intc</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">density_error</span><span class="p">(</span><span class="s2">&quot;Radius is not a number&quot;</span><span class="p">)</span>
@@ -315,7 +481,8 @@
                 <span class="n">density_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius_to_dens</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">abs</span><span class="p">((</span><span class="n">density_test</span> <span class="o">-</span> <span class="n">density</span><span class="p">)</span> <span class="o">/</span> <span class="n">density</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">5e-2</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">density_error</span><span class="p">(</span>
-                        <span class="s2">&quot;Both radius and density are specified but they are not compatible&quot;</span>
+                        <span class="s2">&quot;Both radius and density are specified but they are not&quot;</span>
+                        <span class="s2">&quot; compatible&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">density</span> <span class="o">=</span> <span class="n">density_test</span>
@@ -328,9 +495,20 @@
 
 <div class="viewcode-block" id="Atom.radius_to_dens"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.radius_to_dens">[docs]</a>    <span class="k">def</span> <span class="nf">radius_to_dens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Convert the Voronoi sphere radius to a mass density</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Convert the Voronoi sphere radius to a mass density.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        atom : atoMEC.Atom</span>
+<span class="sd">            the main Atom object</span>
+<span class="sd">        radius : float</span>
+<span class="sd">            the Wigner-Seitz radius</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        density : float</span>
+<span class="sd">            the mass density</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># radius in cm</span>
         <span class="n">rad_cm</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">/</span> <span class="n">unitconv</span><span class="o">.</span><span class="n">cm_to_bohr</span>
         <span class="c1"># volume in cm</span>
@@ -344,9 +522,20 @@
 
 <div class="viewcode-block" id="Atom.dens_to_radius"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.Atom.dens_to_radius">[docs]</a>    <span class="k">def</span> <span class="nf">dens_to_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atom</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Convert the material density to Voronoi sphere radius</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Convert the mass density to a Wigner-Seitz radius.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        atom : atoMEC.Atom</span>
+<span class="sd">            the main Atom object</span>
+<span class="sd">        density : float</span>
+<span class="sd">            the mass density</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        radius : float</span>
+<span class="sd">            the Wigner-Seitz radius</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># compute atomic mass in g</span>
         <span class="n">mass_g</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">mp_g</span> <span class="o">*</span> <span class="n">atom</span><span class="o">.</span><span class="n">at_mass</span>
         <span class="c1"># compute volume and radius in cm^3/cm</span>
@@ -359,15 +548,30 @@
 
 
 <div class="viewcode-block" id="ISModel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel">[docs]</a><span class="k">class</span> <span class="nc">ISModel</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Checks the inputs for the IS model class</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Check the inputs for the IS model class.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ISModel.check_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel.check_xc">[docs]</a>    <span class="k">def</span> <span class="nf">check_xc</span><span class="p">(</span><span class="n">xc_func</span><span class="p">,</span> <span class="n">xc_type</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        checks the exchange and correlation functionals are defined by libxc</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Check the exchange and correlation functionals are accepted.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xc_func : str or int</span>
+<span class="sd">            the libxc name or id of the x/c functional</span>
+<span class="sd">        xc_type : str</span>
+<span class="sd">            type i.e. &quot;exchange&quot; or &quot;correlation&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xc_func : str</span>
+<span class="sd">            the libxc name of the x/c functional (if valid input)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.xc_error</span>
+<span class="sd">            if xc functional is not a valid libxc input or is not supported</span>
+<span class="sd">            by the current version of atoMEC</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># supported families of libxc functional by name</span>
         <span class="n">names_supp</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lda&quot;</span><span class="p">]</span>
         <span class="c1"># supported families of libxc functional by id</span>
@@ -378,45 +582,44 @@
 
         <span class="k">if</span> <span class="n">err_xc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">xc_error</span><span class="p">(</span>
-                <span class="n">xctype</span> <span class="o">+</span> <span class="s2">&quot; functional is not an id (int) or name (str)&quot;</span>
+                <span class="n">xc_type</span> <span class="o">+</span> <span class="s2">&quot; functional is not an id (int) or name (str)&quot;</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="n">err_xc</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">xc_error</span><span class="p">(</span>
                 <span class="n">xc_type</span>
-                <span class="o">+</span> <span class="s2">&quot; functional is not a valid name or id.</span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">                Please choose from the valid inputs listed here: </span><span class="se">\n\</span>
-<span class="s2">                https://www.tddft.org/programs/libxc/functionals/&quot;</span>
+                <span class="o">+</span> <span class="s2">&quot; functional is not a valid name or id.</span><span class="se">\n</span><span class="s2">                 Please&quot;</span>
+                <span class="s2">&quot; choose from the valid inputs listed here: </span><span class="se">\n</span><span class="s2">               &quot;</span>
+                <span class="s2">&quot; https://www.tddft.org/programs/libxc/functionals/&quot;</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="n">err_xc</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">xc_error</span><span class="p">(</span>
                 <span class="s2">&quot;This family of &quot;</span>
                 <span class="o">+</span> <span class="n">xc_type</span>
-                <span class="o">+</span> <span class="s2">&quot; functionals is not yet supported by atoMEC. </span><span class="se">\n\</span>
-<span class="s2">                Supported families so far are: &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">names_supp</span><span class="p">)</span>
+                <span class="o">+</span> <span class="s2">&quot; functionals is not yet supported by atoMEC. </span><span class="se">\n</span><span class="s2">               &quot;</span>
+                <span class="s2">&quot; Supported families so far are: &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">names_supp</span><span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">xc_func</span></div>
 
 <div class="viewcode-block" id="ISModel.check_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel.check_unbound">[docs]</a>    <span class="k">def</span> <span class="nf">check_unbound</span><span class="p">(</span><span class="n">unbound</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks the input for the unbound electrons</span>
+<span class="sd">        Check the unbound electron input is accepted.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        unbound : str</span>
 <span class="sd">            defines the treatment of the unbound electrons</span>
 
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">            InputError</span>
-
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        str:</span>
-<span class="sd">            description of unbound electron treatment</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        unbound : str</span>
+<span class="sd">            treatment of unbound electrons (if input valid)</span>
 
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.unbound_error</span>
+<span class="sd">            if the treatment of unbound electrons is not a valid input</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># list all possible treatments for unbound electrons</span>
         <span class="n">unbound_permitted</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ideal&quot;</span><span class="p">]</span>
 
@@ -430,9 +633,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">unbound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unbound_permitted</span><span class="p">:</span>
                 <span class="n">err_msg</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s2">&quot;Treatment of unbound electrons not recognised. </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">                Allowed treatments are: &quot;</span>
-                    <span class="o">+</span> <span class="p">[</span><span class="n">ub</span> <span class="k">for</span> <span class="n">ub</span> <span class="ow">in</span> <span class="n">unbound_permitted</span><span class="p">]</span>
+                    <span class="s2">&quot;Treatment of unbound electrons not recognised. </span><span class="se">\n</span><span class="s2">                &quot;</span>
+                    <span class="s2">&quot; Allowed treatments are: &quot;</span> <span class="o">+</span> <span class="p">[</span><span class="n">ub</span> <span class="k">for</span> <span class="n">ub</span> <span class="ow">in</span> <span class="n">unbound_permitted</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">unbound_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
 
@@ -440,23 +642,24 @@
 
 <div class="viewcode-block" id="ISModel.check_bc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel.check_bc">[docs]</a>    <span class="k">def</span> <span class="nf">check_bc</span><span class="p">(</span><span class="n">bc</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks the boundary condition is permitted</span>
+<span class="sd">        Check the boundary condition is accepted.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        bc : str</span>
-<span class="sd">            defines the boundary condition used to solve KS eqns</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        InputError</span>
+<span class="sd">            the boundary condition used to solve KS eqns</span>
+<span class="sd">            (can be either &quot;dirichlet&quot; or &quot;neumann&quot;)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        str:</span>
-<span class="sd">            boundary condition used to solve KS eqns</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        bc : str</span>
+<span class="sd">            the boundary condition used to solve KS eqns (lowercase)</span>
 
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.bc_error</span>
+<span class="sd">            if the boundary condition is not recognised</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># list permitted boundary conditions</span>
         <span class="n">bcs_permitted</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dirichlet&quot;</span><span class="p">,</span> <span class="s2">&quot;neumann&quot;</span><span class="p">]</span>
 
@@ -468,9 +671,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">bc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">bcs_permitted</span><span class="p">:</span>
                 <span class="n">err_msg</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s2">&quot;Boundary condition is not recognised. </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
-<span class="s2">                Allowed boundary conditions are: &quot;</span>
-                    <span class="o">+</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bcs_permitted</span><span class="p">]</span>
+                    <span class="s2">&quot;Boundary condition is not recognised. </span><span class="se">\n</span><span class="s2">                 Allowed&quot;</span>
+                    <span class="s2">&quot; boundary conditions are: &quot;</span> <span class="o">+</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bcs_permitted</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">bc_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
 
@@ -478,10 +680,12 @@
 
 <div class="viewcode-block" id="ISModel.check_spinpol"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel.check_spinpol">[docs]</a>    <span class="k">def</span> <span class="nf">check_spinpol</span><span class="p">(</span><span class="n">spinpol</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the spin polarization is a boolean.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        spinpol : bool</span>
-<span class="sd">           spin polarized calculation</span>
+<span class="sd">           whether spin polarized calculation is done</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -490,9 +694,9 @@
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
-<span class="sd">        InputError</span>
+<span class="sd">        InputError.spinpol_error</span>
+<span class="sd">            if the spin polarization is not a bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spinpol</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">spinpol_error</span><span class="p">(</span><span class="s2">&quot;Spin polarization is not of type bool&quot;</span><span class="p">)</span>
 
@@ -500,9 +704,28 @@
 
 <div class="viewcode-block" id="ISModel.check_spinmag"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel.check_spinmag">[docs]</a>    <span class="k">def</span> <span class="nf">check_spinmag</span><span class="p">(</span><span class="n">spinmag</span><span class="p">,</span> <span class="n">nele</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks the spin magnetization is compatible with the total electron number</span>
+<span class="sd">        Check the spin magnetization is compatible with the total electron number.</span>
+
+<span class="sd">        Also compute a default value if none is specified.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        spinmag : int</span>
+<span class="sd">            the spin magnetization (e.g. 1 for a doublet state)</span>
+<span class="sd">        nele : int</span>
+<span class="sd">            the total number of electrons</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        spinmag : int</span>
+<span class="sd">            the spin magnetization if input valid</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.spinmag_error</span>
+<span class="sd">            if spinmag input is not an integer or incompatible with electron number</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spinmag</span><span class="p">,</span> <span class="n">intc</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spinmag</span><span class="p">,</span> <span class="n">intc</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">spinmag_error</span><span class="p">(</span>
                 <span class="s2">&quot;Spin magnetization is not a positive integer&quot;</span>
             <span class="p">)</span>
@@ -531,10 +754,23 @@
 
 <div class="viewcode-block" id="ISModel.calc_nele"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel.calc_nele">[docs]</a>    <span class="k">def</span> <span class="nf">calc_nele</span><span class="p">(</span><span class="n">spinmag</span><span class="p">,</span> <span class="n">nele</span><span class="p">,</span> <span class="n">spinpol</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculates the electron number in each spin channel from spinmag</span>
-<span class="sd">        and total electron number</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Calculate the electron number in each spin channel (if spin polarized).</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        spinmag : int</span>
+<span class="sd">            the spin magnetization</span>
+<span class="sd">        nele : int</span>
+<span class="sd">            total electron number</span>
+<span class="sd">        spinpol : bool</span>
+<span class="sd">            spin polarization</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        nele : array of ints</span>
+<span class="sd">            number of electrons in each spin channel if spin-polarized, else</span>
+<span class="sd">            just total electron number</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">spinpol</span><span class="p">:</span>
             <span class="n">nele</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">nele</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -546,24 +782,36 @@
 
 
 <div class="viewcode-block" id="EnergyCalcs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.EnergyCalcs">[docs]</a><span class="k">class</span> <span class="nc">EnergyCalcs</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Check inputs for CalcEnergy calculations.&quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="EnergyCalcs.check_grid_params"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.EnergyCalcs.check_grid_params">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">check_grid_params</span><span class="p">(</span><span class="n">grid_params</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks grid parameters are reasonable, or assigns if empty</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check grid parameters are reasonable, or assigns if empty.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        grid_params : dict</span>
-<span class="sd">            Can contain the keys &quot;ngrid&quot; (int, number of grid points)</span>
-<span class="sd">            and &quot;x0&quot; (float, LHS grid point for log grid)</span>
+<span class="sd">            Can contain the keys `ngrid` (``int``, number of grid points)</span>
+<span class="sd">            and `x0` (`float`, LHS grid point for log grid)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">          {&#39;ngrid&#39;    (int)    : number of grid points</span>
-<span class="sd">           &#39;x0&#39;       (float)  : LHS grid point takes form r0=exp(x0); x0 can be specified }</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        grid_params : dict</span>
+<span class="sd">            dictionary of grid parameters as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `ngrid` (``int``)   : number of grid points,</span>
+<span class="sd">            `x0`    (``float``) : LHS grid point takes form</span>
+<span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified</span>
+<span class="sd">            }</span>
 
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.grid_error</span>
+<span class="sd">            if grid inputs are invalid or outside a reasonable range</span>
+<span class="sd">        InputError.ngrid_warning</span>
+<span class="sd">            if `ngrid` is outside a reasonable convergence range</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># First assign the keys ngrid and x0 if they are not given</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">ngrid</span> <span class="o">=</span> <span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]</span>
@@ -599,22 +847,29 @@
 <div class="viewcode-block" id="EnergyCalcs.check_conv_params"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.EnergyCalcs.check_conv_params">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">check_conv_params</span><span class="p">(</span><span class="n">input_params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks convergence parameters are reasonable, or assigns if empty</span>
+<span class="sd">        Check convergence parameters are reasonable, or assigns if empty.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        input_params : dict of floats</span>
-<span class="sd">            Can contain the keys &quot;econv&quot;, &quot;nconv&quot; and &quot;vconv&quot;, for energy,</span>
+<span class="sd">            Can contain the keys `econv`, `nconv` and `vconv`, for energy,</span>
 <span class="sd">            density and potential convergence parameters</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">          {&#39;econv&#39;    (float)    : energy convergence</span>
-<span class="sd">           &#39;nconv&#39;    (float)    : density convergence</span>
-<span class="sd">           &#39;vconv&#39;    (float)    : potential convergence}</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        conv_params : dict of floats</span>
+<span class="sd">            dictionary of convergence parameters as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `econv` (``float``) : convergence for total energy,</span>
+<span class="sd">            `nconv` (``float``) : convergence for density,</span>
+<span class="sd">            `vconv` (``float``) : convergence for electron number</span>
+<span class="sd">            }</span>
 
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.conv_error</span>
+<span class="sd">            if a convergence parameter is invalid (not float or negative).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">conv_params</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># loop through the convergence parameters</span>
         <span class="k">for</span> <span class="n">conv</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;econv&quot;</span><span class="p">,</span> <span class="s2">&quot;nconv&quot;</span><span class="p">,</span> <span class="s2">&quot;vconv&quot;</span><span class="p">]:</span>
@@ -638,24 +893,28 @@
 <div class="viewcode-block" id="EnergyCalcs.check_scf_params"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.EnergyCalcs.check_scf_params">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">check_scf_params</span><span class="p">(</span><span class="n">input_params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks convergence parameters are reasonable, or assigns if empty</span>
+<span class="sd">        Check scf parameters are reasonable, or assigns if empty.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        input_params : dict</span>
-<span class="sd">            Can contain the keys `maxscf` and `mixfrac` for max scf cycle</span>
+<span class="sd">            can contain the keys `maxscf` and `mixfrac` for max scf cycle</span>
 <span class="sd">            and potential mixing fraction</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        scf_params : dict</span>
-<span class="sd">            A dictionary with the following scf parameters</span>
+<span class="sd">            dictionary with the following keys:</span>
 <span class="sd">            {</span>
 <span class="sd">            `maxscf`   (``int``)    : max number scf cycles,</span>
-<span class="sd">            `mixfrac`  (``int``)    : mixing fraction</span>
+<span class="sd">            `mixfrac`  (``float``)    : mixing fraction</span>
 <span class="sd">            }</span>
-<span class="sd">        &quot;&quot;&quot;</span>
 
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.SCF_error</span>
+<span class="sd">            if the SCF parameters are not of correct type or in valid range</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">scf_params</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># assign value to scf param if it is not specified</span>
@@ -685,28 +944,37 @@
 
 
 <div class="viewcode-block" id="InputError"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError">[docs]</a><span class="k">class</span> <span class="nc">InputError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Handles errors in inputs</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Exit atoMEC and print relevant input error message.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="InputError.species_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.species_error">[docs]</a>    <span class="k">def</span> <span class="nf">species_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises an exception if there is an invalid species</span>
+<span class="sd">        Raise an exception if there is an invalid species.</span>
 
-<span class="sd">        Inputs:</span>
-<span class="sd">        - err_msg (str)     : error message printed</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        err_msg : str</span>
+<span class="sd">            error message printed</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in atomic species input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Species must be a chemical symbol, e.g. &#39;He&#39;&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.temp_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.temp_error">[docs]</a>    <span class="k">def</span> <span class="nf">temp_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises an exception if temperature is not a float</span>
+<span class="sd">        Raise an exception if temperature is not a float.</span>
 
-<span class="sd">        Inputs:</span>
-<span class="sd">        - err_msg (str)     : error message printed</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        err_msg : str</span>
+<span class="sd">            error message printed</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in temperature input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Temperature should be &gt;0 and given in units of eV&quot;</span><span class="p">)</span>
@@ -714,153 +982,180 @@
 
 <div class="viewcode-block" id="InputError.charge_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.charge_error">[docs]</a>    <span class="k">def</span> <span class="nf">charge_error</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises an exception if charge is not an integer</span>
+<span class="sd">        Raise an exception if charge is not an integer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in charge input: charge is not an integer&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.density_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.density_error">[docs]</a>    <span class="k">def</span> <span class="nf">density_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises an exception if density is not a float or negative</span>
+<span class="sd">        Raise an exception if density is not a float or negative.</span>
 
-<span class="sd">        Inputs:</span>
-<span class="sd">        - err_msg (str)     : error message printed</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        err_msg : str</span>
+<span class="sd">            error message printed</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in density input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.spinmag_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.spinmag_error">[docs]</a>    <span class="k">def</span> <span class="nf">spinmag_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises an exception if density is not a float or negative</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Raise an exception if density is not a float or negative.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        err_msg : str</span>
+<span class="sd">            error message printed</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in spinmag input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.xc_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.xc_error">[docs]</a>    <span class="k">def</span> <span class="nf">xc_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
-
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises an exception if density is not a float or negative</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Raise an exception if density is not a float or negative.</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        err_msg : str</span>
+<span class="sd">            error message printed</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in xc input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.unbound_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.unbound_error">[docs]</a>    <span class="k">def</span> <span class="nf">unbound_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises exception if unbound not str or in permitted values</span>
+<span class="sd">        Raise exception if unbound not str or in permitted values.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        err_msg : str</span>
 <span class="sd">            the error message printed</span>
 
-<span class="sd">        Raises</span>
+<span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            InputError</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in unbound electron input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.bc_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.bc_error">[docs]</a>    <span class="k">def</span> <span class="nf">bc_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises exception if unbound not str or in permitted values</span>
+<span class="sd">        Raise exception if unbound not str or in permitted values.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        err_msg : str</span>
 <span class="sd">            the error message printed</span>
 
-<span class="sd">        Raises</span>
+<span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            InputError</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in boundary condition input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.spinpol_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.spinpol_error">[docs]</a>    <span class="k">def</span> <span class="nf">spinpol_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises exception if spinpol not a boolean</span>
+<span class="sd">        Raise exception if spinpol not a boolean.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        err_msg : str</span>
 <span class="sd">            the error message printed</span>
 
-<span class="sd">        Raises</span>
+<span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            InputError</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in spin polarization input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.grid_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.grid_error">[docs]</a>    <span class="k">def</span> <span class="nf">grid_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises exception if error in grid inputs</span>
+<span class="sd">        Raise exception if error in grid inputs.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        err_msg : str</span>
 <span class="sd">            the error message printed</span>
 
-<span class="sd">        Raises</span>
+<span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            InputError</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in grid inputs: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.conv_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.conv_error">[docs]</a>    <span class="k">def</span> <span class="nf">conv_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises exception if error in convergence inputs</span>
+<span class="sd">        Raise exception if error in convergence inputs.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        err_msg : str</span>
 <span class="sd">            the error message printed</span>
 
-<span class="sd">        Raises</span>
+<span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            InputError</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in convergence inputs: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="InputError.SCF_error"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputError.SCF_error">[docs]</a>    <span class="k">def</span> <span class="nf">SCF_error</span><span class="p">(</span><span class="n">err_msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Raises exception if error in convergence inputs</span>
+<span class="sd">        Raise exception if error in SCF inputs.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        err_msg : str</span>
 <span class="sd">            the error message printed</span>
 
-<span class="sd">        Raises</span>
+<span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            InputError</span>
+<span class="sd">        None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in scf_params input: &quot;</span> <span class="o">+</span> <span class="n">err_msg</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Exiting atoMEC&quot;</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="InputWarning"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputWarning">[docs]</a><span class="k">class</span> <span class="nc">InputWarning</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Warns user if inputs are considered outside of typical ranges, but proceeds anyway</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Warn if inputs are considered outside of typical ranges, but proceed anyway.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="InputWarning.temp_warning"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputWarning.temp_warning">[docs]</a>    <span class="k">def</span> <span class="nf">temp_warning</span><span class="p">(</span><span class="n">err</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Warning if temperature outside of sensible range</span>
+<span class="sd">        Warn if temperature outside of sensible range.</span>
 
-<span class="sd">        Inputs:</span>
-<span class="sd">        - temp (float)    : temperature in units of eV</span>
-<span class="sd">        - err (str)       : &quot;high&quot; or &quot;low&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        err : str</span>
+<span class="sd">            custom part of error message</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        warning : str</span>
+<span class="sd">            full errror message</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">warning</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">&quot;Warning: this input temperature is very &quot;</span>
@@ -872,7 +1167,19 @@
 
 <div class="viewcode-block" id="InputWarning.ngrid_warning"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.InputWarning.ngrid_warning">[docs]</a>    <span class="k">def</span> <span class="nf">ngrid_warning</span><span class="p">(</span><span class="n">err1</span><span class="p">,</span> <span class="n">err2</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Warning if grid params outside of sensible range</span>
+<span class="sd">        Warn if grid params outside of sensible range.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        err1 : str</span>
+<span class="sd">            first custom part of error message</span>
+<span class="sd">        err2 : str</span>
+<span class="sd">            second custom part of error message</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        warning : str</span>
+<span class="sd">            full error message</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">warning</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">&quot;Warning: number of grid points is very &quot;</span>
@@ -880,7 +1187,8 @@
             <span class="o">+</span> <span class="s2">&quot;. Proceeding anyway, but results may be &quot;</span>
             <span class="o">+</span> <span class="n">err2</span>
             <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="o">+</span> <span class="s2">&quot;Suggested grid range is between 1000-5000 but should be tested wrt convergence </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="o">+</span> <span class="s2">&quot;Suggested grid range is between 1000-5000 but should be tested wrt&quot;</span>
+            <span class="s2">&quot; convergence </span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">warning</span></div></div>
 </pre></div>
