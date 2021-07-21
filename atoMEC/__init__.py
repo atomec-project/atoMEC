@@ -21,7 +21,6 @@ from math import pi
 # global imports
 from . import config
 from . import check_inputs
-from .models import *
 from . import writeoutput
 
 
@@ -151,7 +150,8 @@ class Atom:
     def nele(self):
         """int: the number of electrons in the atom.
 
-        The total electron number is given by the sum of :obj:`at_chrg` and :obj:`charge`.
+        The total electron number is given by the sum of :obj:`at_chrg`
+        and :obj:`charge`.
         """
         return self.at_chrg + self._charge
 
@@ -191,7 +191,7 @@ class Atom:
 
     @property
     def density(self):
-        r"""float: the mass density of the material in units :math:`\mathrm{g\ cm}^{-3}`."""
+        r"""float: the mass density of the material in :math:`\mathrm{g\ cm}^{-3}`."""
         return self._density
 
     @density.setter
