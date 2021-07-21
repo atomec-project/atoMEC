@@ -1,11 +1,13 @@
 """
 Contains classes and functions used to compute and store aspects related to convergence.
 
-So far, the only procedure requring convergence is the static SCF cycle. More will be added in future.
+So far, the only procedure requring convergence is the static SCF cycle. More will \
+be added in future.
 
 Classes
 -------
-SCF : holds the SCF convergence attributes and calculates them for the given cycle
+* :class:`SCF` : holds the SCF convergence attributes and calculates them for the \
+given cycle
 """
 
 # standard libraries
@@ -37,10 +39,11 @@ class SCF:
 
     def check_conv(self, E_free, pot, dens, iscf):
         """
-        Compute and check the changes in energy, integrated density and integrated potential.
+        Compute and check the changes in energy, integrated density and integrated \
+        potential.
 
-        If the convergence tolerances are all simultaneously satisfied, the `complete` variable
-        returns `True` as the SCF cycle is complete.
+        If the convergence tolerances are all simultaneously satisfied, the `complete` \
+        variable returns `True` as the SCF cycle is complete.
 
         Parameters
         ----------

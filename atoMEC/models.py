@@ -1,19 +1,19 @@
 """
 Contains models used to compute properties of interest from the Atom object.
 
-So far, the only model implemented is the ISModel. More models will be added in future releases.
+So far, the only model implemented is the ISModel. More models will be added in future
+releases.
 
 Classes
 -------
-ISModel : Ion-sphere type model, static properties such as KS orbitals, density and energy are directly computed
+* :class:`ISModel` : Ion-sphere type model, static properties such as KS orbitals, \
+density and energy are directly computed
 """
 
 # import standard packages
 
 # import external packages
-import numpy as np
-from mendeleev import element
-from math import pi, log
+from math import log
 
 # import internal packages
 from . import check_inputs
@@ -28,19 +28,23 @@ class ISModel:
     """
     The ISModel represents a particular family of AA models known as ion-sphere models.
 
-    The implementation in atoMEC is based on the model described in the following pre-print:
-    T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).
-    First-principles derivation and properties of density-functional average-atom models. arXiv preprint arXiv:2103.09928.
+    The implementation in atoMEC is based on the model described in the pre-print:
 
-    Parameter inputs for this model are related to particular choices of approximation, e.g. boundary conditions
-    or exchange-correlation functional, rather than fundamental physical properties.
+    T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).
+    First-principles derivation and properties of density-functional
+    average-atom models. arXiv preprint arXiv:2103.09928.
+
+    Parameter inputs for this model are related to particular choices of approximation,
+    e.g. boundary conditions or exchange-correlation functional, rather than
+    fundamental physical properties.
 
     Parameters
     ----------
-    atom : :obj:`Atom`
-        The :obj:`Atom` object
+    atom : atoMEC.Atom
+        The main atom object
     xfunc_id : str or int, optional
-        The exchange functional, can be the libxc code or string, or special internal value
+        The exchange functional, can be the libxc code or string,
+        or special internal value
         Default : "lda_x"
     cfunc_id : str or int, optional
         The correlation functional, can be the libxc code or string, or special internal value
@@ -193,7 +197,7 @@ class ISModel:
         self, nmax, lmax, grid_params={}, conv_params={}, scf_params={}, write_info=True
     ):
         r"""
-        Run a self-consistent calculation to minimize the Kohn-Sham free energy functional.
+        Run a self-consistent calculation to minimize the Kohn-Sham free energy.
 
         Parameters
         ----------

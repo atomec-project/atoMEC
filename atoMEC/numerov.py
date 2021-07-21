@@ -1,25 +1,22 @@
-r"""
+"""
 The numerov module handles the routines required to solve the KS equations.
 
 So far, there is only a single implementation which is based on a matrix
 diagonalization. There is an option for parallelizing over the angular
-quantum number :math:`l`.
+quantum number `l`.
 
 Functions
 ---------
-:func:`matrix_solve` : Solve the radial KS equation via matrix diagonalization of
+* :func:`matrix_solve` : Solve the radial KS equation via matrix diagonalization of \
 Numerov's method.
-
-:func:`KS_matsolve_parallel` : Solve the KS matrix diagonalization by parallelizing
+* :func:`KS_matsolve_parallel` : Solve the KS matrix diagonalization by parallelizing \
 over config.ncores.
-
-:func:`KS_matsolve_serial` : Solve the KS matrix diagonalization in serial.
-
-:func:`diag_H` : Diagonalize the Hamiltonian for given input potential.
-
-:func:`update_orbs` : Sort the eigenvalues and functions by ascending energies
-and normalize orbs.
+* :func:`KS_matsolve_serial` : Solve the KS matrix diagonalization in serial.
+* :func:`diag_H` : Diagonalize the Hamiltonian for given input potential.
+* :func:`update_orbs` : Sort the eigenvalues and functions by ascending energies and \
+normalize orbs.
 """
+
 
 # standard libs
 import os
