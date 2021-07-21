@@ -434,7 +434,7 @@ class SCF:
             # define row and column headers
             headers = [n + 1 for n in range(nmax_new)]
             headers[0] = "n=l+1"
-            RowIDs = [l for l in range(lmax_new)]
+            RowIDs = [*range(lmax_new)]
             RowIDs[0] = "l=0"
 
             eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
