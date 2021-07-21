@@ -57,15 +57,6 @@ def write_atomic_data(atom):
     )
     spec_info = species_str + spc + at_chrg_str + spc
 
-    # information about the net charge / electron number
-    net_chrg_str = "{preamble:30s}: {chrg:<3d}".format(
-        preamble="Net charge", chrg=atom.charge
-    )
-    nele_str = "{preamble:30s}: {nele:<3d}".format(
-        preamble="Number of electrons", nele=atom.nele
-    )
-    nele_info = net_chrg_str + spc + nele_str + spc
-
     # information about the atomic / mass density
     rho_str = "{preamble:30s}: {rho:<.3g} g cm^-3".format(
         preamble="Mass density", rho=atom.density
