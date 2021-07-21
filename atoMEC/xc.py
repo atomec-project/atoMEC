@@ -1,8 +1,9 @@
 """
-The xc module handles everything connected to the exchange-correlation energy and
-potential.
+The xc module calculates exchange-correlation energies and potentials.
 
 Mostly it sets up inputs and makes appropriate calls to the libxc package.
+It also includes a class for customized xc-functionals and checks the
+validity of inputs.
 
 Classes
 -------
