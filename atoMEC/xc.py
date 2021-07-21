@@ -106,7 +106,6 @@ def check_xc_func(xc_code, id_supp):
     # check the xc code is either a string descriptor or integer id
     if not isinstance(xc_code, (str, int)):
         err = 1
-        xc_func_id = 0
 
     # when xc code is one of the special atoMEC defined functionals
     if xc_code in xc_special_codes:
