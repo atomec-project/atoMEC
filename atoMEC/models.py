@@ -28,11 +28,7 @@ class ISModel:
     """
     The ISModel represents a particular family of AA models known as ion-sphere models.
 
-    The implementation in atoMEC is based on the model described in the pre-print:
-
-    T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).
-    First-principles derivation and properties of density-functional
-    average-atom models. arXiv preprint arXiv:2103.09928.
+    The implementation in atoMEC is based on the model described in [1]_.
 
     Parameter inputs for this model are related to particular choices of approximation,
     e.g. boundary conditions or exchange-correlation functional, rather than
@@ -71,6 +67,12 @@ class ISModel:
         total number of electrons
     nele: array_like
         number of electrons per spin channel (or total if spin unpolarized)
+
+    References
+    ----------
+    .. [1] T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).
+       First-principles derivation and properties of density-functional
+       average-atom models, `arXiv:2103.09928 <https://arxiv.org/abs/2103.09928>`__.
     """
 
     def __init__(
