@@ -207,7 +207,6 @@ class ISModel:
         write_info=True,
         verbosity=0,
     ):
-
         r"""
         Run a self-consistent calculation to minimize the Kohn-Sham free energy.
 
