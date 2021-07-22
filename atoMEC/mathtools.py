@@ -173,8 +173,8 @@ def ideal_entropy(eps, mu, beta, n=0):
 
     Returns
     -------
-    f_fd : array_like
-        the integrand function
+    f_ent : array_like
+        the entropy integrand function
 
     Notes
     -----
@@ -192,11 +192,11 @@ def ideal_entropy(eps, mu, beta, n=0):
     with np.errstate(over="ignore"):
         fn_exp = np.minimum(np.exp(beta * (eps - mu)), 1e12)
 
-    aux = 1 / (1 + fn_exp)
+    f_fd = 1 / (1 + fn_exp)
     # fermi_dirac dist
-    f_fd = (eps) ** (n / 2.0) * (aux * np.log(aux) + (1 - aux) * np.log(1 - aux))
+    f_ent = (eps) ** (n / 2.0) * (f_fd * np.log(f_fd) + (1 - f_fd) * np.log(1 - f_fd))
 
-    return f_fd
+    return f_ent
 
 
 def fd_int_complete(mu, beta, n):
