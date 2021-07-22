@@ -238,7 +238,34 @@ def fd_int_complete(mu, beta, n):
 
 
 def ideal_entropy_int(mu, beta, n):
-    r""" """
+    r"""
+    Compute the entropy for the ideal electron gas (without prefactor) - see notes.
+
+    Parameters
+    ----------
+    mu : float
+        chemical potential
+    beta: float
+        inverse temperature
+    n : int
+        order of Fermi-Dirac integral (see notes)
+
+    Returns
+    -------
+    I_n : float
+        the complete fermi-dirac integral
+
+    Notes
+    -----
+    The entropy of an ideal electron gas is defined as
+
+    .. math::
+        I_n(\mu,\beta) = \int \mathrm{d}\epsilon \epsilon^{n/2}
+        (f_\mathrm{fd}\log{f_\mathrm{fd}} + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),
+
+    where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac
+    distribution.
+    """
     # use scipy quad integration routine
     limup = np.inf
 
