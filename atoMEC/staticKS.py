@@ -224,8 +224,16 @@ class Orbitals:
 
         for l in range(config.lmax):
             lbound_mat[:, l] = (2.0 / config.spindims) * np.where(
-                eigvals[:, l] < 0, 2 * l + 1.0, 0.0
+                eigvals[:, l] < 0.0, 2 * l + 1.0, 0.0
             )
+
+        # force bound levels if there are convergence issues
+        if config.force_bound:
+            for levels in config.force_bound:
+                sp = levels[0]
+                l = levels[1]
+                n = levels[2]
+                lbound_mat[sp, l, n] = (2.0 / config.spindims) * (2 * l + 1.0)
 
         return lbound_mat
 
