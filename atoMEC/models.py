@@ -1,9 +1,19 @@
+"""
+Contains models used to compute properties of interest from the Atom object.
+
+So far, the only model implemented is the ISModel. More models will be added in future
+releases.
+
+Classes
+-------
+* :class:`ISModel` : Ion-sphere type model, static properties such as KS orbitals, \
+density and energy are directly computed
+"""
+
 # import standard packages
 
 # import external packages
-import numpy as np
-from mendeleev import element
-from math import pi, log
+from math import log
 
 # import internal packages
 from . import check_inputs
@@ -15,6 +25,57 @@ from . import xc
 
 
 class ISModel:
+    """
+    The ISModel represents a particular family of AA models known as ion-sphere models.
+
+    The implementation in atoMEC is based on the model described in [1]_.
+
+    Parameter inputs for this model are related to particular choices of approximation,
+    e.g. boundary conditions or exchange-correlation functional, rather than
+    fundamental physical properties.
+
+    Parameters
+    ----------
+    atom : atoMEC.Atom
+        The main atom object
+    xfunc_id : str or int, optional
+        The exchange functional, can be the libxc code or string,
+        or special internal value
+        Default : "lda_x"
+    cfunc_id : str or int, optional
+        The correlation functional, can be the libxc code or string, or special
+        internal value
+        Default : "lda_c_pw"
+    bc : str, optional
+        The boundary condition, can be "dirichlet" or "neumann"
+        Default : "dirichlet"
+    spinpol : bool, optional
+        Whether to run a spin-polarized calculation
+        Default : False
+    spinmag : int, optional
+        The spin-magentization
+        Default: 0 for nele even, 1 for nele odd
+    unbound : str, optional
+        The way in which the unbound electron density is computed
+        Default : "ideal"
+    write_info : bool, optional
+        Writes information about the model parameters
+        Default : True
+
+    Attributes
+    ----------
+    nele_tot: int
+        total number of electrons
+    nele: array_like
+        number of electrons per spin channel (or total if spin unpolarized)
+
+    References
+    ----------
+    .. [1] T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).
+       First-principles derivation and properties of density-functional
+       average-atom models, `arXiv:2103.09928 <https://arxiv.org/abs/2103.09928>`__.
+    """
+
     def __init__(
         self,
         atom,
@@ -26,52 +87,6 @@ class ISModel:
         unbound=config.unbound,
         write_info=True,
     ):
-        """
-        Defines the parameters used for an energy calculation.
-        These are choices for the theoretical model, not numerical parameters for implementation
-
-        Parameters
-        ----------
-        atom : obj
-            The atom object
-        xfunc : Union[str,int], optional
-            The exchange functional, can be the libxc code or string, or special internal value
-            Default : "lda_x"
-        cfunc : Union[str,int], optional
-            The correlation functional, can be the libxc code or string, or special internal value
-            Default : "lda_c_pw"
-        bc : str, optional
-            The boundary condition, can be "dirichlet" or "neumann"
-            Default : "dirichlet"
-        spinpol : bool, optional
-            Whether to run a spin-polarized calculation
-            Default : False
-        spinmag : int, optional
-            The spin-magentization
-            Default: 0 for nele even, 1 for nele odd
-        unbound : str, optional
-            The way in which the unbound electron density is computed
-            Default : "ideal"
-        write_info : bool, optional
-            Writes information about the model parameters
-            Default : True
-        Attributes
-        ----------
-        xfunc : str
-            The (short-hand) name of the exchange functional
-        cfunc : str
-            The (short-hand) name of the correlation functional
-        bc : str
-            The boundary condition
-        spinpol : bool
-            Whether calculation will be spin-polarized
-        nele : ndarray
-            Number of electrons in each spin channel (total if spinpol=False)
-        unbound : str
-            The treatment of unbound electrons
-        info : str
-            Information about all the model parameters
-        """
 
         # Input variables
         self.nele_tot = atom.nele
@@ -88,6 +103,7 @@ class ISModel:
 
     @property
     def spinpol(self):
+        """bool: Whether calculation will be spin-polarized."""
         return self._spinpol
 
     @spinpol.setter
@@ -117,6 +133,7 @@ class ISModel:
 
     @property
     def spinmag(self):
+        """int: the spin magentization (difference in no. up/down spin electrons)."""
         return self._spinmag
 
     @spinmag.setter
@@ -133,6 +150,7 @@ class ISModel:
 
     @property
     def xfunc_id(self):
+        """str: exchange functional shorthand id."""
         return self._xfunc_id
 
     @xfunc_id.setter
@@ -143,6 +161,7 @@ class ISModel:
 
     @property
     def cfunc_id(self):
+        """str: correlation functional shorthand id."""
         return self._cfunc_id
 
     @cfunc_id.setter
@@ -153,6 +172,7 @@ class ISModel:
 
     @property
     def bc(self):
+        """str: boundary condition for solving the KS equations in a finite sphere."""
         return self._bc
 
     @bc.setter
@@ -162,6 +182,7 @@ class ISModel:
 
     @property
     def unbound(self):
+        """str: the treatment of unbound (free) electrons."""
         return self._unbound
 
     @unbound.setter
@@ -171,6 +192,7 @@ class ISModel:
 
     @property
     def info(self):
+        """str: formatted description of the ISModel attributes."""
         return writeoutput.write_ISModel_data(self)
 
     @writeoutput.timing
@@ -185,9 +207,8 @@ class ISModel:
         write_info=True,
         verbosity=0,
     ):
-
         r"""
-        Run a self-consistent calculation to minimize the Kohn-Sham free energy functional
+        Run a self-consistent calculation to minimize the Kohn-Sham free energy.
 
         Parameters
         ----------
@@ -218,8 +239,9 @@ class ISModel:
         force_bound : list of list of ints, optional
             force certain levels to be bound, for example:
             `force_bound = [0, 1, 0]`
-            forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be always
-            bound even if it has positive energy. This prevents convergence issues.
+            forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be
+            always bound even if it has positive energy. This prevents convergence
+            issues.
         verbosity : int, optional
             how much information is printed at each SCF cycle.
             `verbosity=0` prints the total energy and convergence values (default).
@@ -230,10 +252,15 @@ class ISModel:
 
         Returns
         -------
-        energy : obj
-            Total energy object
+        output_dict : dict
+            dictionary containing final KS quantities as follows:
+            {
+            `energy` (:obj:`staticKS.Energy`)       : total energy object,
+            `density` (:obj:`staticKS.Density`)     : density object,
+            `potential` (:obj:`staticKS.Potential`)  : potential object,
+            `orbitals` (:obj:`staticKS.Orbitals`)    : orbitals object
+            }
         """
-
         # boundary cond, unbound electrons, xc func objects
         config.bc = self.bc
         config.unbound = self.unbound
@@ -255,6 +282,7 @@ class ISModel:
         orbs = staticKS.Orbitals(xgrid)
         # use coulomb potential as initial guess
         v_init = staticKS.Potential.calc_v_en(xgrid)
+        v_s_old = v_init  # initialize the old potential
         orbs.compute(v_init, init=True)
 
         # occupy orbitals
@@ -332,6 +360,3 @@ class ISModel:
         }
 
         return output_dict
-
-
-# scf_string = self.print_scf_complete(conv_vals)

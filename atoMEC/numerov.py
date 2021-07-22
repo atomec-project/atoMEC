@@ -1,6 +1,22 @@
 """
-Routines for solving the KS equations via Numerov's method
+The numerov module handles the routines required to solve the KS equations.
+
+So far, there is only a single implementation which is based on a matrix
+diagonalization. There is an option for parallelizing over the angular
+quantum number `l`.
+
+Functions
+---------
+* :func:`matrix_solve` : Solve the radial KS equation via matrix diagonalization of \
+Numerov's method.
+* :func:`KS_matsolve_parallel` : Solve the KS matrix diagonalization by parallelizing \
+over config.ncores.
+* :func:`KS_matsolve_serial` : Solve the KS matrix diagonalization in serial.
+* :func:`diag_H` : Diagonalize the Hamiltonian for given input potential.
+* :func:`update_orbs` : Sort the eigenvalues and functions by ascending energies and \
+normalize orbs.
 """
+
 
 # standard libs
 import os
@@ -8,8 +24,7 @@ import shutil
 
 # external libs
 import numpy as np
-from scipy.sparse.linalg import eigsh, eigs
-from scipy.linalg import eigh, eig
+from scipy.sparse.linalg import eigs
 from joblib import Parallel, delayed, dump, load
 
 # from staticKS import Orbitals
@@ -17,13 +32,14 @@ from joblib import Parallel, delayed, dump, load
 # internal libs
 from . import config
 from . import mathtools
-from . import writeoutput
 
 
 # @writeoutput.timing
 def matrix_solve(v, xgrid):
     r"""
-    Solves the radial KS equation using an implementation of Numerov's method using matrix diagonalization (see notes)
+    Solve the radial KS equation via matrix diagonalization of Numerov's method.
+
+    See notes for details of the implementation.
 
     Parameters
     ----------
@@ -41,23 +57,25 @@ def matrix_solve(v, xgrid):
 
     Notes
     -----
-    The implementation is based on the following paper:
-    M. Pillai, J. Goglio, and T. G. Walker , "Matrix Numerov method for solving Schrödinger’s equation",
-    American Journal of Physics 80, 1017-1019 (2012) https://doi.org/10.1119/1.4748813
+    The implementation is based on [2]_.
 
     The matrix diagonalization is of the form:
 
-    .. math:: 
-    
+    .. math::
+
         \hat{H} \lvert X \rangle &= \lambda \hat{B} \lvert X \rangle\ , \\
         \hat{H}                  &= \hat{T} + \hat{B}\times\hat{V}\ ,   \\
         \hat{T}                  &= -0.5\times\hat{p}\times\hat{A}\ .
 
     where :math:`\hat{p}=\exp(-2x)`.
-    See the referenced paper for the definitions of the matrices :math:`\hat{A}`
-    and :math:`\hat{B}`.
-    """
+    See [2]_ for the definitions of the matrices :math:`\hat{A}` and :math:`\hat{B}`.
 
+    References
+    ----------
+    .. [2] M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for solving
+       Schrödinger’s equation, American Journal of Physics 80,
+       1017-1019 (2012) `DOI:10.1119/1.4748813 <https://doi.org/10.1119/1.4748813>`__.
+    """
     N = config.grid_params["ngrid"]
 
     # define the spacing of the xgrid
@@ -101,8 +119,7 @@ def matrix_solve(v, xgrid):
 
 def KS_matsolve_parallel(T, B, v, xgrid):
     """
-    Solves the KS matrix diagonalization by parallelizing over
-    config.ncores cores
+    Solve the KS matrix diagonalization by parallelizing over config.ncores.
 
     Parameters
     ----------
@@ -122,11 +139,8 @@ def KS_matsolve_parallel(T, B, v, xgrid):
     eigvals : ndarray
         KS eigenvalues
     """
-
     # compute the number of grid points
     N = np.size(xgrid)
-    # initialize empty potential matrix
-    V_mat = np.zeros((N, N))
 
     # Compute the number pmax of distinct diagonizations to be solved
     pmax = config.spindims * config.lmax
@@ -180,7 +194,7 @@ def KS_matsolve_parallel(T, B, v, xgrid):
 
 def KS_matsolve_serial(T, B, v, xgrid):
     """
-    Solves the KS equations via matrix diagonalization in serial
+    Solve the KS equations via matrix diagonalization in serial.
 
     Parameters
     ----------
@@ -200,7 +214,6 @@ def KS_matsolve_serial(T, B, v, xgrid):
     eigvals : ndarray
         KS eigenvalues
     """
-
     # compute the number of grid points
     N = np.size(xgrid)
     # initialize empty potential matrix
@@ -210,7 +223,8 @@ def KS_matsolve_serial(T, B, v, xgrid):
     eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N))
     eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
 
-    # A new Hamiltonian has to be re-constructed for every value of l and each spin channel if spin-polarized
+    # A new Hamiltonian has to be re-constructed for every value of l and each spin
+    # channel if spin-polarized
     for l in range(config.lmax):
 
         # diagonalize Hamiltonian using scipy
@@ -236,8 +250,11 @@ def KS_matsolve_serial(T, B, v, xgrid):
 
 def diag_H(p, T, B, v, xgrid, nmax, bc):
     """
-    Diagonilizes the Hamiltonian for the input potential v[p] using scipy's
-    sparse matrix solver scipy.sparse.linalg.eigs
+    Diagonilize the Hamiltonian for the input potential v[p].
+
+    Uses Scipy's sparse matrix solver scipy.sparse.linalg.eigs. This
+    searches for the lowest magnitude `nmax` eigenvalues, so care
+    must be taken to converge calculations wrt `nmax`.
 
     Parameters
     ----------
@@ -261,7 +278,6 @@ def diag_H(p, T, B, v, xgrid, nmax, bc):
     evals : ndarray
         the KS eigenvalues
     """
-
     # compute the number of grid points
     N = np.size(xgrid)
     # initialize empty potential matrix
@@ -287,7 +303,7 @@ def diag_H(p, T, B, v, xgrid, nmax, bc):
 
 def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     """
-    Sorts the eigenvalues and functions by ascending order in energy and normalizes the eigenfunctions
+    Sort the eigenvalues and functions by ascending energies and normalize orbs.
 
     Parameters
     ----------
@@ -307,7 +323,6 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     eigvals : ndarray
         sorted eigenvalues in ascending energy
     """
-
     # Sort eigenvalues in ascending order
     idr = np.argsort(l_eigvals)
     eigvals = np.array(l_eigvals[idr].real)
