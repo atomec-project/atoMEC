@@ -57,10 +57,7 @@ def matrix_solve(v, xgrid):
 
     Notes
     -----
-    The implementation is based on the following paper:
-    M. Pillai, J. Goglio, and T. G. Walker , "Matrix Numerov method for solving
-    Schrödinger’s equation",
-    American Journal of Physics 80, 1017-1019 (2012) https://doi.org/10.1119/1.4748813
+    The implementation is based on [2]_.
 
     The matrix diagonalization is of the form:
 
@@ -71,8 +68,13 @@ def matrix_solve(v, xgrid):
         \hat{T}                  &= -0.5\times\hat{p}\times\hat{A}\ .
 
     where :math:`\hat{p}=\exp(-2x)`.
-    See the referenced paper for the definitions of the matrices :math:`\hat{A}`
-    and :math:`\hat{B}`.
+    See [2]_ for the definitions of the matrices :math:`\hat{A}` and :math:`\hat{B}`.
+
+    References
+    ----------
+    .. [2] M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for solving
+       Schrödinger’s equation, American Journal of Physics 80,
+       1017-1019 (2012) `DOI:10.1119/1.4748813 <https://doi.org/10.1119/1.4748813>`__.
     """
     N = config.grid_params["ngrid"]
 
