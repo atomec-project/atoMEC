@@ -1270,7 +1270,7 @@ average-atom models, <a class="reference external" href="https://arxiv.org/abs/2
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.models.ISModel.CalcEnergy">
-<span class="sig-name descname"><span class="pre">CalcEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel.CalcEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel.CalcEnergy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">CalcEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel.CalcEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel.CalcEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a self-consistent calculation to minimize the Kohn-Sham free energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1294,6 +1294,14 @@ average-atom models, <a class="reference external" href="https://arxiv.org/abs/2
 <cite>maxscf</cite>  (<code class="docutils literal notranslate"><span class="pre">int</span></code>)   : maximum number of scf cycles,
 <cite>mixfrac</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : density mixing fraction
 }</p></li>
+<li><p><strong>force_bound</strong> (<em>list of list of ints</em><em>, </em><em>optional</em>) – force certain levels to be bound, for example:
+<cite>force_bound = [0, 1, 0]</cite>
+forces the orbital with quantum numbers <span class="math notranslate nohighlight">\(\sigma=0,\ l=1,\ n=0\)</span> to be
+always bound even if it has positive energy. This prevents convergence
+issues.</p></li>
+<li><p><strong>verbosity</strong> (<em>int</em><em>, </em><em>optional</em>) – how much information is printed at each SCF cycle.
+<cite>verbosity=0</cite> prints the total energy and convergence values (default).
+<cite>verbosity=1</cite> prints the above and the KS eigenvalues and occupations.</p></li>
 <li><p><strong>write_info</strong> (<em>bool</em><em>, </em><em>optional</em>) – prints the scf cycle and final parameters
 defaults to True</p></li>
 </ul>
