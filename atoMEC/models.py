@@ -239,8 +239,9 @@ class ISModel:
         force_bound : list of list of ints, optional
             force certain levels to be bound, for example:
             `force_bound = [0, 1, 0]`
-            forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be always
-            bound even if it has positive energy. This prevents convergence issues.
+            forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be
+            always bound even if it has positive energy. This prevents convergence
+            issues.
         verbosity : int, optional
             how much information is printed at each SCF cycle.
             `verbosity=0` prints the total energy and convergence values (default).
