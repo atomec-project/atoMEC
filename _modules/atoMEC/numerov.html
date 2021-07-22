@@ -215,10 +215,7 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The implementation is based on the following paper:</span>
-<span class="sd">    M. Pillai, J. Goglio, and T. G. Walker , &quot;Matrix Numerov method for solving</span>
-<span class="sd">    Schrödinger’s equation&quot;,</span>
-<span class="sd">    American Journal of Physics 80, 1017-1019 (2012) https://doi.org/10.1119/1.4748813</span>
+<span class="sd">    The implementation is based on [2]_.</span>
 
 <span class="sd">    The matrix diagonalization is of the form:</span>
 
@@ -229,8 +226,13 @@
 <span class="sd">        \hat{T}                  &amp;= -0.5\times\hat{p}\times\hat{A}\ .</span>
 
 <span class="sd">    where :math:`\hat{p}=\exp(-2x)`.</span>
-<span class="sd">    See the referenced paper for the definitions of the matrices :math:`\hat{A}`</span>
-<span class="sd">    and :math:`\hat{B}`.</span>
+<span class="sd">    See [2]_ for the definitions of the matrices :math:`\hat{A}` and :math:`\hat{B}`.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [2] M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for solving</span>
+<span class="sd">       Schrödinger’s equation, American Journal of Physics 80,</span>
+<span class="sd">       1017-1019 (2012) `DOI:10.1119/1.4748813 &lt;https://doi.org/10.1119/1.4748813&gt;`__.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]</span>
 

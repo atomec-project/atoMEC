@@ -115,23 +115,23 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.staticKS">atoMEC.staticKS module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id6">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id7">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.unitconv">atoMEC.unitconv module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.writeoutput">atoMEC.writeoutput module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id8">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id9">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id11">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id12">Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.xc">atoMEC.xc module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id10">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id11">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id13">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id14">Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC">Module contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id12">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id15">Classes</a></li>
 </ul>
 </li>
 </ul>
@@ -1512,18 +1512,22 @@ must be taken to converge calculations wrt <cite>nmax</cite>.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The implementation is based on the following paper:
-M. Pillai, J. Goglio, and T. G. Walker , “Matrix Numerov method for solving
-Schrödinger’s equation”,
-American Journal of Physics 80, 1017-1019 (2012) <a class="reference external" href="https://doi.org/10.1119/1.4748813">https://doi.org/10.1119/1.4748813</a></p>
+<p>The implementation is based on <a class="footnote-reference brackets" href="#id8" id="id6">2</a>.</p>
 <p>The matrix diagonalization is of the form:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\hat{H} \lvert X \rangle &amp;= \lambda \hat{B} \lvert X \rangle\ , \\
 \hat{H}                  &amp;= \hat{T} + \hat{B}\times\hat{V}\ ,   \\
 \hat{T}                  &amp;= -0.5\times\hat{p}\times\hat{A}\ .\end{split}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\hat{p}=\exp(-2x)\)</span>.
-See the referenced paper for the definitions of the matrices <span class="math notranslate nohighlight">\(\hat{A}\)</span>
-and <span class="math notranslate nohighlight">\(\hat{B}\)</span>.</p>
+See <a class="footnote-reference brackets" href="#id8" id="id7">2</a> for the definitions of the matrices <span class="math notranslate nohighlight">\(\hat{A}\)</span> and <span class="math notranslate nohighlight">\(\hat{B}\)</span>.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id8"><span class="brackets">2</span><span class="fn-backref">(<a href="#id6">1</a>,<a href="#id7">2</a>)</span></dt>
+<dd><p>M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for solving
+Schrödinger’s equation, American Journal of Physics 80,
+1017-1019 (2012) <a class="reference external" href="https://doi.org/10.1119/1.4748813">DOI:10.1119/1.4748813</a>.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -1557,8 +1561,8 @@ and <span class="math notranslate nohighlight">\(\hat{B}\)</span>.</p>
 <p>This module is a ‘workhouse’ for much of the average-atom functionality.
 Computation of static KS quantities is designed to be quite general.
 The main assumption used everywhere is that we have a logarithmically spaced grid.</p>
-<div class="section" id="id6">
-<h3>Classes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h3>Classes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Orbitals</span></code></a> : Holds the KS orbitals (transformed to the log grid) and related quantities such as eigenvalues and occupation numbers</p></li>
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> : Holds the KS density (bound/unbound components) and routinesto compute it.</p></li>
@@ -1566,8 +1570,8 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a> : Holds the free energy and all internal components (KS quantities and entropy) and the routines required to compute them.</p></li>
 </ul>
 </div>
-<div class="section" id="id7">
-<h3>Functions<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id10">
+<h3>Functions<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.staticKS.log_grid" title="atoMEC.staticKS.log_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">log_grid()</span></code></a> : Sets up the logarithmic (and associated real-space) grid on which all computations rely.</p></li>
 </ul>
@@ -2180,14 +2184,14 @@ and exchange + correlation respectively.</p>
 <div class="section" id="module-atoMEC.writeoutput">
 <span id="atomec-writeoutput-module"></span><h2>atoMEC.writeoutput module<a class="headerlink" href="#module-atoMEC.writeoutput" title="Permalink to this headline">¶</a></h2>
 <p>Contains the routines which generate printed output (to screen and separate files).</p>
-<div class="section" id="id8">
-<h3>Classes<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id11">
+<h3>Classes<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.SCF" title="atoMEC.writeoutput.SCF"><code class="xref py py-class docutils literal notranslate"><span class="pre">SCF</span></code></a> : Write information about the self-consistent field (SCF) cycle.</p></li>
 </ul>
 </div>
-<div class="section" id="id9">
-<h3>Functions<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id12">
+<h3>Functions<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.write_atomic_data" title="atoMEC.writeoutput.write_atomic_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_atomic_data()</span></code></a> : Write information about the main Atom object.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.write_ISModel_data" title="atoMEC.writeoutput.write_ISModel_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_ISModel_data()</span></code></a> : Write information about the IS model.</p></li>
@@ -2381,14 +2385,14 @@ and formatted occupation numbers table occnum_tbl</p>
 <p>Mostly it sets up inputs and makes appropriate calls to the libxc package.
 It also includes a class for customized xc-functionals and checks the
 validity of inputs.</p>
-<div class="section" id="id10">
-<h3>Classes<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id13">
+<h3>Classes<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCFunc</span></code></a> : handles atoMEC-defined functionals (not part of libxc package)</p></li>
 </ul>
 </div>
-<div class="section" id="id11">
-<h3>Functions<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id14">
+<h3>Functions<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.xc.check_xc_func" title="atoMEC.xc.check_xc_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_xc_func()</span></code></a> : check the xc func input is recognised and valid for atoMEC</p></li>
 <li><p><a class="reference internal" href="#atoMEC.xc.set_xc_func" title="atoMEC.xc.set_xc_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_xc_func()</span></code></a>   : initialize the xc functional object</p></li>
@@ -2537,8 +2541,8 @@ and exchange + correlation respectively</p>
 All rights reserved.</p>
 <p>atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
 Please see the README or the project wiki (<a class="reference external" href="https://atomec-project.github.io/atoMEC/">https://atomec-project.github.io/atoMEC/</a>) for more information.</p>
-<div class="section" id="id12">
-<h3>Classes<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id15">
+<h3>Classes<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> : the main object for atoMEC calculations, containing information about physical material properties</p></li>
 </ul>
