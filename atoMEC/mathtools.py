@@ -7,6 +7,8 @@ Functions
 * :func:`int_sphere`: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
 * :func:`laplace`: compute the second-order derivative :math:`d^2 y(x) / dx^2`
 * :func:`fermi_dirac`: compute the Fermi-Dirac occupation function for given order `n`
+* :func:`ideal_entropy`: Define the integrand to be used in :func:`ideal_entropy_int`.
+* :func:`ideal_entropy_int`: Compute the entropy for the ideal electron gas (no prefac).
 * :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`
 * :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
 * :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons
