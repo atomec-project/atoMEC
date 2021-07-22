@@ -155,7 +155,36 @@ def fermi_dirac(eps, mu, beta, n=0):
 
 
 def ideal_entropy(eps, mu, beta, n=0):
-    r""" """
+    r"""
+    Define the integrand to be used in :func:`ideal_entropy_int` (see notes).
+
+    Parameters
+    ----------
+    eps : array_like
+        the energies
+    mu : array_like
+        the chemical potential
+    beta : float
+        the inverse potential
+    n : int
+        energy is raised to power n/2 in the numerator (see notes)
+
+    Returns
+    -------
+    f_fd : array_like
+        the integrand function
+
+    Notes
+    -----
+    The ideal entropy integrand is defined as
+
+    .. math::
+        f_n(\epsilon,\mu,\beta) = \epsilon^{n/2} (f_\mathrm{fd}\log{f_\mathrm{fd}}
+        + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),
+
+    where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac
+    distribution.
+    """
     # dfn the exponential function
     # ignore warnings here
     with np.errstate(over="ignore"):
