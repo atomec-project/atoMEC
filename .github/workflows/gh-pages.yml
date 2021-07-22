@@ -5,12 +5,14 @@ on:
     branches:
       - master
       - develop
+      - documentation
   push:
     branches:
+      - documentation
       - develop
 
 jobs:
-  test-docstrings:
+  python-style-checks:
     runs-on: ubuntu-18.04
     steps:
       - name: Check out repository
@@ -25,13 +27,16 @@ jobs:
         run: python3 -m pip install --upgrade pip
 
       - name: Install dependencies
-        run: pip install -qU pydocstyle
+        run: pip install -qU pydocstyle flake8
 
       - name: Check docstrings
         run: pydocstyle --convention=numpy atoMEC
 
+      - name: Lint with flake8
+        run: flake8 atoMEC --count --show-source --statistics
+
   build-and-deploy-pages:
-    needs: test-docstrings
+    needs: python-style-checks
     runs-on: ubuntu-18.04
     steps:
       - name: Check out repository
