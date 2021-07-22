@@ -153,19 +153,20 @@ def fermi_dirac(eps, mu, beta, n=0):
 
     return f_fd
 
+
 def ideal_entropy(eps, mu, beta, n=0):
-    r"""
-    """
-    # dfn the exponential function                                                                                                                                               
-    # ignore warnings here                                                                                                                                                       
+    r""" """
+    # dfn the exponential function
+    # ignore warnings here
     with np.errstate(over="ignore"):
         fn_exp = np.minimum(np.exp(beta * (eps - mu)), 1e12)
 
-    aux = 1/(1 + fn_exp)
-    # fermi_dirac dist                                                                                                                                                           
-    f_fd = (eps) ** (n / 2.0) * (aux*np.log(aux) + (1 - aux)*np.log(1 - aux))
+    aux = 1 / (1 + fn_exp)
+    # fermi_dirac dist
+    f_fd = (eps) ** (n / 2.0) * (aux * np.log(aux) + (1 - aux) * np.log(1 - aux))
 
     return f_fd
+
 
 def fd_int_complete(mu, beta, n):
     r"""
@@ -206,18 +207,19 @@ def fd_int_complete(mu, beta, n):
 
     return I_n
 
+
 def ideal_entropy_int(mu, beta, n):
-    r"""
-    """
-    # use scipy quad integration routine                                                                                                                                         
+    r""" """
+    # use scipy quad integration routine
     limup = np.inf
 
-    # ignore integration warnings (omnipresent because of inf upper limit)                                                                                                       
+    # ignore integration warnings (omnipresent because of inf upper limit)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
         I_n, err = integrate.quad(ideal_entropy, 0, limup, args=(mu, beta, n))
 
     return I_n
+
 
 def chem_pot(orbs):
     r"""
