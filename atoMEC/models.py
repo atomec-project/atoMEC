@@ -195,7 +195,7 @@ class ISModel:
         """str: formatted description of the ISModel attributes."""
         return writeoutput.write_ISModel_data(self)
 
-    @writeoutput.timing
+    #@writeoutput.timing
     def CalcEnergy(
         self,
         nmax,
@@ -290,7 +290,8 @@ class ISModel:
 
         # write the initial spiel
         scf_init = writeoutput.SCF.write_init()
-        print(scf_init)
+        if write_info:
+            print(scf_init)
 
         # initialize the convergence object
         conv = convergence.SCF(xgrid)
@@ -332,7 +333,8 @@ class ISModel:
 
             # write scf output
             scf_string = writeoutput.SCF.write_cycle(iscf, E_free, conv_vals)
-            print(scf_string)
+            if write_info:
+                print(scf_string)
 
             # exit if converged
             if conv_vals["complete"]:
@@ -344,7 +346,8 @@ class ISModel:
 
         # write final output
         scf_final = writeoutput.SCF().write_final(energy, orbs, rho, conv_vals)
-        print(scf_final)
+        if write_info:
+            print(scf_final)
 
         # write the density to file
         writeoutput.density_to_csv(rgrid, rho)
