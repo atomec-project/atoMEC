@@ -353,8 +353,8 @@
         <span class="sd">&quot;&quot;&quot;str: formatted description of the ISModel attributes.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">write_ISModel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ISModel.CalcEnergy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel.CalcEnergy">[docs]</a>    <span class="nd">@writeoutput</span><span class="o">.</span><span class="n">timing</span>
-    <span class="k">def</span> <span class="nf">CalcEnergy</span><span class="p">(</span>
+    <span class="c1"># @writeoutput.timing</span>
+<div class="viewcode-block" id="ISModel.CalcEnergy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel.CalcEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">CalcEnergy</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">nmax</span><span class="p">,</span>
         <span class="n">lmax</span><span class="p">,</span>
@@ -448,7 +448,8 @@
 
         <span class="c1"># write the initial spiel</span>
         <span class="n">scf_init</span> <span class="o">=</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">write_init</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">scf_init</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">write_info</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">scf_init</span><span class="p">)</span>
 
         <span class="c1"># initialize the convergence object</span>
         <span class="n">conv</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">SCF</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
@@ -490,7 +491,8 @@
 
             <span class="c1"># write scf output</span>
             <span class="n">scf_string</span> <span class="o">=</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">write_cycle</span><span class="p">(</span><span class="n">iscf</span><span class="p">,</span> <span class="n">E_free</span><span class="p">,</span> <span class="n">conv_vals</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">scf_string</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">write_info</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">scf_string</span><span class="p">)</span>
 
             <span class="c1"># exit if converged</span>
             <span class="k">if</span> <span class="n">conv_vals</span><span class="p">[</span><span class="s2">&quot;complete&quot;</span><span class="p">]:</span>
@@ -502,7 +504,8 @@
 
         <span class="c1"># write final output</span>
         <span class="n">scf_final</span> <span class="o">=</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">SCF</span><span class="p">()</span><span class="o">.</span><span class="n">write_final</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">conv_vals</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">scf_final</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">write_info</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">scf_final</span><span class="p">)</span>
 
         <span class="c1"># write the density to file</span>
         <span class="n">writeoutput</span><span class="o">.</span><span class="n">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
