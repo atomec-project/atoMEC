@@ -262,7 +262,7 @@ def ideal_entropy_int(mu, beta, n):
     The entropy of an ideal electron gas is defined as
 
     .. math::
-        I_n(\mu,\beta) = \int \mathrm{d}\epsilon \epsilon^{n/2}
+        I_n(\mu,\beta) = \int_0^\infty \mathrm{d}\epsilon\ \epsilon^{n/2}
         (f_\mathrm{fd}\log{f_\mathrm{fd}} + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),
 
     where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac
