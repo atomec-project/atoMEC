@@ -1015,6 +1015,8 @@ just total electron number</p>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.int_sphere" title="atoMEC.mathtools.int_sphere"><code class="xref py py-func docutils literal notranslate"><span class="pre">int_sphere()</span></code></a>: integral <span class="math notranslate nohighlight">\(4\pi \int \mathrm{d}r r^2 f(r)\)</span></p></li>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.laplace" title="atoMEC.mathtools.laplace"><code class="xref py py-func docutils literal notranslate"><span class="pre">laplace()</span></code></a>: compute the second-order derivative <span class="math notranslate nohighlight">\(d^2 y(x) / dx^2\)</span></p></li>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.fermi_dirac" title="atoMEC.mathtools.fermi_dirac"><code class="xref py py-func docutils literal notranslate"><span class="pre">fermi_dirac()</span></code></a>: compute the Fermi-Dirac occupation function for given order <cite>n</cite></p></li>
+<li><p><a class="reference internal" href="#atoMEC.mathtools.ideal_entropy" title="atoMEC.mathtools.ideal_entropy"><code class="xref py py-func docutils literal notranslate"><span class="pre">ideal_entropy()</span></code></a>: Define the integrand to be used in <a class="reference internal" href="#atoMEC.mathtools.ideal_entropy_int" title="atoMEC.mathtools.ideal_entropy_int"><code class="xref py py-func docutils literal notranslate"><span class="pre">ideal_entropy_int()</span></code></a>.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.mathtools.ideal_entropy_int" title="atoMEC.mathtools.ideal_entropy_int"><code class="xref py py-func docutils literal notranslate"><span class="pre">ideal_entropy_int()</span></code></a>: Compute the entropy for the ideal electron gas (no prefac).</p></li>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.fd_int_complete" title="atoMEC.mathtools.fd_int_complete"><code class="xref py py-func docutils literal notranslate"><span class="pre">fd_int_complete()</span></code></a>: compute the complete Fermi-Dirac integral for given order <cite>n</cite></p></li>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.chem_pot" title="atoMEC.mathtools.chem_pot"><code class="xref py py-func docutils literal notranslate"><span class="pre">chem_pot()</span></code></a>: compute the chemical potential by enforcing charge neutrality</p></li>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.f_root_id" title="atoMEC.mathtools.f_root_id"><code class="xref py py-func docutils literal notranslate"><span class="pre">f_root_id()</span></code></a>: make root input fn for chem_pot with ideal apprx for free electrons</p></li>
@@ -1124,6 +1126,63 @@ N_{ub}(\beta,\mu) - N_e\]</div>
 <div class="math notranslate nohighlight">
 \[f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+
 \beta(\epsilon - \mu))}\]</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.mathtools.ideal_entropy">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">ideal_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#ideal_entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.ideal_entropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define the integrand to be used in <a class="reference internal" href="#atoMEC.mathtools.ideal_entropy_int" title="atoMEC.mathtools.ideal_entropy_int"><code class="xref py py-func docutils literal notranslate"><span class="pre">ideal_entropy_int()</span></code></a> (see notes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eps</strong> (<em>array_like</em>) – the energies</p></li>
+<li><p><strong>mu</strong> (<em>array_like</em>) – the chemical potential</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – the inverse potential</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – energy is raised to power n/2 in the numerator (see notes)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>f_ent</strong> – the entropy integrand function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The ideal entropy integrand is defined as</p>
+<div class="math notranslate nohighlight">
+\[f_n(\epsilon,\mu,\beta) = \epsilon^{n/2} (f_\mathrm{fd}\log{f_\mathrm{fd}}
++ (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),\]</div>
+<p>where <span class="math notranslate nohighlight">\(f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)\)</span> is the Fermi-Dirac
+distribution.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.mathtools.ideal_entropy_int">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">ideal_entropy_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#ideal_entropy_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.ideal_entropy_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the entropy for the ideal electron gas (without prefactor) - see notes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>float</em>) – chemical potential</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – inverse temperature</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – order of Fermi-Dirac integral (see notes)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>I_n</strong> – the complete fermi-dirac integral</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The entropy of an ideal electron gas is defined as</p>
+<div class="math notranslate nohighlight">
+\[I_n(\mu,\beta) = \int_0^\infty \mathrm{d}\epsilon\ \epsilon^{n/2}
+(f_\mathrm{fd}\log{f_\mathrm{fd}} + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),\]</div>
+<p>where <span class="math notranslate nohighlight">\(f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)\)</span> is the Fermi-Dirac
+distribution.</p>
 </dd></dl>
 
 <dl class="py function">

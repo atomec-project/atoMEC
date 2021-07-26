@@ -165,6 +165,8 @@
 <span class="sd">* :func:`int_sphere`: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`</span>
 <span class="sd">* :func:`laplace`: compute the second-order derivative :math:`d^2 y(x) / dx^2`</span>
 <span class="sd">* :func:`fermi_dirac`: compute the Fermi-Dirac occupation function for given order `n`</span>
+<span class="sd">* :func:`ideal_entropy`: Define the integrand to be used in :func:`ideal_entropy_int`.</span>
+<span class="sd">* :func:`ideal_entropy_int`: Compute the entropy for the ideal electron gas (no prefac).</span>
 <span class="sd">* :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`</span>
 <span class="sd">* :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality</span>
 <span class="sd">* :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons</span>
@@ -312,6 +314,49 @@
     <span class="k">return</span> <span class="n">f_fd</span></div>
 
 
+<div class="viewcode-block" id="ideal_entropy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.ideal_entropy">[docs]</a><span class="k">def</span> <span class="nf">ideal_entropy</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Define the integrand to be used in :func:`ideal_entropy_int` (see notes).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eps : array_like</span>
+<span class="sd">        the energies</span>
+<span class="sd">    mu : array_like</span>
+<span class="sd">        the chemical potential</span>
+<span class="sd">    beta : float</span>
+<span class="sd">        the inverse potential</span>
+<span class="sd">    n : int</span>
+<span class="sd">        energy is raised to power n/2 in the numerator (see notes)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_ent : array_like</span>
+<span class="sd">        the entropy integrand function</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The ideal entropy integrand is defined as</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        f_n(\epsilon,\mu,\beta) = \epsilon^{n/2} (f_\mathrm{fd}\log{f_\mathrm{fd}}</span>
+<span class="sd">        + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),</span>
+
+<span class="sd">    where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac</span>
+<span class="sd">    distribution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># dfn the exponential function</span>
+    <span class="c1"># ignore warnings here</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">over</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+        <span class="n">fn_exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">beta</span> <span class="o">*</span> <span class="p">(</span><span class="n">eps</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)),</span> <span class="mf">1e12</span><span class="p">)</span>
+
+    <span class="n">f_fd</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">fn_exp</span><span class="p">)</span>
+    <span class="c1"># fermi_dirac dist</span>
+    <span class="n">f_ent</span> <span class="o">=</span> <span class="p">(</span><span class="n">eps</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">f_fd</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">f_fd</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f_fd</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f_fd</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">f_ent</span></div>
+
+
 <div class="viewcode-block" id="fd_int_complete"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.fd_int_complete">[docs]</a><span class="k">def</span> <span class="nf">fd_int_complete</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute complete Fermi-Dirac integral for given order (see notes for function form).</span>
@@ -348,6 +393,46 @@
     <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
         <span class="n">I_n</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">fermi_dirac</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">limup</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">I_n</span></div>
+
+
+<div class="viewcode-block" id="ideal_entropy_int"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.ideal_entropy_int">[docs]</a><span class="k">def</span> <span class="nf">ideal_entropy_int</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the entropy for the ideal electron gas (without prefactor) - see notes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mu : float</span>
+<span class="sd">        chemical potential</span>
+<span class="sd">    beta: float</span>
+<span class="sd">        inverse temperature</span>
+<span class="sd">    n : int</span>
+<span class="sd">        order of Fermi-Dirac integral (see notes)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    I_n : float</span>
+<span class="sd">        the complete fermi-dirac integral</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The entropy of an ideal electron gas is defined as</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        I_n(\mu,\beta) = \int_0^\infty \mathrm{d}\epsilon\ \epsilon^{n/2}</span>
+<span class="sd">        (f_\mathrm{fd}\log{f_\mathrm{fd}} + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),</span>
+
+<span class="sd">    where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac</span>
+<span class="sd">    distribution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># use scipy quad integration routine</span>
+    <span class="n">limup</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># ignore integration warnings (omnipresent because of inf upper limit)</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="n">I_n</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">ideal_entropy</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">limup</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">I_n</span></div>
 
