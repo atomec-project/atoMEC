@@ -3,6 +3,11 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[dev-packages]
+ipykernel = "*"
+jupyter = "*"
+matplotlib = "*"
+
 [packages]
 numpy = ">=1.20.3"
 scipy = ">=1.6.3"
