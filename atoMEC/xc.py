@@ -1,19 +1,21 @@
 """
-The xc module handles everything connected to the exchange-correlation energy and potential.
+The xc module calculates exchange-correlation energies and potentials.
 
 Mostly it sets up inputs and makes appropriate calls to the libxc package.
+It also includes a class for customized xc-functionals and checks the
+validity of inputs.
 
 Classes
 -------
-XCFunc : handles atoMEC-defined functionals (not part of libxc package)
+* :class:`XCFunc` : handles atoMEC-defined functionals (not part of libxc package)
 
 Functions
 ---------
-check_xc_func : checks the xc func input is recognised and valid for atoMEC
-set_xc_func   : initializes the xc functional object
-v_xc          : returns the xc potential on the grid
-E_xc          : returns the xc energy
-calc_xc       : computes the xc energy or potential depending on arguments
+* :func:`check_xc_func` : check the xc func input is recognised and valid for atoMEC
+* :func:`set_xc_func`   : initialize the xc functional object
+* :func:`v_xc`          : return the xc potential on the grid
+* :func:`E_xc`          : return the xc energy
+* :func:`calc_xc`       : compute the xc energy or potential depending on arguments
 """
 
 # standard libs
@@ -67,7 +69,7 @@ class XCFunc:
     # defines the xc functional name
     @property
     def _xc_func_name(self):
-        if self.__xc_func_name == None:
+        if self.__xc_func_name is None:
             if self._xc_code == "hartree":
                 self.__xc_name = "- hartree"
             elif self._xc_code == "None":
@@ -77,7 +79,7 @@ class XCFunc:
     # defines the number id for the xc functional
     @property
     def _number(self):
-        if self.__number == None:
+        if self.__number is None:
             if self._xc_code == "hartree":
                 self.__xc_number = -1
             elif self._xc_code == "None":
@@ -102,9 +104,8 @@ def check_xc_func(xc_code, id_supp):
         the xc functional name
     """
     # check the xc code is either a string descriptor or integer id
-    if isinstance(xc_code, (str, int)) == False:
+    if not isinstance(xc_code, (str, int)):
         err = 1
-        xc_func_id = 0
 
     # when xc code is one of the special atoMEC defined functionals
     if xc_code in xc_special_codes:

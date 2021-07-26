@@ -129,6 +129,13 @@ html_theme = 'sphinx_rtd_theme'
 # documentation.
 #html_theme_options = {}
 
+html_context = {
+  'display_github': True,
+  'github_repo': 'atomec-project/atoMEC',
+  'github_version': 'develop',
+  'conf_py_path': '/docs/source/',
+}
+
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
 

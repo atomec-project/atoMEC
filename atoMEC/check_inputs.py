@@ -1,5 +1,17 @@
 """
-This module checks inputs for errors
+The check_inputs module checks the validity of all user-defined inputs.
+
+If inputs are invalid, InputError exceptions are raised. It also assigns
+appropriate default inputs where none are supplied.
+
+Classes
+-------
+* :class:`Atom` : Check the inputs from the :class:`atoMEC.Atom` object.
+* :class:`ISModel` : Check the inputs from the :obj:`atoMEC.models.ISModel` class.
+* :class:`EnergyCalcs` : Check the inputs from the\
+ :func:`atoMEC.models.ISModel.CalcEnergy` function.
+* :class:`InputError` : Exit atoMEC and print relevant input error message.
+* :class:`InputWarning` : Warn if inputs are considered outside of typical ranges.
 """
 
 # standard python packages
@@ -23,18 +35,27 @@ intc = (int, np.integer)  # unfifying type for integers
 
 
 class Atom:
-    """
-    Checks the inputs from the BuildAtom class
-    """
+    """Check the inputs from the Atom class."""
 
     def check_species(self, species):
         """
-        Checks the species is a string and corresponds to an actual element
+        Check the species is a string and corresponds to an actual element.
 
-        Inputs:
-        - species (str)    : chemical symbol for atomic species
+        Parameters
+        ----------
+        species : str
+            chemical symbol for atomic species
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        InputError.species_error
+            Chemical symbol is not valid
         """
-        if isinstance(species, str) == False:
+        if not isinstance(species, str):
             raise InputError.species_error("element is not a string")
         else:
             try:
@@ -43,6 +64,24 @@ class Atom:
                 raise InputError.species_error("invalid element")
 
     def check_units_temp(self, units_temp):
+        """
+        Check the units of temperature are accepted.
+
+        Parameters
+        ----------
+        units_temp : str
+            units of temperature
+
+        Returns
+        -------
+        units_temp : str
+            units of temperature (if valid input) converted to lowercase
+
+        Raises
+        ------
+        InputError.temp_error
+            unit of temperature is not accepted, i.e. not one of "ha", "ev" or "k"
+        """
         units_accepted = ["ha", "ev", "k"]
         if units_temp.lower() not in units_accepted:
             raise InputError.temp_error("units of temperature are not recognised")
@@ -50,9 +89,27 @@ class Atom:
 
     def check_temp(self, temp, units_temp):
         """
-        Checks the temperature is a float within a sensible range
-        """
+        Check the temperature is a float within a sensible range.
 
+        Parameters
+        ----------
+        temp : float
+             temperature (in any accepted units)
+        units_temp : str
+            units of temperature
+
+        Returns
+        -------
+        temp : float
+            temperature in units of Hartree
+
+        Raises
+        ------
+        InputError.temp_error
+            input temperature is not a positive number
+        InputWarning.temp_warning
+            input temperature is not inside a well-tested range
+        """
         if not isinstance(temp, (float, intc)):
             raise InputError.temp_error("temperature is not a number")
         else:
@@ -75,21 +132,73 @@ class Atom:
 
     def check_charge(self, charge):
         """
-        Checks the charge is an integer
+        Check the net charge is an integer.
+
+        Parameters
+        ----------
+        charge : int
+            the net charge
+
+        Returns
+        -------
+        charge : int
+            the net charge (if input valid)
+
+        Raises
+        ------
+        InputError.charge_error
+            if charge is not an integer
         """
-        if isinstance(charge, intc) == False:
+        if not isinstance(charge, intc):
             raise InputError.charge_error()
         else:
             return charge
 
     def check_units_radius(self, units_radius):
+        """
+        Check the units of radius are accepted.
+
+        Parameters
+        ----------
+        units_radius : str
+            units of radius
+
+        Returns
+        -------
+        units_radius : str
+            units of radius (if accepted) converted to lowercase
+
+        Raises
+        ------
+        InputError.density_error
+            if units of radius are not one of "bohr", "angstrom" or "ang"
+        """
         radius_units_accepted = ["bohr", "angstrom", "ang"]
         if units_radius.lower() not in radius_units_accepted:
             raise InputError.density_error("Radius units not recognised")
 
-        return units_radius.lower()
+        units_radius = units_radius.lower()
+        return units_radius
 
     def check_units_density(self, units_density):
+        """
+        Check the units of density are accepted.
+
+        Parameters
+        ----------
+        units_density : str
+            units of density
+
+        Returns
+        -------
+        units_density : str
+            units of density (if accepted) converted to lowercase
+
+        Raises
+        ------
+        InputError.density_error
+            if units of density are not one of "g/cm3" or "gcm3"
+        """
         density_units_accepted = ["g/cm3", "gcm3"]
 
         if units_density.lower() not in density_units_accepted:
@@ -98,7 +207,26 @@ class Atom:
         return units_density.lower()
 
     def check_radius(self, radius, units_radius):
+        """
+        Check the Wigner-Seitz radius is valid and reasonable.
 
+        Parameters
+        ----------
+        radius : float or int
+            Wigner-Seitz radius (in input units)
+        units_radius : str
+            input units of radius
+
+        Returns
+        -------
+        radius : float
+             Wigner-Seitz radius in Hartree units (Bohr)
+
+        Raises
+        ------
+        InputError.density_error
+            if the radius is not a positive number > 0.1
+        """
         if not isinstance(radius, (float, intc)):
             raise InputError.density_error("Radius is not a number")
 
@@ -111,7 +239,25 @@ class Atom:
                 )
         return radius
 
-    def check_density(self, density, units_density):
+    def check_density(self, density):
+        r"""
+        Check the mass density is valid and reasonable.
+
+        Parameters
+        ----------
+        density : float or int
+            mass density (in :math:`\mathrm{g\ cm}^{-3}`)
+
+        Returns
+        -------
+        density : float
+            mass density (in :math:`\mathrm{g\ cm}^{-3}`) if input accepted
+
+        Raises
+        ------
+        InputError.density_error
+            if the density is not a positive number <= 100
+        """
         if not isinstance(density, (float, intc)):
             raise InputError.density_error("Density is not a number")
         else:
@@ -124,15 +270,35 @@ class Atom:
 
     def check_rad_dens_init(self, atom, radius, density, units_radius, units_density):
         """
-        Checks that the density or radius is specified
+        Check that at least one of radius or density is specified and reasonable.
 
-        Inputs:
-        - atom (object)     : atom object
-        - density (float)   : material density
-        - radius (float)    : voronoi sphere radius
+        In case both are specified, check they are compatible.
+
+        Parameters
+        ----------
+        Atom : atoMEC.Atom
+            the main Atom object
+        radius : float or int
+            Wigner-Seitz radius
+        density : float or int
+            mass density
+        units_radius : str
+            units of radius
+        units_density : str
+            units of density
+
+        Returns
+        -------
+        radius, density : tuple of floats
+            the Wigner-Seitz radius and mass density if inputs are valid
+
+        Raises
+        ------
+        InputError.density_error
+            if neither density nor radius is not given, or if one is invalid,
+            or if both are given and they are incompatible
         """
-
-        if isinstance(density, (float, intc)) == False:
+        if not isinstance(density, (float, intc)):
             raise InputError.density_error("Density is not a number")
         if not isinstance(radius, (float, intc)):
             raise InputError.density_error("Radius is not a number")
@@ -157,7 +323,8 @@ class Atom:
                 density_test = self.radius_to_dens(atom, radius)
                 if abs((density_test - density) / density) > 5e-2:
                     raise InputError.density_error(
-                        "Both radius and density are specified but they are not compatible"
+                        "Both radius and density are specified but they are not"
+                        " compatible"
                     )
                 else:
                     density = density_test
@@ -170,9 +337,20 @@ class Atom:
 
     def radius_to_dens(self, atom, radius):
         """
-        Convert the Voronoi sphere radius to a mass density
-        """
+        Convert the Voronoi sphere radius to a mass density.
 
+        Parameters
+        ----------
+        atom : atoMEC.Atom
+            the main Atom object
+        radius : float
+            the Wigner-Seitz radius
+
+        Returns
+        -------
+        density : float
+            the mass density
+        """
         # radius in cm
         rad_cm = radius / unitconv.cm_to_bohr
         # volume in cm
@@ -186,9 +364,20 @@ class Atom:
 
     def dens_to_radius(self, atom, density):
         """
-        Convert the material density to Voronoi sphere radius
-        """
+        Convert the mass density to a Wigner-Seitz radius.
 
+        Parameters
+        ----------
+        atom : atoMEC.Atom
+            the main Atom object
+        density : float
+            the mass density
+
+        Returns
+        -------
+        radius : float
+            the Wigner-Seitz radius
+        """
         # compute atomic mass in g
         mass_g = config.mp_g * atom.at_mass
         # compute volume and radius in cm^3/cm
@@ -201,15 +390,30 @@ class Atom:
 
 
 class ISModel:
-    """
-    Checks the inputs for the IS model class
-    """
+    """Check the inputs for the IS model class."""
 
     def check_xc(xc_func, xc_type):
         """
-        checks the exchange and correlation functionals are defined by libxc
-        """
+        Check the exchange and correlation functionals are accepted.
 
+        Parameters
+        ----------
+        xc_func : str or int
+            the libxc name or id of the x/c functional
+        xc_type : str
+            type i.e. "exchange" or "correlation"
+
+        Returns
+        -------
+        xc_func : str
+            the libxc name of the x/c functional (if valid input)
+
+        Raises
+        ------
+        InputError.xc_error
+            if xc functional is not a valid libxc input or is not supported
+            by the current version of atoMEC
+        """
         # supported families of libxc functional by name
         names_supp = ["lda"]
         # supported families of libxc functional by id
@@ -220,45 +424,44 @@ class ISModel:
 
         if err_xc == 1:
             raise InputError.xc_error(
-                xctype + " functional is not an id (int) or name (str)"
+                xc_type + " functional is not an id (int) or name (str)"
             )
         elif err_xc == 2:
             raise InputError.xc_error(
                 xc_type
-                + " functional is not a valid name or id.\n \
-                Please choose from the valid inputs listed here: \n\
-                https://www.tddft.org/programs/libxc/functionals/"
+                + " functional is not a valid name or id.\n                 Please"
+                " choose from the valid inputs listed here: \n               "
+                " https://www.tddft.org/programs/libxc/functionals/"
             )
         elif err_xc == 3:
             raise InputError.xc_error(
                 "This family of "
                 + xc_type
-                + " functionals is not yet supported by atoMEC. \n\
-                Supported families so far are: "
-                + " ".join(names_supp)
+                + " functionals is not yet supported by atoMEC. \n               "
+                " Supported families so far are: " + " ".join(names_supp)
             )
 
         return xc_func
 
     def check_unbound(unbound):
         """
-        Checks the input for the unbound electrons
+        Check the unbound electron input is accepted.
 
         Parameters
         ----------
         unbound : str
             defines the treatment of the unbound electrons
 
-        Raises
-        ------
-            InputError
-
         Returns
         -------
-        str:
-            description of unbound electron treatment
-        """
+        unbound : str
+            treatment of unbound electrons (if input valid)
 
+        Raises
+        ------
+        InputError.unbound_error
+            if the treatment of unbound electrons is not a valid input
+        """
         # list all possible treatments for unbound electrons
         unbound_permitted = ["ideal"]
 
@@ -272,9 +475,8 @@ class ISModel:
         else:
             if unbound not in unbound_permitted:
                 err_msg = (
-                    "Treatment of unbound electrons not recognised. \n \
-                Allowed treatments are: "
-                    + [ub for ub in unbound_permitted]
+                    "Treatment of unbound electrons not recognised. \n                "
+                    " Allowed treatments are: " + [ub for ub in unbound_permitted]
                 )
                 raise InputError.unbound_error(err_msg)
 
@@ -282,23 +484,24 @@ class ISModel:
 
     def check_bc(bc):
         """
-        Checks the boundary condition is permitted
+        Check the boundary condition is accepted.
 
         Parameters
         ----------
         bc : str
-            defines the boundary condition used to solve KS eqns
-
-        Raises
-        ------
-        InputError
+            the boundary condition used to solve KS eqns
+            (can be either "dirichlet" or "neumann")
 
         Returns
         -------
-        str:
-            boundary condition used to solve KS eqns
-        """
+        bc : str
+            the boundary condition used to solve KS eqns (lowercase)
 
+        Raises
+        ------
+        InputError.bc_error
+            if the boundary condition is not recognised
+        """
         # list permitted boundary conditions
         bcs_permitted = ["dirichlet", "neumann"]
 
@@ -310,9 +513,8 @@ class ISModel:
         else:
             if bc not in bcs_permitted:
                 err_msg = (
-                    "Boundary condition is not recognised. \n \
-                Allowed boundary conditions are: "
-                    + [b for b in bcs_permitted]
+                    "Boundary condition is not recognised. \n                 Allowed"
+                    " boundary conditions are: " + [b for b in bcs_permitted]
                 )
                 raise InputError.bc_error(err_msg)
 
@@ -320,10 +522,12 @@ class ISModel:
 
     def check_spinpol(spinpol):
         """
+        Check the spin polarization is a boolean.
+
         Parameters
         ----------
         spinpol : bool
-           spin polarized calculation
+           whether spin polarized calculation is done
 
         Returns
         -------
@@ -332,9 +536,9 @@ class ISModel:
 
         Raises
         ------
-        InputError
+        InputError.spinpol_error
+            if the spin polarization is not a bool
         """
-
         if not isinstance(spinpol, bool):
             raise InputError.spinpol_error("Spin polarization is not of type bool")
 
@@ -342,9 +546,28 @@ class ISModel:
 
     def check_spinmag(spinmag, nele):
         """
-        Checks the spin magnetization is compatible with the total electron number
+        Check the spin magnetization is compatible with the total electron number.
+
+        Also compute a default value if none is specified.
+
+        Parameters
+        ----------
+        spinmag : int
+            the spin magnetization (e.g. 1 for a doublet state)
+        nele : int
+            the total number of electrons
+
+        Returns
+        -------
+        spinmag : int
+            the spin magnetization if input valid
+
+        Raises
+        ------
+        InputError.spinmag_error
+            if spinmag input is not an integer or incompatible with electron number
         """
-        if isinstance(spinmag, intc) == False:
+        if not isinstance(spinmag, intc):
             raise InputError.spinmag_error(
                 "Spin magnetization is not a positive integer"
             )
@@ -373,10 +596,23 @@ class ISModel:
 
     def calc_nele(spinmag, nele, spinpol):
         """
-        Calculates the electron number in each spin channel from spinmag
-        and total electron number
-        """
+        Calculate the electron number in each spin channel (if spin polarized).
 
+        Parameters
+        ----------
+        spinmag : int
+            the spin magnetization
+        nele : int
+            total electron number
+        spinpol : bool
+            spin polarization
+
+        Returns
+        -------
+        nele : array of ints
+            number of electrons in each spin channel if spin-polarized, else
+            just total electron number
+        """
         if not spinpol:
             nele = np.array([nele], dtype=int)
         else:
@@ -388,24 +624,36 @@ class ISModel:
 
 
 class EnergyCalcs:
+    """Check inputs for CalcEnergy calculations."""
+
     @staticmethod
     def check_grid_params(grid_params):
-        """
-        Checks grid parameters are reasonable, or assigns if empty
+        r"""
+        Check grid parameters are reasonable, or assigns if empty.
 
         Parameters
         ----------
         grid_params : dict
-            Can contain the keys "ngrid" (int, number of grid points)
-            and "x0" (float, LHS grid point for log grid)
+            Can contain the keys `ngrid` (``int``, number of grid points)
+            and `x0` (`float`, LHS grid point for log grid)
 
         Returns
         -------
-        dict
-          {'ngrid'    (int)    : number of grid points
-           'x0'       (float)  : LHS grid point takes form r0=exp(x0); x0 can be specified }
-        """
+        grid_params : dict
+            dictionary of grid parameters as follows:
+            {
+            `ngrid` (``int``)   : number of grid points,
+            `x0`    (``float``) : LHS grid point takes form
+            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            }
 
+        Raises
+        ------
+        InputError.grid_error
+            if grid inputs are invalid or outside a reasonable range
+        InputError.ngrid_warning
+            if `ngrid` is outside a reasonable convergence range
+        """
         # First assign the keys ngrid and x0 if they are not given
         try:
             ngrid = grid_params["ngrid"]
@@ -441,22 +689,29 @@ class EnergyCalcs:
     @staticmethod
     def check_conv_params(input_params):
         """
-        Checks convergence parameters are reasonable, or assigns if empty
+        Check convergence parameters are reasonable, or assigns if empty.
 
         Parameters
         ----------
         input_params : dict of floats
-            Can contain the keys "econv", "nconv" and "vconv", for energy,
+            Can contain the keys `econv`, `nconv` and `vconv`, for energy,
             density and potential convergence parameters
 
         Returns
         -------
-        dict
-          {'econv'    (float)    : energy convergence
-           'nconv'    (float)    : density convergence
-           'vconv'    (float)    : potential convergence}
-        """
+        conv_params : dict of floats
+            dictionary of convergence parameters as follows:
+            {
+            `econv` (``float``) : convergence for total energy,
+            `nconv` (``float``) : convergence for density,
+            `vconv` (``float``) : convergence for electron number
+            }
 
+        Raises
+        ------
+        InputError.conv_error
+            if a convergence parameter is invalid (not float or negative).
+        """
         conv_params = {}
         # loop through the convergence parameters
         for conv in ["econv", "nconv", "vconv"]:
@@ -480,24 +735,28 @@ class EnergyCalcs:
     @staticmethod
     def check_scf_params(input_params):
         """
-        Checks convergence parameters are reasonable, or assigns if empty
+        Check scf parameters are reasonable, or assigns if empty.
 
         Parameters
         ----------
         input_params : dict
-            Can contain the keys `maxscf` and `mixfrac` for max scf cycle
+            can contain the keys `maxscf` and `mixfrac` for max scf cycle
             and potential mixing fraction
 
         Returns
         -------
         scf_params : dict
-            A dictionary with the following scf parameters
+            dictionary with the following keys:
             {
             `maxscf`   (``int``)    : max number scf cycles,
-            `mixfrac`  (``int``)    : mixing fraction
+            `mixfrac`  (``float``)    : mixing fraction
             }
-        """
 
+        Raises
+        ------
+        InputError.SCF_error
+            if the SCF parameters are not of correct type or in valid range
+        """
         scf_params = {}
 
         # assign value to scf param if it is not specified
@@ -527,28 +786,37 @@ class EnergyCalcs:
 
 
 class InputError(Exception):
-    """
-    Handles errors in inputs
-    """
+    """Exit atoMEC and print relevant input error message."""
 
     def species_error(err_msg):
         """
-        Raises an exception if there is an invalid species
+        Raise an exception if there is an invalid species.
 
-        Inputs:
-        - err_msg (str)     : error message printed
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
         """
-
         print("Error in atomic species input: " + err_msg)
         print("Species must be a chemical symbol, e.g. 'He'")
         sys.exit("Exiting atoMEC")
 
     def temp_error(err_msg):
         """
-        Raises an exception if temperature is not a float
+        Raise an exception if temperature is not a float.
 
-        Inputs:
-        - err_msg (str)     : error message printed
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
         """
         print("Error in temperature input: " + err_msg)
         print("Temperature should be >0 and given in units of eV")
@@ -556,153 +824,180 @@ class InputError(Exception):
 
     def charge_error():
         """
-        Raises an exception if charge is not an integer
+        Raise an exception if charge is not an integer.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
         print("Error in charge input: charge is not an integer")
         sys.exit("Exiting atoMEC")
 
     def density_error(err_msg):
         """
-        Raises an exception if density is not a float or negative
+        Raise an exception if density is not a float or negative.
 
-        Inputs:
-        - err_msg (str)     : error message printed
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
         """
         print("Error in density input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def spinmag_error(err_msg):
         """
-        Raises an exception if density is not a float or negative
-        """
+        Raise an exception if density is not a float or negative.
 
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
+        """
         print("Error in spinmag input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def xc_error(err_msg):
-
         """
-        Raises an exception if density is not a float or negative
-        """
+        Raise an exception if density is not a float or negative.
 
+        Parameters
+        ----------
+        err_msg : str
+            error message printed
+
+        Returns
+        -------
+        None
+        """
         print("Error in xc input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def unbound_error(err_msg):
         """
-        Raises exception if unbound not str or in permitted values
+        Raise exception if unbound not str or in permitted values.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in unbound electron input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def bc_error(err_msg):
         """
-        Raises exception if unbound not str or in permitted values
+        Raise exception if unbound not str or in permitted values.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in boundary condition input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def spinpol_error(err_msg):
         """
-        Raises exception if spinpol not a boolean
+        Raise exception if spinpol not a boolean.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in spin polarization input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def grid_error(err_msg):
         """
-        Raises exception if error in grid inputs
+        Raise exception if error in grid inputs.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in grid inputs: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def conv_error(err_msg):
         """
-        Raises exception if error in convergence inputs
+        Raise exception if error in convergence inputs.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in convergence inputs: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def SCF_error(err_msg):
         """
-        Raises exception if error in convergence inputs
+        Raise exception if error in SCF inputs.
 
         Parameters
         ----------
         err_msg : str
             the error message printed
 
-        Raises
+        Returns
         -------
-            InputError
+        None
         """
-
         print("Error in scf_params input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
 
 class InputWarning:
-    """
-    Warns user if inputs are considered outside of typical ranges, but proceeds anyway
-    """
+    """Warn if inputs are considered outside of typical ranges, but proceed anyway."""
 
     def temp_warning(err):
         """
-        Warning if temperature outside of sensible range
+        Warn if temperature outside of sensible range.
 
-        Inputs:
-        - temp (float)    : temperature in units of eV
-        - err (str)       : "high" or "low"
+        Parameters
+        ----------
+        err : str
+            custom part of error message
+
+        Returns
+        -------
+        warning : str
+            full errror message
         """
         warning = (
             "Warning: this input temperature is very "
@@ -714,7 +1009,19 @@ class InputWarning:
 
     def ngrid_warning(err1, err2):
         """
-        Warning if grid params outside of sensible range
+        Warn if grid params outside of sensible range.
+
+        Parameters
+        ----------
+        err1 : str
+            first custom part of error message
+        err2 : str
+            second custom part of error message
+
+        Returns
+        -------
+        warning : str
+            full error message
         """
         warning = (
             "Warning: number of grid points is very "
@@ -722,6 +1029,7 @@ class InputWarning:
             + ". Proceeding anyway, but results may be "
             + err2
             + "\n"
-            + "Suggested grid range is between 1000-5000 but should be tested wrt convergence \n"
+            + "Suggested grid range is between 1000-5000 but should be tested wrt"
+            " convergence \n"
         )
         return warning

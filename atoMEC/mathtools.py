@@ -3,19 +3,13 @@ Low-level module containing miscalleneous mathematical functions.
 
 Functions
 ---------
-normalize_orbs: normalize KS orbitals within defined sphere
-
-int_sphere: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
-
-lapalce: compute the second-order derivative :math:`d^2 y(x) / dx^2`
-
-fermi_dirac: compute the Fermi-Dirac occupation function (for given order n)
-
-fd_int_complete: compute the complete Fermi-Dirac integral (for given order n)
-
-chem_pot: compute the chemical potential by enforcing charge neutrality
-
-f_root_id: make root input function for chem_pot with ideal approx for free electrons
+* :func:`normalize_orbs`: normalize KS orbitals within defined sphere
+* :func:`int_sphere`: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
+* :func:`laplace`: compute the second-order derivative :math:`d^2 y(x) / dx^2`
+* :func:`fermi_dirac`: compute the Fermi-Dirac occupation function for given order `n`
+* :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`
+* :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
+* :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons
 """
 
 # standard libraries
@@ -208,7 +202,7 @@ def chem_pot(orbs):
 
     Parameters
     ----------
-    orbs : :obj:`staticKS.Orbitals`
+    orbs : staticKS.Orbitals
         the orbitals object
 
     Returns

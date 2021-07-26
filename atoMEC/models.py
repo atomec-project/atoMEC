@@ -1,19 +1,19 @@
 """
 Contains models used to compute properties of interest from the Atom object.
 
-So far, the only model implemented is the ISModel. More models will be added in future releases.
+So far, the only model implemented is the ISModel. More models will be added in future
+releases.
 
 Classes
 -------
-ISModel : Ion-sphere type model, static properties such as KS orbitals, density and energy are directly computed
+* :class:`ISModel` : Ion-sphere type model, static properties such as KS orbitals, \
+density and energy are directly computed
 """
 
 # import standard packages
 
 # import external packages
-import numpy as np
-from mendeleev import element
-from math import pi, log
+from math import log
 
 # import internal packages
 from . import check_inputs
@@ -28,22 +28,23 @@ class ISModel:
     """
     The ISModel represents a particular family of AA models known as ion-sphere models.
 
-    The implementation in atoMEC is based on the model described in the following pre-print:
-    T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).
-    First-principles derivation and properties of density-functional average-atom models. arXiv preprint arXiv:2103.09928.
+    The implementation in atoMEC is based on the model described in [1]_.
 
-    Parameter inputs for this model are related to particular choices of approximation, e.g. boundary conditions
-    or exchange-correlation functional, rather than fundamental physical properties.
+    Parameter inputs for this model are related to particular choices of approximation,
+    e.g. boundary conditions or exchange-correlation functional, rather than
+    fundamental physical properties.
 
     Parameters
     ----------
-    atom : :obj:`Atom`
-        The :obj:`Atom` object
+    atom : atoMEC.Atom
+        The main atom object
     xfunc_id : str or int, optional
-        The exchange functional, can be the libxc code or string, or special internal value
+        The exchange functional, can be the libxc code or string,
+        or special internal value
         Default : "lda_x"
     cfunc_id : str or int, optional
-        The correlation functional, can be the libxc code or string, or special internal value
+        The correlation functional, can be the libxc code or string, or special
+        internal value
         Default : "lda_c_pw"
     bc : str, optional
         The boundary condition, can be "dirichlet" or "neumann"
@@ -67,6 +68,12 @@ class ISModel:
         total number of electrons
     nele: array_like
         number of electrons per spin channel (or total if spin unpolarized)
+
+    References
+    ----------
+    .. [1] T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021).
+       First-principles derivation and properties of density-functional
+       average-atom models, `arXiv:2103.09928 <https://arxiv.org/abs/2103.09928>`__.
     """
 
     def __init__(
@@ -126,7 +133,7 @@ class ISModel:
 
     @property
     def spinmag(self):
-        """int: the spin magentization (difference in number of up/down spin electrons)."""
+        """int: the spin magentization (difference in no. up/down spin electrons)."""
         return self._spinmag
 
     @spinmag.setter
@@ -165,7 +172,7 @@ class ISModel:
 
     @property
     def bc(self):
-        """str: the boundary condition for solving the KS equations in a finite sphere."""
+        """str: boundary condition for solving the KS equations in a finite sphere."""
         return self._bc
 
     @bc.setter
@@ -201,7 +208,7 @@ class ISModel:
         verbosity=0,
     ):
         r"""
-        Run a self-consistent calculation to minimize the Kohn-Sham free energy functional.
+        Run a self-consistent calculation to minimize the Kohn-Sham free energy.
 
         Parameters
         ----------
@@ -229,6 +236,16 @@ class ISModel:
             `maxscf`  (``int``)   : maximum number of scf cycles,
             `mixfrac` (``float``) : density mixing fraction
             }
+        force_bound : list of list of ints, optional
+            force certain levels to be bound, for example:
+            `force_bound = [0, 1, 0]`
+            forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be
+            always bound even if it has positive energy. This prevents convergence
+            issues.
+        verbosity : int, optional
+            how much information is printed at each SCF cycle.
+            `verbosity=0` prints the total energy and convergence values (default).
+            `verbosity=1` prints the above and the KS eigenvalues and occupations.
         write_info : bool, optional
             prints the scf cycle and final parameters
             defaults to True
@@ -265,6 +282,7 @@ class ISModel:
         orbs = staticKS.Orbitals(xgrid)
         # use coulomb potential as initial guess
         v_init = staticKS.Potential.calc_v_en(xgrid)
+        v_s_old = v_init  # initialize the old potential
         orbs.compute(v_init, init=True)
 
         # occupy orbitals
