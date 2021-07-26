@@ -68,8 +68,9 @@ $ pip install -r docs/requirements.txt
 - Tim Callow ([Center for Advanced Systems Understanding](https://www.casus.science/))
 - Daniel Kotik ([Center for Advanced Systems Understanding](https://www.casus.science/))
 
-### Contributions
+### Contributions (alphabetical)
 - Nathan Rahat ([Hebrew University of Jerusalem](https://en.huji.ac.il/en))
+- Ekaterina Tsvetoslavova Stankulova ([Center for Advanced Systems Understanding](https://www.casus.science/))
 
 ## Citing atoMEC
 The following paper should be cited in publications which use atoMEC:
