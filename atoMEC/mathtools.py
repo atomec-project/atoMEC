@@ -7,6 +7,8 @@ Functions
 * :func:`int_sphere`: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
 * :func:`laplace`: compute the second-order derivative :math:`d^2 y(x) / dx^2`
 * :func:`fermi_dirac`: compute the Fermi-Dirac occupation function for given order `n`
+* :func:`ideal_entropy`: Define the integrand to be used in :func:`ideal_entropy_int`.
+* :func:`ideal_entropy_int`: Compute the entropy for the ideal electron gas (no prefac).
 * :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`
 * :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
 * :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons
@@ -154,6 +156,49 @@ def fermi_dirac(eps, mu, beta, n=0):
     return f_fd
 
 
+def ideal_entropy(eps, mu, beta, n=0):
+    r"""
+    Define the integrand to be used in :func:`ideal_entropy_int` (see notes).
+
+    Parameters
+    ----------
+    eps : array_like
+        the energies
+    mu : array_like
+        the chemical potential
+    beta : float
+        the inverse potential
+    n : int
+        energy is raised to power n/2 in the numerator (see notes)
+
+    Returns
+    -------
+    f_ent : array_like
+        the entropy integrand function
+
+    Notes
+    -----
+    The ideal entropy integrand is defined as
+
+    .. math::
+        f_n(\epsilon,\mu,\beta) = \epsilon^{n/2} (f_\mathrm{fd}\log{f_\mathrm{fd}}
+        + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),
+
+    where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac
+    distribution.
+    """
+    # dfn the exponential function
+    # ignore warnings here
+    with np.errstate(over="ignore"):
+        fn_exp = np.minimum(np.exp(beta * (eps - mu)), 1e12)
+
+    f_fd = 1 / (1 + fn_exp)
+    # fermi_dirac dist
+    f_ent = (eps) ** (n / 2.0) * (f_fd * np.log(f_fd) + (1 - f_fd) * np.log(1 - f_fd))
+
+    return f_ent
+
+
 def fd_int_complete(mu, beta, n):
     r"""
     Compute complete Fermi-Dirac integral for given order (see notes for function form).
@@ -190,6 +235,46 @@ def fd_int_complete(mu, beta, n):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
         I_n, err = integrate.quad(fermi_dirac, 0, limup, args=(mu, beta, n))
+
+    return I_n
+
+
+def ideal_entropy_int(mu, beta, n):
+    r"""
+    Compute the entropy for the ideal electron gas (without prefactor) - see notes.
+
+    Parameters
+    ----------
+    mu : float
+        chemical potential
+    beta: float
+        inverse temperature
+    n : int
+        order of Fermi-Dirac integral (see notes)
+
+    Returns
+    -------
+    I_n : float
+        the complete fermi-dirac integral
+
+    Notes
+    -----
+    The entropy of an ideal electron gas is defined as
+
+    .. math::
+        I_n(\mu,\beta) = \int_0^\infty \mathrm{d}\epsilon\ \epsilon^{n/2}
+        (f_\mathrm{fd}\log{f_\mathrm{fd}} + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),
+
+    where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac
+    distribution.
+    """
+    # use scipy quad integration routine
+    limup = np.inf
+
+    # ignore integration warnings (omnipresent because of inf upper limit)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        I_n, err = integrate.quad(ideal_entropy, 0, limup, args=(mu, beta, n))
 
     return I_n
 

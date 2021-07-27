@@ -228,6 +228,7 @@ class Orbitals:
             )
 
         # force bound levels if there are convergence issues
+
         if config.force_bound:
             for levels in config.force_bound:
                 sp = levels[0]
@@ -679,7 +680,7 @@ class Energy:
         if config.unbound == "ideal":
             E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
-                prefac = config.nele[i] * config.sph_vol / (sqrt(2) * pi ** 2)
+                prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
                 E_kin_unbound += prefac * mathtools.fd_int_complete(
                     config.mu[i], config.beta, 3.0
                 )
@@ -760,7 +761,7 @@ class Energy:
         g_nls = orbs.lbound * (term1 + term2)
 
         # sum over all quantum numbers to get the total entropy
-        S_bound = np.sum(g_nls)
+        S_bound = -np.sum(g_nls)
 
         return S_bound
 
@@ -798,7 +799,7 @@ class Energy:
                         (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
                     )
 
-                    S_unbound -= prefac * mathtools.fd_int_complete(
+                    S_unbound -= prefac * mathtools.ideal_entropy_int(
                         config.mu[i], config.beta, 1.0
                     )
                 else:
