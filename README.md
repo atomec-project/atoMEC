@@ -57,7 +57,7 @@ $ pip install -r docs/requirements.txt
 2. Run `make apidocs`.
 3. Run `make html`. This creates a `_build` folder inside `docs`. You may also want to use `make html SPHINXOPTS="-W"` sometimes. This treats warnings as errors and stops the output at first occurence of an error (useful for debugging rST syntax).
 4. Open `docs/_build/html/index.html`.
-5. `make clean` if required (e.g. after fixing erros) and building again.
+5. `make clean` if required (e.g. after fixing errors) and building again.
 
 ## Developers
 ### Scientific Supervision
@@ -68,8 +68,9 @@ $ pip install -r docs/requirements.txt
 - Tim Callow ([Center for Advanced Systems Understanding](https://www.casus.science/))
 - Daniel Kotik ([Center for Advanced Systems Understanding](https://www.casus.science/))
 
-### Contributions
+### Contributions (alphabetical)
 - Nathan Rahat ([Hebrew University of Jerusalem](https://en.huji.ac.il/en))
+- Ekaterina Tsvetoslavova Stankulova ([Center for Advanced Systems Understanding](https://www.casus.science/))
 
 ## Citing atoMEC
 The following paper should be cited in publications which use atoMEC:
