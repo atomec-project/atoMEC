@@ -195,7 +195,7 @@ class ISModel:
         """str: formatted description of the ISModel attributes."""
         return writeoutput.write_ISModel_data(self)
 
-    @writeoutput.timing
+    #@writeoutput.timing
     def CalcEnergy(
         self,
         nmax,
