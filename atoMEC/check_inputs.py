@@ -595,22 +595,22 @@ class ISModel:
         return spinmag
 
     def check_v_shift(v_shift):
-        """                                                                                                                                    
-        Check the potential shift is a boolean.                                                                                              
-        Parameters                                                                                                                              
-        ----------                                                                                                                              
-        v_shift : bool                                                                                                                          
-           whether potential is shifted or not                                                                                          
+        """
+        Check the potential shift is a boolean.
+        Parameters
+        ----------
+        v_shift : bool
+           whether potential is shifted or not
 
-        Returns                                                                                                                                 
-        -------                                                                                                                                 
-        v_shift : bool                                                                                                                          
-        same as input unless error raised                                                                                                                                                            
-                                                                                      
-        Raises                                                                                                                                  
-        ------                                                                                                                                  
-        InputError.v_shift_error                                                                                                                
-            if the potential shift is not a bool                                                                                              
+        Returns
+        -------
+        v_shift : bool
+        same as input unless error raised
+
+        Raises
+        ------
+        InputError.v_shift_error
+            if the potential shift is not a bool
         """
         if not isinstance(v_shift, bool):
             raise InputError.v_shift_error("Potential shift is not of type bool")
