@@ -59,7 +59,7 @@ class ISModel:
         The way in which the unbound electron density is computed
         Default : "ideal"
     v_shift : bool, optional
-        Shifts the potential vertically by an amount equal to its value at the boundary, v(R)
+        Shifts the potential vertically by its value at the boundary, v(R)
         Default : True
     write_info : bool, optional
         Writes information about the model parameters
