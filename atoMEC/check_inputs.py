@@ -597,6 +597,7 @@ class ISModel:
     def check_v_shift(v_shift):
         """
         Check the potential shift is a boolean.
+
         Parameters
         ----------
         v_shift : bool
