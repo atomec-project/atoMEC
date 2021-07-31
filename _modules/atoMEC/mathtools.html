@@ -350,7 +350,18 @@
     <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">over</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
         <span class="n">fn_exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">beta</span> <span class="o">*</span> <span class="p">(</span><span class="n">eps</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)),</span> <span class="mf">1e12</span><span class="p">)</span>
 
-    <span class="n">f_fd</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">fn_exp</span><span class="p">)</span>
+    <span class="c1"># the &#39;raw&#39; Fermi-Dirac distribution</span>
+    <span class="n">f_fd_raw</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">fn_exp</span><span class="p">)</span>
+
+    <span class="c1"># define high and low tolerances for the log function (to avoid nans)</span>
+    <span class="n">tol_l</span> <span class="o">=</span> <span class="mf">1e-8</span>
+    <span class="n">tol_h</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-8</span>
+
+    <span class="c1"># first replace the zero values</span>
+    <span class="n">f_fd_mod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">f_fd_raw</span> <span class="o">&gt;</span> <span class="n">tol_l</span><span class="p">,</span> <span class="n">f_fd_raw</span><span class="p">,</span> <span class="n">tol_l</span><span class="p">)</span>
+    <span class="c1"># now replace the one values</span>
+    <span class="n">f_fd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">f_fd_mod</span> <span class="o">&lt;</span> <span class="n">tol_h</span><span class="p">,</span> <span class="n">f_fd_mod</span><span class="p">,</span> <span class="n">tol_h</span><span class="p">)</span>
+
     <span class="c1"># fermi_dirac dist</span>
     <span class="n">f_ent</span> <span class="o">=</span> <span class="p">(</span><span class="n">eps</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">f_fd</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">f_fd</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f_fd</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f_fd</span><span class="p">))</span>
 
