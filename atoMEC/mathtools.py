@@ -192,7 +192,18 @@ def ideal_entropy(eps, mu, beta, n=0):
     with np.errstate(over="ignore"):
         fn_exp = np.minimum(np.exp(beta * (eps - mu)), 1e12)
 
-    f_fd = 1 / (1 + fn_exp)
+    # the 'raw' Fermi-Dirac distribution
+    f_fd_raw = 1 / (1 + fn_exp)
+
+    # define high and low tolerances for the log function (to avoid nans)
+    tol_l = 1e-8
+    tol_h = 1.0 - 1e-8
+
+    # first replace the zero values
+    f_fd_mod = np.where(f_fd_raw > tol_l, f_fd_raw, tol_l)
+    # now replace the one values
+    f_fd = np.where(f_fd_mod < tol_h, f_fd_mod, tol_h)
+
     # fermi_dirac dist
     f_ent = (eps) ** (n / 2.0) * (f_fd * np.log(f_fd) + (1 - f_fd) * np.log(1 - f_fd))
 
