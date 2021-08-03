@@ -338,13 +338,8 @@ class ISModel:
 
             # shift potential
             if config.v_shift:
-                if config.spindims == 2:
-                    print(v_s[:, -1])
-                    v_s[0, :] = v_s[0, :] - v_s[0, -1]
-                    v_s[1, :] = v_s[1, :] - v_s[1, -1]
-                else:
-                    print(v_s[:, -1])
-                    v_s[0, :] = v_s[0, :] - v_s[0, -1]
+                for i in range(config.spindims):
+                    v_s[i, :] = v_s[i, :] - v_s[i, -1]
 
             # update the orbitals with the KS potential
             orbs.compute(v_s)
