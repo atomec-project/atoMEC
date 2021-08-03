@@ -385,31 +385,97 @@ class ISModel:
         return output_dict
 
     def CalcPressure(
-            self,
-            atom,
-            nmax,
-            lmax,
-            grid_params={},
-            conv_params={},
-            scf_params={},
-            force_bound=[],
-            write_info=False,
-            verbosity=0,
-            dR=0.01,
+        self,
+        atom,
+        nmax,
+        lmax,
+        grid_params={},
+        conv_params={},
+        scf_params={},
+        force_bound=[],
+        write_info=False,
+        verbosity=0,
+        dR=0.01,
     ):
         r"""
-        whatever
+        Calculates the electronic pressure using the finite differences method.
+
+        Parameters
+        ----------
+        atom : atoMEC.Atom
+            The main atom object
+        nmax : int
+            maximum no. eigenvalues to compute for each value of angular momentum
+        lmax : int
+            maximum no. angular momentum eigenfucntions to consider
+        grid_params : dict, optional
+            dictionary of grid parameters as follows:
+            {
+            `ngrid` (``int``)   : number of grid points,
+            `x0`    (``float``) : LHS grid point takes form
+            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            }
+        conv_params : dict, optional
+            dictionary of convergence parameters as follows:
+            {
+            `econv` (``float``) : convergence for total energy,
+            `nconv` (``float``) : convergence for density,
+            `vconv` (``float``) : convergence for electron number
+            }
+        scf_params : dict, optional
+           dictionary for scf cycle parameters as follows:
+           {
+           `maxscf`  (``int``)   : maximum number of scf cycles,
+           `mixfrac` (``float``) : density mixing fraction
+           }
+        force_bound : list of list of ints, optional
+            force certain levels to be bound, for example:
+            `force_bound = [0, 1, 0]`
+            forces the orbital quith quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be
+            always bound even if it has positive energy. This prevents convergence
+            issues.
+        verbosity : int, optional
+            how much information is printed at each SCF cycle.
+            `verbosity=0` prints the total energy and convergence values (default)
+            `verbosity=1` prints the above and the KS eigenvalues and occupations.
+        write_info : bool, optional
+            prints the scf cycle and final parameters
+            defaults to False
+        dR : float, optional
+            radius differential used to do the finite differences calculation
+            defaults to 0.01
+
+        Returns
+        -------
+        pressure : float
+            electronic pressure
         """
 
+        # initialize the main radius we are interested in
         main_rad = atom.radius
+
+        # change main radius by +dR
         atom.radius = main_rad + dR
-        output1 = self.CalcEnergy(nmax, lmax, grid_params=grid_params, write_info=write_info)
+
+        # calculate free energy for new radius and store it
+        output1 = self.CalcEnergy(
+            nmax, lmax, grid_params=grid_params, write_info=write_info
+        )
         F1 = output1["energy"].F_tot
+
+        # change main radius by -dR
         atom.radius = main_rad - dR
-        output2 = self.CalcEnergy(nmax, lmax, grid_params=grid_params, write_info=write_info)
+
+        # calculate free energy for new radius and store it
+        output2 = self.CalcEnergy(
+            nmax, lmax, grid_params=grid_params, write_info=write_info
+        )
         F2 = output2["energy"].F_tot
-        dFdR = (F1 - F2)/(2*dR)
-        dRdV = 1/(4*pi*main_rad**2)
-        pressure = -dFdR*dRdV
+
+        dFdR = (F1 - F2) / (2 * dR)  # finite differences
+        dRdV = 1 / (4 * pi * main_rad ** 2)  # V = sphere of radius R (main_rad) volume
+
+        # calculate pressure by thermodynamic definition p = -dFdV
+        pressure = -dFdR * dRdV
 
         return pressure
