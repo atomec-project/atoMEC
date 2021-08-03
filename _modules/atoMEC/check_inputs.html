@@ -752,6 +752,30 @@
 
         <span class="k">return</span> <span class="n">spinmag</span></div>
 
+<div class="viewcode-block" id="ISModel.check_v_shift"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel.check_v_shift">[docs]</a>    <span class="k">def</span> <span class="nf">check_v_shift</span><span class="p">(</span><span class="n">v_shift</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the potential shift is a boolean.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        v_shift : bool</span>
+<span class="sd">           whether potential is shifted or not</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        v_shift : bool</span>
+<span class="sd">        same as input unless error raised</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.v_shift_error</span>
+<span class="sd">            if the potential shift is not a bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_shift</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">v_shift_error</span><span class="p">(</span><span class="s2">&quot;Potential shift is not of type bool&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">v_shift</span></div>
+
 <div class="viewcode-block" id="ISModel.calc_nele"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.ISModel.calc_nele">[docs]</a>    <span class="k">def</span> <span class="nf">calc_nele</span><span class="p">(</span><span class="n">spinmag</span><span class="p">,</span> <span class="n">nele</span><span class="p">,</span> <span class="n">spinpol</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the electron number in each spin channel (if spin polarized).</span>

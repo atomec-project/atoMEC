@@ -883,6 +883,27 @@ just total electron number</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.check_inputs.ISModel.check_v_shift">
+<span class="sig-name descname"><span class="pre">check_v_shift</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/check_inputs.html#ISModel.check_v_shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.check_inputs.ISModel.check_v_shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the potential shift is a boolean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>v_shift</strong> (<em>bool</em>) – whether potential is shifted or not</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>v_shift</strong> (<em>bool</em>)</p></li>
+<li><p><em>same as input unless error raised</em></p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>InputError.v_shift_error</strong> – if the potential shift is not a bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.check_inputs.ISModel.check_xc">
 <span class="sig-name descname"><span class="pre">check_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xc_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/check_inputs.html#ISModel.check_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.check_inputs.ISModel.check_xc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the exchange and correlation functionals are accepted.</p>
@@ -1267,7 +1288,7 @@ releases.</p>
 </ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.models.ISModel">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.models.</span></span><span class="sig-name descname"><span class="pre">ISModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xfunc_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lda_x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfunc_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lda_c_pw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dirichlet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spinpol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spinmag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unbound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ideal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.models.</span></span><span class="sig-name descname"><span class="pre">ISModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xfunc_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lda_x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfunc_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lda_c_pw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dirichlet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spinpol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spinmag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unbound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ideal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The ISModel represents a particular family of AA models known as ion-sphere models.</p>
 <p>The implementation in atoMEC is based on the model described in <a class="footnote-reference brackets" href="#id4" id="id3">1</a>.</p>
@@ -1292,6 +1313,8 @@ Default : False</p></li>
 Default: 0 for nele even, 1 for nele odd</p></li>
 <li><p><strong>unbound</strong> (<em>str</em><em>, </em><em>optional</em>) – The way in which the unbound electron density is computed
 Default : “ideal”</p></li>
+<li><p><strong>v_shift</strong> (<em>bool</em><em>, </em><em>optional</em>) – Shifts the potential vertically by its value at the boundary, v(R_s)
+Default : True</p></li>
 <li><p><strong>write_info</strong> (<em>bool</em><em>, </em><em>optional</em>) – Writes information about the model parameters
 Default : True</p></li>
 </ul>
@@ -1442,6 +1465,17 @@ defaults to True</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.models.ISModel.v_shift">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">v_shift</span></span><a class="headerlink" href="#atoMEC.models.ISModel.v_shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>shift the potential vertically by a constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
