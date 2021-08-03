@@ -13,7 +13,7 @@ density and energy are directly computed
 # import standard packages
 
 # import external packages
-from math import log
+from math import log, pi
 
 # import internal packages
 from . import check_inputs
@@ -383,3 +383,33 @@ class ISModel:
         }
 
         return output_dict
+
+    def CalcPressure(
+            self,
+            atom,
+            nmax,
+            lmax,
+            grid_params={},
+            conv_params={},
+            scf_params={},
+            force_bound=[],
+            write_info=False,
+            verbosity=0,
+            dR=0.01,
+    ):
+        r"""
+        whatever
+        """
+
+        main_rad = atom.radius
+        atom.radius = main_rad + dR
+        output1 = self.CalcEnergy(nmax, lmax, grid_params=grid_params, write_info=write_info)
+        F1 = output1["energy"].F_tot
+        atom.radius = main_rad - dR
+        output2 = self.CalcEnergy(nmax, lmax, grid_params=grid_params, write_info=write_info)
+        F2 = output2["energy"].F_tot
+        dFdR = (F1 - F2)/(2*dR)
+        dRdV = 1/(4*pi*main_rad**2)
+        pressure = -dFdR*dRdV
+
+        return pressure
