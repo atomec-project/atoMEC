@@ -398,7 +398,7 @@ class ISModel:
         dR=0.01,
     ):
         r"""
-        Calculates the electronic pressure using the finite differences method.
+        Calculate the electronic pressure using the finite differences method.
 
         Parameters
         ----------
@@ -450,7 +450,6 @@ class ISModel:
         pressure : float
             electronic pressure
         """
-
         # initialize the main radius we are interested in
         main_rad = atom.radius
 
