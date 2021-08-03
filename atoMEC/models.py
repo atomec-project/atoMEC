@@ -58,6 +58,9 @@ class ISModel:
     unbound : str, optional
         The way in which the unbound electron density is computed
         Default : "ideal"
+    v_shift : bool, optional
+        Shifts the potential vertically by its value at the boundary, v(R_s)
+        Default : True
     write_info : bool, optional
         Writes information about the model parameters
         Default : True
@@ -85,6 +88,7 @@ class ISModel:
         spinpol=config.spinpol,
         spinmag=-1,
         unbound=config.unbound,
+        v_shift=config.v_shift,
         write_info=True,
     ):
 
@@ -96,6 +100,7 @@ class ISModel:
         self.cfunc_id = cfunc_id
         self.bc = bc
         self.unbound = unbound
+        self.v_shift = v_shift
 
         # print the information
         if write_info:
@@ -189,6 +194,16 @@ class ISModel:
     def unbound(self, unbound):
         self._unbound = check_inputs.ISModel.check_unbound(unbound)
         config.unbound = self._unbound
+
+    @property
+    def v_shift(self):
+        """bool: shift the potential vertically by a constant."""
+        return self._v_shift
+
+    @v_shift.setter
+    def v_shift(self, v_shift):
+        self._v_shift = check_inputs.ISModel.check_v_shift(v_shift)
+        config.v_shift = self._v_shift
 
     @property
     def info(self):
@@ -320,6 +335,11 @@ class ISModel:
                 v_s = alpha * pot.v_s + (1 - alpha) * v_s_old
             else:
                 v_s = pot.v_s
+
+            # shift potential
+            if config.v_shift:
+                for i in range(config.spindims):
+                    v_s[i, :] = v_s[i, :] - v_s[i, -1]
 
             # update the orbitals with the KS potential
             orbs.compute(v_s)

@@ -9,6 +9,7 @@ xfunc_id = "lda_x"  # exchange functional (libxc ref)
 cfunc_id = "lda_c_pw"  # correlation functional (libxc ref)
 bc = "dirichlet"  # boundary condition
 unbound = "ideal"  # treatment for unbound electrons
+v_shift = True  # whether to shift the KS potential vertically
 
 
 # numerical grid for static calculations
