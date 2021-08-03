@@ -59,7 +59,7 @@ class ISModel:
         The way in which the unbound electron density is computed
         Default : "ideal"
     v_shift : bool, optional
-        Shifts the potential vertically by its value at the boundary, v(R)
+        Shifts the potential vertically by its value at the boundary, v(R_s)
         Default : True
     write_info : bool, optional
         Writes information about the model parameters
@@ -197,7 +197,7 @@ class ISModel:
 
     @property
     def v_shift(self):
-        """bool: shifts the potential vertically."""
+        """bool: shift the potential vertically by a constant."""
         return self._v_shift
 
     @v_shift.setter
