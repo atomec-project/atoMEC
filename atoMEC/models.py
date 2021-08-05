@@ -22,6 +22,7 @@ from . import staticKS
 from . import convergence
 from . import writeoutput
 from . import xc
+from . import unitconv
 
 
 class ISModel:
@@ -387,8 +388,8 @@ class ISModel:
     def CalcPressure(
         self,
         atom,
-        nmax,
-        lmax,
+        nmax=config.nmax,
+        lmax=config.lmax,
         grid_params={},
         conv_params={},
         scf_params={},
@@ -447,9 +448,11 @@ class ISModel:
 
         Returns
         -------
-        pressure : float
-            electronic pressure
+        pressureHa : float
+            electronic pressure in Ha
         """
+        print("Pressure is being calculated")
+
         # initialize the main radius we are interested in
         main_rad = atom.radius
 
@@ -475,6 +478,15 @@ class ISModel:
         dRdV = 1 / (4 * pi * main_rad ** 2)  # V = sphere of radius R (main_rad) volume
 
         # calculate pressure by thermodynamic definition p = -dFdV
-        pressure = -dFdR * dRdV
+        pressureHa = -dFdR * dRdV
+        pressureGPa = pressureHa * unitconv.ha_to_gpa
 
-        return pressure
+        print(
+            "Electronic pressure : "
+            + str(pressureHa)
+            + " Ha / "
+            + str(pressureGPa)
+            + "GPa"
+        )
+
+        return pressureHa
