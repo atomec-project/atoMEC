@@ -398,8 +398,8 @@ class ISModel:
         self,
         atom,
         energy_output,
-        nmax=config.nmax,
-        lmax=config.lmax,
+        nmax=None,
+        lmax=None,
         grid_params={},
         conv_params={},
         scf_params={},
@@ -464,6 +464,12 @@ class ISModel:
             electronic pressure in Ha
         """
         print("Pressure is being calculated" + "\n")
+
+        # set nmax and lmax to default config values if they aren't specified
+        if nmax is None:
+            nmax = config.nmax
+        if lmax is None:
+            lmax = config.lmax
 
         # initialize the main radius we are interested in
         main_rad = atom.radius
