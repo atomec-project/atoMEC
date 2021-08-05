@@ -249,7 +249,7 @@ class Density:
         The KS orbitals object
     """
 
-    def __init__(self, orbs):
+    def __init__(self, orbs, v_s):
         self._xgrid = orbs._xgrid
         self._total = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self._bound = {
@@ -262,6 +262,7 @@ class Density:
         }
 
         self._orbs = orbs
+        self._v_s = v_s
 
     @property
     def total(self):
@@ -291,7 +292,7 @@ class Density:
         unbound density and number of unbound electrons respectively
         """
         if np.all(self._unbound["rho"]) == 0.0:
-            self._unbound = self.construct_rho_unbound(self._orbs)
+            self._unbound = self.construct_rho_unbound(self._orbs, self._xgrid, self._v_s)
         return self._unbound
 
     @staticmethod
@@ -331,7 +332,7 @@ class Density:
         return bound
 
     @staticmethod
-    def construct_rho_unbound(orbs):
+    def construct_rho_unbound(orbs, xgrid, v_s):
         """
         Construct the unbound part of the density.
 
@@ -351,7 +352,7 @@ class Density:
         rho_unbound = np.zeros((config.spindims, config.grid_params["ngrid"]))
         N_unbound = np.zeros((config.spindims))
 
-        # so far only the ideal approximation is implemented
+        # the ideal approximation is implemented
         if config.unbound == "ideal":
 
             # unbound density is constant
@@ -362,6 +363,17 @@ class Density:
                 )
                 rho_unbound[i] = n_ub
                 N_unbound[i] = n_ub * config.sph_vol
+
+        # the thomas-fermi approximation is implementede
+        if config.unbound == "thomas_fermi":
+
+            # unbound density is not constant
+            for i in range(config.spindims):
+                for j in range(len(v_s[0, :])):
+                    prefac = (2.0 / config.spindims) * sqrt(2) / (pi ** 2)
+                    n_ub = prefac * mathtools.thomas_fermi_int(v_s[i, j], config.mu[i], config.beta, 1.0)
+                    rho_unbound[i, j] = n_ub
+                N_unbound[i] = mathtools.int_sphere(rho_unbound, xgrid)
 
         unbound = {"rho": rho_unbound, "N": N_unbound}
 
@@ -673,7 +685,7 @@ class Energy:
         where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
         # currently only ideal treatment supported
-        if config.unbound == "ideal":
+        if config.unbound == "ideal" or "thomas_fermi":
             E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
@@ -787,7 +799,7 @@ class Energy:
         :math:`1/2`
         """
         # currently only ideal treatment supported
-        if config.unbound == "ideal":
+        if config.unbound == "ideal" or "thomas_fermi":
             S_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 if config.nele[i] > 1e-5:
