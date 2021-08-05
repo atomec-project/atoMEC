@@ -455,7 +455,7 @@ class ISModel:
             prints the scf cycle and final parameters
             defaults to False
         dR : float, optional
-            radius differential used to do the finite differences calculation
+            radius difference for finite difference calculation
             defaults to 0.01
 
         Returns
@@ -463,7 +463,7 @@ class ISModel:
         pressureHa : float
             electronic pressure in Ha
         """
-        print("Pressure is being calculated" + "\n")
+        print("Pressure is being calculated. Please be patient!" + "\n")
 
         # set nmax and lmax to default config values if they aren't specified
         if nmax is None:
@@ -505,7 +505,7 @@ class ISModel:
         dFdR = (F1 - F2) / (2 * dR)  # finite differences
         dRdV = 1 / (4 * pi * main_rad ** 2)  # V = sphere of radius R (main_rad) volume
 
-        # calculate pressure by thermodynamic definition p = -dFdV
+        # calculate pressure by thermodynamic definition p = -dFdV and chain rule
         pressureHa = -dFdR * dRdV
         pressureGPa = pressureHa * unitconv.ha_to_gpa
 
