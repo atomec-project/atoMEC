@@ -222,6 +222,8 @@ class ISModel:
         force_bound=[],
         write_info=True,
         verbosity=0,
+        guess=False,
+        guess_pot=0,
     ):
         r"""
         Run a self-consistent calculation to minimize the Kohn-Sham free energy.
@@ -265,6 +267,10 @@ class ISModel:
         write_info : bool, optional
             prints the scf cycle and final parameters
             defaults to True
+        guess : bool, optional
+            use coulomb pot (guess=False) or given pot (guess=True) as initial guess
+        guess_pot : numpy array, optional
+            initial guess for the potential
 
         Returns
         -------
@@ -296,8 +302,11 @@ class ISModel:
 
         # initialize orbitals
         orbs = staticKS.Orbitals(xgrid)
-        # use coulomb potential as initial guess
-        v_init = staticKS.Potential.calc_v_en(xgrid)
+        # use coulomb potential or input given potential as initial guess
+        if guess:
+            v_init = guess_pot
+        else:
+            v_init = staticKS.Potential.calc_v_en(xgrid)
         v_s_old = v_init  # initialize the old potential
         orbs.compute(v_init, init=True)
 
@@ -388,6 +397,7 @@ class ISModel:
     def CalcPressure(
         self,
         atom,
+        energy_output,
         nmax=config.nmax,
         lmax=config.lmax,
         grid_params={},
@@ -405,6 +415,8 @@ class ISModel:
         ----------
         atom : atoMEC.Atom
             The main atom object
+        energy_output : dict
+            output parameters of the function CalcEnergy
         nmax : int
             maximum no. eigenvalues to compute for each value of angular momentum
         lmax : int
@@ -461,7 +473,12 @@ class ISModel:
 
         # calculate free energy for new radius and store it
         output1 = self.CalcEnergy(
-            nmax, lmax, grid_params=grid_params, write_info=write_info
+            nmax,
+            lmax,
+            grid_params=grid_params,
+            write_info=write_info,
+            guess=True,
+            guess_pot=energy_output["potential"].v_s,
         )
         F1 = output1["energy"].F_tot
 
@@ -470,7 +487,12 @@ class ISModel:
 
         # calculate free energy for new radius and store it
         output2 = self.CalcEnergy(
-            nmax, lmax, grid_params=grid_params, write_info=write_info
+            nmax,
+            lmax,
+            grid_params=grid_params,
+            write_info=write_info,
+            guess=True,
+            guess_pot=energy_output["potential"].v_s,
         )
         F2 = output2["energy"].F_tot
 
