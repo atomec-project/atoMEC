@@ -155,6 +155,37 @@ def fermi_dirac(eps, mu, beta, n=0):
 
     return f_fd
 
+def thomas_fermi(eps, mu, v_s, beta, n=0):
+    r"""
+    Compute the Thomas-Fermi function, see notes for functional form.
+
+    Parameters
+    ----------
+    eps : array_like
+        the energies
+    mu : array_like
+        the chemical potential
+    v_s : float
+        Kohn-Sham potential
+    beta : float
+        the inverse potential
+    n : int
+        energy is raised to power n/2 in the numerator (see notes)
+
+    Returns
+    -------
+    f_tf : array_like
+        the integrand function
+    """
+    # dfn the exponential function
+    #ignore warnings here
+    with np.errstate(over="ignore"):
+        fn_exp = np.minimum(np.exp(beta * (eps - mu - v_s)), 1e12)
+
+    # thomas-fermi dist
+    f_tf = (eps) ** (n / 2.0) / (1 + fn_exp)
+                            
+    return f_tf
 
 def ideal_entropy(eps, mu, beta, n=0):
     r"""
@@ -247,6 +278,35 @@ def fd_int_complete(mu, beta, n):
         warnings.filterwarnings("ignore")
         I_n, err = integrate.quad(fermi_dirac, 0, limup, args=(mu, beta, n))
 
+    return I_n
+
+def thomas_fermi_int(v_s, mu, beta, n):
+    r"""
+    Compute Thomas-Fermi integral for given order (see notes for function form).
+
+    Parameters
+    ----------
+    v_s: float
+        Kohn-Sham potential
+    mu : float
+        chemical potential
+    beta: float
+        inverse temperature
+    n : int
+        order of Thomas-Fermi integral (see notes)
+
+    Returns
+    -------
+    I_n : float
+        the Thomas-Fermi integral
+    """
+    # use scipy quad integration routine
+    limup = np.inf
+
+    # ignore integration warnings (omnipresent because of inf upper limit)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        I_n, err = integrate.quad(thomas_fermi, -v_s, limup, args=(mu, beta, n))
     return I_n
 
 
