@@ -463,7 +463,7 @@ class ISModel:
         pressureHa : float
             electronic pressure in Ha
         """
-        print("Pressure is being calculated")
+        print("Pressure is being calculated" + "\n")
 
         # initialize the main radius we are interested in
         main_rad = atom.radius
@@ -503,12 +503,10 @@ class ISModel:
         pressureHa = -dFdR * dRdV
         pressureGPa = pressureHa * unitconv.ha_to_gpa
 
-        print(
-            "Electronic pressure : "
-            + str(pressureHa)
-            + " Ha / "
-            + str(pressureGPa)
-            + "GPa"
+        pressurestat = "{preamble:30s}: {p_ha:<.6g} Ha / {p_gpa:<.6g} GPa".format(
+            preamble="Electronic pressure", p_ha=pressureHa, p_gpa=pressureGPa
         )
+        spc = "\n"
+        print(pressurestat + spc)
 
         return pressureHa
