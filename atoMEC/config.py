@@ -10,9 +10,6 @@ cfunc_id = "lda_c_pw"  # correlation functional (libxc ref)
 bc = "dirichlet"  # boundary condition
 unbound = "ideal"  # treatment for unbound electrons
 v_shift = True  # whether to shift the KS potential vertically
-nmax = 0  # default
-lmax = 0  # default
-
 
 # numerical grid for static calculations
 grid_params = {"ngrid": 1000, "x0": -12}
