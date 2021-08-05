@@ -327,13 +327,13 @@ def chem_pot(orbs):
                     x0=mu0[i],
                     args=(orbs.eigvals[i], orbs.lbound[i], config.nele[i]),
                     method="brentq",
-                    bracket=[-40, 40],
+                    bracket=[-100, 100],
                     options={"maxiter": 100},
                 )
                 mu[i] = soln.root
             # in case there are no electrons in one spin channel
             else:
-                mu[i] = np.inf
+                mu[i] = -np.inf
 
     return mu
 
@@ -369,11 +369,8 @@ def f_root_id(mu, eigvals, lbound, nele):
         N_{ub}(\beta,\mu) - N_e
     """
     # caluclate the contribution from the bound electrons
-    if nele != 0:
-        occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
-        contrib_bound = occnums.sum()
-    else:
-        contrib_bound = 0.0
+    occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
+    contrib_bound = occnums.sum()
 
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation

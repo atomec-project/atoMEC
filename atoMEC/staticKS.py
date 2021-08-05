@@ -356,16 +356,12 @@ class Density:
 
             # unbound density is constant
             for i in range(config.spindims):
-                if config.nele[i] > 1e-5:
-                    prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi ** 2)
-                    n_ub = prefac * mathtools.fd_int_complete(
-                        config.mu[i], config.beta, 1.0
-                    )
-                    rho_unbound[i] = n_ub
-                    N_unbound[i] = n_ub * config.sph_vol
-                else:
-                    N_unbound[i] = 0.0
-                    rho_unbound[i] = 0.0
+                prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi ** 2)
+                n_ub = prefac * mathtools.fd_int_complete(
+                    config.mu[i], config.beta, 1.0
+                )
+                rho_unbound[i] = n_ub
+                N_unbound[i] = n_ub * config.sph_vol
 
         unbound = {"rho": rho_unbound, "N": N_unbound}
 
