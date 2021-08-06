@@ -1661,6 +1661,7 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> : Holds the KS density (bound/unbound components) and routinesto compute it.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> : Holds the KS potential (split into individual components) and the routines to compute them.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a> : Holds the free energy and all internal components (KS quantities and entropy) and the routines required to compute them.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> : Holds the free energy and all internal components (KS quantities and entropy) and the routines required to compute them. N.B. the <a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> class constructs the energy functional in an alternative manner to the main <a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a> class</p></li>
 </ul>
 </div>
 <div class="section" id="id10">
@@ -2021,6 +2022,161 @@ total entropy. <span class="math notranslate nohighlight">\(F = E - TS\)</span><
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Energy.entropy">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">entropy</span></span><a class="headerlink" href="#atoMEC.staticKS.Energy.entropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>The total entropy.</p>
+<p>Contains <cite>bound</cite> and <cite>unbound</cite> keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> of <code class="xref py py-obj docutils literal notranslate"><span class="pre">floats</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.staticKS.</span></span><span class="sig-name descname"><span class="pre">EnergyAlt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#EnergyAlt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class holding information about the KS energy and associated routines.</p>
+<p>N.B. this computes the total energy functional in an alternative way to the main
+<a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a> object. In this class, the total energy is first calculated from the
+sum of the eigenvalues and then <span class="math notranslate nohighlight">\(\int \mathrm{d}r v_\mathrm{Hxc}(r) n(r)\)</span>
+is subtracted to obtain the sum over kinetic and electron-nuclear energies.</p>
+<p>In general, this gives a different result compared to the <a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a>, due
+to the way the unbound electrons are treated. Which result is ‘correct’ depends on
+how we interpret the unbound energy (i.e., is it purely a kinetic term or not).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.calc_E_v_hxc">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_v_hxc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#EnergyAlt.calc_E_v_hxc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.calc_E_v_hxc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the compensating integral term over the Hxc-potential (see notes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dens</strong> (<em>ndarray</em>) – the (spin) KS density</p></li>
+<li><p><strong>pot</strong> (<a class="reference internal" href="#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a>) – the KS potential object</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>E_v_hxc</strong> – the compensating Hxc-potential integral</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>In this construction of the KS energy functional, the sum over the KS
+eigenvalues must be compensated by an integral of the Hxc-potential.
+This integral is given by:</p>
+<div class="math notranslate nohighlight">
+\[E = 4\pi\sum_\sigma\int \mathrm{d}r r^2 n^\sigma(r) v_\mathrm{Hxc}^\sigma(r)\]</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.calc_entropy">
+<span class="sig-name descname"><span class="pre">calc_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#EnergyAlt.calc_entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.calc_entropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the KS entropy.</p>
+<p>Entropy is in general different for bound and unbound orbitals.
+This function is a wrapper which calls the respective functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>orbs</strong> (<a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Orbitals</span></code></a>) – the KS orbitals object</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>S</strong> – contains <cite>tot</cite>, <cite>bound</cite> and <cite>unbound</cite> keys</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.E_eps">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">E_eps</span></span><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.E_eps" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sum of the (weighted) eigenvalues.</p>
+<p>Given by <span class="math notranslate nohighlight">\(E=\sum_{nl\sigma} (2l+1) f_{nl}^\sigma \epsilon_{nl}^\sigma\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.E_ha">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">E_ha</span></span><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.E_ha" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Hartree energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.E_tot">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">E_tot</span></span><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.E_tot" title="Permalink to this definition">¶</a></dt>
+<dd><p>The total KS internal energy.</p>
+<p>Given by <span class="math notranslate nohighlight">\(E=T_\mathrm{s}+E_\mathrm{en}+E_\mathrm{ha}+F_\mathrm{xc}\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.E_unbound">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">E_unbound</span></span><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.E_unbound" title="Permalink to this definition">¶</a></dt>
+<dd><p>The energy of the unbound part of the electron density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.E_v_hxc">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">E_v_hxc</span></span><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.E_v_hxc" title="Permalink to this definition">¶</a></dt>
+<dd><p>The integral <span class="math notranslate nohighlight">\(\int \mathrm{d}r v_\mathrm{Hxc}(r) n(r)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.E_xc">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">E_xc</span></span><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.E_xc" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exchange-correlation energy.</p>
+<p>Contains the keys <cite>x</cite>, <cite>c</cite> and <cite>xc</cite> for exchange,
+correlation and exchange + correlation respectively</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> of <code class="xref py py-obj docutils literal notranslate"><span class="pre">floats</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.F_tot">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">F_tot</span></span><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.F_tot" title="Permalink to this definition">¶</a></dt>
+<dd><p>The free energy.</p>
+<p>Contains the keys <cite>F</cite>, <cite>E</cite> and <cite>S</cite> for free energy, internal energy and
+total entropy. <span class="math notranslate nohighlight">\(F = E - TS\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> of <code class="xref py py-obj docutils literal notranslate"><span class="pre">floats</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.entropy">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">entropy</span></span><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total entropy.</p>
 <p>Contains <cite>bound</cite> and <cite>unbound</cite> keys.</p>
 <dl class="field-list simple">

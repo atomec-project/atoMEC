@@ -173,6 +173,10 @@
 <span class="sd">the routines to compute them.</span>
 <span class="sd">* :class:`Energy` : Holds the free energy and all internal components (KS quantities \</span>
 <span class="sd">and entropy) and the routines required to compute them.</span>
+<span class="sd">* :class:`EnergyAlt` : Holds the free energy and all internal components (KS \</span>
+<span class="sd">quantities and entropy) and the routines required to compute them. \</span>
+<span class="sd">N.B. the :class:`EnergyAlt` class constructs the energy functional in an alternative \</span>
+<span class="sd">manner to the main :class:`Energy` class</span>
 
 <span class="sd">Functions</span>
 <span class="sd">---------</span>
@@ -1028,6 +1032,187 @@
         <span class="n">E_ha</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens_tot</span> <span class="o">*</span> <span class="n">v_ha</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">E_ha</span></div></div>
+
+
+<div class="viewcode-block" id="EnergyAlt"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt">[docs]</a><span class="k">class</span> <span class="nc">EnergyAlt</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class holding information about the KS energy and associated routines.</span>
+
+<span class="sd">    N.B. this computes the total energy functional in an alternative way to the main</span>
+<span class="sd">    :class:`Energy` object. In this class, the total energy is first calculated from the</span>
+<span class="sd">    sum of the eigenvalues and then :math:`\int \mathrm{d}r v_\mathrm{Hxc}(r) n(r)`</span>
+<span class="sd">    is subtracted to obtain the sum over kinetic and electron-nuclear energies.</span>
+
+<span class="sd">    In general, this gives a different result compared to the :class:`Energy`, due</span>
+<span class="sd">    to the way the unbound electrons are treated. Which result is &#39;correct&#39; depends on</span>
+<span class="sd">    how we interpret the unbound energy (i.e., is it purely a kinetic term or not).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span> <span class="o">=</span> <span class="n">orbs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dens</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">total</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">_xgrid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pot</span> <span class="o">=</span> <span class="n">pot</span>
+
+        <span class="c1"># initialize attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_F_tot</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_E_tot</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entropy</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;tot&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;bound&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;unbound&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_E_eps</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_E_v_hxc</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;xc&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">F_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :obj:`dict` of :obj:`floats`: The free energy.</span>
+
+<span class="sd">        Contains the keys `F`, `E` and `S` for free energy, internal energy and</span>
+<span class="sd">        total entropy. :math:`F = E - TS`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_F_tot</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_F_tot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_tot</span> <span class="o">-</span> <span class="n">config</span><span class="o">.</span><span class="n">temp</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_F_tot</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">E_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        float: The total KS internal energy.</span>
+
+<span class="sd">        Given by :math:`E=T_\mathrm{s}+E_\mathrm{en}+E_\mathrm{ha}+F_\mathrm{xc}`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_tot</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_tot</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">E_eps</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_unbound</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_v_hxc</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_ha</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_tot</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">E_eps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        float: The sum of the (weighted) eigenvalues.</span>
+
+<span class="sd">        Given by :math:`E=\sum_{nl\sigma} (2l+1) f_{nl}^\sigma \epsilon_{nl}^\sigma`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_eps</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_eps</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">E_unbound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: The energy of the unbound part of the electron density.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_unbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">E_v_hxc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: The integral :math:`\int \mathrm{d}r v_\mathrm{Hxc}(r) n(r)`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_v_hxc</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_v_hxc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_v_hxc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_v_hxc</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :obj:`dict` of :obj:`floats`: The total entropy.</span>
+
+<span class="sd">        Contains `bound` and `unbound` keys.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entropy</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entropy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entropy</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">E_ha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;float: The Hartree energy.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_ha</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">E_xc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :obj:`dict` of :obj:`floats`: The exchange-correlation energy.</span>
+
+<span class="sd">        Contains the keys `x`, `c` and `xc` for exchange,</span>
+<span class="sd">        correlation and exchange + correlation respectively</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">E_xc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span>
+
+<div class="viewcode-block" id="EnergyAlt.calc_E_v_hxc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt.calc_E_v_hxc">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_E_v_hxc</span><span class="p">(</span><span class="n">dens</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the compensating integral term over the Hxc-potential (see notes).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dens : ndarray</span>
+<span class="sd">            the (spin) KS density</span>
+<span class="sd">        pot : :class:`Potential`</span>
+<span class="sd">            the KS potential object</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            the logarithmic grid</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        E_v_hxc : float</span>
+<span class="sd">            the compensating Hxc-potential integral</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        In this construction of the KS energy functional, the sum over the KS</span>
+<span class="sd">        eigenvalues must be compensated by an integral of the Hxc-potential.</span>
+<span class="sd">        This integral is given by:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            E = 4\pi\sum_\sigma\int \mathrm{d}r r^2 n^\sigma(r) v_\mathrm{Hxc}^\sigma(r)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># first compute the hartree contribution, which is twice the hartree energy</span>
+        <span class="n">E_v_ha</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_ha</span><span class="p">(</span><span class="n">dens</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+        <span class="c1"># now compute the xc contribution (over each spin channel)</span>
+        <span class="n">E_v_xc</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="n">v_xc</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">v_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">E_v_xc</span> <span class="o">=</span> <span class="n">E_v_xc</span> <span class="o">+</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_xc</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">E_v_ha</span> <span class="o">+</span> <span class="n">E_v_xc</span></div>
+
+<div class="viewcode-block" id="EnergyAlt.calc_entropy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt.calc_entropy">[docs]</a>    <span class="k">def</span> <span class="nf">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the KS entropy.</span>
+
+<span class="sd">        Entropy is in general different for bound and unbound orbitals.</span>
+<span class="sd">        This function is a wrapper which calls the respective functions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        orbs : :obj:`Orbitals`</span>
+<span class="sd">            the KS orbitals object</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        S : dict of floats</span>
+<span class="sd">           contains `tot`, `bound` and `unbound` keys</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">S</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># bound part</span>
+        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_S_bound</span><span class="p">(</span><span class="n">orbs</span><span class="p">)</span>
+
+        <span class="c1"># unbound part</span>
+        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_S_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="p">)</span>
+
+        <span class="c1"># total</span>
+        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">S</span></div></div>
 </pre></div>
 
            </div>
