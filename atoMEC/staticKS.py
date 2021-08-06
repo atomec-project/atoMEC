@@ -15,6 +15,10 @@ to compute it.
 the routines to compute them.
 * :class:`Energy` : Holds the free energy and all internal components (KS quantities \
 and entropy) and the routines required to compute them.
+* :class:`EnergyAlt` : Holds the free energy and all internal components (KS \
+quantities and entropy) and the routines required to compute them. \
+N.B. the :class:`EnergyAlt` class constructs the energy functional in an alternative \
+manner to the main :class:`Energy` class
 
 Functions
 ---------
@@ -872,7 +876,7 @@ class Energy:
         return E_ha
 
 
-class Energy_alt:
+class EnergyAlt:
     r"""Class holding information about the KS energy and associated routines.
 
     N.B. this computes the total energy functional in an alternative way to the main
@@ -1008,7 +1012,7 @@ class Energy_alt:
         This integral is given by:
 
         .. math::
-            E = 4\pi \sum_\sigma \int \mathrm{d}r r^2 n^\sigma(r) v_\mathrm{Hxc}^\sigma(r)
+            E = 4\pi\sum_\sigma\int \mathrm{d}r r^2 n^\sigma(r) v_\mathrm{Hxc}^\sigma(r)
 
         """
         # first compute the hartree contribution, which is twice the hartree energy
