@@ -13,7 +13,7 @@ density and energy are directly computed
 # import standard packages
 
 # import external packages
-from math import log
+from math import log, pi
 
 # import internal packages
 from . import check_inputs
@@ -22,6 +22,7 @@ from . import staticKS
 from . import convergence
 from . import writeoutput
 from . import xc
+from . import unitconv
 
 
 class ISModel:
@@ -225,6 +226,8 @@ class ISModel:
         write_potential=True,
         density_file="density.csv",
         potential_file="potential.csv",
+        guess=False,
+        guess_pot=0,
     ):
         r"""
         Run a self-consistent calculation to minimize the Kohn-Sham free energy.
@@ -280,6 +283,10 @@ class ISModel:
         potential_file : str, optional
             name of the file to write the potential to
             default: `potential.csv`
+        guess : bool, optional
+            use coulomb pot (guess=False) or given pot (guess=True) as initial guess
+        guess_pot : numpy array, optional
+            initial guess for the potential
 
         Returns
         -------
@@ -311,8 +318,11 @@ class ISModel:
 
         # initialize orbitals
         orbs = staticKS.Orbitals(xgrid)
-        # use coulomb potential as initial guess
-        v_init = staticKS.Potential.calc_v_en(xgrid)
+        # use coulomb potential or input given potential as initial guess
+        if guess:
+            v_init = guess_pot
+        else:
+            v_init = staticKS.Potential.calc_v_en(xgrid)
         v_s_old = v_init  # initialize the old potential
         orbs.compute(v_init, init=True)
 
@@ -401,3 +411,126 @@ class ISModel:
         }
 
         return output_dict
+
+    def CalcPressure(
+        self,
+        atom,
+        energy_output,
+        nmax=None,
+        lmax=None,
+        grid_params={},
+        conv_params={},
+        scf_params={},
+        force_bound=[],
+        write_info=False,
+        verbosity=0,
+        dR=0.01,
+    ):
+        r"""
+        Calculate the electronic pressure using the finite differences method.
+
+        Parameters
+        ----------
+        atom : atoMEC.Atom
+            The main atom object
+        energy_output : dict
+            output parameters of the function CalcEnergy
+        nmax : int
+            maximum no. eigenvalues to compute for each value of angular momentum
+        lmax : int
+            maximum no. angular momentum eigenfucntions to consider
+        grid_params : dict, optional
+            dictionary of grid parameters as follows:
+            {
+            `ngrid` (``int``)   : number of grid points,
+            `x0`    (``float``) : LHS grid point takes form
+            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            }
+        conv_params : dict, optional
+            dictionary of convergence parameters as follows:
+            {
+            `econv` (``float``) : convergence for total energy,
+            `nconv` (``float``) : convergence for density,
+            `vconv` (``float``) : convergence for electron number
+            }
+        scf_params : dict, optional
+           dictionary for scf cycle parameters as follows:
+           {
+           `maxscf`  (``int``)   : maximum number of scf cycles,
+           `mixfrac` (``float``) : density mixing fraction
+           }
+        force_bound : list of list of ints, optional
+            force certain levels to be bound, for example:
+            `force_bound = [0, 1, 0]`
+            forces the orbital quith quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be
+            always bound even if it has positive energy. This prevents convergence
+            issues.
+        verbosity : int, optional
+            how much information is printed at each SCF cycle.
+            `verbosity=0` prints the total energy and convergence values (default)
+            `verbosity=1` prints the above and the KS eigenvalues and occupations.
+        write_info : bool, optional
+            prints the scf cycle and final parameters
+            defaults to False
+        dR : float, optional
+            radius difference for finite difference calculation
+            defaults to 0.01
+
+        Returns
+        -------
+        pressureHa : float
+            electronic pressure in Ha
+        """
+        print("Pressure is being calculated. Please be patient!" + "\n")
+
+        # set nmax and lmax to default config values if they aren't specified
+        if nmax is None:
+            nmax = config.nmax
+        if lmax is None:
+            lmax = config.lmax
+
+        # initialize the main radius we are interested in
+        main_rad = atom.radius
+
+        # change main radius by +dR
+        atom.radius = main_rad + dR
+
+        # calculate free energy for new radius and store it
+        output1 = self.CalcEnergy(
+            nmax,
+            lmax,
+            grid_params=grid_params,
+            write_info=write_info,
+            guess=True,
+            guess_pot=energy_output["potential"].v_s,
+        )
+        F1 = output1["energy"].F_tot
+
+        # change main radius by -dR
+        atom.radius = main_rad - dR
+
+        # calculate free energy for new radius and store it
+        output2 = self.CalcEnergy(
+            nmax,
+            lmax,
+            grid_params=grid_params,
+            write_info=write_info,
+            guess=True,
+            guess_pot=energy_output["potential"].v_s,
+        )
+        F2 = output2["energy"].F_tot
+
+        dFdR = (F1 - F2) / (2 * dR)  # finite differences
+        dRdV = 1 / (4 * pi * main_rad ** 2)  # V = sphere of radius R (main_rad) volume
+
+        # calculate pressure by thermodynamic definition p = -dFdV and chain rule
+        pressureHa = -dFdR * dRdV
+        pressureGPa = pressureHa * unitconv.ha_to_gpa
+
+        pressurestat = "{preamble:30s}: {p_ha:<.6g} Ha / {p_gpa:<.6g} GPa".format(
+            preamble="Electronic pressure", p_ha=pressureHa, p_gpa=pressureGPa
+        )
+        spc = "\n"
+        print(pressurestat + spc)
+
+        return pressureHa
