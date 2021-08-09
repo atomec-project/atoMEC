@@ -460,7 +460,7 @@ class SCF:
         return eigval_tbl, occnum_tbl
 
 
-def density_to_csv(rgrid, density):
+def density_to_csv(rgrid, density, filename):
     """
     Write the density (on the r-grid) to file.
 
@@ -470,9 +470,9 @@ def density_to_csv(rgrid, density):
         real-space grid
     density : staticKS.Density
         the KS density object
+    filename : str
+        name of the file to write to
     """
-    fname = "density.csv"
-
     if config.spindims == 2:
         headstr = (
             "r"
@@ -501,12 +501,12 @@ def density_to_csv(rgrid, density):
             [rgrid, density.bound["rho"][0], density.unbound["rho"][0]]
         )
 
-    np.savetxt(fname, data, fmt="%8.3e", header=headstr)
+    np.savetxt(filename, data, fmt="%8.3e", header=headstr)
 
     return
 
 
-def potential_to_csv(rgrid, potential):
+def potential_to_csv(rgrid, potential, filename):
     """
     Write the potential (on the r-grid) to file.
 
@@ -516,9 +516,9 @@ def potential_to_csv(rgrid, potential):
         real-space grid
     density : staticKS.Potential
         the KS potential object
+    filename : str
+        name of the file to write to
     """
-    fname = "potential.csv"
-
     if config.spindims == 2:
         headstr = (
             "r"
@@ -547,7 +547,7 @@ def potential_to_csv(rgrid, potential):
             [rgrid, potential.v_en, potential.v_ha, potential.v_xc["xc"][0]]
         )
 
-    np.savetxt(fname, data, fmt="%8.3e", header=headstr)
+    np.savetxt(filename, data, fmt="%8.3e", header=headstr)
 
     return
 
