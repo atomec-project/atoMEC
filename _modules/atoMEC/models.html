@@ -171,7 +171,7 @@
 <span class="c1"># import standard packages</span>
 
 <span class="c1"># import external packages</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">pi</span>
 
 <span class="c1"># import internal packages</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">check_inputs</span>
@@ -180,6 +180,7 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">convergence</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">writeoutput</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">xc</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">unitconv</span>
 
 
 <div class="viewcode-block" id="ISModel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel">[docs]</a><span class="k">class</span> <span class="nc">ISModel</span><span class="p">:</span>
@@ -377,12 +378,10 @@
         <span class="n">conv_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">force_bound</span><span class="o">=</span><span class="p">[],</span>
-        <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">write_density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">write_potential</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">density_file</span><span class="o">=</span><span class="s2">&quot;density.csv&quot;</span><span class="p">,</span>
-        <span class="n">potential_file</span><span class="o">=</span><span class="s2">&quot;potential.csv&quot;</span><span class="p">,</span>
+        <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">guess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">guess_pot</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run a self-consistent calculation to minimize the Kohn-Sham free energy.</span>
@@ -425,19 +424,11 @@
 <span class="sd">            `verbosity=1` prints the above and the KS eigenvalues and occupations.</span>
 <span class="sd">        write_info : bool, optional</span>
 <span class="sd">            prints the scf cycle and final parameters</span>
-<span class="sd">            default: True</span>
-<span class="sd">        write_density : bool, optional</span>
-<span class="sd">            writes the density to a text file</span>
-<span class="sd">            default: True</span>
-<span class="sd">        write_potential : bool, optional</span>
-<span class="sd">            writes the potential to a text file</span>
-<span class="sd">            default: True</span>
-<span class="sd">        density_file : str, optional</span>
-<span class="sd">            name of the file to write the density to</span>
-<span class="sd">            default: `density.csv`</span>
-<span class="sd">        potential_file : str, optional</span>
-<span class="sd">            name of the file to write the potential to</span>
-<span class="sd">            default: `potential.csv`</span>
+<span class="sd">            defaults to True</span>
+<span class="sd">        guess : bool, optional</span>
+<span class="sd">            use coulomb pot (guess=False) or given pot (guess=True) as initial guess</span>
+<span class="sd">        guess_pot : numpy array, optional</span>
+<span class="sd">            initial guess for the potential</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -469,8 +460,11 @@
 
         <span class="c1"># initialize orbitals</span>
         <span class="n">orbs</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Orbitals</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
-        <span class="c1"># use coulomb potential as initial guess</span>
-        <span class="n">v_init</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="c1"># use coulomb potential or input given potential as initial guess</span>
+        <span class="k">if</span> <span class="n">guess</span><span class="p">:</span>
+            <span class="n">v_init</span> <span class="o">=</span> <span class="n">guess_pot</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v_init</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
         <span class="n">v_s_old</span> <span class="o">=</span> <span class="n">v_init</span>  <span class="c1"># initialize the old potential</span>
         <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_init</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -544,12 +538,10 @@
             <span class="nb">print</span><span class="p">(</span><span class="n">scf_final</span><span class="p">)</span>
 
         <span class="c1"># write the density to file</span>
-        <span class="k">if</span> <span class="n">write_density</span><span class="p">:</span>
-            <span class="n">writeoutput</span><span class="o">.</span><span class="n">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">density_file</span><span class="p">)</span>
+        <span class="n">writeoutput</span><span class="o">.</span><span class="n">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
 
         <span class="c1"># write the potential to file</span>
-        <span class="k">if</span> <span class="n">write_potential</span><span class="p">:</span>
-            <span class="n">writeoutput</span><span class="o">.</span><span class="n">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">potential_file</span><span class="p">)</span>
+        <span class="n">writeoutput</span><span class="o">.</span><span class="n">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
 
         <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">energy</span><span class="p">,</span>
@@ -558,7 +550,130 @@
             <span class="s2">&quot;orbitals&quot;</span><span class="p">:</span> <span class="n">orbs</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="k">return</span> <span class="n">output_dict</span></div></div>
+        <span class="k">return</span> <span class="n">output_dict</span></div>
+
+<div class="viewcode-block" id="ISModel.CalcPressure"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel.CalcPressure">[docs]</a>    <span class="k">def</span> <span class="nf">CalcPressure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">atom</span><span class="p">,</span>
+        <span class="n">energy_output</span><span class="p">,</span>
+        <span class="n">nmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">lmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">grid_params</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">conv_params</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">force_bound</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">write_info</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">dR</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the electronic pressure using the finite differences method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        atom : atoMEC.Atom</span>
+<span class="sd">            The main atom object</span>
+<span class="sd">        energy_output : dict</span>
+<span class="sd">            output parameters of the function CalcEnergy</span>
+<span class="sd">        nmax : int</span>
+<span class="sd">            maximum no. eigenvalues to compute for each value of angular momentum</span>
+<span class="sd">        lmax : int</span>
+<span class="sd">            maximum no. angular momentum eigenfucntions to consider</span>
+<span class="sd">        grid_params : dict, optional</span>
+<span class="sd">            dictionary of grid parameters as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `ngrid` (``int``)   : number of grid points,</span>
+<span class="sd">            `x0`    (``float``) : LHS grid point takes form</span>
+<span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified</span>
+<span class="sd">            }</span>
+<span class="sd">        conv_params : dict, optional</span>
+<span class="sd">            dictionary of convergence parameters as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `econv` (``float``) : convergence for total energy,</span>
+<span class="sd">            `nconv` (``float``) : convergence for density,</span>
+<span class="sd">            `vconv` (``float``) : convergence for electron number</span>
+<span class="sd">            }</span>
+<span class="sd">        scf_params : dict, optional</span>
+<span class="sd">           dictionary for scf cycle parameters as follows:</span>
+<span class="sd">           {</span>
+<span class="sd">           `maxscf`  (``int``)   : maximum number of scf cycles,</span>
+<span class="sd">           `mixfrac` (``float``) : density mixing fraction</span>
+<span class="sd">           }</span>
+<span class="sd">        force_bound : list of list of ints, optional</span>
+<span class="sd">            force certain levels to be bound, for example:</span>
+<span class="sd">            `force_bound = [0, 1, 0]`</span>
+<span class="sd">            forces the orbital quith quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be</span>
+<span class="sd">            always bound even if it has positive energy. This prevents convergence</span>
+<span class="sd">            issues.</span>
+<span class="sd">        verbosity : int, optional</span>
+<span class="sd">            how much information is printed at each SCF cycle.</span>
+<span class="sd">            `verbosity=0` prints the total energy and convergence values (default)</span>
+<span class="sd">            `verbosity=1` prints the above and the KS eigenvalues and occupations.</span>
+<span class="sd">        write_info : bool, optional</span>
+<span class="sd">            prints the scf cycle and final parameters</span>
+<span class="sd">            defaults to False</span>
+<span class="sd">        dR : float, optional</span>
+<span class="sd">            radius difference for finite difference calculation</span>
+<span class="sd">            defaults to 0.01</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pressureHa : float</span>
+<span class="sd">            electronic pressure in Ha</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pressure is being calculated. Please be patient!&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># set nmax and lmax to default config values if they aren&#39;t specified</span>
+        <span class="k">if</span> <span class="n">nmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nmax</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span>
+        <span class="k">if</span> <span class="n">lmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lmax</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
+
+        <span class="c1"># initialize the main radius we are interested in</span>
+        <span class="n">main_rad</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">radius</span>
+
+        <span class="c1"># change main radius by +dR</span>
+        <span class="n">atom</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">main_rad</span> <span class="o">+</span> <span class="n">dR</span>
+
+        <span class="c1"># calculate free energy for new radius and store it</span>
+        <span class="n">output1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CalcEnergy</span><span class="p">(</span>
+            <span class="n">nmax</span><span class="p">,</span>
+            <span class="n">lmax</span><span class="p">,</span>
+            <span class="n">grid_params</span><span class="o">=</span><span class="n">grid_params</span><span class="p">,</span>
+            <span class="n">write_info</span><span class="o">=</span><span class="n">write_info</span><span class="p">,</span>
+            <span class="n">guess</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">guess_pot</span><span class="o">=</span><span class="n">energy_output</span><span class="p">[</span><span class="s2">&quot;potential&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">v_s</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">F1</span> <span class="o">=</span> <span class="n">output1</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">F_tot</span>
+
+        <span class="c1"># change main radius by -dR</span>
+        <span class="n">atom</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">main_rad</span> <span class="o">-</span> <span class="n">dR</span>
+
+        <span class="c1"># calculate free energy for new radius and store it</span>
+        <span class="n">output2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CalcEnergy</span><span class="p">(</span>
+            <span class="n">nmax</span><span class="p">,</span>
+            <span class="n">lmax</span><span class="p">,</span>
+            <span class="n">grid_params</span><span class="o">=</span><span class="n">grid_params</span><span class="p">,</span>
+            <span class="n">write_info</span><span class="o">=</span><span class="n">write_info</span><span class="p">,</span>
+            <span class="n">guess</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">guess_pot</span><span class="o">=</span><span class="n">energy_output</span><span class="p">[</span><span class="s2">&quot;potential&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">v_s</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">F2</span> <span class="o">=</span> <span class="n">output2</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">F_tot</span>
+
+        <span class="n">dFdR</span> <span class="o">=</span> <span class="p">(</span><span class="n">F1</span> <span class="o">-</span> <span class="n">F2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dR</span><span class="p">)</span>  <span class="c1"># finite differences</span>
+        <span class="n">dRdV</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">main_rad</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># V = sphere of radius R (main_rad) volume</span>
+
+        <span class="c1"># calculate pressure by thermodynamic definition p = -dFdV and chain rule</span>
+        <span class="n">pressureHa</span> <span class="o">=</span> <span class="o">-</span><span class="n">dFdR</span> <span class="o">*</span> <span class="n">dRdV</span>
+        <span class="n">pressureGPa</span> <span class="o">=</span> <span class="n">pressureHa</span> <span class="o">*</span> <span class="n">unitconv</span><span class="o">.</span><span class="n">ha_to_gpa</span>
+
+        <span class="n">pressurestat</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{p_ha:&lt;.6g}</span><span class="s2"> Ha / </span><span class="si">{p_gpa:&lt;.6g}</span><span class="s2"> GPa&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Electronic pressure&quot;</span><span class="p">,</span> <span class="n">p_ha</span><span class="o">=</span><span class="n">pressureHa</span><span class="p">,</span> <span class="n">p_gpa</span><span class="o">=</span><span class="n">pressureGPa</span>
+        <span class="p">)</span>
+        <span class="n">spc</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pressurestat</span> <span class="o">+</span> <span class="n">spc</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pressureHa</span></div></div>
 </pre></div>
 
            </div>
