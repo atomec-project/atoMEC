@@ -220,8 +220,12 @@ class ISModel:
         conv_params={},
         scf_params={},
         force_bound=[],
-        write_info=True,
         verbosity=0,
+        write_info=True,
+        write_density=True,
+        write_potential=True,
+        density_file="density.csv",
+        potential_file="potential.csv",
         guess=False,
         guess_pot=0,
     ):
@@ -266,7 +270,19 @@ class ISModel:
             `verbosity=1` prints the above and the KS eigenvalues and occupations.
         write_info : bool, optional
             prints the scf cycle and final parameters
-            defaults to True
+            default: True
+        write_density : bool, optional
+            writes the density to a text file
+            default: True
+        write_potential : bool, optional
+            writes the potential to a text file
+            default: True
+        density_file : str, optional
+            name of the file to write the density to
+            default: `density.csv`
+        potential_file : str, optional
+            name of the file to write the potential to
+            default: `potential.csv`
         guess : bool, optional
             use coulomb pot (guess=False) or given pot (guess=True) as initial guess
         guess_pot : numpy array, optional
@@ -380,10 +396,12 @@ class ISModel:
             print(scf_final)
 
         # write the density to file
-        writeoutput.density_to_csv(rgrid, rho)
+        if write_density:
+            writeoutput.density_to_csv(rgrid, rho, density_file)
 
         # write the potential to file
-        writeoutput.potential_to_csv(rgrid, pot)
+        if write_potential:
+            writeoutput.potential_to_csv(rgrid, pot, potential_file)
 
         output_dict = {
             "energy": energy,
