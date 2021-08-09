@@ -503,6 +503,8 @@ class ISModel:
             write_info=write_info,
             guess=True,
             guess_pot=energy_output["potential"].v_s,
+            write_density=False,
+            write_potential=False,
         )
         F1 = output1["energy"].F_tot
 
@@ -517,6 +519,8 @@ class ISModel:
             write_info=write_info,
             guess=True,
             guess_pot=energy_output["potential"].v_s,
+            write_density=False,
+            write_potential=False,
         )
         F2 = output2["energy"].F_tot
 
