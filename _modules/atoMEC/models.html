@@ -378,8 +378,12 @@
         <span class="n">conv_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">force_bound</span><span class="o">=</span><span class="p">[],</span>
-        <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">write_density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">write_potential</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">density_file</span><span class="o">=</span><span class="s2">&quot;density.csv&quot;</span><span class="p">,</span>
+        <span class="n">potential_file</span><span class="o">=</span><span class="s2">&quot;potential.csv&quot;</span><span class="p">,</span>
         <span class="n">guess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">guess_pot</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">):</span>
@@ -424,7 +428,19 @@
 <span class="sd">            `verbosity=1` prints the above and the KS eigenvalues and occupations.</span>
 <span class="sd">        write_info : bool, optional</span>
 <span class="sd">            prints the scf cycle and final parameters</span>
-<span class="sd">            defaults to True</span>
+<span class="sd">            default: True</span>
+<span class="sd">        write_density : bool, optional</span>
+<span class="sd">            writes the density to a text file</span>
+<span class="sd">            default: True</span>
+<span class="sd">        write_potential : bool, optional</span>
+<span class="sd">            writes the potential to a text file</span>
+<span class="sd">            default: True</span>
+<span class="sd">        density_file : str, optional</span>
+<span class="sd">            name of the file to write the density to</span>
+<span class="sd">            default: `density.csv`</span>
+<span class="sd">        potential_file : str, optional</span>
+<span class="sd">            name of the file to write the potential to</span>
+<span class="sd">            default: `potential.csv`</span>
 <span class="sd">        guess : bool, optional</span>
 <span class="sd">            use coulomb pot (guess=False) or given pot (guess=True) as initial guess</span>
 <span class="sd">        guess_pot : numpy array, optional</span>
@@ -538,10 +554,12 @@
             <span class="nb">print</span><span class="p">(</span><span class="n">scf_final</span><span class="p">)</span>
 
         <span class="c1"># write the density to file</span>
-        <span class="n">writeoutput</span><span class="o">.</span><span class="n">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">write_density</span><span class="p">:</span>
+            <span class="n">writeoutput</span><span class="o">.</span><span class="n">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">density_file</span><span class="p">)</span>
 
         <span class="c1"># write the potential to file</span>
-        <span class="n">writeoutput</span><span class="o">.</span><span class="n">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">write_potential</span><span class="p">:</span>
+            <span class="n">writeoutput</span><span class="o">.</span><span class="n">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">potential_file</span><span class="p">)</span>
 
         <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">energy</span><span class="p">,</span>

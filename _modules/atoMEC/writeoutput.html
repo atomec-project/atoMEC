@@ -618,7 +618,7 @@
         <span class="k">return</span> <span class="n">eigval_tbl</span><span class="p">,</span> <span class="n">occnum_tbl</span></div></div>
 
 
-<div class="viewcode-block" id="density_to_csv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.density_to_csv">[docs]</a><span class="k">def</span> <span class="nf">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
+<div class="viewcode-block" id="density_to_csv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.density_to_csv">[docs]</a><span class="k">def</span> <span class="nf">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write the density (on the r-grid) to file.</span>
 
@@ -628,9 +628,9 @@
 <span class="sd">        real-space grid</span>
 <span class="sd">    density : staticKS.Density</span>
 <span class="sd">        the KS density object</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        name of the file to write to</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;density.csv&quot;</span>
-
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">headstr</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">&quot;r&quot;</span>
@@ -659,12 +659,12 @@
             <span class="p">[</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">density</span><span class="o">.</span><span class="n">bound</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">density</span><span class="o">.</span><span class="n">unbound</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
         <span class="p">)</span>
 
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%8.3e</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">headstr</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%8.3e</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">headstr</span><span class="p">)</span>
 
     <span class="k">return</span></div>
 
 
-<div class="viewcode-block" id="potential_to_csv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.potential_to_csv">[docs]</a><span class="k">def</span> <span class="nf">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">potential</span><span class="p">):</span>
+<div class="viewcode-block" id="potential_to_csv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.potential_to_csv">[docs]</a><span class="k">def</span> <span class="nf">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write the potential (on the r-grid) to file.</span>
 
@@ -674,9 +674,9 @@
 <span class="sd">        real-space grid</span>
 <span class="sd">    density : staticKS.Potential</span>
 <span class="sd">        the KS potential object</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        name of the file to write to</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;potential.csv&quot;</span>
-
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">headstr</span> <span class="o">=</span> <span class="p">(</span>
             <span class="s2">&quot;r&quot;</span>
@@ -705,7 +705,7 @@
             <span class="p">[</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">v_en</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">v_ha</span><span class="p">,</span> <span class="n">potential</span><span class="o">.</span><span class="n">v_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
         <span class="p">)</span>
 
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%8.3e</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">headstr</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%8.3e</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">headstr</span><span class="p">)</span>
 
     <span class="k">return</span></div>
 

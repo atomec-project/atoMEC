@@ -1352,7 +1352,7 @@ average-atom models, <a class="reference external" href="https://arxiv.org/abs/2
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.models.ISModel.CalcEnergy">
-<span class="sig-name descname"><span class="pre">CalcEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess_pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel.CalcEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel.CalcEnergy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">CalcEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_potential</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'density.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'potential.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess_pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel.CalcEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel.CalcEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a self-consistent calculation to minimize the Kohn-Sham free energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1385,7 +1385,15 @@ issues.</p></li>
 <cite>verbosity=0</cite> prints the total energy and convergence values (default).
 <cite>verbosity=1</cite> prints the above and the KS eigenvalues and occupations.</p></li>
 <li><p><strong>write_info</strong> (<em>bool</em><em>, </em><em>optional</em>) – prints the scf cycle and final parameters
-defaults to True</p></li>
+default: True</p></li>
+<li><p><strong>write_density</strong> (<em>bool</em><em>, </em><em>optional</em>) – writes the density to a text file
+default: True</p></li>
+<li><p><strong>write_potential</strong> (<em>bool</em><em>, </em><em>optional</em>) – writes the potential to a text file
+default: True</p></li>
+<li><p><strong>density_file</strong> (<em>str</em><em>, </em><em>optional</em>) – name of the file to write the density to
+default: <cite>density.csv</cite></p></li>
+<li><p><strong>potential_file</strong> (<em>str</em><em>, </em><em>optional</em>) – name of the file to write the potential to
+default: <cite>potential.csv</cite></p></li>
 <li><p><strong>guess</strong> (<em>bool</em><em>, </em><em>optional</em>) – use coulomb pot (guess=False) or given pot (guess=True) as initial guess</p></li>
 <li><p><strong>guess_pot</strong> (<em>numpy array</em><em>, </em><em>optional</em>) – initial guess for the potential</p></li>
 </ul>
@@ -2608,13 +2616,14 @@ and formatted occupation numbers table occnum_tbl</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.writeoutput.density_to_csv">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.writeoutput.</span></span><span class="sig-name descname"><span class="pre">density_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/writeoutput.html#density_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.writeoutput.density_to_csv" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.writeoutput.</span></span><span class="sig-name descname"><span class="pre">density_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/writeoutput.html#density_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.writeoutput.density_to_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the density (on the r-grid) to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rgrid</strong> (<em>ndarray</em>) – real-space grid</p></li>
 <li><p><strong>density</strong> (<a class="reference internal" href="#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><em>staticKS.Density</em></a>) – the KS density object</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – name of the file to write to</p></li>
 </ul>
 </dd>
 </dl>
@@ -2622,13 +2631,14 @@ and formatted occupation numbers table occnum_tbl</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.writeoutput.potential_to_csv">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.writeoutput.</span></span><span class="sig-name descname"><span class="pre">potential_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/writeoutput.html#potential_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.writeoutput.potential_to_csv" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.writeoutput.</span></span><span class="sig-name descname"><span class="pre">potential_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/writeoutput.html#potential_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.writeoutput.potential_to_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the potential (on the r-grid) to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rgrid</strong> (<em>ndarray</em>) – real-space grid</p></li>
 <li><p><strong>density</strong> (<a class="reference internal" href="#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><em>staticKS.Potential</em></a>) – the KS potential object</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – name of the file to write to</p></li>
 </ul>
 </dd>
 </dl>
