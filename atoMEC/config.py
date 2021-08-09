@@ -11,7 +11,6 @@ bc = "dirichlet"  # boundary condition
 unbound = "ideal"  # treatment for unbound electrons
 v_shift = True  # whether to shift the KS potential vertically
 
-
 # numerical grid for static calculations
 grid_params = {"ngrid": 1000, "x0": -12}
 # convergence parameters for static calculations
