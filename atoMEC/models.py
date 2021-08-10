@@ -314,7 +314,7 @@ class ISModel:
         orbs.compute(v_init, init=True)
 
         # occupy orbitals
-        orbs.occupy()
+        orbs.occupy(v_init)
 
         # write the initial spiel
         scf_init = writeoutput.SCF.write_init()
@@ -356,7 +356,7 @@ class ISModel:
 
             # update the orbitals with the KS potential
             orbs.compute(v_s)
-            orbs.occupy()
+            orbs.occupy(v_s)
 
             # update old potential
             v_s_old = v_s
