@@ -180,7 +180,7 @@ def thomas_fermi(eps, mu, v_s, beta, n=0):
     # dfn the exponential function
     #ignore warnings here
     with np.errstate(over="ignore"):
-        fn_exp = np.minimum(np.exp(beta * (eps - mu - v_s)), 1e12)
+        fn_exp = np.minimum(np.exp(beta * (eps - mu + v_s)), 1e12)
 
     # thomas-fermi dist
     f_tf = (eps) ** (n / 2.0) / (1 + fn_exp)
@@ -350,7 +350,7 @@ def ideal_entropy_int(mu, beta, n):
     return I_n
 
 
-def chem_pot(orbs):
+def chem_pot(orbs, v_s):
     r"""
     Determine the chemical potential by enforcing charge neutrality (see notes).
 
@@ -360,6 +360,8 @@ def chem_pot(orbs):
     ----------
     orbs : staticKS.Orbitals
         the orbitals object
+    v_s  : array_like
+        Kohn-Sham potential
 
     Returns
     -------
@@ -394,6 +396,21 @@ def chem_pot(orbs):
             # in case there are no electrons in one spin channel
             else:
                 mu[i] = -np.inf
+    elif config.unbound == "thomas_fermi":
+        for i in range(config.spindims):
+            if config.nele[i] != 0:
+                soln = optimize.root_scalar(
+                    f_root_th,
+                    x0=mu0[i],
+                    args=(v_s[i], orbs._xgrid, orbs.eigvals[i], orbs.lbound[i], config.nele[i]),
+                    method="brentq",
+                    bracket=[-100, 100],
+                    options={"maxiter": 100},
+                )
+                mu[i] = soln.root
+            # in case there are no electron in one spin channel
+        else:
+            mu[i] = -np.inf
 
     return mu
 
@@ -428,7 +445,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +
         N_{ub}(\beta,\mu) - N_e
     """
-    # caluclate the contribution from the bound electrons
+    # calculate the contribution from the bound electrons
     occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
     contrib_bound = occnums.sum()
 
@@ -437,6 +454,56 @@ def f_root_id(mu, eigvals, lbound, nele):
 
     prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
     contrib_unbound = prefac * fd_int_complete(mu, config.beta, 1.0)
+
+    # return the function whose roots are to be found
+    f_root = contrib_bound + contrib_unbound - nele
+
+    return f_root
+
+def f_root_th(mu, v_s, xgrid, eigvals, lbound, nele):
+    r"""
+    Functional input for the chemical potential root finding function (Thomas-Fermi approx).
+    
+    See notes for function returned.
+
+    Parameters
+    ----------
+    v_s: array_like
+        Kohn-Sham potential
+    mu : array_like
+        chemical potential
+    eigvals : ndarray
+        the energy eigenvalues
+    lbound : ndarray
+        the lbound matrix :math:`(2l+1)\Theta(\epsilon_{nl}^\sigma)`
+    nele : union(int, float)
+        the number of electrons for given spin
+
+    Returns
+    -------
+    f_root : float
+       the difference of the predicted electron number with given mu
+       and the actual electron number
+
+    Notes
+    -----
+    The returned function is
+
+    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +
+        N_{ub}(\beta,\mu) - N_e
+    """
+    # calculate the contribution from the bound electrons
+    occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
+    contrib_bound = occnums.sum()
+
+    # now compute the contribution from the unbound electrons
+    # this function uses the thomas-fermi approximation
+
+    prefac = (2.0 / config.spindims) * sqrt(2) / (pi ** 2)
+    contrib_unbound_array = np.zeros(config.grid_params["ngrid"])
+    for i in range(len(v_s)):
+        contrib_unbound_array[i] = prefac * thomas_fermi_int(v_s[i], mu, config.beta, 1.0)
+    contrib_unbound = int_sphere(contrib_unbound_array, xgrid)
 
     # return the function whose roots are to be found
     f_root = contrib_bound + contrib_unbound - nele
