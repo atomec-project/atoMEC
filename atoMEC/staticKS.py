@@ -15,6 +15,10 @@ to compute it.
 the routines to compute them.
 * :class:`Energy` : Holds the free energy and all internal components (KS quantities \
 and entropy) and the routines required to compute them.
+* :class:`EnergyAlt` : Holds the free energy and all internal components (KS \
+quantities and entropy) and the routines required to compute them. \
+N.B. the :class:`EnergyAlt` class constructs the energy functional in an alternative \
+manner to the main :class:`Energy` class
 
 Functions
 ---------
@@ -888,3 +892,184 @@ class Energy:
         E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha, xgrid)
 
         return E_ha
+
+
+class EnergyAlt:
+    r"""Class holding information about the KS energy and associated routines.
+
+    N.B. this computes the total energy functional in an alternative way to the main
+    :class:`Energy` object. In this class, the total energy is first calculated from the
+    sum of the eigenvalues and then :math:`\int \mathrm{d}r v_\mathrm{Hxc}(r) n(r)`
+    is subtracted to obtain the sum over kinetic and electron-nuclear energies.
+
+    In general, this gives a different result compared to the :class:`Energy`, due
+    to the way the unbound electrons are treated. Which result is 'correct' depends on
+    how we interpret the unbound energy (i.e., is it purely a kinetic term or not).
+    """
+
+    def __init__(self, orbs, dens, pot):
+
+        self._orbs = orbs
+        self._dens = dens.total
+        self._xgrid = dens._xgrid
+        self._pot = pot
+
+        # initialize attributes
+        self._F_tot = 0.0
+        self._E_tot = 0.0
+        self._entropy = {"tot": 0.0, "bound": 0.0, "unbound": 0.0}
+        self._E_eps = 0.0
+        self._E_unbound = 0.0
+        self._E_v_hxc = 0.0
+        self._E_ha = 0.0
+        self._E_xc = {"xc": 0.0, "x": 0.0, "c": 0.0}
+
+    @property
+    def F_tot(self):
+        r"""
+        :obj:`dict` of :obj:`floats`: The free energy.
+
+        Contains the keys `F`, `E` and `S` for free energy, internal energy and
+        total entropy. :math:`F = E - TS`
+        """
+        if self._F_tot == 0.0:
+            self._F_tot = self.E_tot - config.temp * self.entropy["tot"]
+        return self._F_tot
+
+    @property
+    def E_tot(self):
+        r"""
+        float: The total KS internal energy.
+
+        Given by :math:`E=T_\mathrm{s}+E_\mathrm{en}+E_\mathrm{ha}+F_\mathrm{xc}`.
+        """
+        if self._E_tot == 0.0:
+            self._E_tot = (
+                self.E_eps + self.E_unbound - self.E_v_hxc + self.E_ha + self.E_xc["xc"]
+            )
+        return self._E_tot
+
+    @property
+    def E_eps(self):
+        r"""
+        float: The sum of the (weighted) eigenvalues.
+
+        Given by :math:`E=\sum_{nl\sigma} (2l+1) f_{nl}^\sigma \epsilon_{nl}^\sigma`
+        """
+        if self._E_eps == 0.0:
+            self._E_eps = np.sum(self._orbs.occnums * self._orbs.eigvals)
+        return self._E_eps
+
+    @property
+    def E_unbound(self):
+        r"""float: The energy of the unbound part of the electron density."""
+        if self._E_unbound == 0.0:
+            self._E_unbound = Energy.calc_E_kin_unbound(self._orbs, self._xgrid)
+        return self._E_unbound
+
+    @property
+    def E_v_hxc(self):
+        r"""float: The integral :math:`\int \mathrm{d}r v_\mathrm{Hxc}(r) n(r)`."""
+        if self._E_v_hxc == 0.0:
+            self._E_v_hxc = self.calc_E_v_hxc(self._dens, self._pot, self._xgrid)
+        return self._E_v_hxc
+
+    @property
+    def entropy(self):
+        """
+        :obj:`dict` of :obj:`floats`: The total entropy.
+
+        Contains `bound` and `unbound` keys.
+        """
+        if self._entropy["tot"] == 0.0:
+            self._entropy = self.calc_entropy(self._orbs)
+        return self._entropy
+
+    @property
+    def E_ha(self):
+        """float: The Hartree energy."""
+        if self._E_ha == 0.0:
+            self._E_ha = Energy.calc_E_ha(self._dens, self._xgrid)
+        return self._E_ha
+
+    @property
+    def E_xc(self):
+        """
+        :obj:`dict` of :obj:`floats`: The exchange-correlation energy.
+
+        Contains the keys `x`, `c` and `xc` for exchange,
+        correlation and exchange + correlation respectively
+        """
+        if self._E_xc["xc"] == 0.0:
+            self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
+        return self._E_xc
+
+    @staticmethod
+    def calc_E_v_hxc(dens, pot, xgrid):
+        r"""
+        Compute the compensating integral term over the Hxc-potential (see notes).
+
+        Parameters
+        ----------
+        dens : ndarray
+            the (spin) KS density
+        pot : :class:`Potential`
+            the KS potential object
+        xgrid : ndarray
+            the logarithmic grid
+
+        Returns
+        -------
+        E_v_hxc : float
+            the compensating Hxc-potential integral
+
+        Notes
+        -----
+        In this construction of the KS energy functional, the sum over the KS
+        eigenvalues must be compensated by an integral of the Hxc-potential.
+        This integral is given by:
+
+        .. math::
+            E = 4\pi\sum_\sigma\int \mathrm{d}r r^2 n^\sigma(r) v_\mathrm{Hxc}^\sigma(r)
+
+        """
+        # first compute the hartree contribution, which is twice the hartree energy
+        E_v_ha = 2.0 * Energy.calc_E_ha(dens, xgrid)
+
+        # now compute the xc contribution (over each spin channel)
+        E_v_xc = 0.0
+        for i in range(config.spindims):
+            v_xc = pot.v_xc["xc"][i]
+            E_v_xc = E_v_xc + mathtools.int_sphere(dens[i] * v_xc, xgrid)
+
+        return E_v_ha + E_v_xc
+
+    def calc_entropy(self, orbs):
+        """
+        Compute the KS entropy.
+
+        Entropy is in general different for bound and unbound orbitals.
+        This function is a wrapper which calls the respective functions.
+
+        Parameters
+        ----------
+        orbs : :obj:`Orbitals`
+            the KS orbitals object
+
+        Returns
+        -------
+        S : dict of floats
+           contains `tot`, `bound` and `unbound` keys
+        """
+        S = {}
+
+        # bound part
+        S["bound"] = Energy.calc_S_bound(orbs)
+
+        # unbound part
+        S["unbound"] = Energy.calc_S_unbound(orbs)
+
+        # total
+        S["tot"] = S["bound"] + S["unbound"]
+
+        return S

@@ -222,8 +222,12 @@ class ISModel:
         conv_params={},
         scf_params={},
         force_bound=[],
-        write_info=True,
         verbosity=0,
+        write_info=True,
+        write_density=True,
+        write_potential=True,
+        density_file="density.csv",
+        potential_file="potential.csv",
         guess=False,
         guess_pot=0,
     ):
@@ -268,7 +272,19 @@ class ISModel:
             `verbosity=1` prints the above and the KS eigenvalues and occupations.
         write_info : bool, optional
             prints the scf cycle and final parameters
-            defaults to True
+            default: True
+        write_density : bool, optional
+            writes the density to a text file
+            default: True
+        write_potential : bool, optional
+            writes the potential to a text file
+            default: True
+        density_file : str, optional
+            name of the file to write the density to
+            default: `density.csv`
+        potential_file : str, optional
+            name of the file to write the potential to
+            default: `potential.csv`
         guess : bool, optional
             use coulomb pot (guess=False) or given pot (guess=True) as initial guess
         guess_pot : numpy array, optional
@@ -383,10 +399,12 @@ class ISModel:
             print(scf_final)
 
         # write the density to file
-        writeoutput.density_to_csv(rgrid, rho)
+        if write_density:
+            writeoutput.density_to_csv(rgrid, rho, density_file)
 
         # write the potential to file
-        writeoutput.potential_to_csv(rgrid, pot)
+        if write_potential:
+            writeoutput.potential_to_csv(rgrid, pot, potential_file)
 
         output_dict = {
             "energy": energy,
@@ -401,8 +419,8 @@ class ISModel:
         self,
         atom,
         energy_output,
-        nmax=config.nmax,
-        lmax=config.lmax,
+        nmax=None,
+        lmax=None,
         grid_params={},
         conv_params={},
         scf_params={},
@@ -458,7 +476,7 @@ class ISModel:
             prints the scf cycle and final parameters
             defaults to False
         dR : float, optional
-            radius differential used to do the finite differences calculation
+            radius difference for finite difference calculation
             defaults to 0.01
 
         Returns
@@ -466,7 +484,13 @@ class ISModel:
         pressureHa : float
             electronic pressure in Ha
         """
-        print("Pressure is being calculated" + "\n")
+        print("Pressure is being calculated. Please be patient!" + "\n")
+
+        # set nmax and lmax to default config values if they aren't specified
+        if nmax is None:
+            nmax = config.nmax
+        if lmax is None:
+            lmax = config.lmax
 
         # initialize the main radius we are interested in
         main_rad = atom.radius
@@ -482,6 +506,8 @@ class ISModel:
             write_info=write_info,
             guess=True,
             guess_pot=energy_output["potential"].v_s,
+            write_density=False,
+            write_potential=False,
         )
         F1 = output1["energy"].F_tot
 
@@ -496,13 +522,15 @@ class ISModel:
             write_info=write_info,
             guess=True,
             guess_pot=energy_output["potential"].v_s,
+            write_density=False,
+            write_potential=False,
         )
         F2 = output2["energy"].F_tot
 
         dFdR = (F1 - F2) / (2 * dR)  # finite differences
         dRdV = 1 / (4 * pi * main_rad ** 2)  # V = sphere of radius R (main_rad) volume
 
-        # calculate pressure by thermodynamic definition p = -dFdV
+        # calculate pressure by thermodynamic definition p = -dFdV and chain rule
         pressureHa = -dFdR * dRdV
         pressureGPa = pressureHa * unitconv.ha_to_gpa
 
