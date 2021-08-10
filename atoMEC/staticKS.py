@@ -153,7 +153,7 @@ class Orbitals:
 
         return
 
-    def occupy(self):
+    def occupy(self, potential):
         """
         Occupy the KS orbitals according to Fermi-Dirac statistics.
 
@@ -165,8 +165,14 @@ class Orbitals:
         -------
         None
         """
+        # ensure the potential has the correct dimensions
+        v = np.zeros((config.spindims, config.grid_params["ngrid"]))
+
+        # set v to equal the input potential
+        v[:] = potential
+        
         # compute the chemical potential using the eigenvalues
-        config.mu = mathtools.chem_pot(self)
+        config.mu = mathtools.chem_pot(self, v)
 
         # compute the occupation numbers using the chemical potential
         self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
