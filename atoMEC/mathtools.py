@@ -186,12 +186,12 @@ def thomas_fermi(eps, mu, v_s, beta, n=0):
     The TF function is defined as:
 
     .. math:: f^{(n)}_{tf}(\epsilon, \mu, v_s, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+
-         \beta(\beta\epsilon - \mu + v_s))}
+         \beta(\epsilon - \mu + v_s))}
     """
     # dfn the exponential function
     # ignore warnings here
     with np.errstate(over="ignore"):
-        fn_exp = np.minimum(np.exp(beta * (beta * eps - mu + v_s)), 1e12)
+        fn_exp = np.minimum(np.exp(beta * (eps - mu + v_s)), 1e12)
 
     # thomas-fermi dist
     f_tf = (eps) ** (n / 2.0) / (1 + fn_exp)
