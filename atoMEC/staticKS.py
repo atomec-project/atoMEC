@@ -174,7 +174,7 @@ class Orbitals:
 
         # set v to equal the input potential
         v[:] = potential
-        
+
         # compute the chemical potential using the eigenvalues
         config.mu = mathtools.chem_pot(self, v)
 
@@ -302,7 +302,9 @@ class Density:
         unbound density and number of unbound electrons respectively
         """
         if np.all(self._unbound["rho"]) == 0.0:
-            self._unbound = self.construct_rho_unbound(self._orbs, self._xgrid, self._v_s)
+            self._unbound = self.construct_rho_unbound(
+                self._orbs, self._xgrid, self._v_s
+            )
         return self._unbound
 
     @staticmethod
@@ -381,7 +383,9 @@ class Density:
             for i in range(config.spindims):
                 for j in range(len(v_s[0, :])):
                     prefac = (2.0 / config.spindims) * sqrt(2) / (pi ** 2)
-                    n_ub = prefac * mathtools.thomas_fermi_int(v_s[i, j], config.mu[i], config.beta, 1.0)
+                    n_ub = prefac * mathtools.thomas_fermi_int(
+                        v_s[i, j], config.mu[i], config.beta, 1.0
+                    )
                     rho_unbound[i, j] = n_ub
                 N_unbound[i] = mathtools.int_sphere(rho_unbound, xgrid)
 

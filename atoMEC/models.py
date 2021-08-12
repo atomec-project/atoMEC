@@ -325,7 +325,9 @@ class ISModel:
             v_init = guess_pot
         else:
             v_init = staticKS.Potential.calc_v_en(xgrid)
-        v_s = np.zeros((config.spindims, config.grid_params["ngrid"])) # initialize the potential    
+        v_s = np.zeros(
+            (config.spindims, config.grid_params["ngrid"])
+        )  # initialize the potential
         v_s_old = v_init  # initialize the old potential
         orbs.compute(v_init, init=True)
 

@@ -158,6 +158,7 @@ def fermi_dirac(eps, mu, beta, n=0):
 
     return f_fd
 
+
 def thomas_fermi(eps, mu, v_s, beta, n=0):
     r"""
     Compute the Thomas-Fermi function, see notes for functional form.
@@ -188,14 +189,15 @@ def thomas_fermi(eps, mu, v_s, beta, n=0):
          \beta(\beta\epsilon - \mu + v_s))}
     """
     # dfn the exponential function
-    #ignore warnings here
+    # ignore warnings here
     with np.errstate(over="ignore"):
         fn_exp = np.minimum(np.exp(beta * (beta * eps - mu + v_s)), 1e12)
 
     # thomas-fermi dist
     f_tf = (eps) ** (n / 2.0) / (1 + fn_exp)
-                            
+
     return f_tf
+
 
 def ideal_entropy(eps, mu, beta, n=0):
     r"""
@@ -289,6 +291,7 @@ def fd_int_complete(mu, beta, n):
         I_n, err = integrate.quad(fermi_dirac, 0, limup, args=(mu, beta, n))
 
     return I_n
+
 
 def thomas_fermi_int(v_s, mu, beta, n):
     r"""
@@ -421,7 +424,13 @@ def chem_pot(orbs, v_s):
                 soln = optimize.root_scalar(
                     f_root_th,
                     x0=mu0[i],
-                    args=(v_s[i], orbs._xgrid, orbs.eigvals[i], orbs.lbound[i], config.nele[i]),
+                    args=(
+                        v_s[i],
+                        orbs._xgrid,
+                        orbs.eigvals[i],
+                        orbs.lbound[i],
+                        config.nele[i],
+                    ),
                     method="brentq",
                     bracket=[-100, 100],
                     options={"maxiter": 100},
@@ -478,10 +487,11 @@ def f_root_id(mu, eigvals, lbound, nele):
 
     return f_root
 
+
 def f_root_th(mu, v_s, xgrid, eigvals, lbound, nele):
     r"""
-    Functional input for the chemical potential root finding function (Thomas-Fermi approx).
-    
+    Functional input for the chem potential root finding function (Thomas-Fermi approx).
+
     See notes for function returned.
 
     Parameters
@@ -520,9 +530,11 @@ def f_root_th(mu, v_s, xgrid, eigvals, lbound, nele):
     prefac = (2.0 / config.spindims) * sqrt(2) / (pi ** 2)
     contrib_unbound_array = np.zeros(config.grid_params["ngrid"])
     for i in range(len(v_s)):
-        contrib_unbound_array[i] = prefac * thomas_fermi_int(v_s[i], mu, config.beta, 1.0)
+        contrib_unbound_array[i] = prefac * thomas_fermi_int(
+            v_s[i], mu, config.beta, 1.0
+        )
     contrib_unbound = int_sphere(contrib_unbound_array, xgrid)
-        
+
     # return the function whose roots are to be found
     f_root = contrib_bound + contrib_unbound - nele
 
