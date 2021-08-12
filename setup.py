@@ -17,6 +17,6 @@ setup(
     url="https://github.com/atomec-project/atoMEC",
     license=license,
     packages=find_packages(exclude=("tests", "docs")),
-    install_requires=["numpy", "scipy", "mendeleev", "tabulate", "pylibxc2", "joblib"],
+    install_requires=open('requirements.txt').read().splitlines(),
     python_requires=">=3.6",
 )
