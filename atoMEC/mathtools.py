@@ -180,7 +180,7 @@ def thomas_fermi(eps, mu, v_s, beta, n=0):
     # dfn the exponential function
     #ignore warnings here
     with np.errstate(over="ignore"):
-        fn_exp = np.minimum(np.exp(beta * (eps - mu + v_s)), 1e12)
+        fn_exp = np.minimum(np.exp(beta * (beta * eps - mu + v_s)), 1e12)
 
     # thomas-fermi dist
     f_tf = (eps) ** (n / 2.0) / (1 + fn_exp)
