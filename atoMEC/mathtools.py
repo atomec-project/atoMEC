@@ -7,11 +7,14 @@ Functions
 * :func:`int_sphere`: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
 * :func:`laplace`: compute the second-order derivative :math:`d^2 y(x) / dx^2`
 * :func:`fermi_dirac`: compute the Fermi-Dirac occupation function for given order `n`
+* :func:`thomas_fermi`: compute the Thomas-Fermi occupation function for given order `n
 * :func:`ideal_entropy`: Define the integrand to be used in :func:`ideal_entropy_int`.
 * :func:`ideal_entropy_int`: Compute the entropy for the ideal electron gas (no prefac).
 * :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`
+* :func:`thomas_fermi_int`: compute the Thomas-Fermi integral for given order `n`
 * :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
 * :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons
+* :func:`f_root_th`: make root input fn for chem_pot with thomas-fermi apprx for free e-
 """
 
 # standard libraries
@@ -176,6 +179,13 @@ def thomas_fermi(eps, mu, v_s, beta, n=0):
     -------
     f_tf : array_like
         the integrand function
+
+    Notes
+    -----
+    The TF function is defined as:
+
+    .. math:: f^{(n)}_{tf}(\epsilon, \mu, v_s, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+
+         \beta(\beta\epsilon - \mu + v_s))}
     """
     # dfn the exponential function
     #ignore warnings here
@@ -299,6 +309,15 @@ def thomas_fermi_int(v_s, mu, beta, n):
     -------
     I_n : float
         the Thomas-Fermi integral
+
+    Notes
+    -----
+    The integral we're computing is
+
+    .. math::
+
+        I_{n}(\mu,\beta)=\int_{-v_s}^{\infty}\mathrm{d}\epsilon\ \epsilon^{n/2}f_{tf}
+        (\mu,v_s,\epsilon,\beta)
     """
     # use scipy quad integration routine
     limup = np.inf
@@ -380,7 +399,7 @@ def chem_pot(orbs, v_s):
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
 
-    # so far only the ideal treatment for unbound electrons is implemented
+    # we can either choose the ideal or the tomas_fermi treatment for unbound electrons
     if config.unbound == "ideal":
         for i in range(config.spindims):
             if config.nele[i] != 0:
@@ -409,9 +428,8 @@ def chem_pot(orbs, v_s):
                 )
                 mu[i] = soln.root
             # in case there are no electron in one spin channel
-        else:
-            mu[i] = -np.inf
-
+            else:
+                mu[i] = -np.inf
     return mu
 
 
@@ -468,10 +486,10 @@ def f_root_th(mu, v_s, xgrid, eigvals, lbound, nele):
 
     Parameters
     ----------
-    v_s: array_like
-        Kohn-Sham potential
     mu : array_like
         chemical potential
+    v_s: array_like
+        Kohn-Sham potential
     eigvals : ndarray
         the energy eigenvalues
     lbound : ndarray
@@ -504,7 +522,7 @@ def f_root_th(mu, v_s, xgrid, eigvals, lbound, nele):
     for i in range(len(v_s)):
         contrib_unbound_array[i] = prefac * thomas_fermi_int(v_s[i], mu, config.beta, 1.0)
     contrib_unbound = int_sphere(contrib_unbound_array, xgrid)
-
+        
     # return the function whose roots are to be found
     f_root = contrib_bound + contrib_unbound - nele
 
