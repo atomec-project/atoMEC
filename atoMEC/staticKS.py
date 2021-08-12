@@ -352,8 +352,10 @@ class Density:
         ----------
         orbs : ndarray
             the radial eigenfunctions on the xgrid
-        xgrid : ndarray
+        xgrid: ndarray
             the logarithmic grid
+        v_s  : array_like
+            Kohn-Sham potential
 
         Returns
         -------
@@ -387,7 +389,7 @@ class Density:
                         v_s[i, j], config.mu[i], config.beta, 1.0
                     )
                     rho_unbound[i, j] = n_ub
-                N_unbound[i] = mathtools.int_sphere(rho_unbound, xgrid)
+                N_unbound[i] = mathtools.int_sphere(rho_unbound[i], xgrid)
 
         unbound = {"rho": rho_unbound, "N": N_unbound}
 
@@ -516,7 +518,7 @@ class Potential:
 class Energy:
     r"""Class holding information about the KS total energy and relevant routines."""
 
-    def __init__(self, orbs, dens):
+    def __init__(self, orbs, dens, v_s):
 
         # inputs
         self._orbs = orbs
@@ -531,6 +533,7 @@ class Energy:
         self._E_en = 0.0
         self._E_ha = 0.0
         self._E_xc = {"xc": 0.0, "x": 0.0, "c": 0.0}
+        self._v_s = v_s
 
     @property
     def F_tot(self):
@@ -574,7 +577,7 @@ class Energy:
         Contains `bound` and `unbound` keys.
         """
         if self._E_kin["tot"] == 0.0:
-            self._E_kin = self.calc_E_kin(self._orbs, self._xgrid)
+            self._E_kin = self.calc_E_kin(self._orbs, self._xgrid, self._v_s)
         return self._E_kin
 
     @property
@@ -603,7 +606,7 @@ class Energy:
             self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
         return self._E_xc
 
-    def calc_E_kin(self, orbs, xgrid):
+    def calc_E_kin(self, orbs, xgrid, v_s):
         """
         Compute the kinetic energy.
 
@@ -628,7 +631,7 @@ class Energy:
         E_kin["bound"] = self.calc_E_kin_bound(orbs, xgrid)
 
         # unbound part
-        E_kin["unbound"] = self.calc_E_kin_unbound(orbs, xgrid)
+        E_kin["unbound"] = self.calc_E_kin_unbound(orbs, xgrid, v_s)
 
         # total
         E_kin["tot"] = E_kin["bound"] + E_kin["unbound"]
@@ -672,7 +675,7 @@ class Energy:
         return E_kin_bound
 
     @staticmethod
-    def calc_E_kin_unbound(orbs, xgrid):
+    def calc_E_kin_unbound(orbs, xgrid, v_s):
         r"""
         Compute the contribution from unbound (continuum) electrons to kinetic energy.
 
@@ -682,6 +685,8 @@ class Energy:
             the KS orbitals object
         xgrid : ndarray
             the logarithmic grid
+        v_s  : array_like
+            Kohn-Sham potential
 
         Returns
         -------
@@ -690,7 +695,7 @@ class Energy:
 
         Notes
         -----
-        Currently only "ideal" (uniform) approximation for unbound electrons supported.
+        Currently the "ideal" (uniform) and the "thomas-fermi" approximation for unbound electrons are supported.
 
         .. math::
             T_\mathrm{ub} = \sum_\sigma \frac{N^\sigma\times V}{\sqrt{2}\pi^2}\
@@ -698,8 +703,8 @@ class Energy:
 
         where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
-        # currently only ideal treatment supported
-        if config.unbound == "ideal" or "thomas_fermi":
+        # the ideal treatment is implemented
+        if config.unbound == "ideal":
             E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
@@ -707,7 +712,17 @@ class Energy:
                     config.mu[i], config.beta, 3.0
                 )
 
+        if config.unbound == "thomas_fermi":
+            E_kin_unbound_array = np.zeros((config.spindims, config.grid_params["ngrid"])) # initialize
+            E_kin_unbound = 0.0 # initialize
+            for i in range(config.spindims):
+                for j in range(len(v_s[0, :])):
+                    prefac = (2.0 / config.spindims) * sqrt(2) / (pi ** 2)
+                    E_kin_unbound_array[i, j] = prefac * mathtools.thomas_fermi_int(v_s[i, j], config.mu[i], config.beta, 3.0)
+                E_kin_unbound += mathtools.int_sphere(E_kin_unbound_array[i], xgrid)
+                    
         return E_kin_unbound
+
 
     def calc_entropy(self, orbs):
         """
