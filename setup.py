@@ -12,11 +12,12 @@ setup(
     version="0.1.0",
     description="KS-DFT average-atom code",
     long_description=readme,
+    long_description_content_type='text/markdown',
     author="Tim Callow",
     author_email="t.callow@hzdr.de",
     url="https://github.com/atomec-project/atoMEC",
     license=license,
-    packages=find_packages(exclude=("tests", "docs")),
+    packages=find_packages(exclude=("tests", "docs", "examples")),
     install_requires=open('requirements.txt').read().splitlines(),
     python_requires=">=3.6",
 )
