@@ -135,7 +135,22 @@ def write_ISModel_data(ISModel):
     )
     ub_info = ub_str + spc
 
-    output_str = init_str + spinpol_info + nele_info + xc_info + bc_info + ub_info + spc
+    # potential shift
+    vshift_str = "{preamble:30s}: {spin}".format(
+        preamble="Shift KS potential", spin=ISModel.v_shift
+    )
+    vshift_info = vshift_str + spc
+
+    output_str = (
+        init_str
+        + spinpol_info
+        + nele_info
+        + xc_info
+        + bc_info
+        + ub_info
+        + vshift_info
+        + spc
+    )
 
     return output_str
 
