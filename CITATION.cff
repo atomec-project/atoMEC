@@ -8,15 +8,15 @@ authors:
     given-names: Daniel
   - affiliation: "Center for Advanced Systems Understanding (CASUS), Helmholtz-Zentrum Dresden-Rossendorf e.V. (HZDR)"
     family-names: Tsvetoslavova Stankulova
-    given-names: Ekaterina 
+    given-names: Ekaterina
   - affiliation: "Fritz Haber Center for Molecular Dynamics and Institute of Chemistry, The Hebrew University of Jerusalem"
     family-names: Kraisler
-    given-names: Eli  
+    given-names: Eli
   - affiliation: "Center for Advanced Systems Understanding (CASUS), Helmholtz-Zentrum Dresden-Rossendorf e.V. (HZDR)"
     family-names: Cangi
     given-names: Attila
 cff-version: 1.1.0
-date-released: 2021-08-12
+date-released: 2021-08-13
 keywords:
   - "density-functional-theory"
   - "plasma-physics"
