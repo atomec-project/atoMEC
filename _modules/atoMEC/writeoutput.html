@@ -293,22 +293,7 @@
     <span class="p">)</span>
     <span class="n">ub_info</span> <span class="o">=</span> <span class="n">ub_str</span> <span class="o">+</span> <span class="n">spc</span>
 
-    <span class="c1"># potential shift</span>
-    <span class="n">vshift_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{spin}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-        <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Shift KS potential&quot;</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="n">ISModel</span><span class="o">.</span><span class="n">v_shift</span>
-    <span class="p">)</span>
-    <span class="n">vshift_info</span> <span class="o">=</span> <span class="n">vshift_str</span> <span class="o">+</span> <span class="n">spc</span>
-
-    <span class="n">output_str</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">init_str</span>
-        <span class="o">+</span> <span class="n">spinpol_info</span>
-        <span class="o">+</span> <span class="n">nele_info</span>
-        <span class="o">+</span> <span class="n">xc_info</span>
-        <span class="o">+</span> <span class="n">bc_info</span>
-        <span class="o">+</span> <span class="n">ub_info</span>
-        <span class="o">+</span> <span class="n">vshift_info</span>
-        <span class="o">+</span> <span class="n">spc</span>
-    <span class="p">)</span>
+    <span class="n">output_str</span> <span class="o">=</span> <span class="n">init_str</span> <span class="o">+</span> <span class="n">spinpol_info</span> <span class="o">+</span> <span class="n">nele_info</span> <span class="o">+</span> <span class="n">xc_info</span> <span class="o">+</span> <span class="n">bc_info</span> <span class="o">+</span> <span class="n">ub_info</span> <span class="o">+</span> <span class="n">spc</span>
 
     <span class="k">return</span> <span class="n">output_str</span></div>
 
