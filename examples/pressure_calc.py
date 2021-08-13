@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple example using default settings wherever possible
+Computes the pressure using finite-differences for Beryllium
 """
 
 from atoMEC import Atom, models, config
