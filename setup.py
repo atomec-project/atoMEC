@@ -9,11 +9,11 @@ with open("LICENSE") as f:
 
 setup(
     name="atoMEC",
-    version="0.1.0",
+    version="1.0.0",
     description="KS-DFT average-atom code",
     long_description=readme,
     long_description_content_type='text/markdown',
-    author="Tim Callow",
+    author="Tim Callow et al.",
     author_email="t.callow@hzdr.de",
     url="https://github.com/atomec-project/atoMEC",
     license=license,
