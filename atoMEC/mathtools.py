@@ -14,7 +14,7 @@ Functions
 * :func:`thomas_fermi_int`: compute the Thomas-Fermi integral for given order `n`
 * :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
 * :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons
-* :func:`f_root_th`: make root input fn for chem_pot with thomas-fermi apprx for free e-
+* :func:`f_root_tf`: make root input fn for chem_pot with thomas-fermi apprx for free e-
 """
 
 # standard libraries
@@ -402,7 +402,7 @@ def chem_pot(orbs, v_s):
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
 
-    # we can either choose the ideal or the tomas_fermi treatment for unbound electrons
+    # we can either choose the ideal or the thomas_fermi treatment for unbound electrons
     if config.unbound == "ideal":
         for i in range(config.spindims):
             if config.nele[i] != 0:
@@ -422,7 +422,7 @@ def chem_pot(orbs, v_s):
         for i in range(config.spindims):
             if config.nele[i] != 0:
                 soln = optimize.root_scalar(
-                    f_root_th,
+                    f_root_tf,
                     x0=mu0[i],
                     args=(
                         v_s[i],
@@ -488,7 +488,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     return f_root
 
 
-def f_root_th(mu, v_s, xgrid, eigvals, lbound, nele):
+def f_root_tf(mu, v_s, xgrid, eigvals, lbound, nele):
     r"""
     Functional input for the chem potential root finding function (Thomas-Fermi approx).
 
@@ -531,7 +531,7 @@ def f_root_th(mu, v_s, xgrid, eigvals, lbound, nele):
     contrib_unbound_array = np.zeros(config.grid_params["ngrid"])
     for i in range(len(v_s)):
         contrib_unbound_array[i] = prefac * thomas_fermi_int(
-            0, mu, config.beta, 1.0
+            v_s[i], mu, config.beta, 1.0
         )
     contrib_unbound = int_sphere(contrib_unbound_array, xgrid)
 
