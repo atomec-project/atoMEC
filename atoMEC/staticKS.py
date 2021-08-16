@@ -384,7 +384,7 @@ class Density:
             # unbound density is not constant
             for i in range(config.spindims):
                 for j in range(len(v_s[0, :])):
-                    prefac = (2.0 / config.spindims) * sqrt(2) / (pi ** 2)
+                    prefac = (2.0 / config.spindims) / (sqrt(2) * pi ** 2)
                     n_ub = prefac * mathtools.thomas_fermi_int(
                         v_s[i, j], config.mu[i], config.beta, 1.0
                     )
@@ -695,7 +695,7 @@ class Energy:
 
         Notes
         -----
-        Currently the "ideal" (uniform) and the "thomas-fermi" approximation for unbound electrons are supported.
+        The "ideal" (uniform) and the "thomas-fermi" apprx for unbound e- are supported.
 
         .. math::
             T_\mathrm{ub} = \sum_\sigma \frac{N^\sigma\times V}{\sqrt{2}\pi^2}\
@@ -713,16 +713,19 @@ class Energy:
                 )
 
         if config.unbound == "thomas_fermi":
-            E_kin_unbound_array = np.zeros((config.spindims, config.grid_params["ngrid"])) # initialize
-            E_kin_unbound = 0.0 # initialize
+            E_kin_unbound_array = np.zeros(
+                (config.spindims, config.grid_params["ngrid"])
+            )  # initialize
+            E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 for j in range(len(v_s[0, :])):
-                    prefac = (2.0 / config.spindims) * sqrt(2) / (pi ** 2)
-                    E_kin_unbound_array[i, j] = prefac * mathtools.thomas_fermi_int(v_s[i, j], config.mu[i], config.beta, 3.0)
+                    prefac = (2.0 / config.spindims) / (sqrt(2) * pi ** 2)
+                    E_kin_unbound_array[i, j] = prefac * mathtools.thomas_fermi_int(
+                        v_s[i, j], config.mu[i], config.beta, 3.0
+                    )
                 E_kin_unbound += mathtools.int_sphere(E_kin_unbound_array[i], xgrid)
-                    
-        return E_kin_unbound
 
+        return E_kin_unbound
 
     def calc_entropy(self, orbs):
         """
