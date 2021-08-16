@@ -328,7 +328,7 @@ def thomas_fermi_int(v_s, mu, beta, n):
     # ignore integration warnings (omnipresent because of inf upper limit)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
-        I_n, err = integrate.quad(thomas_fermi, -v_s, limup, args=(mu, beta, n))
+        I_n, err = integrate.quad(thomas_fermi, -v_s, limup, args=(mu, v_s, beta, n))
     return I_n
 
 
@@ -531,7 +531,7 @@ def f_root_th(mu, v_s, xgrid, eigvals, lbound, nele):
     contrib_unbound_array = np.zeros(config.grid_params["ngrid"])
     for i in range(len(v_s)):
         contrib_unbound_array[i] = prefac * thomas_fermi_int(
-            v_s[i], mu, config.beta, 1.0
+            0, mu, config.beta, 1.0
         )
     contrib_unbound = int_sphere(contrib_unbound_array, xgrid)
 
