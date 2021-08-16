@@ -15,7 +15,7 @@ Classes
 about physical material properties
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 # standard libraries
 from math import pi
