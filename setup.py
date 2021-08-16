@@ -1,22 +1,29 @@
 from setuptools import setup, find_packages
 
 
-with open("README.rst") as f:
+with open("README.md") as f:
     readme = f.read()
 
 with open("LICENSE") as f:
     license = f.read()
+
+extras = {
+    'dev': ['bump2version'],
+    'docs': open('docs/requirements.txt').read().splitlines(),
+}
 
 setup(
     name="atoMEC",
     version="0.1.0",
     description="KS-DFT average-atom code",
     long_description=readme,
-    author="Tim Callow",
+    long_description_content_type='text/markdown',
+    author="Tim Callow et al.",
     author_email="t.callow@hzdr.de",
     url="https://github.com/atomec-project/atoMEC",
     license=license,
-    packages=find_packages(exclude=("tests", "docs")),
-    install_requires=["numpy", "scipy", "mendeleev", "tabulate", "pylibxc2", "joblib"],
+    packages=find_packages(exclude=("tests", "docs", "examples")),
+    install_requires=open('requirements.txt').read().splitlines(),
+    extras_require=extras,
     python_requires=">=3.6",
 )

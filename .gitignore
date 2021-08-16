@@ -1,5 +1,5 @@
 # python cache folders
-*/__pycache__/*
+__pycache__/
 
 # emacs extension files
 *~
@@ -10,7 +10,11 @@
 build/
 install/
 dist/
-AvAtom.egg-info/
+atoMEC.egg-info/
 
 # data / results files
 *.csv
+
+# Sphinx documentation
+docs/_build/
+docs/source/api/

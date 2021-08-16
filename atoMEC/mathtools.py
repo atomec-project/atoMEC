@@ -1,9 +1,21 @@
-"""
-Low-level module containing various mathematical functions
+r"""
+Low-level module containing miscalleneous mathematical functions.
+
+Functions
+---------
+* :func:`normalize_orbs`: normalize KS orbitals within defined sphere
+* :func:`int_sphere`: integral :math:`4\pi \int \mathrm{d}r r^2 f(r)`
+* :func:`laplace`: compute the second-order derivative :math:`d^2 y(x) / dx^2`
+* :func:`fermi_dirac`: compute the Fermi-Dirac occupation function for given order `n`
+* :func:`ideal_entropy`: Define the integrand to be used in :func:`ideal_entropy_int`.
+* :func:`ideal_entropy_int`: Compute the entropy for the ideal electron gas (no prefac).
+* :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`
+* :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
+* :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons
 """
 
 # standard libraries
-from math import sqrt, pi, exp
+from math import sqrt, pi
 import warnings
 
 # external libraries
@@ -11,17 +23,17 @@ import numpy as np
 from scipy import optimize, integrate
 
 # internal libraries
-import config
+from . import config
 
 
 def normalize_orbs(eigfuncs_x, xgrid):
-    """
-    Normalizes the KS orbitals within the chosen sphere
+    r"""
+    Normalize the KS orbitals within the chosen sphere.
 
     Parameters
     ----------
     eigfuncs : ndarray
-        The radial KS eigenfunctions :math: 'X_{nl}^{\sigma}(x)'
+        The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`
     xgrid : ndarray
         The logarithmic grid over which normalization is performed
 
@@ -30,7 +42,6 @@ def normalize_orbs(eigfuncs_x, xgrid):
     eigfuncs_x_norm : ndarray
         The radial KS eigenfunctions normalized over the chosen sphere
     """
-
     # initialize the normalized eigenfunctions
     eigfuncs_x_norm = eigfuncs_x
 
@@ -48,9 +59,10 @@ def normalize_orbs(eigfuncs_x, xgrid):
 
 
 def int_sphere(fx, xgrid):
-    """
-    Computes integrals over the sphere defined by the logarithmic
-    grid provided as input
+    r"""
+    Compute integral over sphere defined by input grid.
+
+    The integral is performed on the logarithmic grid (see notes).
 
     Parameters
     ----------
@@ -67,9 +79,9 @@ def int_sphere(fx, xgrid):
     Notes
     -----
     The integral formula is given by
-    .. math:: I = 4 \pi \int \dd{x} e^{3x} f(x)
-    """
 
+    .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)
+    """
     func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
     I_sph = np.trapz(func_int, xgrid)
 
@@ -77,9 +89,10 @@ def int_sphere(fx, xgrid):
 
 
 def laplace(y, x, axis=-1):
-    """
-    Computes the second-order derivative d^2 y(x) / dx^2
-    over the chosen axis of the input array
+    r"""
+    Compute the second-order derivative :math:`d^2 y(x) / dx^2`.
+
+    Derivative can be computed over any given axis.
 
     Parameters
     ----------
@@ -96,7 +109,6 @@ def laplace(y, x, axis=-1):
     grad2_y : ndarray
         the laplacian of y
     """
-
     # first compute the first-order gradient
     grad1_y = np.gradient(y, x, edge_order=2, axis=axis)
 
@@ -107,8 +119,8 @@ def laplace(y, x, axis=-1):
 
 
 def fermi_dirac(eps, mu, beta, n=0):
-    """
-    Computes the Fermi-Dirac function, see notes
+    r"""
+    Compute the Fermi-Dirac function, see notes for functional form.
 
     Parameters
     ----------
@@ -129,9 +141,10 @@ def fermi_dirac(eps, mu, beta, n=0):
     Notes
     -----
     The FD function is defined as:
-    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{(n/2)}{1+\exp(1+\beta(\epsilon - \mu))}
-    """
 
+    .. math:: f^{(n)}_{fd}(\epsilon, \mu, \beta) = \frac{\epsilon^{n/2}}{1+\exp(1+
+        \beta(\epsilon - \mu))}
+    """
     # dfn the exponential function
     # ignore warnings here
     with np.errstate(over="ignore"):
@@ -143,9 +156,63 @@ def fermi_dirac(eps, mu, beta, n=0):
     return f_fd
 
 
-def fd_int_complete(mu, beta, n):
+def ideal_entropy(eps, mu, beta, n=0):
+    r"""
+    Define the integrand to be used in :func:`ideal_entropy_int` (see notes).
+
+    Parameters
+    ----------
+    eps : array_like
+        the energies
+    mu : array_like
+        the chemical potential
+    beta : float
+        the inverse potential
+    n : int
+        energy is raised to power n/2 in the numerator (see notes)
+
+    Returns
+    -------
+    f_ent : array_like
+        the entropy integrand function
+
+    Notes
+    -----
+    The ideal entropy integrand is defined as
+
+    .. math::
+        f_n(\epsilon,\mu,\beta) = \epsilon^{n/2} (f_\mathrm{fd}\log{f_\mathrm{fd}}
+        + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),
+
+    where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac
+    distribution.
     """
-    Computes complete Fermi-Dirac integrals (see notes)
+    # dfn the exponential function
+    # ignore warnings here
+    with np.errstate(over="ignore"):
+        fn_exp = np.minimum(np.exp(beta * (eps - mu)), 1e12)
+
+    # the 'raw' Fermi-Dirac distribution
+    f_fd_raw = 1 / (1 + fn_exp)
+
+    # define high and low tolerances for the log function (to avoid nans)
+    tol_l = 1e-8
+    tol_h = 1.0 - 1e-8
+
+    # first replace the zero values
+    f_fd_mod = np.where(f_fd_raw > tol_l, f_fd_raw, tol_l)
+    # now replace the one values
+    f_fd = np.where(f_fd_mod < tol_h, f_fd_mod, tol_h)
+
+    # fermi_dirac dist
+    f_ent = (eps) ** (n / 2.0) * (f_fd * np.log(f_fd) + (1 - f_fd) * np.log(1 - f_fd))
+
+    return f_ent
+
+
+def fd_int_complete(mu, beta, n):
+    r"""
+    Compute complete Fermi-Dirac integral for given order (see notes for function form).
 
     Parameters
     ----------
@@ -164,10 +231,14 @@ def fd_int_complete(mu, beta, n):
     Notes
     -----
     Complete Fermi-Dirac integrals are of the form
-    .. math:: I_(n)(\mu,\beta) = \int_0^\inf \dd{\epsilon} \epsilon^(n/2) f_fd(\mu,\epsilon,\beta)
+
+    .. math::
+
+        I_{n}(\mu,\beta)=\int_0^\infty\mathrm{d}\epsilon\ \epsilon^{n/2}f_{fd}
+        (\mu,\epsilon,\beta)
+
     where n is the order of the integral
     """
-
     # use scipy quad integration routine
     limup = np.inf
 
@@ -179,14 +250,55 @@ def fd_int_complete(mu, beta, n):
     return I_n
 
 
-def chem_pot(orbs):
-    """
-    Determines the chemical potential by enforcing charge neutrality (see notes)
-    Uses scipy.optimize.root_scalar with brentq implementation
+def ideal_entropy_int(mu, beta, n):
+    r"""
+    Compute the entropy for the ideal electron gas (without prefactor) - see notes.
 
     Parameters
     ----------
-    orbs : object(staticKS.Orbitals)
+    mu : float
+        chemical potential
+    beta: float
+        inverse temperature
+    n : int
+        order of Fermi-Dirac integral (see notes)
+
+    Returns
+    -------
+    I_n : float
+        the complete fermi-dirac integral
+
+    Notes
+    -----
+    The entropy of an ideal electron gas is defined as
+
+    .. math::
+        I_n(\mu,\beta) = \int_0^\infty \mathrm{d}\epsilon\ \epsilon^{n/2}
+        (f_\mathrm{fd}\log{f_\mathrm{fd}} + (1-f_\mathrm{fd}) \log(1-f_\mathrm{fd}) ),
+
+    where :math:`f_\mathrm{fd}=f_\mathrm{fd}(\epsilon,\mu,\beta)` is the Fermi-Dirac
+    distribution.
+    """
+    # use scipy quad integration routine
+    limup = np.inf
+
+    # ignore integration warnings (omnipresent because of inf upper limit)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        I_n, err = integrate.quad(ideal_entropy, 0, limup, args=(mu, beta, n))
+
+    return I_n
+
+
+def chem_pot(orbs):
+    r"""
+    Determine the chemical potential by enforcing charge neutrality (see notes).
+
+    Uses scipy.optimize.root_scalar with brentq implementation.
+
+    Parameters
+    ----------
+    orbs : staticKS.Orbitals
         the orbitals object
 
     Returns
@@ -196,11 +308,13 @@ def chem_pot(orbs):
 
     Notes
     -----
-    Finds the roots of the eqn:
-    ..math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e = 0
-    The number of unbound electrons N_{ub} depends on the implementation choice
-    """
+    Finds the roots of equation
 
+    .. math:: \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +
+        N_{ub}(\beta,\mu) - N_e = 0.
+
+    The number of unbound electrons :math:`N_{ub}` depends on the implementation choice.
+    """
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
 
@@ -213,21 +327,22 @@ def chem_pot(orbs):
                     x0=mu0[i],
                     args=(orbs.eigvals[i], orbs.lbound[i], config.nele[i]),
                     method="brentq",
-                    bracket=[-40, 40],
+                    bracket=[-100, 100],
                     options={"maxiter": 100},
                 )
                 mu[i] = soln.root
             # in case there are no electrons in one spin channel
             else:
-                mu[i] = np.inf
+                mu[i] = -np.inf
 
     return mu
 
 
 def f_root_id(mu, eigvals, lbound, nele):
-    """
-    Functional input for the chemical potential root finding function
-    with the ideal approximation for unbound electrons (see notes)
+    r"""
+    Functional input for the chemical potential root finding function (ideal approx).
+
+    See notes for function returned, the ideal approximation is used for free electrons.
 
     Parameters
     ----------
@@ -236,7 +351,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     eigvals : ndarray
         the energy eigenvalues
     lbound : ndarray
-        the lbound [(2l+1)*Theta(e)] matrix
+        the lbound matrix :math:`(2l+1)\Theta(\epsilon_{nl}^\sigma)`
     nele : union(int, float)
         the number of electrons for given spin
 
@@ -249,15 +364,13 @@ def f_root_id(mu, eigvals, lbound, nele):
     Notes
     -----
     The returned function is
-    ..math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) + N_{ub}(\beta,\mu) - N_e
-    """
 
+    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +
+        N_{ub}(\beta,\mu) - N_e
+    """
     # caluclate the contribution from the bound electrons
-    if nele != 0:
-        occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
-        contrib_bound = occnums.sum()
-    else:
-        contrib_bound = 0.0
+    occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
+    contrib_bound = occnums.sum()
 
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation
