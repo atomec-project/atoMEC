@@ -14,7 +14,7 @@ extras = {
 
 setup(
     name="atoMEC",
-    version="0.1.0",
+    version="1.0.0",
     description="KS-DFT average-atom code",
     long_description=readme,
     long_description_content_type='text/markdown',
