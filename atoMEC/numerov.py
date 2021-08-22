@@ -129,7 +129,7 @@ def KS_matsolve_parallel(T, B, v, xgrid):
         off-diagonal array (for RHS of eigenvalue problem)
     v : ndarray
         KS potential array
-    xgrid: ndarray
+    xgrid : ndarray
         the logarithmic grid
 
     Returns
@@ -204,7 +204,7 @@ def KS_matsolve_serial(T, B, v, xgrid):
         off-diagonal array (for RHS of eigenvalue problem)
     v : ndarray
         KS potential array
-    xgrid: ndarray
+    xgrid : ndarray
         the logarithmic grid
 
     Returns
@@ -264,6 +264,8 @@ def diag_H(p, T, B, v, xgrid, nmax, bc):
         the kinetic energy matrix
     B : ndarray
         the off diagonal matrix multiplying V and RHS
+    v : ndarray
+        KS potential array
     xgrid : ndarray
         the logarithmic grid
     nmax : int

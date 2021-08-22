@@ -32,7 +32,7 @@ def normalize_orbs(eigfuncs_x, xgrid):
 
     Parameters
     ----------
-    eigfuncs : ndarray
+    eigfuncs_x : ndarray
         The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`
     xgrid : ndarray
         The logarithmic grid over which normalization is performed
@@ -100,7 +100,7 @@ def laplace(y, x, axis=-1):
         array y(x) on which laplacian is computed
     x : ndarray
         x array
-    axis: int, optional
+    axis : int, optional
         axis over which derivatives are taken
         default : -1
 
@@ -218,7 +218,7 @@ def fd_int_complete(mu, beta, n):
     ----------
     mu : float
         chemical potential
-    beta: float
+    beta : float
         inverse temperature
     n : int
         order of Fermi-Dirac integral (see notes)
@@ -258,7 +258,7 @@ def ideal_entropy_int(mu, beta, n):
     ----------
     mu : float
         chemical potential
-    beta: float
+    beta : float
         inverse temperature
     n : int
         order of Fermi-Dirac integral (see notes)
