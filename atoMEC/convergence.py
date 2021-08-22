@@ -7,7 +7,7 @@ be added in future.
 Classes
 -------
 * :class:`SCF` : holds the SCF convergence attributes and calculates them for the \
-given cycle
+                 given cycle
 """
 
 # standard libraries

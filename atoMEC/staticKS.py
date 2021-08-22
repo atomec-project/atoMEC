@@ -8,22 +8,23 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 Classes
 -------
 * :class:`Orbitals` : Holds the KS orbitals (transformed to the log grid) and related \
-quantities such as eigenvalues and occupation numbers
-* :class:`Density` : Holds the KS density (bound/unbound components) and routines\
-to compute it.
+                      quantities such as eigenvalues and occupation numbers
+* :class:`Density` : Holds the KS density (bound/unbound components) and routines \
+                     to compute it.
 * :class:`Potential` : Holds the KS potential (split into individual components) and \
-the routines to compute them.
+                       the routines to compute them.
 * :class:`Energy` : Holds the free energy and all internal components (KS quantities \
-and entropy) and the routines required to compute them.
+                    and entropy) and the routines required to compute them.
 * :class:`EnergyAlt` : Holds the free energy and all internal components (KS \
-quantities and entropy) and the routines required to compute them. \
-N.B. the :class:`EnergyAlt` class constructs the energy functional in an alternative \
-manner to the main :class:`Energy` class
+                       quantities and entropy) and the routines required to compute \
+                       them. N.B. the :class:`EnergyAlt` class constructs the energy \
+                       functional in an alternative manner to the main :class:`Energy` \
+                       class.
 
 Functions
 ---------
 * :func:`log_grid` : Sets up the logarithmic (and associated real-space) grid on which \
-all computations rely.
+                     all computations rely.
 """
 
 # standard packages

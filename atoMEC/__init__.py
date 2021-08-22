@@ -12,7 +12,7 @@ for more information.
 Classes
 -------
 * :class:`Atom` : the main object for atoMEC calculations, containing information \
-about physical material properties
+                  about physical material properties
 """
 
 __version__ = "1.0.0"
