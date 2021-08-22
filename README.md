@@ -77,6 +77,6 @@ $ pip install -r docs/requirements.txt
 ## Citing atoMEC
 If you use code from this repository in a published work, please cite the DOI corresponding to the specific version of atoMEC that you used (DOIs are listed at [Zenodo.org](https://doi.org/10.5281/zenodo.5205718)).
 
-Furthermore we kindly ask you to cite also the following paper in publications which use atoMEC:
+If appropriate, you might also consider citing the following preprint in publications which use atoMEC:
 
 T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021). First-principles derivation and properties of density-functional average-atom models. arXiv preprint [arXiv:2103.09928](https://arxiv.org/abs/2103.09928).
