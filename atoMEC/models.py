@@ -188,7 +188,7 @@ class ISModel:
 
     @property
     def unbound(self):
-        """str: the treatment of unbound (free) electrons."""
+        """str: the treatment of unbound/free electrons."""
         return self._unbound
 
     @unbound.setter
