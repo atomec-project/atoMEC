@@ -166,13 +166,13 @@
 <span class="sd">Functions</span>
 <span class="sd">---------</span>
 <span class="sd">* :func:`matrix_solve` : Solve the radial KS equation via matrix diagonalization of \</span>
-<span class="sd">                         Numerov&#39;s method.</span>
+<span class="sd">Numerov&#39;s method.</span>
 <span class="sd">* :func:`KS_matsolve_parallel` : Solve the KS matrix diagonalization by parallelizing \</span>
-<span class="sd">                                 over config.ncores.</span>
+<span class="sd">over config.ncores.</span>
 <span class="sd">* :func:`KS_matsolve_serial` : Solve the KS matrix diagonalization in serial.</span>
 <span class="sd">* :func:`diag_H` : Diagonalize the Hamiltonian for given input potential.</span>
 <span class="sd">* :func:`update_orbs` : Sort the eigenvalues and functions by ascending energies and \</span>
-<span class="sd">                        normalize orbs.</span>
+<span class="sd">normalize orbs.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 
@@ -287,7 +287,7 @@
 <span class="sd">        off-diagonal array (for RHS of eigenvalue problem)</span>
 <span class="sd">    v : ndarray</span>
 <span class="sd">        KS potential array</span>
-<span class="sd">    xgrid : ndarray</span>
+<span class="sd">    xgrid: ndarray</span>
 <span class="sd">        the logarithmic grid</span>
 
 <span class="sd">    Returns</span>
@@ -362,7 +362,7 @@
 <span class="sd">        off-diagonal array (for RHS of eigenvalue problem)</span>
 <span class="sd">    v : ndarray</span>
 <span class="sd">        KS potential array</span>
-<span class="sd">    xgrid : ndarray</span>
+<span class="sd">    xgrid: ndarray</span>
 <span class="sd">        the logarithmic grid</span>
 
 <span class="sd">    Returns</span>
@@ -422,8 +422,6 @@
 <span class="sd">        the kinetic energy matrix</span>
 <span class="sd">    B : ndarray</span>
 <span class="sd">        the off diagonal matrix multiplying V and RHS</span>
-<span class="sd">    v : ndarray</span>
-<span class="sd">        KS potential array</span>
 <span class="sd">    xgrid : ndarray</span>
 <span class="sd">        the logarithmic grid</span>
 <span class="sd">    nmax : int</span>

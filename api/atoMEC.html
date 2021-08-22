@@ -224,7 +224,7 @@ appropriate default inputs where none are supplied.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.check_inputs.Atom" title="atoMEC.check_inputs.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> : Check the inputs from the <a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">atoMEC.Atom</span></code></a> object.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.check_inputs.ISModel" title="atoMEC.check_inputs.ISModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ISModel</span></code></a> : Check the inputs from the <a class="reference internal" href="#atoMEC.models.ISModel" title="atoMEC.models.ISModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atoMEC.models.ISModel</span></code></a> class.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.check_inputs.EnergyCalcs" title="atoMEC.check_inputs.EnergyCalcs"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyCalcs</span></code></a> : Check the inputs from the                          <a class="reference internal" href="#atoMEC.models.ISModel.CalcEnergy" title="atoMEC.models.ISModel.CalcEnergy"><code class="xref py py-func docutils literal notranslate"><span class="pre">atoMEC.models.ISModel.CalcEnergy()</span></code></a> function.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.check_inputs.EnergyCalcs" title="atoMEC.check_inputs.EnergyCalcs"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyCalcs</span></code></a> : Check the inputs from the <a class="reference internal" href="#atoMEC.models.ISModel.CalcEnergy" title="atoMEC.models.ISModel.CalcEnergy"><code class="xref py py-func docutils literal notranslate"><span class="pre">atoMEC.models.ISModel.CalcEnergy()</span></code></a> function.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.check_inputs.InputError" title="atoMEC.check_inputs.InputError"><code class="xref py py-class docutils literal notranslate"><span class="pre">InputError</span></code></a> : Exit atoMEC and print relevant input error message.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.check_inputs.InputWarning" title="atoMEC.check_inputs.InputWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">InputWarning</span></code></a> : Warn if inputs are considered outside of typical ranges.</p></li>
 </ul>
@@ -982,12 +982,11 @@ just total electron number</p>
 <div class="section" id="module-atoMEC.convergence">
 <span id="atomec-convergence-module"></span><h2>atoMEC.convergence module<a class="headerlink" href="#module-atoMEC.convergence" title="Permalink to this headline">¶</a></h2>
 <p>Contains classes and functions used to compute and store aspects related to convergence.</p>
-<p>So far, the only procedure requring convergence is the static SCF cycle. More will
-be added in future.</p>
+<p>So far, the only procedure requring convergence is the static SCF cycle. More will be added in future.</p>
 <div class="section" id="id1">
 <h3>Classes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#atoMEC.convergence.SCF" title="atoMEC.convergence.SCF"><code class="xref py py-class docutils literal notranslate"><span class="pre">SCF</span></code></a> : holds the SCF convergence attributes and calculates them for the                  given cycle</p></li>
+<li><p><a class="reference internal" href="#atoMEC.convergence.SCF" title="atoMEC.convergence.SCF"><code class="xref py py-class docutils literal notranslate"><span class="pre">SCF</span></code></a> : holds the SCF convergence attributes and calculates them for the given cycle</p></li>
 </ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.convergence.SCF">
@@ -1262,7 +1261,7 @@ default : -1</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eigfuncs_x</strong> (<em>ndarray</em>) – The radial KS eigenfunctions <span class="math notranslate nohighlight">\(X_{nl}^{\sigma}(x)\)</span></p></li>
+<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – The radial KS eigenfunctions <span class="math notranslate nohighlight">\(X_{nl}^{\sigma}(x)\)</span></p></li>
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – The logarithmic grid over which normalization is performed</p></li>
 </ul>
 </dd>
@@ -1285,7 +1284,7 @@ releases.</p>
 <div class="section" id="id2">
 <h3>Classes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#atoMEC.models.ISModel" title="atoMEC.models.ISModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ISModel</span></code></a> : Ion-sphere type model, static properties such as KS orbitals,                      density and energy are directly computed</p></li>
+<li><p><a class="reference internal" href="#atoMEC.models.ISModel" title="atoMEC.models.ISModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ISModel</span></code></a> : Ion-sphere type model, static properties such as KS orbitals, density and energy are directly computed</p></li>
 </ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.models.ISModel">
@@ -1523,7 +1522,7 @@ defaults to 0.01</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.models.ISModel.unbound">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">unbound</span></span><a class="headerlink" href="#atoMEC.models.ISModel.unbound" title="Permalink to this definition">¶</a></dt>
-<dd><p>the treatment of unbound/free electrons.</p>
+<dd><p>the treatment of unbound (free) electrons.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>str</p>
@@ -1566,11 +1565,11 @@ quantum number <cite>l</cite>.</p>
 <div class="section" id="id5">
 <h3>Functions<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#atoMEC.numerov.matrix_solve" title="atoMEC.numerov.matrix_solve"><code class="xref py py-func docutils literal notranslate"><span class="pre">matrix_solve()</span></code></a> : Solve the radial KS equation via matrix diagonalization of                          Numerov’s method.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.numerov.KS_matsolve_parallel" title="atoMEC.numerov.KS_matsolve_parallel"><code class="xref py py-func docutils literal notranslate"><span class="pre">KS_matsolve_parallel()</span></code></a> : Solve the KS matrix diagonalization by parallelizing                                  over config.ncores.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.numerov.matrix_solve" title="atoMEC.numerov.matrix_solve"><code class="xref py py-func docutils literal notranslate"><span class="pre">matrix_solve()</span></code></a> : Solve the radial KS equation via matrix diagonalization of Numerov’s method.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.numerov.KS_matsolve_parallel" title="atoMEC.numerov.KS_matsolve_parallel"><code class="xref py py-func docutils literal notranslate"><span class="pre">KS_matsolve_parallel()</span></code></a> : Solve the KS matrix diagonalization by parallelizing over config.ncores.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.numerov.KS_matsolve_serial" title="atoMEC.numerov.KS_matsolve_serial"><code class="xref py py-func docutils literal notranslate"><span class="pre">KS_matsolve_serial()</span></code></a> : Solve the KS matrix diagonalization in serial.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.numerov.diag_H" title="atoMEC.numerov.diag_H"><code class="xref py py-func docutils literal notranslate"><span class="pre">diag_H()</span></code></a> : Diagonalize the Hamiltonian for given input potential.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.numerov.update_orbs" title="atoMEC.numerov.update_orbs"><code class="xref py py-func docutils literal notranslate"><span class="pre">update_orbs()</span></code></a> : Sort the eigenvalues and functions by ascending energies and                         normalize orbs.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.numerov.update_orbs" title="atoMEC.numerov.update_orbs"><code class="xref py py-func docutils literal notranslate"><span class="pre">update_orbs()</span></code></a> : Sort the eigenvalues and functions by ascending energies and normalize orbs.</p></li>
 </ul>
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.KS_matsolve_parallel">
@@ -1631,7 +1630,6 @@ must be taken to converge calculations wrt <cite>nmax</cite>.</p>
 <li><p><strong>p</strong> (<em>int</em>) – the desired index of the input array v to solve for</p></li>
 <li><p><strong>T</strong> (<em>ndarray</em>) – the kinetic energy matrix</p></li>
 <li><p><strong>B</strong> (<em>ndarray</em>) – the off diagonal matrix multiplying V and RHS</p></li>
-<li><p><strong>v</strong> (<em>ndarray</em>) – KS potential array</p></li>
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
 <li><p><strong>nmax</strong> (<em>int</em>) – number of eigenvalues returned by the sparse matrix diagonalization</p></li>
 <li><p><strong>bc</strong> (<em>str</em>) – the boundary condition</p></li>
@@ -1720,17 +1718,17 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 <div class="section" id="id9">
 <h3>Classes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Orbitals</span></code></a> : Holds the KS orbitals (transformed to the log grid) and related                       quantities such as eigenvalues and occupation numbers</p></li>
-<li><p><a class="reference internal" href="#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> : Holds the KS density (bound/unbound components) and routines                      to compute it.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> : Holds the KS potential (split into individual components) and                        the routines to compute them.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a> : Holds the free energy and all internal components (KS quantities                     and entropy) and the routines required to compute them.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> : Holds the free energy and all internal components (KS                        quantities and entropy) and the routines required to compute                        them. N.B. the <a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> class constructs the energy                        functional in an alternative manner to the main <a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a>                        class.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Orbitals</span></code></a> : Holds the KS orbitals (transformed to the log grid) and related quantities such as eigenvalues and occupation numbers</p></li>
+<li><p><a class="reference internal" href="#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> : Holds the KS density (bound/unbound components) and routinesto compute it.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> : Holds the KS potential (split into individual components) and the routines to compute them.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a> : Holds the free energy and all internal components (KS quantities and entropy) and the routines required to compute them.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> : Holds the free energy and all internal components (KS quantities and entropy) and the routines required to compute them. N.B. the <a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> class constructs the energy functional in an alternative manner to the main <a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a> class</p></li>
 </ul>
 </div>
 <div class="section" id="id10">
 <h3>Functions<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#atoMEC.staticKS.log_grid" title="atoMEC.staticKS.log_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">log_grid()</span></code></a> : Sets up the logarithmic (and associated real-space) grid on which                      all computations rely.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.staticKS.log_grid" title="atoMEC.staticKS.log_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">log_grid()</span></code></a> : Sets up the logarithmic (and associated real-space) grid on which all computations rely.</p></li>
 </ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Density">
@@ -2853,14 +2851,12 @@ and exchange + correlation respectively</p>
 <p>atoMEC: Average-atom code for matter under extreme conditions.</p>
 <p>Copyright (c) 2021 (in alphabetical order), Tim Callow, Attila Cangi, Eli Kraisler.
 All rights reserved.</p>
-<p>atoMEC is a python-based average-atom code for simulations of high energy density
-phenomena such as in warm dense matter.
-Please see the README or the project wiki (<a class="reference external" href="https://atomec-project.github.io/atoMEC/">https://atomec-project.github.io/atoMEC/</a>)
-for more information.</p>
+<p>atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
+Please see the README or the project wiki (<a class="reference external" href="https://atomec-project.github.io/atoMEC/">https://atomec-project.github.io/atoMEC/</a>) for more information.</p>
 <div class="section" id="id15">
 <h3>Classes<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> : the main object for atoMEC calculations, containing information                   about physical material properties</p></li>
+<li><p><a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> : the main object for atoMEC calculations, containing information about physical material properties</p></li>
 </ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.Atom">
