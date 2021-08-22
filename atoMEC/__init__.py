@@ -4,9 +4,9 @@ atoMEC: Average-atom code for matter under extreme conditions.
 Copyright (c) 2021 (in alphabetical order), Tim Callow, Attila Cangi, Eli Kraisler.
 All rights reserved.
 
-atoMEC is a python-based average-atom code for simulations of high energy density \
+atoMEC is a python-based average-atom code for simulations of high energy density
 phenomena such as in warm dense matter.
-Please see the README or the project wiki (https://atomec-project.github.io/atoMEC/) \
+Please see the README or the project wiki (https://atomec-project.github.io/atoMEC/)
 for more information.
 
 Classes
