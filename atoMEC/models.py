@@ -7,7 +7,7 @@ releases.
 Classes
 -------
 * :class:`ISModel` : Ion-sphere type model, static properties such as KS orbitals, \
-density and energy are directly computed
+                     density and energy are directly computed
 """
 
 # import standard packages

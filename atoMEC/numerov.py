@@ -8,13 +8,13 @@ quantum number `l`.
 Functions
 ---------
 * :func:`matrix_solve` : Solve the radial KS equation via matrix diagonalization of \
-Numerov's method.
+                         Numerov's method.
 * :func:`KS_matsolve_parallel` : Solve the KS matrix diagonalization by parallelizing \
-over config.ncores.
+                                 over config.ncores.
 * :func:`KS_matsolve_serial` : Solve the KS matrix diagonalization in serial.
 * :func:`diag_H` : Diagonalize the Hamiltonian for given input potential.
 * :func:`update_orbs` : Sort the eigenvalues and functions by ascending energies and \
-normalize orbs.
+                        normalize orbs.
 """
 
 

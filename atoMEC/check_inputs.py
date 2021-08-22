@@ -8,8 +8,8 @@ Classes
 -------
 * :class:`Atom` : Check the inputs from the :class:`atoMEC.Atom` object.
 * :class:`ISModel` : Check the inputs from the :obj:`atoMEC.models.ISModel` class.
-* :class:`EnergyCalcs` : Check the inputs from the\
- :func:`atoMEC.models.ISModel.CalcEnergy` function.
+* :class:`EnergyCalcs` : Check the inputs from the \
+                         :func:`atoMEC.models.ISModel.CalcEnergy` function.
 * :class:`InputError` : Exit atoMEC and print relevant input error message.
 * :class:`InputWarning` : Warn if inputs are considered outside of typical ranges.
 """
