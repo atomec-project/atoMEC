@@ -475,12 +475,12 @@ class Potential:
         for i, x0 in enumerate(xgrid):
 
             # set up 'upper' and 'lower' parts of the xgrid (x<=x0; x>x0)
-            x_u = xgrid[np.where(x0 <= xgrid)]
-            x_l = xgrid[np.where(x0 > xgrid)]
+            x_u = xgrid[np.where(x0 < xgrid)]
+            x_l = xgrid[np.where(x0 >= xgrid)]
 
             # likewise for the density
-            rho_u = rho[np.where(x0 <= xgrid)]
-            rho_l = rho[np.where(x0 > xgrid)]
+            rho_u = rho[np.where(x0 < xgrid)]
+            rho_l = rho[np.where(x0 >= xgrid)]
 
             # now compute the hartree potential
             int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
