@@ -1025,7 +1025,14 @@ class EnergyAlt:
             v_xc = pot.v_xc["xc"][i]
             E_v_xc = E_v_xc + mathtools.int_sphere(dens[i] * v_xc, xgrid)
 
-        return E_v_ha + E_v_xc
+        # compute the term due to the constant shift introduced in the potential
+        if config.v_shift:
+            v_shift = pot.v_s[:, -1]
+            E_const = -np.sum(v_shift * config.nele)
+        else:
+            E_const = 0.0
+
+        return E_v_ha + E_v_xc + E_const
 
     def calc_entropy(self, orbs):
         """
