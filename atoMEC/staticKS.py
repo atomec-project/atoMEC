@@ -645,6 +645,9 @@ class Energy:
         # multiply and sum over occupation numbers
         e_kin_dens = np.einsum("ijk,ijkl->l", orbs.occnums, kin_orbs)
 
+        # this is necessary because the Laplacian is not accurate at the boundary
+        e_kin_dens[-3:] = e_kin_dens[-4]
+
         # integrate over sphere
         E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens, xgrid)
 
