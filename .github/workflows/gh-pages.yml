@@ -11,6 +11,9 @@ on:
       - documentation
       - develop
 
+permissions:
+  deployments: write  # allows deploying to GitHub pages from forked repositories
+
 jobs:
   python-style-checks:
     runs-on: ubuntu-18.04
