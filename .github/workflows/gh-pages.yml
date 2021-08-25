@@ -13,9 +13,6 @@ on:
       - documentation
       - develop
 
-permissions:
-  deployments: write  # allows deploying to GitHub pages from forked repositories
-
 jobs:
   python-style-checks:
     runs-on: ubuntu-18.04
@@ -41,6 +38,8 @@ jobs:
         run: flake8 atoMEC --count --show-source --statistics
 
   build-and-deploy-pages:
+    permissions:
+      deployments: write  # explicitly allow deploying to GitHub pages from forked repositories
     needs: python-style-checks
     runs-on: ubuntu-18.04
     steps:
