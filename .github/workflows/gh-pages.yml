@@ -1,6 +1,8 @@
 name: docs
 
 on:
+  pull_request_review:
+    types: [submitted,edited]
   pull_request:
     branches:
       - master
@@ -64,6 +66,7 @@ jobs:
           mv -v docs/_build/html public
 
       - name: Deploy
+        if: github.event.review.state == 'approved'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
