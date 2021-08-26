@@ -38,8 +38,6 @@ jobs:
         run: flake8 atoMEC --count --show-source --statistics
 
   build-and-deploy-pages:
-    permissions:
-      deployments: write  # explicitly allow deploying to GitHub pages from forked repositories
     needs: python-style-checks
     runs-on: ubuntu-18.04
     steps:
@@ -68,5 +66,5 @@ jobs:
         if: github.event.review.state == 'approved'
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           publish_dir: ./public
