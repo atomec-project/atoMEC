@@ -1183,7 +1183,14 @@
             <span class="n">v_xc</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">v_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
             <span class="n">E_v_xc</span> <span class="o">=</span> <span class="n">E_v_xc</span> <span class="o">+</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_xc</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">E_v_ha</span> <span class="o">+</span> <span class="n">E_v_xc</span></div>
+        <span class="c1"># compute the term due to the constant shift introduced in the potential</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">v_shift</span><span class="p">:</span>
+            <span class="n">v_shift</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">v_s</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">E_const</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">v_shift</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">E_const</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">return</span> <span class="n">E_v_ha</span> <span class="o">+</span> <span class="n">E_v_xc</span> <span class="o">+</span> <span class="n">E_const</span></div>
 
 <div class="viewcode-block" id="EnergyAlt.calc_entropy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt.calc_entropy">[docs]</a>    <span class="k">def</span> <span class="nf">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
