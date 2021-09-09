@@ -1,11 +1,13 @@
+![image](./docs/source/img/logos/atoMEC_horizontal2.png)
+
+# atoMEC: Average-Atom Code for Matter under Extreme Conditions
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5205719.svg)](https://doi.org/10.5281/zenodo.5205719)
 [![docs](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml)
 [![image](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![PyPI version](https://badge.fury.io/py/atoMEC.svg)](https://badge.fury.io/py/atoMEC)
 
-
-# atoMEC: Average-Atom Code for Matter under Extreme Conditions
 atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
 It is designed as an open-source and modular python package.
 
