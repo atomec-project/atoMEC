@@ -808,6 +808,9 @@
         <span class="c1"># multiply and sum over occupation numbers</span>
         <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;l&quot;</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">kin_orbs</span><span class="p">)</span>
 
+        <span class="c1"># FIXME: this is necessary because the Laplacian is not accurate at the boundary</span>
+        <span class="n">e_kin_dens</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">=</span> <span class="n">e_kin_dens</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+
         <span class="c1"># integrate over sphere</span>
         <span class="n">E_kin_bound</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">e_kin_dens</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
