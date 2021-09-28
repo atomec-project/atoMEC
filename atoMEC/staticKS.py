@@ -77,7 +77,7 @@ class Orbitals:
         self._eigfuncs = np.zeros(
             (config.spindims, config.lmax, config.nmax, config.grid_params["ngrid"])
         )
-        self._eigvals = np.zeros((config.spindims, config.lmax, config.lmax))
+        self._eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
         self._occnums = np.zeros_like(self._eigvals)
         self._lbound = np.zeros_like(self._eigvals)
 
