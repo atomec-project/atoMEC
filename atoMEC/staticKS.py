@@ -158,7 +158,7 @@ class Orbitals:
 
         return
 
-    def occupy(self):
+    def occupy(self, potential):
         """
         Occupy the KS orbitals according to Fermi-Dirac statistics.
 
@@ -170,8 +170,14 @@ class Orbitals:
         -------
         None
         """
+        # ensure the potential has the correct dimensions
+        v = np.zeros((config.spindims, config.grid_params["ngrid"]))
+
+        # set v to equal the input potential
+        v[:] = potential
+
         # compute the chemical potential using the eigenvalues
-        config.mu = mathtools.chem_pot(self)
+        config.mu = mathtools.chem_pot(self, v)
 
         # compute the occupation numbers using the chemical potential
         self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
@@ -254,7 +260,7 @@ class Density:
         The KS orbitals object
     """
 
-    def __init__(self, orbs):
+    def __init__(self, orbs, v_s):
         self._xgrid = orbs._xgrid
         self._total = np.zeros((config.spindims, config.grid_params["ngrid"]))
         self._bound = {
@@ -267,6 +273,7 @@ class Density:
         }
 
         self._orbs = orbs
+        self._v_s = v_s
 
     @property
     def total(self):
@@ -296,7 +303,9 @@ class Density:
         unbound density and number of unbound electrons respectively
         """
         if np.all(self._unbound["rho"]) == 0.0:
-            self._unbound = self.construct_rho_unbound(self._orbs)
+            self._unbound = self.construct_rho_unbound(
+                self._orbs, self._xgrid, self._v_s
+            )
         return self._unbound
 
     @staticmethod
@@ -336,7 +345,7 @@ class Density:
         return bound
 
     @staticmethod
-    def construct_rho_unbound(orbs):
+    def construct_rho_unbound(orbs, xgrid, v_s):
         """
         Construct the unbound part of the density.
 
@@ -344,8 +353,10 @@ class Density:
         ----------
         orbs : ndarray
             the radial eigenfunctions on the xgrid
-        xgrid : ndarray
+        xgrid: ndarray
             the logarithmic grid
+        v_s  : array_like
+            Kohn-Sham potential
 
         Returns
         -------
@@ -356,7 +367,7 @@ class Density:
         rho_unbound = np.zeros((config.spindims, config.grid_params["ngrid"]))
         N_unbound = np.zeros((config.spindims))
 
-        # so far only the ideal approximation is implemented
+        # the ideal approximation is implemented
         if config.unbound == "ideal":
 
             # unbound density is constant
@@ -367,6 +378,19 @@ class Density:
                 )
                 rho_unbound[i] = n_ub
                 N_unbound[i] = n_ub * config.sph_vol
+
+        # the thomas-fermi approximation is implementede
+        if config.unbound == "thomas_fermi":
+
+            # unbound density is not constant
+            for i in range(config.spindims):
+                for j in range(len(v_s[0, :])):
+                    prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi ** 2)
+                    n_ub = prefac * mathtools.thomas_fermi_int(
+                        v_s[i, j], config.mu[i], config.beta, 1.0
+                    )
+                    rho_unbound[i, j] = n_ub
+                N_unbound[i] = mathtools.int_sphere(rho_unbound[i], xgrid)
 
         unbound = {"rho": rho_unbound, "N": N_unbound}
 
@@ -495,7 +519,7 @@ class Potential:
 class Energy:
     r"""Class holding information about the KS total energy and relevant routines."""
 
-    def __init__(self, orbs, dens):
+    def __init__(self, orbs, dens, v_s):
 
         # inputs
         self._orbs = orbs
@@ -510,6 +534,7 @@ class Energy:
         self._E_en = 0.0
         self._E_ha = 0.0
         self._E_xc = {"xc": 0.0, "x": 0.0, "c": 0.0}
+        self._v_s = v_s
 
     @property
     def F_tot(self):
@@ -553,7 +578,7 @@ class Energy:
         Contains `bound` and `unbound` keys.
         """
         if self._E_kin["tot"] == 0.0:
-            self._E_kin = self.calc_E_kin(self._orbs, self._xgrid)
+            self._E_kin = self.calc_E_kin(self._orbs, self._xgrid, self._v_s)
         return self._E_kin
 
     @property
@@ -582,7 +607,7 @@ class Energy:
             self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
         return self._E_xc
 
-    def calc_E_kin(self, orbs, xgrid):
+    def calc_E_kin(self, orbs, xgrid, v_s):
         """
         Compute the kinetic energy.
 
@@ -607,7 +632,7 @@ class Energy:
         E_kin["bound"] = self.calc_E_kin_bound(orbs, xgrid)
 
         # unbound part
-        E_kin["unbound"] = self.calc_E_kin_unbound(orbs, xgrid)
+        E_kin["unbound"] = self.calc_E_kin_unbound(orbs, xgrid, v_s)
 
         # total
         E_kin["tot"] = E_kin["bound"] + E_kin["unbound"]
@@ -654,7 +679,7 @@ class Energy:
         return E_kin_bound
 
     @staticmethod
-    def calc_E_kin_unbound(orbs, xgrid):
+    def calc_E_kin_unbound(orbs, xgrid, v_s):
         r"""
         Compute the contribution from unbound (continuum) electrons to kinetic energy.
 
@@ -664,6 +689,8 @@ class Energy:
             the KS orbitals object
         xgrid : ndarray
             the logarithmic grid
+        v_s  : array_like
+            Kohn-Sham potential
 
         Returns
         -------
@@ -672,7 +699,7 @@ class Energy:
 
         Notes
         -----
-        Currently only "ideal" (uniform) approximation for unbound electrons supported.
+        The "ideal" (uniform) and the "thomas-fermi" apprx for unbound e- are supported.
 
         .. math::
             T_\mathrm{ub} = \sum_\sigma \frac{N^\sigma\times V}{\sqrt{2}\pi^2}\
@@ -680,7 +707,7 @@ class Energy:
 
         where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
-        # currently only ideal treatment supported
+        # the ideal treatment is implemented
         if config.unbound == "ideal":
             E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
@@ -688,6 +715,19 @@ class Energy:
                 E_kin_unbound += prefac * mathtools.fd_int_complete(
                     config.mu[i], config.beta, 3.0
                 )
+
+        if config.unbound == "thomas_fermi":
+            E_kin_unbound_array = np.zeros(
+                (config.spindims, config.grid_params["ngrid"])
+            )  # initialize
+            E_kin_unbound = 0.0  # initialize
+            for i in range(config.spindims):
+                for j in range(len(v_s[0, :])):
+                    prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi ** 2)
+                    E_kin_unbound_array[i, j] = prefac * mathtools.thomas_fermi_int(
+                        v_s[i, j], config.mu[i], config.beta, 3.0
+                    )
+                E_kin_unbound += mathtools.int_sphere(E_kin_unbound_array[i], xgrid)
 
         return E_kin_unbound
 
@@ -795,7 +835,7 @@ class Energy:
         :math:`1/2`
         """
         # currently only ideal treatment supported
-        if config.unbound == "ideal":
+        if config.unbound == "ideal" or "thomas_fermi":
             S_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 if config.nele[i] > 1e-5:

@@ -14,6 +14,7 @@ Classes
 
 # import external packages
 from math import log, pi
+import numpy as np
 
 # import internal packages
 from . import check_inputs
@@ -58,6 +59,7 @@ class ISModel:
         Default: 0 for nele even, 1 for nele odd
     unbound : str, optional
         The way in which the unbound electron density is computed
+        It can be the default value or the "thomas_fermi" approximation
         Default : "ideal"
     v_shift : bool, optional
         Shifts the potential vertically by its value at the boundary, v(R_s)
@@ -323,11 +325,14 @@ class ISModel:
             v_init = guess_pot
         else:
             v_init = staticKS.Potential.calc_v_en(xgrid)
+        v_s = np.zeros(
+            (config.spindims, config.grid_params["ngrid"])
+        )  # initialize the potential
         v_s_old = v_init  # initialize the old potential
         orbs.compute(v_init, init=True)
 
         # occupy orbitals
-        orbs.occupy()
+        orbs.occupy(v_init)
 
         # write the initial spiel
         scf_init = writeoutput.SCF.write_init()
@@ -346,13 +351,13 @@ class ISModel:
                 print("Orbital occupations (2l+1) * f_{nl} :" + "\n\n" + occs)
 
             # construct density
-            rho = staticKS.Density(orbs)
+            rho = staticKS.Density(orbs, v_s)
 
             # construct potential
             pot = staticKS.Potential(rho)
 
             # compute energies
-            energy = staticKS.Energy(orbs, rho)
+            energy = staticKS.Energy(orbs, rho, v_s)
             E_free = energy.F_tot
 
             # mix potential
@@ -369,7 +374,7 @@ class ISModel:
 
             # update the orbitals with the KS potential
             orbs.compute(v_s)
-            orbs.occupy()
+            orbs.occupy(v_s)
 
             # update old potential
             v_s_old = v_s
@@ -387,8 +392,8 @@ class ISModel:
                 break
 
         # compute final density and energy
-        rho = staticKS.Density(orbs)
-        energy = staticKS.Energy(orbs, rho)
+        rho = staticKS.Density(orbs, v_s)
+        energy = staticKS.Energy(orbs, rho, v_s)
 
         # write final output
         scf_final = writeoutput.SCF().write_final(energy, orbs, rho, conv_vals)

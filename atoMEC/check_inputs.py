@@ -463,7 +463,7 @@ class ISModel:
             if the treatment of unbound electrons is not a valid input
         """
         # list all possible treatments for unbound electrons
-        unbound_permitted = ["ideal"]
+        unbound_permitted = ["ideal", "thomas_fermi"]
 
         # convert unbound to all lowercase
         unbound.lower()
