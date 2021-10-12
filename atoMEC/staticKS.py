@@ -79,7 +79,9 @@ class Orbitals:
         )
         self._eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
         self._occnums = np.zeros_like(self._eigvals)
+        self._occnums_ub = np.zeros_like(self._eigvals)
         self._lbound = np.zeros_like(self._eigvals)
+        self._lunbound = np.zeros_like(self._eigvals)
 
     @property
     def eigvals(self):
@@ -113,6 +115,18 @@ class Orbitals:
         return self._occnums
 
     @property
+    def occnums_ub(self):
+        r"""
+        ndarray: KS occupation numbers (Fermi-Dirac).
+
+        The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
+        """
+        if np.all(self._occnums_ub == 0.0):
+            # raise Exception("Occnums have not been initialized")
+            self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
+        return self._occnums_ub
+
+    @property
     def lbound(self):
         r"""
         ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).
@@ -124,6 +138,19 @@ class Orbitals:
             # raise Exception("lbound has not been initialized")
             self._lbound = self.make_lbound(self.eigvals)
         return self._lbound
+
+    @property
+    def lunbound(self):
+        r"""
+        ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).
+
+        The matrix takes the form
+        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`
+        """
+        if np.all(self._lbound == 0.0):
+            # raise Exception("lbound has not been initialized")
+            self._lunbound = self.make_lunbound(self.eigvals)
+        return self._lunbound
 
     def compute(self, potential, init=False):
         """
@@ -152,6 +179,9 @@ class Orbitals:
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals)
 
+        # compute the lunbound array
+        self._lunbound = self.make_lunbound(self.eigvals)
+
         # guess the chemical potential if initializing
         if init:
             config.mu = np.zeros((config.spindims))
@@ -175,6 +205,8 @@ class Orbitals:
 
         # compute the occupation numbers using the chemical potential
         self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
+
+        self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
 
         return
 
@@ -243,6 +275,34 @@ class Orbitals:
 
         return lbound_mat
 
+    @staticmethod
+    def make_lunbound(eigvals):
+        r"""
+        Construct the lbound matrix denoting the bound states and their degeneracies.
+
+        For each spin channel,
+        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
+
+        Parameters
+        ----------
+        eigvals : ndarray
+            the KS orbital eigenvalues
+
+        Returns
+        -------
+        lbound_mat : ndarray
+            the lbound matrix
+        """
+        lunbound_mat = np.zeros_like(eigvals)
+
+        if config.unbound == "quantum":
+            for l in range(config.lmax):
+                lunbound_mat[:, l] = (2.0 / config.spindims) * np.where(
+                    eigvals[:, l] > 0.0, 2 * l + 1.0, 0.0
+                )
+
+        return lunbound_mat
+
 
 class Density:
     """
@@ -296,7 +356,7 @@ class Density:
         unbound density and number of unbound electrons respectively
         """
         if np.all(self._unbound["rho"]) == 0.0:
-            self._unbound = self.construct_rho_unbound(self._orbs)
+            self._unbound = self.construct_rho_unbound(self._orbs, self._xgrid)
         return self._unbound
 
     @staticmethod
@@ -336,7 +396,7 @@ class Density:
         return bound
 
     @staticmethod
-    def construct_rho_unbound(orbs):
+    def construct_rho_unbound(orbs, xgrid):
         """
         Construct the unbound part of the density.
 
@@ -368,7 +428,21 @@ class Density:
                 rho_unbound[i] = n_ub
                 N_unbound[i] = n_ub * config.sph_vol
 
-        unbound = {"rho": rho_unbound, "N": N_unbound}
+            unbound = {"rho": rho_unbound, "N": N_unbound}
+
+        elif config.unbound == "quantum":
+
+            unbound = {}
+
+            # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
+            orbs_R = np.exp(-xgrid / 2.0) * orbs.eigfuncs
+            orbs_R_sq = orbs_R ** 2.0
+
+            # sum over the (l,n) dimensions of the orbitals to get the density
+            unbound["rho"] = np.einsum("ijk,ijkl->il", orbs.occnums_ub, orbs_R_sq)
+
+            # compute the number of unbound electrons
+            unbound["N"] = np.sum(orbs.occnums_ub, axis=(1, 2))
 
         return unbound
 
@@ -681,7 +755,7 @@ class Energy:
         where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
         # currently only ideal treatment supported
-        if config.unbound == "ideal":
+        if config.unbound == "ideal" or "quantum":
             E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
@@ -795,7 +869,7 @@ class Energy:
         :math:`1/2`
         """
         # currently only ideal treatment supported
-        if config.unbound == "ideal":
+        if config.unbound == "ideal" or "quantum":
             S_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 if config.nele[i] > 1e-5:
