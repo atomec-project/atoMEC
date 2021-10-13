@@ -790,10 +790,10 @@ class Energy:
         S = {}
 
         # bound part
-        S["bound"] = self.calc_S_bound(orbs)
+        S["bound"] = self.calc_S_orbs(orbs.occnums, orbs.lbound)
 
         # unbound part
-        S["unbound"] = self.calc_S_unbound(orbs)
+        S["unbound"] = self.calc_S_unbound(orbs.occnums_ub, orbs.lunbound)
 
         # total
         S["tot"] = S["bound"] + S["unbound"]
@@ -801,14 +801,16 @@ class Energy:
         return S
 
     @staticmethod
-    def calc_S_bound(orbs):
+    def calc_S_orbs(occnums, lmat):
         r"""
-        Compute the contribution of the bound states to the entropy (see notes).
+        Compute the KS (non-interacting) entropy for specified orbitals (see notes).
 
         Parameters
         ----------
-        orbs : :obj:`Orbitals`
-            the KS orbitals object
+        occnums : ndarray
+            orbital occupation numbers
+        lmat : ndarray
+            the degeneracy array (:math:`(2l+1)`)
 
         Returns
         -------
@@ -825,14 +827,12 @@ class Energy:
         """
         # the occupation numbers are stored as f'_{nl}=f_{nl}*(2l+1)
         # we first need to map them back to their 'pure' form f_{nl}
-        lbound_inv = np.zeros_like(orbs.lbound)
+        lmat_inv = np.zeros_like(lmat)
         for l in range(config.lmax):
-            lbound_inv[:, l] = (config.spindims / 2.0) * np.where(
-                orbs.eigvals[:, l] < 0, 1.0 / (2 * l + 1.0), 0.0
-            )
+            lmat_inv[:, l] = (config.spindims / 2.0) * 1.0 / (2 * l + 1.0)
 
         # pure occupation numbers (with zeros replaced by finite values)
-        occnums_pu = lbound_inv * orbs.occnums
+        occnums_pu = lmat_inv * occnums
         occnums_mod1 = np.where(occnums_pu > 1e-5, occnums_pu, 0.5)
         occnums_mod2 = np.where(occnums_pu < 1.0 - 1e-5, occnums_pu, 0.5)
 
@@ -841,15 +841,15 @@ class Energy:
         term2 = (1.0 - occnums_pu) * np.log(1.0 - occnums_mod2)
 
         # multiply by (2l+1) factor
-        g_nls = orbs.lbound * (term1 + term2)
+        g_nls = lmat * (term1 + term2)
 
         # sum over all quantum numbers to get the total entropy
-        S_bound = -np.sum(g_nls)
+        S_orbs = -np.sum(g_nls)
 
-        return S_bound
+        return S_orbs
 
     @staticmethod
-    def calc_S_unbound(orbs):
+    def calc_S_unbound(occnums_ub, lunbound):
         r"""
         Compute the unbound contribution to the entropy.
 
@@ -874,7 +874,7 @@ class Energy:
         :math:`1/2`
         """
         # currently only ideal treatment supported
-        if config.unbound == "ideal" or "quantum":
+        if config.unbound == "ideal":
             S_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 if config.nele[i] > 1e-5:
@@ -887,6 +887,9 @@ class Energy:
                     )
                 else:
                     S_unbound += 0.0
+
+        elif config.unbound == "quantum":
+            S_unbound = Energy.calc_S_orbs(occnums_ub, lunbound)
 
         return S_unbound
 
