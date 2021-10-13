@@ -279,7 +279,7 @@ class Orbitals:
     @staticmethod
     def make_lunbound(eigvals):
         r"""
-        Construct the lunbound matrix denoting the unbound states and their degeneracies.
+        Construct the lunbound matrix denoting the unbound states and degeneracies.
 
         For each spin channel,
         :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
