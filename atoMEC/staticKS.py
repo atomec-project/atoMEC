@@ -346,7 +346,9 @@ class Density:
         electrons respectively.
         """
         if np.all(self._bound["rho"] == 0.0):
-            self._bound = self.construct_rho_bound(self._orbs, self._xgrid)
+            self._bound = self.construct_rho_orbs(
+                self._orbs.eigfuncs, self._orbs.occnums, self._xgrid
+            )
         return self._bound
 
     @property
@@ -362,7 +364,7 @@ class Density:
         return self._unbound
 
     @staticmethod
-    def construct_rho_bound(orbs, xgrid):
+    def construct_rho_orbs(eigfuncs, occnums, xgrid):
         """
         Construct the bound part of the density.
 
@@ -379,23 +381,23 @@ class Density:
             contains the keys `rho` and `N` denoting the bound density
             and number of bound electrons respectively
         """
-        bound = {}  # initialize empty dict
+        dens = {}  # initialize empty dict
 
         # first of all construct the density
         # rho_b(r) = \sum_{n,l} (2l+1) f_{nl} |R_{nl}(r)|^2
         # occnums in atoMEC are defined as (2l+1)*f_{nl}
 
         # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
-        orbs_R = np.exp(-xgrid / 2.0) * orbs.eigfuncs
+        orbs_R = np.exp(-xgrid / 2.0) * eigfuncs
         orbs_R_sq = orbs_R ** 2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
-        bound["rho"] = np.einsum("ijk,ijkl->il", orbs.occnums, orbs_R_sq)
+        dens["rho"] = np.einsum("ijk,ijkl->il", occnums, orbs_R_sq)
 
         # compute the number of unbound electrons
-        bound["N"] = np.sum(orbs.occnums, axis=(1, 2))
+        dens["N"] = np.sum(occnums, axis=(1, 2))
 
-        return bound
+        return dens
 
     @staticmethod
     def construct_rho_unbound(orbs, xgrid):
