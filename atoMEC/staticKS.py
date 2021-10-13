@@ -676,10 +676,12 @@ class Energy:
         E_kin = {}
 
         # bound part
-        E_kin["bound"] = self.calc_E_kin_bound(orbs, xgrid)
+        E_kin["bound"] = self.calc_E_kin_orbs(orbs.eigfuncs, orbs.occnums, xgrid)
 
         # unbound part
-        E_kin["unbound"] = self.calc_E_kin_unbound(orbs, xgrid)
+        E_kin["unbound"] = self.calc_E_kin_unbound(
+            orbs.eigfuncs, orbs.occnums_ub, xgrid
+        )
 
         # total
         E_kin["tot"] = E_kin["bound"] + E_kin["unbound"]
@@ -687,46 +689,48 @@ class Energy:
         return E_kin
 
     @staticmethod
-    def calc_E_kin_bound(orbs, xgrid):
+    def calc_E_kin_orbs(eigfuncs, occnums, xgrid):
         """
-        Compute the kinetic energy contribution from the bound electrons.
+        Compute the kinetic energy contribution from discrete KS orbitals.
 
         Parameters
         ----------
-        orbs : :obj:`Orbitals`
-            the KS orbitals object
+        eigfuncs : ndarray
+            the radial KS orbitals on the log grid
+        occnums : ndarray
+            the orbital occupations
         xgrid : ndarray
             the logarithmic grid
 
         Returns
         -------
-        E_kin_bound : float
-            the bound kinetic energy
+        E_kin : float
+            the kinetic energy
         """
         # compute the grad^2 component
-        grad2_orbs = mathtools.laplace(orbs.eigfuncs, xgrid)
+        grad2_orbs = mathtools.laplace(eigfuncs, xgrid)
 
         # compute the (l+1/2)^2 component
         l_arr = np.array([(l + 0.5) ** 2.0 for l in range(config.lmax)])
-        lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, orbs.eigfuncs)
+        lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, eigfuncs)
 
         # add together and multiply by eigfuncs*exp(-3x)
-        prefac = np.exp(-3.0 * xgrid) * orbs.eigfuncs
+        prefac = np.exp(-3.0 * xgrid) * eigfuncs
         kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
 
         # multiply and sum over occupation numbers
-        e_kin_dens = np.einsum("ijk,ijkl->l", orbs.occnums, kin_orbs)
+        e_kin_dens = np.einsum("ijk,ijkl->l", occnums, kin_orbs)
 
         # FIXME: this is necessary because the Laplacian is not accurate at the boundary
         e_kin_dens[-3:] = e_kin_dens[-4]
 
         # integrate over sphere
-        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens, xgrid)
+        E_kin = -0.5 * mathtools.int_sphere(e_kin_dens, xgrid)
 
-        return E_kin_bound
+        return E_kin
 
     @staticmethod
-    def calc_E_kin_unbound(orbs, xgrid):
+    def calc_E_kin_unbound(eigfuncs, occnums, xgrid):
         r"""
         Compute the contribution from unbound (continuum) electrons to kinetic energy.
 
@@ -753,13 +757,16 @@ class Energy:
         where :math:`I_{3/2}(\mu,\beta)` denotes the complete Fermi-Diract integral
         """
         # currently only ideal treatment supported
-        if config.unbound == "ideal" or "quantum":
+        if config.unbound == "ideal":
             E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
                 prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
                 E_kin_unbound += prefac * mathtools.fd_int_complete(
                     config.mu[i], config.beta, 3.0
                 )
+
+        elif config.unbound == "quantum":
+            E_kin_unbound = Energy.calc_E_kin_orbs(eigfuncs, occnums, xgrid)
 
         return E_kin_unbound
 
