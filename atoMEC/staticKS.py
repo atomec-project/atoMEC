@@ -360,7 +360,9 @@ class Density:
         unbound density and number of unbound electrons respectively
         """
         if np.all(self._unbound["rho"]) == 0.0:
-            self._unbound = self.construct_rho_unbound(self._orbs, self._xgrid)
+            self._unbound = self.construct_rho_unbound(
+                self._orbs.eigfuncs, self._orbs.occnums_ub, self._xgrid
+            )
         return self._unbound
 
     @staticmethod
@@ -400,7 +402,7 @@ class Density:
         return dens
 
     @staticmethod
-    def construct_rho_unbound(orbs, xgrid):
+    def construct_rho_unbound(eigfuncs, occnums, xgrid):
         """
         Construct the unbound part of the density.
 
@@ -436,17 +438,7 @@ class Density:
 
         elif config.unbound == "quantum":
 
-            unbound = {}
-
-            # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
-            orbs_R = np.exp(-xgrid / 2.0) * orbs.eigfuncs
-            orbs_R_sq = orbs_R ** 2.0
-
-            # sum over the (l,n) dimensions of the orbitals to get the density
-            unbound["rho"] = np.einsum("ijk,ijkl->il", orbs.occnums_ub, orbs_R_sq)
-
-            # compute the number of unbound electrons
-            unbound["N"] = np.sum(orbs.occnums_ub, axis=(1, 2))
+            unbound = Density.construct_rho_orbs(eigfuncs, occnums, xgrid)
 
         return unbound
 
