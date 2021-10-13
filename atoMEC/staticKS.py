@@ -206,6 +206,7 @@ class Orbitals:
         # compute the occupation numbers using the chemical potential
         self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
 
+        # compute the unbound occupation numbers
         self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
 
         return
@@ -278,7 +279,7 @@ class Orbitals:
     @staticmethod
     def make_lunbound(eigvals):
         r"""
-        Construct the lbound matrix denoting the bound states and their degeneracies.
+        Construct the lunbound matrix denoting the unbound states and their degeneracies.
 
         For each spin channel,
         :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
@@ -290,11 +291,12 @@ class Orbitals:
 
         Returns
         -------
-        lbound_mat : ndarray
+        lunbound_mat : ndarray
             the lbound matrix
         """
         lunbound_mat = np.zeros_like(eigvals)
 
+        # only non-zero if quantum unbound electrons
         if config.unbound == "quantum":
             for l in range(config.lmax):
                 lunbound_mat[:, l] = (2.0 / config.spindims) * np.where(
