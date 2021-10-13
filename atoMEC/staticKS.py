@@ -368,20 +368,22 @@ class Density:
     @staticmethod
     def construct_rho_orbs(eigfuncs, occnums, xgrid):
         """
-        Construct the bound part of the density.
+        Construct a density from a set of discrete KS orbitals.
 
         Parameters
         ----------
-        orbs : ndarray
+        eigfuncs : ndarray
             the radial eigenfunctions on the xgrid
+        occnums : ndarray
+            the orbital occupations
         xgrid : ndarray
             the logarithmic grid
 
         Returns
         -------
-        rho_bound : dict of ndarrays
-            contains the keys `rho` and `N` denoting the bound density
-            and number of bound electrons respectively
+        dens : dict of ndarrays
+            contains the keys `rho` and `N` denoting the density
+            and number of electrons respectively
         """
         dens = {}  # initialize empty dict
 
