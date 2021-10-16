@@ -335,3 +335,29 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
 
     return eigfuncs, eigvals
+
+
+def Num_integrate(xgrid, v, l, E):
+    dx=xgrid[1]-xgrid[0]
+    h=(dx**2)/12.0
+    N=int(np.size(xgrid))
+    Psi=np.zeros(N, dtype=np.float64)
+    K=np.zeros(N, dtype=np.float64)
+    v=v.reshape(-1)
+    
+    a=config.grid_params["x0"]
+
+    Psi[0]=np.exp((l+0.5)*a)
+    Psi[1]=np.exp((l+0.5)*(a+dx))
+
+    K=-2.0*np.exp(2.0*xgrid)*(v-E)-(l+0.5)**2
+
+    i=int(2)
+
+    while i<N:
+        Psi[i]=(2.0*(1.0-5.0*h*K[i-1])*Psi[i-1]-(1.0+h*K[i-2])*Psi[i-2])/(1.0+h*K[i])
+        i += 1
+
+    Psi_norm=mathtools.normalize_orbs(Psi , xgrid)
+
+    return Psi_norm
