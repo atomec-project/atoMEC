@@ -425,13 +425,17 @@ class SCF:
         occnum_tbl = ""
         for i in range(config.spindims):
 
+            occnums_tot = orbitals.occnums + orbitals.occnums_ub
+
             # truncate the table to include only one unbound state in each direction
             try:
                 lmax_new = min(
-                    np.amax(np.where(orbitals.eigvals[i] < 0)[0]) + 2, config.lmax
+                    np.amax(np.where(occnums_tot[i] > 1e-5)[0]) + 1,
+                    config.lmax,
                 )
                 nmax_new = min(
-                    np.amax(np.where(orbitals.eigvals[i] < 0)[1]) + 2, config.nmax
+                    np.amax(np.where(occnums_tot[i] > 1e-5)[1]) + 1,
+                    config.nmax,
                 )
             except ValueError:
                 lmax_new = 2
@@ -444,7 +448,7 @@ class SCF:
             RowIDs[0] = "l=0"
 
             eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
-            occnums_new = orbitals.occnums[i, :lmax_new, :nmax_new]
+            occnums_new = occnums_tot[i, :lmax_new, :nmax_new]
 
             # the eigenvalue table
             eigval_tbl += (

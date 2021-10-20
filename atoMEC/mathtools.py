@@ -335,6 +335,27 @@ def chem_pot(orbs):
             else:
                 mu[i] = -np.inf
 
+    if config.unbound == "quantum":
+        for i in range(config.spindims):
+            if config.nele[i] != 0:
+                soln = optimize.root_scalar(
+                    f_root_qu,
+                    x0=mu0[i],
+                    args=(
+                        orbs.eigvals[i],
+                        orbs.lbound[i],
+                        orbs.lunbound[i],
+                        config.nele[i],
+                    ),
+                    method="brentq",
+                    bracket=[-100, 100],
+                    options={"maxiter": 100},
+                )
+                mu[i] = soln.root
+            # in case there are no electrons in one spin channel
+            else:
+                mu[i] = -np.inf
+
     return mu
 
 
@@ -377,6 +398,52 @@ def f_root_id(mu, eigvals, lbound, nele):
 
     prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
     contrib_unbound = prefac * fd_int_complete(mu, config.beta, 1.0)
+
+    # return the function whose roots are to be found
+    f_root = contrib_bound + contrib_unbound - nele
+
+    return f_root
+
+
+def f_root_qu(mu, eigvals, lbound, lunbound, nele):
+    r"""
+    Functional input for the chemical potential root finding function (ideal approx).
+
+    See notes for function returned, the ideal approximation is used for free electrons.
+
+    Parameters
+    ----------
+    mu : array_like
+        chemical potential
+    eigvals : ndarray
+        the energy eigenvalues
+    lbound : ndarray
+        the lbound matrix :math:`(2l+1)\Theta(\epsilon_{nl}^\sigma)`
+    nele : union(int, float)
+        the number of electrons for given spin
+
+    Returns
+    -------
+    f_root : float
+       the difference of the predicted electron number with given mu
+       and the actual electron number
+
+    Notes
+    -----
+    The returned function is
+
+    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +
+        N_{ub}(\beta,\mu) - N_e
+    """
+    # caluclate the contribution from the bound electrons
+    occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
+    contrib_bound = occnums.sum()
+
+    # now compute the contribution from the unbound electrons
+    # this function uses the ideal approximation
+
+    occnums_ub = lunbound * fermi_dirac(eigvals, mu, config.beta)
+    contrib_unbound = occnums_ub.sum()
 
     # return the function whose roots are to be found
     f_root = contrib_bound + contrib_unbound - nele
