@@ -1102,6 +1102,35 @@ N_{ub}(\beta,\mu) - N_e\]</div>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.mathtools.f_root_qu">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">f_root_qu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigvals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lbound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lunbound</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nele</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#f_root_qu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.f_root_qu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Functional input for the chemical potential root finding function (ideal approx).</p>
+<p>See notes for function returned, the ideal approximation is used for free electrons.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>array_like</em>) – chemical potential</p></li>
+<li><p><strong>eigvals</strong> (<em>ndarray</em>) – the energy eigenvalues</p></li>
+<li><p><strong>lbound</strong> (<em>ndarray</em>) – the lbound matrix <span class="math notranslate nohighlight">\((2l+1)\Theta(\epsilon_{nl}^\sigma)\)</span></p></li>
+<li><p><strong>nele</strong> (<em>union</em><em>(</em><em>int</em><em>, </em><em>float</em><em>)</em>) – the number of electrons for given spin</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>f_root</strong> – the difference of the predicted electron number with given mu
+and the actual electron number</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The returned function is</p>
+<div class="math notranslate nohighlight">
+\[f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +
+N_{ub}(\beta,\mu) - N_e\]</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.mathtools.fd_int_complete">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">fd_int_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#fd_int_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.fd_int_complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute complete Fermi-Dirac integral for given order (see notes for function form).</p>
@@ -1748,19 +1777,20 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="atoMEC.staticKS.Density.construct_rho_bound">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">construct_rho_bound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Density.construct_rho_bound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Density.construct_rho_bound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct the bound part of the density.</p>
+<dt class="sig sig-object py" id="atoMEC.staticKS.Density.construct_rho_orbs">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">construct_rho_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Density.construct_rho_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Density.construct_rho_orbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a density from a set of discrete KS orbitals.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>orbs</strong> (<em>ndarray</em>) – the radial eigenfunctions on the xgrid</p></li>
+<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the radial eigenfunctions on the xgrid</p></li>
+<li><p><strong>occnums</strong> (<em>ndarray</em>) – the orbital occupations</p></li>
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>rho_bound</strong> – contains the keys <cite>rho</cite> and <cite>N</cite> denoting the bound density
-and number of bound electrons respectively</p>
+<dd class="field-even"><p><strong>dens</strong> – contains the keys <cite>rho</cite> and <cite>N</cite> denoting the density
+and number of electrons respectively</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>dict of ndarrays</p>
@@ -1770,7 +1800,7 @@ and number of bound electrons respectively</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Density.construct_rho_unbound">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">construct_rho_unbound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Density.construct_rho_unbound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Density.construct_rho_unbound" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">construct_rho_unbound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Density.construct_rho_unbound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Density.construct_rho_unbound" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct the unbound part of the density.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1906,18 +1936,19 @@ This routine is a wrapper calling the respective functions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_kin_bound">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_bound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_bound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_bound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the kinetic energy contribution from the bound electrons.</p>
+<dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_kin_orbs">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_orbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the kinetic energy contribution from discrete KS orbitals.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>orbs</strong> (<a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Orbitals</span></code></a>) – the KS orbitals object</p></li>
+<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the radial KS orbitals on the log grid</p></li>
+<li><p><strong>occnums</strong> (<em>ndarray</em>) – the orbital occupations</p></li>
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>E_kin_bound</strong> – the bound kinetic energy</p>
+<dd class="field-even"><p><strong>E_kin</strong> – the kinetic energy</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
@@ -1927,7 +1958,7 @@ This routine is a wrapper calling the respective functions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_kin_unbound">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_unbound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_unbound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_unbound" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_unbound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_unbound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_unbound" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the contribution from unbound (continuum) electrons to kinetic energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1952,12 +1983,15 @@ I_{3/2}(\mu,\beta),\]</div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_S_bound">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_S_bound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_S_bound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_S_bound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the contribution of the bound states to the entropy (see notes).</p>
+<dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_S_orbs">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_S_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_S_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_S_orbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the KS (non-interacting) entropy for specified orbitals (see notes).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>orbs</strong> (<a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Orbitals</span></code></a>) – the KS orbitals object</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>occnums</strong> (<em>ndarray</em>) – orbital occupation numbers</p></li>
+<li><p><strong>lmat</strong> (<em>ndarray</em>) – the degeneracy array (<span class="math notranslate nohighlight">\((2l+1)\)</span>)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>S</strong> – the bound contribution to the entropy</p>
@@ -1975,7 +2009,7 @@ I_{3/2}(\mu,\beta),\]</div>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_S_unbound">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_S_unbound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_S_unbound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_S_unbound" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_S_unbound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">occnums_ub</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lunbound</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_S_unbound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_S_unbound" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the unbound contribution to the entropy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2322,6 +2356,25 @@ total entropy. <span class="math notranslate nohighlight">\(F = E - TS\)</span><
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.make_lunbound">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">make_lunbound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigvals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals.make_lunbound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals.make_lunbound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct the lunbound matrix denoting the unbound states and degeneracies.</p>
+<p>For each spin channel,
+<span class="math notranslate nohighlight">\(L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>eigvals</strong> (<em>ndarray</em>) – the KS orbital eigenvalues</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>lunbound_mat</strong> – the lbound matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.occupy">
 <span class="sig-name descname"><span class="pre">occupy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals.occupy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals.occupy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Occupy the KS orbitals according to Fermi-Dirac statistics.</p>
@@ -2376,8 +2429,33 @@ total entropy. <span class="math notranslate nohighlight">\(F = E - TS\)</span><
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.lunbound">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">lunbound</span></span><a class="headerlink" href="#atoMEC.staticKS.Orbitals.lunbound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix denoting bound eigenvalues and their degeneracies (DOS).</p>
+<p>The matrix takes the form
+<span class="math notranslate nohighlight">\(L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.occnums">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">occnums</span></span><a class="headerlink" href="#atoMEC.staticKS.Orbitals.occnums" title="Permalink to this definition">¶</a></dt>
+<dd><p>KS occupation numbers (Fermi-Dirac).</p>
+<p>The occupation numbers are multiplied by the <a class="reference internal" href="#atoMEC.staticKS.Orbitals.lbound" title="atoMEC.staticKS.Orbitals.lbound"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lbound</span></code></a> (degeneracy) matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.occnums_ub">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">occnums_ub</span></span><a class="headerlink" href="#atoMEC.staticKS.Orbitals.occnums_ub" title="Permalink to this definition">¶</a></dt>
 <dd><p>KS occupation numbers (Fermi-Dirac).</p>
 <p>The occupation numbers are multiplied by the <a class="reference internal" href="#atoMEC.staticKS.Orbitals.lbound" title="atoMEC.staticKS.Orbitals.lbound"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lbound</span></code></a> (degeneracy) matrix.</p>
 <dl class="field-list simple">

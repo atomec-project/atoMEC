@@ -242,7 +242,9 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">eigvals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -276,6 +278,18 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">occnums_ub</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ndarray: KS occupation numbers (Fermi-Dirac).</span>
+
+<span class="sd">        The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="c1"># raise Exception(&quot;Occnums have not been initialized&quot;)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_occnums</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lunbound</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">lbound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).</span>
@@ -287,6 +301,19 @@
             <span class="c1"># raise Exception(&quot;lbound has not been initialized&quot;)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lunbound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).</span>
+
+<span class="sd">        The matrix takes the form</span>
+<span class="sd">        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="c1"># raise Exception(&quot;lbound has not been initialized&quot;)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lunbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span>
 
 <div class="viewcode-block" id="Orbitals.compute"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -315,6 +342,9 @@
         <span class="c1"># compute the lbound array</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
 
+        <span class="c1"># compute the lunbound array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lunbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
+
         <span class="c1"># guess the chemical potential if initializing</span>
         <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
             <span class="n">config</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
@@ -338,6 +368,9 @@
 
         <span class="c1"># compute the occupation numbers using the chemical potential</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_occnums</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lbound</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+
+        <span class="c1"># compute the unbound occupation numbers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_occnums</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lunbound</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
 
         <span class="k">return</span></div>
 
@@ -404,7 +437,36 @@
                 <span class="n">n</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
                 <span class="n">lbound_mat</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">lbound_mat</span></div></div>
+        <span class="k">return</span> <span class="n">lbound_mat</span></div>
+
+<div class="viewcode-block" id="Orbitals.make_lunbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_lunbound">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">make_lunbound</span><span class="p">(</span><span class="n">eigvals</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct the lunbound matrix denoting the unbound states and degeneracies.</span>
+
+<span class="sd">        For each spin channel,</span>
+<span class="sd">        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eigvals : ndarray</span>
+<span class="sd">            the KS orbital eigenvalues</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        lunbound_mat : ndarray</span>
+<span class="sd">            the lbound matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lunbound_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
+
+        <span class="c1"># only non-zero if quantum unbound electrons</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
+                <span class="n">lunbound_mat</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">eigvals</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lunbound_mat</span></div></div>
 
 
 <div class="viewcode-block" id="Density"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density">[docs]</a><span class="k">class</span> <span class="nc">Density</span><span class="p">:</span>
@@ -447,7 +509,9 @@
 <span class="sd">        electrons respectively.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bound</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_rho_bound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_rho_orbs</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bound</span>
 
     <span class="nd">@property</span>
@@ -459,47 +523,51 @@
 <span class="sd">        unbound density and number of unbound electrons respectively</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_rho_unbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_rho_unbound</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span>
 
-<div class="viewcode-block" id="Density.construct_rho_bound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_bound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">construct_rho_bound</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="Density.construct_rho_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">construct_rho_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Construct the bound part of the density.</span>
+<span class="sd">        Construct a density from a set of discrete KS orbitals.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        orbs : ndarray</span>
+<span class="sd">        eigfuncs : ndarray</span>
 <span class="sd">            the radial eigenfunctions on the xgrid</span>
+<span class="sd">        occnums : ndarray</span>
+<span class="sd">            the orbital occupations</span>
 <span class="sd">        xgrid : ndarray</span>
 <span class="sd">            the logarithmic grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        rho_bound : dict of ndarrays</span>
-<span class="sd">            contains the keys `rho` and `N` denoting the bound density</span>
-<span class="sd">            and number of bound electrons respectively</span>
+<span class="sd">        dens : dict of ndarrays</span>
+<span class="sd">            contains the keys `rho` and `N` denoting the density</span>
+<span class="sd">            and number of electrons respectively</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">bound</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># initialize empty dict</span>
+        <span class="n">dens</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># initialize empty dict</span>
 
         <span class="c1"># first of all construct the density</span>
         <span class="c1"># rho_b(r) = \sum_{n,l} (2l+1) f_{nl} |R_{nl}(r)|^2</span>
         <span class="c1"># occnums in atoMEC are defined as (2l+1)*f_{nl}</span>
 
         <span class="c1"># R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs</span>
-        <span class="n">orbs_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span>
+        <span class="n">orbs_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
         <span class="n">orbs_R_sq</span> <span class="o">=</span> <span class="n">orbs_R</span> <span class="o">**</span> <span class="mf">2.0</span>
 
         <span class="c1"># sum over the (l,n) dimensions of the orbitals to get the density</span>
-        <span class="n">bound</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;il&quot;</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">orbs_R_sq</span><span class="p">)</span>
+        <span class="n">dens</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;il&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">orbs_R_sq</span><span class="p">)</span>
 
         <span class="c1"># compute the number of unbound electrons</span>
-        <span class="n">bound</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">dens</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">occnums</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">bound</span></div>
+        <span class="k">return</span> <span class="n">dens</span></div>
 
 <div class="viewcode-block" id="Density.construct_rho_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">construct_rho_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">construct_rho_unbound</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the unbound part of the density.</span>
 
@@ -531,7 +599,11 @@
                 <span class="n">rho_unbound</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_ub</span>
                 <span class="n">N_unbound</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_ub</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span>
 
-        <span class="n">unbound</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="n">rho_unbound</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="n">N_unbound</span><span class="p">}</span>
+            <span class="n">unbound</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="n">rho_unbound</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="n">N_unbound</span><span class="p">}</span>
+
+        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
+
+            <span class="n">unbound</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">construct_rho_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">unbound</span></div></div>
 
@@ -767,57 +839,61 @@
         <span class="n">E_kin</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># bound part</span>
-        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_bound</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_orbs</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
         <span class="c1"># unbound part</span>
-        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_unbound</span><span class="p">(</span>
+            <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="n">xgrid</span>
+        <span class="p">)</span>
 
         <span class="c1"># total</span>
         <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">E_kin</span></div>
 
-<div class="viewcode-block" id="Energy.calc_E_kin_bound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_bound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_E_kin_bound</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="Energy.calc_E_kin_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_E_kin_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute the kinetic energy contribution from the bound electrons.</span>
+<span class="sd">        Compute the kinetic energy contribution from discrete KS orbitals.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        orbs : :obj:`Orbitals`</span>
-<span class="sd">            the KS orbitals object</span>
+<span class="sd">        eigfuncs : ndarray</span>
+<span class="sd">            the radial KS orbitals on the log grid</span>
+<span class="sd">        occnums : ndarray</span>
+<span class="sd">            the orbital occupations</span>
 <span class="sd">        xgrid : ndarray</span>
 <span class="sd">            the logarithmic grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        E_kin_bound : float</span>
-<span class="sd">            the bound kinetic energy</span>
+<span class="sd">        E_kin : float</span>
+<span class="sd">            the kinetic energy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># compute the grad^2 component</span>
-        <span class="n">grad2_orbs</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">laplace</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">grad2_orbs</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">laplace</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
         <span class="c1"># compute the (l+1/2)^2 component</span>
         <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)])</span>
-        <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;j,ijkl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
+        <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;j,ijkl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span>
 
         <span class="c1"># add together and multiply by eigfuncs*exp(-3x)</span>
-        <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span>
+        <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
         <span class="n">kin_orbs</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad2_orbs</span> <span class="o">-</span> <span class="n">lhalf_orbs</span><span class="p">)</span>
 
         <span class="c1"># multiply and sum over occupation numbers</span>
-        <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;l&quot;</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">kin_orbs</span><span class="p">)</span>
+        <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;l&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">kin_orbs</span><span class="p">)</span>
 
         <span class="c1"># FIXME: this is necessary because the Laplacian is not accurate at the boundary</span>
         <span class="n">e_kin_dens</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">=</span> <span class="n">e_kin_dens</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
 
         <span class="c1"># integrate over sphere</span>
-        <span class="n">E_kin_bound</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">e_kin_dens</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">E_kin</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">e_kin_dens</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">E_kin_bound</span></div>
+        <span class="k">return</span> <span class="n">E_kin</span></div>
 
 <div class="viewcode-block" id="Energy.calc_E_kin_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_E_kin_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_E_kin_unbound</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the contribution from unbound (continuum) electrons to kinetic energy.</span>
 
@@ -852,6 +928,9 @@
                     <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="mf">3.0</span>
                 <span class="p">)</span>
 
+        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
+            <span class="n">E_kin_unbound</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">E_kin_unbound</span></div>
 
 <div class="viewcode-block" id="Energy.calc_entropy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_entropy">[docs]</a>    <span class="k">def</span> <span class="nf">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">):</span>
@@ -874,25 +953,27 @@
         <span class="n">S</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># bound part</span>
-        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_S_bound</span><span class="p">(</span><span class="n">orbs</span><span class="p">)</span>
+        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_S_orbs</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">lbound</span><span class="p">)</span>
 
         <span class="c1"># unbound part</span>
-        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_S_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="p">)</span>
+        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_S_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">lunbound</span><span class="p">)</span>
 
         <span class="c1"># total</span>
         <span class="n">S</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">S</span></div>
 
-<div class="viewcode-block" id="Energy.calc_S_bound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_bound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_S_bound</span><span class="p">(</span><span class="n">orbs</span><span class="p">):</span>
+<div class="viewcode-block" id="Energy.calc_S_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_S_orbs</span><span class="p">(</span><span class="n">occnums</span><span class="p">,</span> <span class="n">lmat</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute the contribution of the bound states to the entropy (see notes).</span>
+<span class="sd">        Compute the KS (non-interacting) entropy for specified orbitals (see notes).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        orbs : :obj:`Orbitals`</span>
-<span class="sd">            the KS orbitals object</span>
+<span class="sd">        occnums : ndarray</span>
+<span class="sd">            orbital occupation numbers</span>
+<span class="sd">        lmat : ndarray</span>
+<span class="sd">            the degeneracy array (:math:`(2l+1)`)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -909,14 +990,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># the occupation numbers are stored as f&#39;_{nl}=f_{nl}*(2l+1)</span>
         <span class="c1"># we first need to map them back to their &#39;pure&#39; form f_{nl}</span>
-        <span class="n">lbound_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">lbound</span><span class="p">)</span>
+        <span class="n">lmat_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">lmat</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
-            <span class="n">lbound_inv</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                <span class="n">orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">),</span> <span class="mf">0.0</span>
-            <span class="p">)</span>
+            <span class="n">lmat_inv</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
 
         <span class="c1"># pure occupation numbers (with zeros replaced by finite values)</span>
-        <span class="n">occnums_pu</span> <span class="o">=</span> <span class="n">lbound_inv</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span>
+        <span class="n">occnums_pu</span> <span class="o">=</span> <span class="n">lmat_inv</span> <span class="o">*</span> <span class="n">occnums</span>
         <span class="n">occnums_mod1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums_pu</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">occnums_pu</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
         <span class="n">occnums_mod2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums_pu</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">occnums_pu</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 
@@ -925,15 +1004,15 @@
         <span class="n">term2</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">occnums_pu</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">occnums_mod2</span><span class="p">)</span>
 
         <span class="c1"># multiply by (2l+1) factor</span>
-        <span class="n">g_nls</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">lbound</span> <span class="o">*</span> <span class="p">(</span><span class="n">term1</span> <span class="o">+</span> <span class="n">term2</span><span class="p">)</span>
+        <span class="n">g_nls</span> <span class="o">=</span> <span class="n">lmat</span> <span class="o">*</span> <span class="p">(</span><span class="n">term1</span> <span class="o">+</span> <span class="n">term2</span><span class="p">)</span>
 
         <span class="c1"># sum over all quantum numbers to get the total entropy</span>
-        <span class="n">S_bound</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g_nls</span><span class="p">)</span>
+        <span class="n">S_orbs</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g_nls</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">S_bound</span></div>
+        <span class="k">return</span> <span class="n">S_orbs</span></div>
 
 <div class="viewcode-block" id="Energy.calc_S_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_S_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_S_unbound</span><span class="p">(</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="n">lunbound</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the unbound contribution to the entropy.</span>
 
@@ -971,6 +1050,9 @@
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">S_unbound</span> <span class="o">+=</span> <span class="mf">0.0</span>
+
+        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
+            <span class="n">S_unbound</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_S_orbs</span><span class="p">(</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="n">lunbound</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">S_unbound</span></div>
 

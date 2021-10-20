@@ -498,6 +498,27 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
 
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">soln</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">root_scalar</span><span class="p">(</span>
+                    <span class="n">f_root_qu</span><span class="p">,</span>
+                    <span class="n">x0</span><span class="o">=</span><span class="n">mu0</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">args</span><span class="o">=</span><span class="p">(</span>
+                        <span class="n">orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="n">orbs</span><span class="o">.</span><span class="n">lbound</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="n">orbs</span><span class="o">.</span><span class="n">lunbound</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="p">),</span>
+                    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;brentq&quot;</span><span class="p">,</span>
+                    <span class="n">bracket</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+                    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
+                <span class="p">)</span>
+                <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">root</span>
+            <span class="c1"># in case there are no electrons in one spin channel</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
     <span class="k">return</span> <span class="n">mu</span></div>
 
 
@@ -540,6 +561,52 @@
 
     <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">contrib_unbound</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">fd_int_complete</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="c1"># return the function whose roots are to be found</span>
+    <span class="n">f_root</span> <span class="o">=</span> <span class="n">contrib_bound</span> <span class="o">+</span> <span class="n">contrib_unbound</span> <span class="o">-</span> <span class="n">nele</span>
+
+    <span class="k">return</span> <span class="n">f_root</span></div>
+
+
+<div class="viewcode-block" id="f_root_qu"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.f_root_qu">[docs]</a><span class="k">def</span> <span class="nf">f_root_qu</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">lbound</span><span class="p">,</span> <span class="n">lunbound</span><span class="p">,</span> <span class="n">nele</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Functional input for the chemical potential root finding function (ideal approx).</span>
+
+<span class="sd">    See notes for function returned, the ideal approximation is used for free electrons.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mu : array_like</span>
+<span class="sd">        chemical potential</span>
+<span class="sd">    eigvals : ndarray</span>
+<span class="sd">        the energy eigenvalues</span>
+<span class="sd">    lbound : ndarray</span>
+<span class="sd">        the lbound matrix :math:`(2l+1)\Theta(\epsilon_{nl}^\sigma)`</span>
+<span class="sd">    nele : union(int, float)</span>
+<span class="sd">        the number of electrons for given spin</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    f_root : float</span>
+<span class="sd">       the difference of the predicted electron number with given mu</span>
+<span class="sd">       and the actual electron number</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The returned function is</span>
+
+<span class="sd">    .. math:: f = \sum_{nl} (2l+1) f_{fd}(\epsilon_{nl},\beta,\mu) +</span>
+<span class="sd">        N_{ub}(\beta,\mu) - N_e</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># caluclate the contribution from the bound electrons</span>
+    <span class="n">occnums</span> <span class="o">=</span> <span class="n">lbound</span> <span class="o">*</span> <span class="n">fermi_dirac</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+    <span class="n">contrib_bound</span> <span class="o">=</span> <span class="n">occnums</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c1"># now compute the contribution from the unbound electrons</span>
+    <span class="c1"># this function uses the ideal approximation</span>
+
+    <span class="n">occnums_ub</span> <span class="o">=</span> <span class="n">lunbound</span> <span class="o">*</span> <span class="n">fermi_dirac</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+    <span class="n">contrib_unbound</span> <span class="o">=</span> <span class="n">occnums_ub</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
     <span class="c1"># return the function whose roots are to be found</span>
     <span class="n">f_root</span> <span class="o">=</span> <span class="n">contrib_bound</span> <span class="o">+</span> <span class="n">contrib_unbound</span> <span class="o">-</span> <span class="n">nele</span>
