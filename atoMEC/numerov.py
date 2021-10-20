@@ -338,26 +338,49 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
 
 
 def Num_integrate(xgrid, v, l, E):
-    dx=xgrid[1]-xgrid[0]
-    h=(dx**2)/12.0
-    N=int(np.size(xgrid))
-    Psi=np.zeros(N, dtype=np.float64)
-    K=np.zeros(N, dtype=np.float64)
-    v=v.reshape(-1)
+    """
+    Integrates a function based on the numerov integration method.
     
-    a=config.grid_params["x0"]
+    Parameters
+    ----------
+    xgrid : ndarray
+        the logarithmic grid
+    v : ndarray
+        KS potential array
+    l : int
+        angular momentum value
+    E : float
+        energy of the integrated function
 
-    Psi[0]=np.exp((l+0.5)*a)
-    Psi[1]=np.exp((l+0.5)*(a+dx))
+    Returns
+    -------
+    Psi_norm : ndarray
+        normalized wavefunction integrated by the numerov scheme
+    """
+    dx = xgrid[1] - xgrid[0]  # spatial resolution
+    h = (dx ** 2) / 12.0  # a parameter for the numerov integration
+    N = np.size(xgrid)  # size of grid
+    Psi = np.zeros(N, dtype=np.float64)  # Wavefunction array
+    K = np.zeros(N, dtype=np.float64)  # the 'potential' for integration
+    v = v.reshape(-1)  # reshaping the input potential for integration purposes
 
-    K=-2.0*np.exp(2.0*xgrid)*(v-E)-(l+0.5)**2
+    a = config.grid_params["x0"]
 
-    i=int(2)
+    # Initial conditions
+    Psi[0] = np.exp((l + 0.5) * a)
+    Psi[1] = np.exp((l + 0.5) * (a + dx))
 
-    while i<N:
-        Psi[i]=(2.0*(1.0-5.0*h*K[i-1])*Psi[i-1]-(1.0+h*K[i-2])*Psi[i-2])/(1.0+h*K[i])
-        i += 1
+    # 'Potential' for numerov integration
+    K = -2.0 * np.exp(2.0 * xgrid) * (v - E) - (l + 0.5) ** 2
 
-    Psi_norm=mathtools.normalize_orbs(Psi , xgrid)
+    # Integration loop
+    for i in range(2, N):
+        Psi[i] = (
+            2.0 * (1.0 - 5.0 * h * K[i - 1]) * Psi[i - 1]
+            - (1.0 + h * K[i - 2]) * Psi[i - 2]
+        ) / (1.0 + h * K[i])
+
+    # normalizing the wavefunciton
+    Psi_norm = mathtools.normalize_orbs(Psi, xgrid)
 
     return Psi_norm
