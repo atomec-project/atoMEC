@@ -340,7 +340,7 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
 def Num_integrate(xgrid, v, l, E):
     """
     Integrates a function based on the numerov integration method.
-    
+
     Parameters
     ----------
     xgrid : ndarray
