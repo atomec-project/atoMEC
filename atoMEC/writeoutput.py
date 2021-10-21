@@ -55,7 +55,10 @@ def write_atomic_data(atom):
     at_chrg_str = "{preamble:30s}: {chrg:<3d} / {weight:<.3f}".format(
         preamble="Atomic charge / weight", chrg=atom.at_chrg, weight=atom.at_mass
     )
-    spec_info = species_str + spc + at_chrg_str + spc
+    nvalence_str = "{preamble:30s}: {nval:<3d}".format(
+        preamble="Valence electrons", nval=atom.nvalence
+    )
+    spec_info = species_str + spc + at_chrg_str + spc + nvalence_str + spc
 
     # information about the atomic / mass density
     rho_str = "{preamble:30s}: {rho:<.3g} g cm^-3".format(
