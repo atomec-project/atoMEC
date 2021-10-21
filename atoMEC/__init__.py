@@ -211,11 +211,26 @@ class Atom:
 
     @property
     def WS_radius(self):
-        r"""float: the Wigner-Seitz radius.
+        r"""float: the Wigner-Seitz radius, or the electron coupling parameter.
 
         The Wigner-Seitz radius differs from the Voronoi radius because it depends on
         the free electron density, defined in atoMEC as the valence electron density."""
         return self.radius * self.nvalence ** (-1.0 / 3.0)
+
+    @property
+    def E_Fermi(self):
+        r"""float: the Fermi energy."""
+        return 0.5 * (9.0 * pi / 4.0) ** (2.0 / 3.0) * self.WS_radius ** -2.0
+
+    @property
+    def gamma_ion(self):
+        r"""float: the ionic coupling parameter."""
+        return self.at_chrg ** 2.0 / (2.0 * self.radius * self.temp)
+
+    @property
+    def theta_e(self):
+        r"""float: the electron degeneracy parameter."""
+        return self.temp / self.E_Fermi
 
     @property
     def info(self):
