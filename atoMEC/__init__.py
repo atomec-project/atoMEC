@@ -214,7 +214,8 @@ class Atom:
         r"""float: the Wigner-Seitz radius, or the electron coupling parameter.
 
         The Wigner-Seitz radius differs from the Voronoi radius because it depends on
-        the free electron density, defined in atoMEC as the valence electron density."""
+        the free electron density, defined in atoMEC as the valence electron density.
+        """
         return self.radius * self.nvalence ** (-1.0 / 3.0)
 
     @property
