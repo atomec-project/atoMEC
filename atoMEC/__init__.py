@@ -183,7 +183,7 @@ class Atom:
 
     @property
     def radius(self):
-        r"""float: radius of the Wigner-Seitz sphere.
+        r"""float: radius of the Voronoi sphere.
 
         The radius is defined as :math:`a_i /2`,
         where :math:`a_i` is the average inter-atomic distance.
@@ -208,6 +208,14 @@ class Atom:
         self._radius = check_inputs.Atom().dens_to_radius(self, self._density)
         config.r_s = self._radius
         config.sph_vol = (4.0 * pi * self._radius ** 3.0) / 3.0
+
+    @property
+    def WS_radius(self):
+        r"""float: the Wigner-Seitz radius.
+
+        The Wigner-Seitz radius differs from the Voronoi radius because it depends on
+        the free electron density, defined in atoMEC as the valence electron density."""
+        return self.radius * self.nvalence ** (-1.0 / 3.0)
 
     @property
     def info(self):
