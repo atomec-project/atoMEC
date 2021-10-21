@@ -121,6 +121,11 @@ class Atom:
         return self.species.atomic_weight
 
     @property
+    def nvalence(self):
+        """int: the number of valence electrons."""
+        return self.species.nvalence()
+
+    @property
     def units_temp(self):
         """str: the units of temperature."""
         return self._units_temp
