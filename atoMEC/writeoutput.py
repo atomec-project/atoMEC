@@ -82,8 +82,14 @@ def write_atomic_data(atom):
     WS_radius_str = "{preamble:30s}: {rad:<.4g} (Bohr)".format(
         preamble="Wigner-Seitz radius", rad=atom.WS_radius
     )
+    gamma_i_str = "{preamble:30s}: {gamma:<.4g}".format(
+        preamble="Ionic coupling parameter", gamma=atom.gamma_ion
+    )
+    theta_e_str = "{preamble:30s}: {theta:<.4g}".format(
+        preamble="Electron degeneracy parameter", theta=atom.theta_e
+    )
 
-    dim_params_str = WS_radius_str
+    dim_params_str = WS_radius_str + spc + gamma_i_str + spc + theta_e_str + spc
 
     # put all into a single string
     output_str = init_str + spec_info + rho_info + temp_info + dim_params_str + spc
