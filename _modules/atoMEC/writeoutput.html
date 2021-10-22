@@ -218,7 +218,10 @@
     <span class="n">at_chrg_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{chrg:&lt;3d}</span><span class="s2"> / </span><span class="si">{weight:&lt;.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
         <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Atomic charge / weight&quot;</span><span class="p">,</span> <span class="n">chrg</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">at_chrg</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">at_mass</span>
     <span class="p">)</span>
-    <span class="n">spec_info</span> <span class="o">=</span> <span class="n">species_str</span> <span class="o">+</span> <span class="n">spc</span> <span class="o">+</span> <span class="n">at_chrg_str</span> <span class="o">+</span> <span class="n">spc</span>
+    <span class="n">nvalence_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{nval:&lt;3d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Valence electrons&quot;</span><span class="p">,</span> <span class="n">nval</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">nvalence</span>
+    <span class="p">)</span>
+    <span class="n">spec_info</span> <span class="o">=</span> <span class="n">species_str</span> <span class="o">+</span> <span class="n">spc</span> <span class="o">+</span> <span class="n">at_chrg_str</span> <span class="o">+</span> <span class="n">spc</span> <span class="o">+</span> <span class="n">nvalence_str</span> <span class="o">+</span> <span class="n">spc</span>
 
     <span class="c1"># information about the atomic / mass density</span>
     <span class="n">rho_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{rho:&lt;.3g}</span><span class="s2"> g cm^-3&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -226,7 +229,7 @@
     <span class="p">)</span>
     <span class="n">rad_ang</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">radius</span> <span class="o">/</span> <span class="n">unitconv</span><span class="o">.</span><span class="n">angstrom_to_bohr</span>
     <span class="n">rad_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{rad_b:&lt;.4g}</span><span class="s2"> Bohr / </span><span class="si">{rad_a:&lt;.4g}</span><span class="s2"> Angstrom&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-        <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Wigner-Seitz radius&quot;</span><span class="p">,</span> <span class="n">rad_b</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="n">rad_a</span><span class="o">=</span><span class="n">rad_ang</span>
+        <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Voronoi sphere radius&quot;</span><span class="p">,</span> <span class="n">rad_b</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="n">rad_a</span><span class="o">=</span><span class="n">rad_ang</span>
     <span class="p">)</span>
     <span class="n">rho_info</span> <span class="o">=</span> <span class="n">rho_str</span> <span class="o">+</span> <span class="n">spc</span> <span class="o">+</span> <span class="n">rad_str</span> <span class="o">+</span> <span class="n">spc</span>
 
@@ -238,8 +241,21 @@
     <span class="p">)</span>
     <span class="n">temp_info</span> <span class="o">=</span> <span class="n">temp_str</span> <span class="o">+</span> <span class="n">spc</span>
 
+    <span class="c1"># information about the dimensionless parameters</span>
+    <span class="n">WS_radius_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{rad:&lt;.4g}</span><span class="s2"> (Bohr)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Wigner-Seitz radius&quot;</span><span class="p">,</span> <span class="n">rad</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">WS_radius</span>
+    <span class="p">)</span>
+    <span class="n">gamma_i_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{gamma:&lt;.4g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Ionic coupling parameter&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">gamma_ion</span>
+    <span class="p">)</span>
+    <span class="n">theta_e_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{theta:&lt;.4g}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Electron degeneracy parameter&quot;</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">atom</span><span class="o">.</span><span class="n">theta_e</span>
+    <span class="p">)</span>
+
+    <span class="n">dim_params_str</span> <span class="o">=</span> <span class="n">WS_radius_str</span> <span class="o">+</span> <span class="n">spc</span> <span class="o">+</span> <span class="n">gamma_i_str</span> <span class="o">+</span> <span class="n">spc</span> <span class="o">+</span> <span class="n">theta_e_str</span> <span class="o">+</span> <span class="n">spc</span>
+
     <span class="c1"># put all into a single string</span>
-    <span class="n">output_str</span> <span class="o">=</span> <span class="n">init_str</span> <span class="o">+</span> <span class="n">spec_info</span> <span class="o">+</span> <span class="n">rho_info</span> <span class="o">+</span> <span class="n">temp_info</span> <span class="o">+</span> <span class="n">spc</span>
+    <span class="n">output_str</span> <span class="o">=</span> <span class="n">init_str</span> <span class="o">+</span> <span class="n">spec_info</span> <span class="o">+</span> <span class="n">rho_info</span> <span class="o">+</span> <span class="n">temp_info</span> <span class="o">+</span> <span class="n">dim_params_str</span> <span class="o">+</span> <span class="n">spc</span>
 
     <span class="k">return</span> <span class="n">output_str</span></div>
 

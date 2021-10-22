@@ -2969,6 +2969,30 @@ where a_i is the average inter-atomic distance</p></li>
 </dd>
 </dl>
 <dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.Atom.E_Fermi">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">E_Fermi</span></span><a class="headerlink" href="#atoMEC.Atom.E_Fermi" title="Permalink to this definition">¶</a></dt>
+<dd><p>the Fermi energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.Atom.WS_radius">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">WS_radius</span></span><a class="headerlink" href="#atoMEC.Atom.WS_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>the Wigner-Seitz radius, or the electron coupling parameter.</p>
+<p>The Wigner-Seitz radius differs from the Voronoi radius because it depends on
+the free electron density, defined in atoMEC as the valence electron density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.at_chrg">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">at_chrg</span></span><a class="headerlink" href="#atoMEC.Atom.at_chrg" title="Permalink to this definition">¶</a></dt>
 <dd><p>the atomic charge Z.</p>
@@ -3013,6 +3037,17 @@ where a_i is the average inter-atomic distance</p></li>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.Atom.gamma_ion">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">gamma_ion</span></span><a class="headerlink" href="#atoMEC.Atom.gamma_ion" title="Permalink to this definition">¶</a></dt>
+<dd><p>the ionic coupling parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.info">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#atoMEC.Atom.info" title="Permalink to this definition">¶</a></dt>
 <dd><p>formatted information about the <a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Atom</span></code></a>’s attributes.</p>
@@ -3037,9 +3072,20 @@ and <a class="reference internal" href="#atoMEC.Atom.charge" title="atoMEC.Atom.
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.Atom.nvalence">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">nvalence</span></span><a class="headerlink" href="#atoMEC.Atom.nvalence" title="Permalink to this definition">¶</a></dt>
+<dd><p>the number of valence electrons.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.Atom.radius">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">radius</span></span><a class="headerlink" href="#atoMEC.Atom.radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>radius of the Wigner-Seitz sphere.</p>
+<dd><p>radius of the Voronoi sphere.</p>
 <p>The radius is defined as <span class="math notranslate nohighlight">\(a_i /2\)</span>,
 where <span class="math notranslate nohighlight">\(a_i\)</span> is the average inter-atomic distance.</p>
 <dl class="field-list simple">
@@ -3064,6 +3110,17 @@ where <span class="math notranslate nohighlight">\(a_i\)</span> is the average i
 <dt class="sig sig-object py" id="atoMEC.Atom.temp">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">temp</span></span><a class="headerlink" href="#atoMEC.Atom.temp" title="Permalink to this definition">¶</a></dt>
 <dd><p>the electronic temperature in Hartree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.Atom.theta_e">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">theta_e</span></span><a class="headerlink" href="#atoMEC.Atom.theta_e" title="Permalink to this definition">¶</a></dt>
+<dd><p>the electron degeneracy parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>float</p>

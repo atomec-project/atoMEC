@@ -282,6 +282,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="o">.</span><span class="n">atomic_weight</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nvalence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;int: the number of valence electrons.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="o">.</span><span class="n">nvalence</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">units_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;str: the units of temperature.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_units_temp</span>
@@ -339,7 +344,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: radius of the Wigner-Seitz sphere.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: radius of the Voronoi sphere.</span>
 
 <span class="sd">        The radius is defined as :math:`a_i /2`,</span>
 <span class="sd">        where :math:`a_i` is the average inter-atomic distance.</span>
@@ -364,6 +369,30 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">Atom</span><span class="p">()</span><span class="o">.</span><span class="n">dens_to_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">r_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span>
         <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">**</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">WS_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the Wigner-Seitz radius, or the electron coupling parameter.</span>
+
+<span class="sd">        The Wigner-Seitz radius differs from the Voronoi radius because it depends on</span>
+<span class="sd">        the free electron density, defined in atoMEC as the valence electron density.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nvalence</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">E_Fermi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the Fermi energy.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">9.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">WS_radius</span> <span class="o">**</span> <span class="o">-</span><span class="mf">2.0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">gamma_ion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the ionic coupling parameter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_chrg</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">theta_e</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the electron degeneracy parameter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_Fermi</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
