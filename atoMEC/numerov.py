@@ -25,6 +25,7 @@ import shutil
 # external libs
 import numpy as np
 from scipy.sparse.linalg import eigs
+import scipy.integrate as integ
 from joblib import Parallel, delayed, dump, load
 
 # from staticKS import Orbitals
@@ -367,8 +368,10 @@ def Num_integrate(xgrid, v, l, E):
     a = config.grid_params["x0"]
 
     # Initial conditions
-    Psi[0] = np.exp((l + 0.5) * a)
+    #Psi[0] = np.exp((l + 0.5) * a)
+    Psi[0]=0.0
     Psi[1] = np.exp((l + 0.5) * (a + dx))
+    #Psi[1]=np.exp((l+0.5)*a)
 
     # 'Potential' for numerov integration
     K = -2.0 * np.exp(2.0 * xgrid) * (v - E) - (l + 0.5) ** 2
@@ -381,6 +384,9 @@ def Num_integrate(xgrid, v, l, E):
         ) / (1.0 + h * K[i])
 
     # normalizing the wavefunciton
-    Psi_norm = mathtools.normalize_orbs(Psi, xgrid)
+    Psi2=np.square(Psi)
+    I=integ.simps(Psi2, x=xgrid)
+    norm=I**(-0.5)
+    Psi_norm = norm*Psi
 
     return Psi_norm
