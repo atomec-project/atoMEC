@@ -55,7 +55,10 @@ def write_atomic_data(atom):
     at_chrg_str = "{preamble:30s}: {chrg:<3d} / {weight:<.3f}".format(
         preamble="Atomic charge / weight", chrg=atom.at_chrg, weight=atom.at_mass
     )
-    spec_info = species_str + spc + at_chrg_str + spc
+    nvalence_str = "{preamble:30s}: {nval:<3d}".format(
+        preamble="Valence electrons", nval=atom.nvalence
+    )
+    spec_info = species_str + spc + at_chrg_str + spc + nvalence_str + spc
 
     # information about the atomic / mass density
     rho_str = "{preamble:30s}: {rho:<.3g} g cm^-3".format(
@@ -63,7 +66,7 @@ def write_atomic_data(atom):
     )
     rad_ang = atom.radius / unitconv.angstrom_to_bohr
     rad_str = "{preamble:30s}: {rad_b:<.4g} Bohr / {rad_a:<.4g} Angstrom".format(
-        preamble="Wigner-Seitz radius", rad_b=atom.radius, rad_a=rad_ang
+        preamble="Voronoi sphere radius", rad_b=atom.radius, rad_a=rad_ang
     )
     rho_info = rho_str + spc + rad_str + spc
 
@@ -75,8 +78,21 @@ def write_atomic_data(atom):
     )
     temp_info = temp_str + spc
 
+    # information about the dimensionless parameters
+    WS_radius_str = "{preamble:30s}: {rad:<.4g} (Bohr)".format(
+        preamble="Wigner-Seitz radius", rad=atom.WS_radius
+    )
+    gamma_i_str = "{preamble:30s}: {gamma:<.4g}".format(
+        preamble="Ionic coupling parameter", gamma=atom.gamma_ion
+    )
+    theta_e_str = "{preamble:30s}: {theta:<.4g}".format(
+        preamble="Electron degeneracy parameter", theta=atom.theta_e
+    )
+
+    dim_params_str = WS_radius_str + spc + gamma_i_str + spc + theta_e_str + spc
+
     # put all into a single string
-    output_str = init_str + spec_info + rho_info + temp_info + spc
+    output_str = init_str + spec_info + rho_info + temp_info + dim_params_str + spc
 
     return output_str
 
