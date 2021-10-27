@@ -719,13 +719,14 @@ class Energy:
         kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
 
         # multiply and sum over occupation numbers
-        e_kin_dens = np.einsum("ijk,ijkl->l", occnums, kin_orbs)
+        e_kin_dens = np.einsum("ijk,ijkl->il", occnums, kin_orbs)
 
         # FIXME: this is necessary because the Laplacian is not accurate at the boundary
-        e_kin_dens[-3:] = e_kin_dens[-4]
+        for i in range(config.spindims):
+            e_kin_dens[i, -3:] = e_kin_dens[i, -4]
 
         # integrate over sphere
-        E_kin = -0.5 * mathtools.int_sphere(e_kin_dens, xgrid)
+        E_kin = -0.5 * mathtools.int_sphere(np.sum(e_kin_dens, axis=0), xgrid)
 
         return E_kin
 
