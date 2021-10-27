@@ -689,7 +689,7 @@ class Energy:
         return E_kin
 
     @staticmethod
-    def calc_E_kin_orbs(eigfuncs, occnums, xgrid):
+    def calc_E_kin_orbs(eigfuncs, occnums, xgrid, kin_dens=False):
         """
         Compute the kinetic energy contribution from discrete KS orbitals.
 
@@ -701,6 +701,8 @@ class Energy:
             the orbital occupations
         xgrid : ndarray
             the logarithmic grid
+        kin_dens : bool
+            whether to return the kinetic energy density
 
         Returns
         -------
@@ -719,16 +721,19 @@ class Energy:
         kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
 
         # multiply and sum over occupation numbers
-        e_kin_dens = np.einsum("ijk,ijkl->il", occnums, kin_orbs)
+        e_kin_dens = -0.5 * np.einsum("ijk,ijkl->il", occnums, kin_orbs)
 
         # FIXME: this is necessary because the Laplacian is not accurate at the boundary
         for i in range(config.spindims):
             e_kin_dens[i, -3:] = e_kin_dens[i, -4]
 
         # integrate over sphere
-        E_kin = -0.5 * mathtools.int_sphere(np.sum(e_kin_dens, axis=0), xgrid)
+        E_kin = mathtools.int_sphere(np.sum(e_kin_dens, axis=0), xgrid)
 
-        return E_kin
+        if kin_dens:
+            return E_kin, e_kin_dens
+        else:
+            return E_kin
 
     @staticmethod
     def calc_E_kin_unbound(eigfuncs, occnums, xgrid):
