@@ -689,7 +689,7 @@ class Energy:
         return E_kin
 
     @staticmethod
-    def calc_E_kin_orbs(eigfuncs, occnums, xgrid, kin_dens=False):
+    def calc_E_kin_orbs(eigfuncs, occnums, xgrid):
         """
         Compute the kinetic energy contribution from discrete KS orbitals.
 
@@ -701,8 +701,6 @@ class Energy:
             the orbital occupations
         xgrid : ndarray
             the logarithmic grid
-        kin_dens : bool
-            whether to return the kinetic energy density
 
         Returns
         -------
@@ -719,10 +717,7 @@ class Energy:
         # integrate over sphere
         E_kin = mathtools.int_sphere(np.sum(e_kin_dens, axis=0), xgrid)
 
-        if kin_dens:
-            return E_kin, e_kin_dens
-        else:
-            return E_kin
+        return E_kin
 
     @staticmethod
     def calc_E_kin_dens(eigfuncs, occnums, xgrid, method="A"):
