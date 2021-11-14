@@ -52,6 +52,14 @@ atoMEC.numerov module
    :undoc-members:
    :show-inheritance:
 
+atoMEC.postprocess module
+-------------------------
+
+.. automodule:: atoMEC.postprocess
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 atoMEC.staticKS module
 ----------------------
 
