@@ -21,6 +21,8 @@ Functions
 # standard libs
 import os
 import shutil
+import string
+import random
 
 # external libs
 import numpy as np
@@ -153,8 +155,10 @@ def KS_matsolve_parallel(T, B, v, xgrid):
                 -2 * xgrid
             )
 
-    # make temporary folder to store arrays
-    joblib_folder = "./joblib_memmap"
+    # make temporary folder with random name to store arrays
+    joblib_folder = "".join(
+        random.choices(string.ascii_uppercase + string.digits, k=30)
+    )
     try:
         os.mkdir(joblib_folder)
     except FileExistsError:
