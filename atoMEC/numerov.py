@@ -156,13 +156,15 @@ def KS_matsolve_parallel(T, B, v, xgrid):
             )
 
     # make temporary folder with random name to store arrays
-    joblib_folder = "".join(
-        random.choices(string.ascii_uppercase + string.digits, k=30)
-    )
-    try:
-        os.mkdir(joblib_folder)
-    except FileExistsError:
-        pass
+    while True:
+        try:
+            joblib_folder = "".join(
+                random.choices(string.ascii_uppercase + string.digits, k=30)
+            )
+            os.mkdir(joblib_folder)
+            break
+        except FileExistsError as e:
+            print(e)
 
     # dump and load the large numpy arrays from file
     data_filename_memmap = os.path.join(joblib_folder, "data_memmap")
