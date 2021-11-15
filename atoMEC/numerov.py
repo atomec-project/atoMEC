@@ -405,7 +405,14 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
     # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
     # the estimated lowest eigenvalue from full diagonalization on coarse grid
     if solve_type == "full":
-        evals, evecs = eigs(H, k=nmax, M=B, which="LM", sigma=eigs_guess[p])
+        evals, evecs = eigs(
+            H,
+            k=nmax,
+            M=B,
+            which="LM",
+            tol=config.conv_params["eigtol"],
+            sigma=eigs_guess[p],
+        )
 
         # sort and normalize
         evecs, evals = update_orbs(evecs, evals, xgrid, bc)
