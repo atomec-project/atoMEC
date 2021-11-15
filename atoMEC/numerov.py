@@ -57,7 +57,6 @@ def calc_eigs_min(v, xgrid):
         array containing estimations of the lowest eigenvalue for each value of
         `l` angular quantum number and spin quantum number
     """
-
     # first of all create the coarse xgrid
     xgrid_coarse = np.linspace(xgrid[0], xgrid[-1], config.grid_params["ngrid_coarse"])
 
