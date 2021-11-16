@@ -759,7 +759,7 @@ class Energy:
             grad2_orbs = mathtools.laplace(eigfuncs, xgrid)
 
             # compute the (l+1/2)^2 component
-            l_arr = np.array([(l + 0.5) ** 2.0 for l in range(config.lmax)])
+            l_arr = np.fromiter(((l + 0.5) ** 2.0 for l in range(config.lmax)), float, config.lmax)
             lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, eigfuncs)
 
             # add together and multiply by eigfuncs*exp(-3x)
