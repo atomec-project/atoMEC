@@ -130,17 +130,17 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.unitconv">atoMEC.unitconv module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.writeoutput">atoMEC.writeoutput module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id12">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id13">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id18">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id19">Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.xc">atoMEC.xc module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id14">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id15">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id20">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id21">Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC">Module contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id16">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id22">Classes</a></li>
 </ul>
 </li>
 </ul>
@@ -1981,6 +1981,51 @@ This routine is a wrapper calling the respective functions.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_kin_dens">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_dens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_dens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_dens" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the local kinetic energy density (KED).</p>
+<p>There are multiple definitions in the literature of the local KED, see notes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the radial KS orbitals on the log grid</p></li>
+<li><p><strong>occnums</strong> (<em>ndarray</em>) – the orbital occupations</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – the definition used for KED, can be ‘A’ or ‘B’ (see notes).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>e_kin_dens</strong> – the local kinetic energy density</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The methods ‘A’ and ‘B’ in this function are given according to the definitions
+in <a class="footnote-reference brackets" href="#id15" id="id12">3</a> and <a class="footnote-reference brackets" href="#id16" id="id13">4</a>.</p>
+<p>They of course (should) both integrate to the same kinetic energy. The
+definition ‘B’ is the one used in the usual definition of the electron
+localization function <a class="footnote-reference brackets" href="#id17" id="id14">5</a>.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id15"><span class="brackets"><a class="fn-backref" href="#id12">3</a></span></dt>
+<dd><p>H. Jiang, The local kinetic energy density revisited,
+New J. Phys. 22 103050 (2020), <a class="reference external" href="https://doi.org/10.1088/1367-2630/abbf5d">DOI:10.1088/1367-2630/abbf5d</a>.</p>
+</dd>
+<dt class="label" id="id16"><span class="brackets"><a class="fn-backref" href="#id13">4</a></span></dt>
+<dd><p>L. Cohen, Local kinetic energy in quantum mechanics,
+J. Chem. Phys. 70, 788 (1979), <a class="reference external" href="https://doi.org/10.1063/1.437511">DOI:10.1063/1.437511</a>.</p>
+</dd>
+<dt class="label" id="id17"><span class="brackets"><a class="fn-backref" href="#id14">5</a></span></dt>
+<dd><p>A. Savin et al., Electron Localization in Solid-State Structures of the
+Elements: the Diamond Structure, Angew. Chem. Int. Ed. Engl. 31: 187-188
+(1992), <a class="reference external" href="https://doi.org/10.1002/anie.199201871">DOI:10.1002/anie.199201871</a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_kin_orbs">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_orbs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the kinetic energy contribution from discrete KS orbitals.</p>
@@ -2624,14 +2669,14 @@ and exchange + correlation respectively.</p>
 <div class="section" id="module-atoMEC.writeoutput">
 <span id="atomec-writeoutput-module"></span><h2>atoMEC.writeoutput module<a class="headerlink" href="#module-atoMEC.writeoutput" title="Permalink to this headline">¶</a></h2>
 <p>Contains the routines which generate printed output (to screen and separate files).</p>
-<div class="section" id="id12">
-<h3>Classes<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id18">
+<h3>Classes<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.SCF" title="atoMEC.writeoutput.SCF"><code class="xref py py-class docutils literal notranslate"><span class="pre">SCF</span></code></a> : Write information about the self-consistent field (SCF) cycle.</p></li>
 </ul>
 </div>
-<div class="section" id="id13">
-<h3>Functions<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id19">
+<h3>Functions<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.write_atomic_data" title="atoMEC.writeoutput.write_atomic_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_atomic_data()</span></code></a> : Write information about the main Atom object.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.write_ISModel_data" title="atoMEC.writeoutput.write_ISModel_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_ISModel_data()</span></code></a> : Write information about the IS model.</p></li>
@@ -2827,14 +2872,14 @@ and formatted occupation numbers table occnum_tbl</p>
 <p>Mostly it sets up inputs and makes appropriate calls to the libxc package.
 It also includes a class for customized xc-functionals and checks the
 validity of inputs.</p>
-<div class="section" id="id14">
-<h3>Classes<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h3>Classes<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCFunc</span></code></a> : handles atoMEC-defined functionals (not part of libxc package)</p></li>
 </ul>
 </div>
-<div class="section" id="id15">
-<h3>Functions<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id21">
+<h3>Functions<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.xc.check_xc_func" title="atoMEC.xc.check_xc_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_xc_func()</span></code></a> : check the xc func input is recognised and valid for atoMEC</p></li>
 <li><p><a class="reference internal" href="#atoMEC.xc.set_xc_func" title="atoMEC.xc.set_xc_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_xc_func()</span></code></a>   : initialize the xc functional object</p></li>
@@ -2985,8 +3030,8 @@ All rights reserved.</p>
 phenomena such as in warm dense matter.
 Please see the README or the project wiki (<a class="reference external" href="https://atomec-project.github.io/atoMEC/">https://atomec-project.github.io/atoMEC/</a>)
 for more information.</p>
-<div class="section" id="id16">
-<h3>Classes<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id22">
+<h3>Classes<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> : the main object for atoMEC calculations, containing information                   about physical material properties</p></li>
 </ul>

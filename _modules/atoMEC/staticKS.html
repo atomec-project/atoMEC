@@ -870,27 +870,95 @@
 <span class="sd">        E_kin : float</span>
 <span class="sd">            the kinetic energy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># compute the grad^2 component</span>
-        <span class="n">grad2_orbs</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">laplace</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
-
-        <span class="c1"># compute the (l+1/2)^2 component</span>
-        <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)])</span>
-        <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;j,ijkl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span>
-
-        <span class="c1"># add together and multiply by eigfuncs*exp(-3x)</span>
-        <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
-        <span class="n">kin_orbs</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad2_orbs</span> <span class="o">-</span> <span class="n">lhalf_orbs</span><span class="p">)</span>
-
-        <span class="c1"># multiply and sum over occupation numbers</span>
-        <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;l&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">kin_orbs</span><span class="p">)</span>
+        <span class="c1"># compute the kinetic energy density (using default method A)</span>
+        <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
         <span class="c1"># FIXME: this is necessary because the Laplacian is not accurate at the boundary</span>
-        <span class="n">e_kin_dens</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">=</span> <span class="n">e_kin_dens</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="n">e_kin_dens</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">=</span> <span class="n">e_kin_dens</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">]</span>
 
         <span class="c1"># integrate over sphere</span>
-        <span class="n">E_kin</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">e_kin_dens</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">E_kin</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">e_kin_dens</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">xgrid</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">E_kin</span></div>
+
+<div class="viewcode-block" id="Energy.calc_E_kin_dens"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_dens">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the local kinetic energy density (KED).</span>
+
+<span class="sd">        There are multiple definitions in the literature of the local KED, see notes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eigfuncs : ndarray</span>
+<span class="sd">            the radial KS orbitals on the log grid</span>
+<span class="sd">        occnums : ndarray</span>
+<span class="sd">            the orbital occupations</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            the logarithmic grid</span>
+<span class="sd">        method : str, optional</span>
+<span class="sd">            the definition used for KED, can be &#39;A&#39; or &#39;B&#39; (see notes).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        e_kin_dens : ndarray</span>
+<span class="sd">            the local kinetic energy density</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The methods &#39;A&#39; and &#39;B&#39; in this function are given according to the definitions</span>
+<span class="sd">        in [3]_ and [4]_.</span>
+
+<span class="sd">        They of course (should) both integrate to the same kinetic energy. The</span>
+<span class="sd">        definition &#39;B&#39; is the one used in the usual definition of the electron</span>
+<span class="sd">        localization function [5]_.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [3] H. Jiang, The local kinetic energy density revisited,</span>
+<span class="sd">           New J. Phys. 22 103050 (2020), `DOI:10.1088/1367-2630/abbf5d</span>
+<span class="sd">           &lt;https://doi.org/10.1088/1367-2630/abbf5d&gt;`__.</span>
+<span class="sd">        .. [4] L. Cohen, Local kinetic energy in quantum mechanics,</span>
+<span class="sd">           J. Chem. Phys. 70, 788 (1979), `DOI:10.1063/1.437511</span>
+<span class="sd">           &lt;https://doi.org/10.1063/1.437511&gt;`__.</span>
+<span class="sd">        .. [5] A. Savin et al., Electron Localization in Solid-State Structures of the</span>
+<span class="sd">           Elements: the Diamond Structure, Angew. Chem. Int. Ed. Engl. 31: 187-188</span>
+<span class="sd">           (1992), `DOI:10.1002/anie.199201871</span>
+<span class="sd">           &lt;https://doi.org/10.1002/anie.199201871&gt;`__.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>
+            <span class="c1"># compute the grad^2 component</span>
+            <span class="n">grad2_orbs</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">laplace</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+            <span class="c1"># compute the (l+1/2)^2 component</span>
+            <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
+                <span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
+            <span class="p">)</span>
+            <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;j,ijkl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span>
+
+            <span class="c1"># add together and multiply by eigfuncs*exp(-3x)</span>
+            <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
+            <span class="n">kin_orbs</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad2_orbs</span> <span class="o">-</span> <span class="n">lhalf_orbs</span><span class="p">)</span>
+
+            <span class="c1"># multiply and sum over occupation numbers</span>
+            <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;il&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">kin_orbs</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+
+            <span class="c1"># compute the gradient of the orbitals</span>
+            <span class="n">grad_eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># chain rule to convert from dP_dx to dX_dr</span>
+            <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad_eigfuncs</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">eigfuncs</span><span class="p">)</span>
+
+            <span class="c1"># square it</span>
+            <span class="n">grad_orbs_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span> <span class="o">**</span> <span class="mf">2.0</span>
+
+            <span class="c1"># multiply and sum over occupation numbers</span>
+            <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;il&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">grad_orbs_sq</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">e_kin_dens</span></div>
 
 <div class="viewcode-block" id="Energy.calc_E_kin_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_E_kin_unbound</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
