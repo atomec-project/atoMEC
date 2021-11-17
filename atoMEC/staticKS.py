@@ -745,14 +745,17 @@ class Energy:
         Notes
         -----
         The methods 'A' and 'B' in this function are given according to the definitions
-        in the following papers:
-
-        * Hao Jiang, New J. Phys. 22 103050 (2020)
-        * Leon Cohen, J. Chem. Phys. 70, 788 (1979)
+        in [3]_ and [4]_.
 
         They of course (should) both integrate to the same kinetic energy. The
         definition 'B' is the one used in the usual definition of the electron
-        localization function (Savin et al., Angewandte Chemie 1992).
+        localization function [5]_.
+
+        References
+        ----------
+        .. [3] Hao Jiang, New J. Phys. 22 103050 (2020).
+        .. [4] Leon Cohen, J. Chem. Phys. 70, 788 (1979).
+        .. [5] Savin et al., Angewandte Chemie (1992).
         """
         if method == "A":
             # compute the grad^2 component
