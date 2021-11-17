@@ -753,9 +753,16 @@ class Energy:
 
         References
         ----------
-        .. [3] Hao Jiang, New J. Phys. 22 103050 (2020).
-        .. [4] Leon Cohen, J. Chem. Phys. 70, 788 (1979).
-        .. [5] Savin et al., Angewandte Chemie (1992).
+        .. [3] H. Jiang, The local kinetic energy density revisited,
+           New J. Phys. 22 103050 (2020), `DOI:10.1088/1367-2630/abbf5d
+           <https://doi.org/10.1088/1367-2630/abbf5d>`__.
+        .. [4] L. Cohen, Local kinetic energy in quantum mechanics,
+           J. Chem. Phys. 70, 788 (1979), `DOI:10.1063/1.437511
+           <https://doi.org/10.1063/1.437511>`__.
+        .. [5] A. Savin et al., Electron Localization in Solid-State Structures of the
+           Elements: the Diamond Structure, Angew. Chem. Int. Ed. Engl. 31: 187-188
+           (1992), `DOI:10.1002/anie.199201871
+           <https://doi.org/10.1002/anie.199201871>`__.
         """
         if method == "A":
             # compute the grad^2 component
