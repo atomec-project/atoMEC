@@ -707,27 +707,95 @@ class Energy:
         E_kin : float
             the kinetic energy
         """
-        # compute the grad^2 component
-        grad2_orbs = mathtools.laplace(eigfuncs, xgrid)
-
-        # compute the (l+1/2)^2 component
-        l_arr = np.array([(l + 0.5) ** 2.0 for l in range(config.lmax)])
-        lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, eigfuncs)
-
-        # add together and multiply by eigfuncs*exp(-3x)
-        prefac = np.exp(-3.0 * xgrid) * eigfuncs
-        kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
-
-        # multiply and sum over occupation numbers
-        e_kin_dens = np.einsum("ijk,ijkl->l", occnums, kin_orbs)
+        # compute the kinetic energy density (using default method A)
+        e_kin_dens = Energy.calc_E_kin_dens(eigfuncs, occnums, xgrid)
 
         # FIXME: this is necessary because the Laplacian is not accurate at the boundary
-        e_kin_dens[-3:] = e_kin_dens[-4]
+        for i in range(config.spindims):
+            e_kin_dens[i, -3:] = e_kin_dens[i, -4]
 
         # integrate over sphere
-        E_kin = -0.5 * mathtools.int_sphere(e_kin_dens, xgrid)
+        E_kin = mathtools.int_sphere(np.sum(e_kin_dens, axis=0), xgrid)
 
         return E_kin
+
+    @staticmethod
+    def calc_E_kin_dens(eigfuncs, occnums, xgrid, method="A"):
+        """
+        Calculate the local kinetic energy density (KED).
+
+        There are multiple definitions in the literature of the local KED, see notes.
+
+        Parameters
+        ----------
+        eigfuncs : ndarray
+            the radial KS orbitals on the log grid
+        occnums : ndarray
+            the orbital occupations
+        xgrid : ndarray
+            the logarithmic grid
+        method : str, optional
+            the definition used for KED, can be 'A' or 'B' (see notes).
+
+        Returns
+        -------
+        e_kin_dens : ndarray
+            the local kinetic energy density
+
+        Notes
+        -----
+        The methods 'A' and 'B' in this function are given according to the definitions
+        in [3]_ and [4]_.
+
+        They of course (should) both integrate to the same kinetic energy. The
+        definition 'B' is the one used in the usual definition of the electron
+        localization function [5]_.
+
+        References
+        ----------
+        .. [3] H. Jiang, The local kinetic energy density revisited,
+           New J. Phys. 22 103050 (2020), `DOI:10.1088/1367-2630/abbf5d
+           <https://doi.org/10.1088/1367-2630/abbf5d>`__.
+        .. [4] L. Cohen, Local kinetic energy in quantum mechanics,
+           J. Chem. Phys. 70, 788 (1979), `DOI:10.1063/1.437511
+           <https://doi.org/10.1063/1.437511>`__.
+        .. [5] A. Savin et al., Electron Localization in Solid-State Structures of the
+           Elements: the Diamond Structure, Angew. Chem. Int. Ed. Engl. 31: 187-188
+           (1992), `DOI:10.1002/anie.199201871
+           <https://doi.org/10.1002/anie.199201871>`__.
+        """
+        if method == "A":
+            # compute the grad^2 component
+            grad2_orbs = mathtools.laplace(eigfuncs, xgrid)
+
+            # compute the (l+1/2)^2 component
+            l_arr = np.fromiter(
+                ((l + 0.5) ** 2.0 for l in range(config.lmax)), float, config.lmax
+            )
+            lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, eigfuncs)
+
+            # add together and multiply by eigfuncs*exp(-3x)
+            prefac = np.exp(-3.0 * xgrid) * eigfuncs
+            kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
+
+            # multiply and sum over occupation numbers
+            e_kin_dens = -0.5 * np.einsum("ijk,ijkl->il", occnums, kin_orbs)
+
+        elif method == "B":
+
+            # compute the gradient of the orbitals
+            grad_eigfuncs = np.gradient(eigfuncs, xgrid, axis=-1, edge_order=2)
+
+            # chain rule to convert from dP_dx to dX_dr
+            grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * eigfuncs)
+
+            # square it
+            grad_orbs_sq = grad_orbs ** 2.0
+
+            # multiply and sum over occupation numbers
+            e_kin_dens = 0.5 * np.einsum("ijk,ijkl->il", occnums, grad_orbs_sq)
+
+        return e_kin_dens
 
     @staticmethod
     def calc_E_kin_unbound(eigfuncs, occnums, xgrid):
