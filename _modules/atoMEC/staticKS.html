@@ -245,6 +245,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">eigvals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -315,7 +316,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lunbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span>
 
-<div class="viewcode-block" id="Orbitals.compute"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Orbitals.compute"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the orbitals and their eigenvalues with the given potential.</span>
 
@@ -336,8 +337,13 @@
         <span class="c1"># set v to equal the input potential</span>
         <span class="n">v</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">potential</span>
 
+        <span class="k">if</span> <span class="n">eig_guess</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+
         <span class="c1"># solve the KS equations</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
+            <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min</span>
+        <span class="p">)</span>
 
         <span class="c1"># compute the lbound array</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>

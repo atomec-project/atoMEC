@@ -709,9 +709,10 @@ density and potential convergence parameters</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>conv_params</strong> – dictionary of convergence parameters as follows:
 {
-<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for total energy,
-<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for density,
-<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for electron number
+<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for total energy,
+<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for density,
+<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for electron number,
+<cite>eigtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : tolerance for eigenvalues
 }</p>
 </dd>
 <dt class="field-odd">Return type</dt>
@@ -735,9 +736,11 @@ and <cite>x0</cite> (<cite>float</cite>, LHS grid point for log grid)</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>grid_params</strong> – dictionary of grid parameters as follows:
 {
-<cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)   : number of grid points,
-<cite>x0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : LHS grid point takes form
+<cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)        : number of grid points,
+<cite>x0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>)      : LHS grid point takes form
 <span class="math notranslate nohighlight">\(r_0=\exp(x_0)\)</span>; <span class="math notranslate nohighlight">\(x_0\)</span> can be specified
+<cite>ngrid_coarse</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) : (smaller) number of grid points for estimation
+of eigenvalues with full diagonalization
 }</p>
 </dd>
 <dt class="field-odd">Return type</dt>
@@ -1400,15 +1403,18 @@ average-atom models, <a class="reference external" href="https://arxiv.org/abs/2
 <li><p><strong>lmax</strong> (<em>int</em>) – maximum no. angular momentum eigenfunctions to consider</p></li>
 <li><p><strong>grid_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary of grid parameters as follows:
 {
-<cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)   : number of grid points,
-<cite>x0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : LHS grid point takes form
-<span class="math notranslate nohighlight">\(r_0=\exp(x_0)\)</span>; <span class="math notranslate nohighlight">\(x_0\)</span> can be specified
+<cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)        : number of grid points,
+<cite>x0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>)      : LHS grid point takes form
+<span class="math notranslate nohighlight">\(r_0=\exp(x_0)\)</span>; <span class="math notranslate nohighlight">\(x_0\)</span> can be specified,
+<cite>ngrid_coarse</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) : (smaller) number of grid points for estimation
+of eigenvalues with full diagonalization
 }</p></li>
 <li><p><strong>conv_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary of convergence parameters as follows:
 {
-<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for total energy,
-<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for density,
-<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for electron number
+<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for total energy,
+<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for density,
+<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for electron number,
+<cite>eigtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for eigenvalues
 }</p></li>
 <li><p><strong>scf_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary for scf cycle parameters as follows:
 {
@@ -1465,15 +1471,18 @@ default: <cite>potential.csv</cite></p></li>
 <li><p><strong>lmax</strong> (<em>int</em>) – maximum no. angular momentum eigenfucntions to consider</p></li>
 <li><p><strong>grid_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary of grid parameters as follows:
 {
-<cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)   : number of grid points,
-<cite>x0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : LHS grid point takes form
-<span class="math notranslate nohighlight">\(r_0=\exp(x_0)\)</span>; <span class="math notranslate nohighlight">\(x_0\)</span> can be specified
+<cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)        : number of grid points,
+<cite>x0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>)      : LHS grid point takes form
+<span class="math notranslate nohighlight">\(r_0=\exp(x_0)\)</span>; <span class="math notranslate nohighlight">\(x_0\)</span> can be specified,
+<cite>ngrid_coarse</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) : (smaller) number of grid points for estimation
+of eigenvalues with full diagonalization
 }</p></li>
 <li><p><strong>conv_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary of convergence parameters as follows:
 {
-<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for total energy,
-<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for density,
-<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for electron number
+<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for total energy,
+<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for density,
+<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for electron number,
+<cite>eigtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : tolerance for eigenvalues
 }</p></li>
 <li><p><strong>scf_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary for scf cycle parameters as follows:
 {
@@ -1612,7 +1621,7 @@ quantum number <cite>l</cite>.</p>
 </ul>
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.KS_matsolve_parallel">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">KS_matsolve_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#KS_matsolve_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.KS_matsolve_parallel" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">KS_matsolve_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#KS_matsolve_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.KS_matsolve_parallel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve the KS matrix diagonalization by parallelizing over config.ncores.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1621,6 +1630,10 @@ quantum number <cite>l</cite>.</p>
 <li><p><strong>B</strong> (<em>ndarray</em>) – off-diagonal array (for RHS of eigenvalue problem)</p></li>
 <li><p><strong>v</strong> (<em>ndarray</em>) – KS potential array</p></li>
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>solve_type</strong> (<em>str</em>) – whether to do a “full” or “guess” calculation: “guess” estimates the lower
+bounds of the eigenvalues</p></li>
+<li><p><strong>eigs_min_guess</strong> (<em>ndarray</em>) – input guess for the lowest eigenvalues for given <cite>l</cite> and spin,
+should be dimension <cite>config.spindims * config.lmax</cite></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1635,7 +1648,7 @@ quantum number <cite>l</cite>.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.KS_matsolve_serial">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">KS_matsolve_serial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#KS_matsolve_serial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.KS_matsolve_serial" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">KS_matsolve_serial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#KS_matsolve_serial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.KS_matsolve_serial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve the KS equations via matrix diagonalization in serial.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1644,6 +1657,10 @@ quantum number <cite>l</cite>.</p>
 <li><p><strong>B</strong> (<em>ndarray</em>) – off-diagonal array (for RHS of eigenvalue problem)</p></li>
 <li><p><strong>v</strong> (<em>ndarray</em>) – KS potential array</p></li>
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>solve_type</strong> (<em>str</em>) – whether to do a “full” or “guess” calculation: “guess” estimates the lower
+bounds of the eigenvalues</p></li>
+<li><p><strong>eigs_min_guess</strong> (<em>ndarray</em>) – input guess for the lowest eigenvalues for given <cite>l</cite> and spin,
+should be dimension <cite>config.spindims * config.lmax</cite></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1657,8 +1674,32 @@ quantum number <cite>l</cite>.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.numerov.calc_eigs_min">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">calc_eigs_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#calc_eigs_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.calc_eigs_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute an estimate for the minimum values of the KS eigenvalues.</p>
+<p>This estimate uses full diagonalization of the Hamiltonian on a coarse grid.
+The eigenvalue estimates are used in Scipy’s sparse eigenvalue solver
+(for the full grid) which optimizes the performance of the solver.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> (<em>ndarray</em>) – the KS potential</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid (full)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>eigs_min</strong> – array containing estimations of the lowest eigenvalue for each value of
+<cite>l</cite> angular quantum number and spin quantum number</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.diag_H">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">diag_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#diag_H"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.diag_H" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">diag_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_guess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#diag_H"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.diag_H" title="Permalink to this definition">¶</a></dt>
 <dd><p>Diagonilize the Hamiltonian for the input potential v[p].</p>
 <p>Uses Scipy’s sparse matrix solver scipy.sparse.linalg.eigs. This
 searches for the lowest magnitude <cite>nmax</cite> eigenvalues, so care
@@ -1687,7 +1728,7 @@ must be taken to converge calculations wrt <cite>nmax</cite>.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.matrix_solve">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">matrix_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#matrix_solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.matrix_solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">matrix_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#matrix_solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.matrix_solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve the radial KS equation via matrix diagonalization of Numerov’s method.</p>
 <p>See notes for details of the implementation.</p>
 <dl class="field-list simple">
@@ -1695,6 +1736,10 @@ must be taken to converge calculations wrt <cite>nmax</cite>.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>v</strong> (<em>ndarray</em>) – the KS potential on the log grid</p></li>
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>solve_type</strong> (<em>str</em><em>, </em><em>optional</em>) – whether to do a “full” or “guess” calculation: “guess” estimates the lower
+bounds of the eigenvalues</p></li>
+<li><p><strong>eigs_min_guess</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – input guess for the lowest eigenvalues for given <cite>l</cite> and spin,
+should be dimension <cite>config.spindims * config.lmax</cite></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2408,7 +2453,7 @@ total entropy. <span class="math notranslate nohighlight">\(F = E - TS\)</span><
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.compute">
-<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">potential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals.compute" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">potential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eig_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals.compute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the orbitals and their eigenvalues with the given potential.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

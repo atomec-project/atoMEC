@@ -190,6 +190,8 @@
 <span class="c1"># external libs</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">import</span> <span class="n">eigs</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
 <span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span><span class="p">,</span> <span class="n">dump</span><span class="p">,</span> <span class="n">load</span>
 
 <span class="c1"># from staticKS import Orbitals</span>
@@ -199,8 +201,42 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mathtools</span>
 
 
+<div class="viewcode-block" id="calc_eigs_min"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.calc_eigs_min">[docs]</a><span class="k">def</span> <span class="nf">calc_eigs_min</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute an estimate for the minimum values of the KS eigenvalues.</span>
+
+<span class="sd">    This estimate uses full diagonalization of the Hamiltonian on a coarse grid.</span>
+<span class="sd">    The eigenvalue estimates are used in Scipy&#39;s sparse eigenvalue solver</span>
+<span class="sd">    (for the full grid) which optimizes the performance of the solver.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    v : ndarray</span>
+<span class="sd">        the KS potential</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        the logarithmic grid (full)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigs_min : ndarray</span>
+<span class="sd">        array containing estimations of the lowest eigenvalue for each value of</span>
+<span class="sd">        `l` angular quantum number and spin quantum number</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># first of all create the coarse xgrid</span>
+    <span class="n">xgrid_coarse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xgrid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid_coarse&quot;</span><span class="p">])</span>
+
+    <span class="c1"># interpolate the potential onto the coarse grid</span>
+    <span class="n">func_interp</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">)</span>
+    <span class="n">v_coarse</span> <span class="o">=</span> <span class="n">func_interp</span><span class="p">(</span><span class="n">xgrid_coarse</span><span class="p">)</span>
+
+    <span class="c1"># full diagonalization to estimate the lowest eigenvalues</span>
+    <span class="n">eigs_min</span> <span class="o">=</span> <span class="n">matrix_solve</span><span class="p">(</span><span class="n">v_coarse</span><span class="p">,</span> <span class="n">xgrid_coarse</span><span class="p">,</span> <span class="n">solve_type</span><span class="o">=</span><span class="s2">&quot;guess&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">eigs_min</span></div>
+
+
 <span class="c1"># @writeoutput.timing</span>
-<div class="viewcode-block" id="matrix_solve"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.matrix_solve">[docs]</a><span class="k">def</span> <span class="nf">matrix_solve</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="matrix_solve"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.matrix_solve">[docs]</a><span class="k">def</span> <span class="nf">matrix_solve</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">solve_type</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve the radial KS equation via matrix diagonalization of Numerov&#39;s method.</span>
 
@@ -212,6 +248,12 @@
 <span class="sd">        the KS potential on the log grid</span>
 <span class="sd">    xgrid : ndarray</span>
 <span class="sd">        the logarithmic grid</span>
+<span class="sd">    solve_type : str, optional</span>
+<span class="sd">        whether to do a &quot;full&quot; or &quot;guess&quot; calculation: &quot;guess&quot; estimates the lower</span>
+<span class="sd">        bounds of the eigenvalues</span>
+<span class="sd">    eigs_min_guess : ndarray, optional</span>
+<span class="sd">        input guess for the lowest eigenvalues for given `l` and spin,</span>
+<span class="sd">        should be dimension `config.spindims * config.lmax`</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -241,7 +283,11 @@
 <span class="sd">       Schrödinger’s equation, American Journal of Physics 80,</span>
 <span class="sd">       1017-1019 (2012) `DOI:10.1119/1.4748813 &lt;https://doi.org/10.1119/1.4748813&gt;`__.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">N</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">eigs_min_guess</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">eigs_min_guess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">))</span>
+
+    <span class="c1"># N = config.grid_params[&quot;ngrid&quot;]</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
 
     <span class="c1"># define the spacing of the xgrid</span>
     <span class="n">dx</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -275,14 +321,18 @@
 
     <span class="c1"># solve in serial or parallel - serial mostly useful for debugging</span>
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">numcores</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_parallel</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_parallel</span><span class="p">(</span>
+            <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_serial</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_serial</span><span class="p">(</span>
+            <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span>
+        <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span></div>
 
 
-<div class="viewcode-block" id="KS_matsolve_parallel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_parallel">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_parallel</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="KS_matsolve_parallel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_parallel">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_parallel</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve the KS matrix diagonalization by parallelizing over config.ncores.</span>
 
@@ -296,6 +346,12 @@
 <span class="sd">        KS potential array</span>
 <span class="sd">    xgrid : ndarray</span>
 <span class="sd">        the logarithmic grid</span>
+<span class="sd">    solve_type : str</span>
+<span class="sd">        whether to do a &quot;full&quot; or &quot;guess&quot; calculation: &quot;guess&quot; estimates the lower</span>
+<span class="sd">        bounds of the eigenvalues</span>
+<span class="sd">    eigs_min_guess : ndarray</span>
+<span class="sd">        input guess for the lowest eigenvalues for given `l` and spin,</span>
+<span class="sd">        should be dimension `config.spindims * config.lmax`</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -312,11 +368,13 @@
 
     <span class="c1"># now flatten the potential matrix over spins</span>
     <span class="n">v_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+    <span class="n">eigs_guess_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
             <span class="n">v_flat</span><span class="p">[</span><span class="n">l</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
                 <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span>
             <span class="p">)</span>
+            <span class="n">eigs_guess_flat</span><span class="p">[</span><span class="n">l</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)]</span> <span class="o">=</span> <span class="n">eigs_min_guess</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span>
 
     <span class="c1"># make temporary folder with random name to store arrays</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -337,7 +395,17 @@
     <span class="c1"># set up the parallel job</span>
     <span class="k">with</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">numcores</span><span class="p">)</span> <span class="k">as</span> <span class="n">parallel</span><span class="p">:</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">parallel</span><span class="p">(</span>
-            <span class="n">delayed</span><span class="p">(</span><span class="n">diag_H</span><span class="p">)(</span><span class="n">q</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v_flat</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">)</span>
+            <span class="n">delayed</span><span class="p">(</span><span class="n">diag_H</span><span class="p">)(</span>
+                <span class="n">q</span><span class="p">,</span>
+                <span class="n">T</span><span class="p">,</span>
+                <span class="n">B</span><span class="p">,</span>
+                <span class="n">v_flat</span><span class="p">,</span>
+                <span class="n">xgrid</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">,</span>
+                <span class="n">eigs_guess_flat</span><span class="p">,</span>
+                <span class="n">solve_type</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pmax</span><span class="p">)</span>
         <span class="p">)</span>
 
@@ -347,21 +415,32 @@
     <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not clean-up automatically.&quot;</span><span class="p">)</span>
 
-    <span class="c1"># retrieve the eigfuncs and eigvals from the joblib output</span>
-    <span class="n">eigfuncs_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
-    <span class="n">eigvals_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pmax</span><span class="p">):</span>
-        <span class="n">eigfuncs_flat</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">eigvals_flat</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+        <span class="c1"># retrieve the eigfuncs and eigvals from the joblib output</span>
+        <span class="n">eigfuncs_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+        <span class="n">eigvals_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">pmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pmax</span><span class="p">):</span>
+            <span class="n">eigfuncs_flat</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">eigvals_flat</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="c1"># unflatten eigfuncs / eigvals so they return to original shape</span>
-    <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">eigfuncs_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
-    <span class="n">eigvals</span> <span class="o">=</span> <span class="n">eigvals_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">)</span>
+        <span class="c1"># unflatten eigfuncs / eigvals so they return to original shape</span>
+        <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">eigfuncs_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        <span class="n">eigvals</span> <span class="o">=</span> <span class="n">eigvals_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span></div>
+        <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span>
+
+    <span class="k">elif</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;guess&quot;</span><span class="p">:</span>
+
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pmax</span><span class="p">):</span>
+            <span class="n">eigs_guess_flat</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">q</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">eigfuncs_null</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">eigs_guess</span> <span class="o">=</span> <span class="n">eigs_guess_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">eigfuncs_null</span><span class="p">,</span> <span class="n">eigs_guess</span></div>
 
 
-<div class="viewcode-block" id="KS_matsolve_serial"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_serial">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_serial</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="KS_matsolve_serial"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_serial">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_serial</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve the KS equations via matrix diagonalization in serial.</span>
 
@@ -375,6 +454,12 @@
 <span class="sd">        KS potential array</span>
 <span class="sd">    xgrid : ndarray</span>
 <span class="sd">        the logarithmic grid</span>
+<span class="sd">    solve_type : str</span>
+<span class="sd">        whether to do a &quot;full&quot; or &quot;guess&quot; calculation: &quot;guess&quot; estimates the lower</span>
+<span class="sd">        bounds of the eigenvalues</span>
+<span class="sd">    eigs_min_guess : ndarray</span>
+<span class="sd">        input guess for the lowest eigenvalues for given `l` and spin,</span>
+<span class="sd">        should be dimension `config.spindims * config.lmax`</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -391,6 +476,7 @@
     <span class="c1"># initialize the eigenfunctions and their eigenvalues</span>
     <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
     <span class="n">eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">))</span>
+    <span class="n">eigs_guess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">))</span>
 
     <span class="c1"># A new Hamiltonian has to be re-constructed for every value of l and each spin</span>
     <span class="c1"># channel if spin-polarized</span>
@@ -406,18 +492,41 @@
             <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">V_mat</span>
 
             <span class="c1"># we seek the lowest nmax eigenvalues from sparse matrix diagonalization</span>
-            <span class="c1"># use `shift-invert mode&#39; (sigma=0) and pick lowest magnitude (&quot;LM&quot;) eigs</span>
-            <span class="c1"># sigma=0 seems to cause numerical issues so use a small offset</span>
-            <span class="n">eigs_up</span><span class="p">,</span> <span class="n">vecs_up</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+            <span class="c1"># use &#39;shift-invert mode&#39; to find the eigenvalues nearest in magnitude to</span>
+            <span class="c1"># the estimated lowest eigenvalue from full diagonalization on coarse grid</span>
+            <span class="k">if</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+                <span class="n">eigs_up</span><span class="p">,</span> <span class="n">vecs_up</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span>
+                    <span class="n">H</span><span class="p">,</span>
+                    <span class="n">k</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span>
+                    <span class="n">M</span><span class="o">=</span><span class="n">B</span><span class="p">,</span>
+                    <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span>
+                    <span class="n">sigma</span><span class="o">=</span><span class="n">eigs_min_guess</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span>
+                    <span class="n">tol</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">conv_params</span><span class="p">[</span><span class="s2">&quot;eigtol&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
 
-            <span class="n">eigfuncs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span> <span class="n">eigvals</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span>
-                <span class="n">vecs_up</span><span class="p">,</span> <span class="n">eigs_up</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span>
-            <span class="p">)</span>
+                <span class="n">eigfuncs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span> <span class="n">eigvals</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span>
+                    <span class="n">vecs_up</span><span class="p">,</span> <span class="n">eigs_up</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span>
+                <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span></div>
+            <span class="k">elif</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;guess&quot;</span><span class="p">:</span>
+
+                <span class="c1"># estimate the lowest eigenvalues for a given value of l</span>
+                <span class="n">eigs_up</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="c1"># sort the eigenvalues to find the lowest</span>
+                <span class="n">idr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">eigs_up</span><span class="p">)</span>
+                <span class="n">eigs_guess</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eigs_up</span><span class="p">[</span><span class="n">idr</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="c1"># dummy variable for the null eigenfucntions</span>
+                <span class="n">eigfuncs_null</span> <span class="o">=</span> <span class="n">eigfuncs</span>
+
+    <span class="k">if</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">eigfuncs_null</span><span class="p">,</span> <span class="n">eigs_guess</span></div>
 
 
-<div class="viewcode-block" id="diag_H"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.diag_H">[docs]</a><span class="k">def</span> <span class="nf">diag_H</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">bc</span><span class="p">):</span>
+<div class="viewcode-block" id="diag_H"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.diag_H">[docs]</a><span class="k">def</span> <span class="nf">diag_H</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">eigs_guess</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Diagonilize the Hamiltonian for the input potential v[p].</span>
 
@@ -462,14 +571,35 @@
     <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">V_mat</span>
 
     <span class="c1"># we seek the lowest nmax eigenvalues from sparse matrix diagonalization</span>
-    <span class="c1"># use `shift-invert mode&#39; (sigma=0) and pick lowest magnitude (&quot;LM&quot;) eigs</span>
-    <span class="c1"># sigma=0 seems to cause numerical issues so use a small offset</span>
-    <span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+    <span class="c1"># use &#39;shift-invert mode&#39; to find the eigenvalues nearest in magnitude to</span>
+    <span class="c1"># the estimated lowest eigenvalue from full diagonalization on coarse grid</span>
+    <span class="k">if</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+        <span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span>
+            <span class="n">H</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span>
+            <span class="n">M</span><span class="o">=</span><span class="n">B</span><span class="p">,</span>
+            <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span>
+            <span class="n">tol</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">conv_params</span><span class="p">[</span><span class="s2">&quot;eigtol&quot;</span><span class="p">],</span>
+            <span class="n">sigma</span><span class="o">=</span><span class="n">eigs_guess</span><span class="p">[</span><span class="n">p</span><span class="p">],</span>
+        <span class="p">)</span>
 
-    <span class="c1"># sort and normalize</span>
-    <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span><span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">)</span>
+        <span class="c1"># sort and normalize</span>
+        <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span><span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span></div>
+        <span class="k">return</span> <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span>
+
+    <span class="c1"># estimate the lowest eigenvalues for a given value of l</span>
+    <span class="k">elif</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;guess&quot;</span><span class="p">:</span>
+        <span class="n">evals</span> <span class="o">=</span> <span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># sort the eigenvalues to find the lowest</span>
+        <span class="n">idr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">evals</span><span class="p">)</span>
+        <span class="n">evals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">evals</span><span class="p">[</span><span class="n">idr</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># dummy eigenvector for return statement</span>
+        <span class="n">evecs_null</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">evecs_null</span><span class="p">,</span> <span class="n">evals</span></div>
 
 
 <div class="viewcode-block" id="update_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.update_orbs">[docs]</a><span class="k">def</span> <span class="nf">update_orbs</span><span class="p">(</span><span class="n">l_eigfuncs</span><span class="p">,</span> <span class="n">l_eigvals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">):</span>

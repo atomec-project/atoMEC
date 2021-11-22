@@ -374,8 +374,8 @@
         <span class="sd">&quot;&quot;&quot;str: formatted description of the ISModel attributes.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">write_ISModel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="c1"># @writeoutput.timing</span>
-<div class="viewcode-block" id="ISModel.CalcEnergy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel.CalcEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">CalcEnergy</span><span class="p">(</span>
+<div class="viewcode-block" id="ISModel.CalcEnergy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel.CalcEnergy">[docs]</a>    <span class="nd">@writeoutput</span><span class="o">.</span><span class="n">timing</span>
+    <span class="k">def</span> <span class="nf">CalcEnergy</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">nmax</span><span class="p">,</span>
         <span class="n">lmax</span><span class="p">,</span>
@@ -404,16 +404,19 @@
 <span class="sd">        grid_params : dict, optional</span>
 <span class="sd">            dictionary of grid parameters as follows:</span>
 <span class="sd">            {</span>
-<span class="sd">            `ngrid` (``int``)   : number of grid points,</span>
-<span class="sd">            `x0`    (``float``) : LHS grid point takes form</span>
-<span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified</span>
+<span class="sd">            `ngrid` (``int``)        : number of grid points,</span>
+<span class="sd">            `x0`    (``float``)      : LHS grid point takes form</span>
+<span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified,</span>
+<span class="sd">            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation</span>
+<span class="sd">            of eigenvalues with full diagonalization</span>
 <span class="sd">            }</span>
 <span class="sd">        conv_params : dict, optional</span>
 <span class="sd">            dictionary of convergence parameters as follows:</span>
 <span class="sd">            {</span>
-<span class="sd">            `econv` (``float``) : convergence for total energy,</span>
-<span class="sd">            `nconv` (``float``) : convergence for density,</span>
-<span class="sd">            `vconv` (``float``) : convergence for electron number</span>
+<span class="sd">            `econv` (``float``)  : convergence for total energy,</span>
+<span class="sd">            `nconv` (``float``)  : convergence for density,</span>
+<span class="sd">            `vconv` (``float``)  : convergence for electron number,</span>
+<span class="sd">            `eigtol` (``float``) : convergence for eigenvalues</span>
 <span class="sd">            }</span>
 <span class="sd">        scf_params : dict, optional</span>
 <span class="sd">            dictionary for scf cycle parameters as follows:</span>
@@ -487,7 +490,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">v_init</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
         <span class="n">v_s_old</span> <span class="o">=</span> <span class="n">v_init</span>  <span class="c1"># initialize the old potential</span>
-        <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_init</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_init</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># occupy orbitals</span>
         <span class="n">orbs</span><span class="o">.</span><span class="n">occupy</span><span class="p">()</span>
@@ -531,7 +534,10 @@
                     <span class="n">v_s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">v_s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">v_s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
             <span class="c1"># update the orbitals with the KS potential</span>
-            <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_s</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">iscf</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_s</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_s</span><span class="p">)</span>
             <span class="n">orbs</span><span class="o">.</span><span class="n">occupy</span><span class="p">()</span>
 
             <span class="c1"># update old potential</span>
@@ -605,16 +611,19 @@
 <span class="sd">        grid_params : dict, optional</span>
 <span class="sd">            dictionary of grid parameters as follows:</span>
 <span class="sd">            {</span>
-<span class="sd">            `ngrid` (``int``)   : number of grid points,</span>
-<span class="sd">            `x0`    (``float``) : LHS grid point takes form</span>
-<span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified</span>
+<span class="sd">            `ngrid` (``int``)        : number of grid points,</span>
+<span class="sd">            `x0`    (``float``)      : LHS grid point takes form</span>
+<span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified,</span>
+<span class="sd">            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation</span>
+<span class="sd">            of eigenvalues with full diagonalization</span>
 <span class="sd">            }</span>
 <span class="sd">        conv_params : dict, optional</span>
 <span class="sd">            dictionary of convergence parameters as follows:</span>
 <span class="sd">            {</span>
-<span class="sd">            `econv` (``float``) : convergence for total energy,</span>
-<span class="sd">            `nconv` (``float``) : convergence for density,</span>
-<span class="sd">            `vconv` (``float``) : convergence for electron number</span>
+<span class="sd">            `econv` (``float``)  : convergence for total energy,</span>
+<span class="sd">            `nconv` (``float``)  : convergence for density,</span>
+<span class="sd">            `vconv` (``float``)  : convergence for electron number,</span>
+<span class="sd">            `eigtol` (``float``) : tolerance for eigenvalues</span>
 <span class="sd">            }</span>
 <span class="sd">        scf_params : dict, optional</span>
 <span class="sd">           dictionary for scf cycle parameters as follows:</span>
