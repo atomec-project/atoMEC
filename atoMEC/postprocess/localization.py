@@ -1,8 +1,7 @@
 """Things related to electron localization."""
 
 from math import pi
-from scipy.signal import argrelmin, argrelmax
-from scipy import interpolate
+from scipy.signal import argrelmin
 import numpy as np
 
 from atoMEC import staticKS, mathtools
@@ -30,11 +29,11 @@ class ELFTools:
 
         # density and occupation numbers have to include bound and free contributions
         self._totdensity = density.bound["rho"] + density.unbound["rho"]
-        self._occnums_w = orbitals.occnums_w
+        self._occnums = orbitals.occnums + orbitals.occnums_ub
 
         # extrapolate the spin number and number of grid points
-        spindims = np.shape(self._eigfuncs)[1]
-        ngrid = np.shape(self._eigfuncs)[4]
+        spindims = np.shape(self._eigfuncs)[0]
+        ngrid = np.shape(self._eigfuncs)[3]
 
         self._ELF = np.zeros((spindims, ngrid))
         self._epdc = np.zeros((spindims, ngrid))
@@ -46,7 +45,7 @@ class ELFTools:
         if np.all(self._ELF == 0.0):
             self._ELF = self.calc_ELF(
                 self._eigfuncs,
-                self._occnums_w,
+                self._occnums,
                 self._xgrid,
                 self._totdensity,
             )
@@ -57,7 +56,7 @@ class ELFTools:
         r"""ndarray: the electron pair density curvature."""
         if np.all(self._epdc == 0.0):
             self._epdc = self.calc_epdc(
-                self._eigfuncs, self._occnums_w, self._xgrid, self._totdensity
+                self._eigfuncs, self._occnums, self._xgrid, self._totdensity
             )
         return self._epdc
 
@@ -104,7 +103,7 @@ class ELFTools:
         electron gas (UEG) respectively.
         """
         # compute the UEG electron pair density curvature
-        D_0 = (3.0 / 5.0) * (6 * pi ** 2) ** (2.0 / 3.0) * (density) ** (5.0 / 3.0)
+        D_0 = (3.0 / 5.0) * (6 * pi ** 2) ** (2.0 / 3.0) * density ** (5.0 / 3.0)
 
         # compute the main electron pair density curvature
         D = ELFTools.calc_epdc(eigfuncs, occnums, xgrid, density)
@@ -113,7 +112,7 @@ class ELFTools:
         chi = D / D_0
 
         # compute the ELF
-        ELF = 1.0 / (1.0 + chi ** 2)
+        ELF = 1.0 / (1.0 + chi ** 2.0)
 
         return ELF
 
@@ -154,7 +153,7 @@ class ELFTools:
         grad_dens = np.exp(-xgrid) * np.gradient(density, xgrid, axis=-1)
 
         # compute epdc
-        epdc = 2.0 * tau - 0.25 * (grad_dens) ** 2 / density
+        epdc = tau - 0.125 * (grad_dens) ** 2 / density
 
         return epdc
 
@@ -189,9 +188,6 @@ class ELFTools:
         # search for the minimum arguments
         for i in range(spindims):
             xargs_0 = argrelmin(ELF[i])[0]
-            # xargs_1 = argrelmax(ELF[i])[0]
-            # xargs_0 = np.sort(np.concatenate((xargs_0, xargs_1)))
-            print(xargs_0)
             for xarg in xargs_0:
                 if ELF[i, xarg] < 1 - tol and ELF[i, xarg] > tol:
                     xargs_min[i].append(xarg)
@@ -250,70 +246,6 @@ class ELFTools:
         return N_shell
 
 
-class Projection:
-    def __init__(self, orbs, orbs_atom):
-
-        self.orbs = orbs
-        self.orbs_atom = orbs_atom
-        self.eigfuncs = orbs.eigfuncs
-        self.eigfuncs_atom = orbs_atom.eigfuncs
-        # self.eigfuncs_atom = np.ones_like(self.eigfuncs) * np.exp(orbs._xgrid / 2)
-        self.occnums = orbs.occnums_w
-        self.xgrid = orbs._xgrid
-        self.xgrid_atom = orbs_atom._xgrid
-        self._MIS = None
-        self._ovlap_mat = None
-
-    @property
-    def MIS(self):
-        self._MIS = self.calc_MIS(self.ovlap_mat, self.occnums)
-        return self._MIS
-
-    @property
-    def ovlap_mat(self):
-        self._ovlap_mat = self.overlap(
-            self.eigfuncs, self.eigfuncs_atom, self.xgrid, self.xgrid_atom
-        )
-        return self._ovlap_mat
-
-    @property
-    def ovlap_shells(self):
-        self._ovlap_shells = np.sum(self.ovlap_mat * self.occnums, axis=0)
-        return self._ovlap_shells
-
-    @staticmethod
-    def overlap(eigfuncs_a, eigfuncs_b, xgrid_a, xgrid_b):
-
-        # interpolate the reference orbs onto the smaller xgrid
-        func_interp = interpolate.interp1d(xgrid_b, eigfuncs_b, kind="cubic")
-        eigfuncs_b_new = func_interp(xgrid_a)
-
-        # renormalize the atomic orbitals
-        norm = (
-            4.0 * pi * np.trapz(np.exp(2.0 * xgrid_a) * eigfuncs_b_new ** 2, x=xgrid_a)
-        )
-        # eigfuncs_b_new = np.einsum("ijklm,ijkl->ijklm", eigfuncs_b_new, (norm) ** -0.5)
-
-        print(eigfuncs_b_new)
-        # compute the overlap integral
-        ovlap = (
-            4.0
-            * pi
-            * np.trapz(
-                np.exp(2.0 * xgrid_a) * np.abs(eigfuncs_a * eigfuncs_b_new), x=xgrid_a
-            )
-        )
-
-        return ovlap
-
-    @staticmethod
-    def calc_MIS(ovlap_mat, occnums_w):
-
-        MIS = np.sum(ovlap_mat * occnums_w)
-
-        return MIS
-
-
 def calc_IPR_mat(eigfuncs, xgrid):
     r"""
     Calculate the inverse participation ratio for all eigenfunctions (see notes).
@@ -346,23 +278,20 @@ def calc_IPR_mat(eigfuncs, xgrid):
     contribution is correctly accounted for). Use at your own peril...
     """
     # get the dimensions for the IPR matrix
-    spindims = np.shape(eigfuncs)[1]
-    lmax = np.shape(eigfuncs)[2]
-    nmax = np.shape(eigfuncs)[3]
+    spindims = np.shape(eigfuncs)[0]
+    lmax = np.shape(eigfuncs)[1]
+    nmax = np.shape(eigfuncs)[2]
 
-    nkpts, spindims, lmax, nmax, ngrid = np.shape(eigfuncs)
-
-    IPR_mat = np.zeros((nkpts, spindims, lmax, nmax))
+    IPR_mat = np.zeros((spindims, lmax, nmax))
 
     # compute the IPR matrix
     # FIXME: add spherical harmonic term
-    for k in range(nkpts):
-        for i in range(spindims):
-            for l in range(lmax):
-                for n in range(nmax):
-                    # compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)
-                    Psi4 = eigfuncs[k, i, l, n, :] ** 4.0 * np.exp(-2 * xgrid)
-                    # integrate over sphere
-                    IPR_mat[k, i, l, n] = mathtools.int_sphere(Psi4, xgrid)
+    for i in range(spindims):
+        for l in range(lmax):
+            for n in range(nmax):
+                # compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)
+                Psi4 = eigfuncs[i, l, n, :] ** 4.0 * np.exp(-2 * xgrid)
+                # integrate over sphere
+                IPR_mat[i, l, n] = mathtools.int_sphere(Psi4, xgrid)
 
     return IPR_mat
