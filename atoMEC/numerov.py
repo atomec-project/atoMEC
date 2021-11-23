@@ -172,7 +172,7 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
 
 def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
     """
-    Solve the KS matrix diagonalization by parallelizing over config.ncores.
+    Solve the KS matrix diagonalization by parallelizing over config.numcores.
 
     Parameters
     ----------
@@ -197,6 +197,30 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
         radial KS wfns
     eigvals : ndarray
         KS eigenvalues
+
+    Notes
+    -----
+    The parallelization is done via the `joblib.Parallel` class of the `joblib` library,
+    see here_ for more information.
+
+    .. _here: https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html
+
+    For "best" performance (i.e. exactly one core for each call of the diagonalization
+    routine plus one extra for the "master" node), the number of cores should be chosen
+    as `config.numcores = 1 + config.spindims * config.lmax`. However, if this number is
+    larger than the total number of cores available, performance is hindered.
+
+    Therefore for "good" performance, we can suggest:
+    `config.numcores = max(1 + config.spindimgs * config.lmax, n_avail)`, where
+    `n_avail` is the number of cores available.
+
+    The above is just a guide for how to choose `config.numcores`, there may well
+    be better choices. One example where it might not work is for particularly large
+    numbers of grid points, when the memory required might be too large for a single
+    core.
+
+    N.B. if `config.numcores=-N` then `joblib` detects the number of available cores
+    `n_avail` and parallelizes into `n_avail + 1 - N` separate jobs.
     """
     # compute the number of grid points
     N = np.size(xgrid)
