@@ -6,7 +6,7 @@ Compares dirichlet and neumann boundary conditions for Aluminium
 from atoMEC import models, Atom, config
 
 # use parallelization to make things slightly quicker
-config.numcores = -1
+config.numcores = 5
 
 # initialize the atom
 Al = Atom("Al", density=2.7, temp=5, units_temp="eV")
@@ -16,7 +16,7 @@ model = models.ISModel(Al, bc="dirichlet")
 
 # compute the total energy
 dirichlet_out = model.CalcEnergy(
-    25, 4, grid_params={"ngrid": 1000}, scf_params={"mixfrac": 0.7}
+    4, 4, grid_params={"ngrid": 1000}, scf_params={"mixfrac": 0.7}
 )
 energy_dirichlet = dirichlet_out["energy"]
 
