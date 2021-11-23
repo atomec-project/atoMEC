@@ -157,12 +157,13 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     T = -0.5 * p * A
 
     # solve in serial or parallel - serial mostly useful for debugging
-    if config.numcores > 0:
-        eigfuncs, eigvals = KS_matsolve_parallel(
+    if config.numcores == 0:
+        eigfuncs, eigvals = KS_matsolve_serial(
             T, B, v, xgrid, solve_type, eigs_min_guess
         )
+
     else:
-        eigfuncs, eigvals = KS_matsolve_serial(
+        eigfuncs, eigvals = KS_matsolve_parallel(
             T, B, v, xgrid, solve_type, eigs_min_guess
         )
 
