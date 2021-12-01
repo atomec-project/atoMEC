@@ -12,14 +12,22 @@ import numpy as np
 
 
 class KuboGreenwood:
-    def __init__(self, orbitals, valence_orbs=[]):
+    def __init__(self, orbitals, valence_orbs=[], nmax=0, lmax=0):
 
         self._orbitals = orbitals
         self._xgrid = orbitals._xgrid
         self._eigfuncs = orbitals.eigfuncs
         self._eigvals = orbitals.eigvals
         self._occnums = np.zeros_like(self._eigvals)
-        self._spindims, self._lmax, self._nmax = np.shape(self._eigvals)
+        self._spindims, lmax_default, nmax_default = np.shape(self._eigvals)
+        if nmax == 0:
+            self._nmax = nmax_default
+        else:
+            self._nmax = nmax
+        if lmax == 0:
+            self._lmax = lmax_default
+        else:
+            self._lmax = lmax
         self.valence_orbs = valence_orbs
         self._all_orbs = None
         self._cond_orbs = None
@@ -131,6 +139,36 @@ class KuboGreenwood:
             self._N_free = self.sig_cc * (2 * V / pi)
         return self._N_free
 
+    def check_sum_rule(self, l, n, m):
+        sum_mom = 0.0
+        new_orbs = self.all_orbs
+        new_orbs.remove((l, n))
+
+        for l1, n1 in new_orbs:
+            # the eigenvalue difference
+            eig_diff = self._eigvals[0, l1, n1] - self._eigvals[0, l, n]
+            if abs(eig_diff) < 1e-3:
+                continue
+            if abs(l1 - l) != 1:
+                continue
+            else:
+
+                # eigenfunctions
+                orb_l1n1 = sqrt(4 * pi) * self._eigfuncs[0, l1, n1]
+                orb_ln = sqrt(4 * pi) * self._eigfuncs[0, l, n]
+
+                # compute the matrix element
+                if abs(m) > l1:
+                    mel_sq = 0
+                else:
+                    mel = calc_mel_kgm(orb_ln, orb_l1n1, l, n, l1, n1, m, self._xgrid)
+                    mel_cc = calc_mel_kgm(
+                        orb_l1n1, orb_ln, l1, n1, l, n, m, self._xgrid
+                    )
+                    mel_sq = abs(mel * mel_cc)
+                sum_mom += mel_sq / eig_diff
+        return sum_mom
+
     @staticmethod
     def calc_sig(
         eigfuncs, occnums, eigvals, xgrid, orb_subset_1, orb_subset_2, gamma=0.0
@@ -141,9 +179,9 @@ class KuboGreenwood:
             for l2, n2 in orb_subset_2:
                 # the eigenvalue difference
                 eig_diff = eigvals[0, l1, n1] - eigvals[0, l2, n2]
-                if eig_diff <= 0:
+                if eig_diff < 1e-6:
                     continue
-                elif abs(l1 - l2) != 1:
+                if abs(l1 - l2) != 1:
                     continue
                 elif abs(occnums[0, l1, n1] - occnums[0, l2, n2]) < 1e-6:
                     continue
@@ -155,8 +193,22 @@ class KuboGreenwood:
                     orb_l2n2 = sqrt(4 * pi) * eigfuncs[0, l2, n2]
 
                     # compute the matrix element
-                    mel = calc_mel_kg(orb_l1n1, orb_l2n2, l1, n1, l2, n2, xgrid)
-                    mel_sq = mel ** 2
+                    lsmall = min(l1, l2)
+                    mel_sq = 0.0
+                    for m1 in range(-l1, l1 + 1):
+                        for m2 in range(-l2, l2 + 1):
+                            if m1 == m2:
+                                mel = calc_mel_kgm(
+                                    orb_l2n2, orb_l1n1, l2, n2, l1, n1, m1, xgrid
+                                )
+                                mel_cc = calc_mel_kgm(
+                                    orb_l1n1, orb_l2n2, l1, n1, l2, n2, m1, xgrid
+                                )
+                                mel_sq += abs(mel * mel_cc)
+
+                    # mel = calc_mel_kg(orb_l1n1, orb_l2n2, l1, n1, l2, n1, xgrid)
+                    # mel_cc = calc_mel_kg(orb_l2n2, orb_l1n1, l2, n2, l1, n1, xgrid)
+                    # mel_sq = mel * mel_cc
 
                     # compute the volume
                     rmax = np.exp(xgrid)[-1]
@@ -170,7 +222,7 @@ class KuboGreenwood:
 
 def sph_ham_coeff(l, m):
     r"""The coefficients of spherical harmonic functions"""
-    c_lm = sqrt((2 * l + 1) / (4 * pi) * factorial(l - abs(m)) / factorial(l + abs(m)))
+    c_lm = sqrt((2 * l + 1) * factorial(l - m) / (factorial(l + m) * 4 * pi))
     return c_lm
 
 
@@ -274,5 +326,17 @@ def calc_mel_kg(orb_l1n1, orb_l2n2, l1, n1, l2, n2, xgrid):
     for m in range(-lsmall, lsmall + 1):
         mel_tot += R1_int * P_int(2, l1, l2, m)
         mel_tot += R2_int * P_int(4, l1, l2, m)
+
+    return mel_tot
+
+
+def calc_mel_kgm(orb_l1n1, orb_l2n2, l1, n1, l2, n2, m, xgrid):
+
+    R1_int = calc_R1_int(orb_l1n1, orb_l2n2, xgrid)
+    R2_int = calc_R2_int(orb_l1n1, orb_l2n2, xgrid)
+
+    mel_tot = 0.0
+    mel_tot += R1_int * P_int(2, l1, l2, m)
+    mel_tot += R2_int * P_int(4, l1, l2, m)
 
     return mel_tot
