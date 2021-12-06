@@ -123,11 +123,15 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     if eigs_min_guess is None:
         eigs_min_guess = np.zeros((config.spindims, config.lmax))
 
+    # define the spacing of the xgrid
+    dx = xgrid[1] - xgrid[0]
+
     if config.bc == "dirichlet":
         N = np.size(xgrid)
+        xgrid_dir = np.linspace(xgrid[0], xgrid[-1] - dx, N)
     elif config.bc == "neumann":
         N = np.size(xgrid) + 1
-        xgrid_neu = np.linspace(xgrid[0], xgrid[-1], N)
+        xgrid_neu = np.linspace(xgrid[0], xgrid[-1] + dx, N)
 
     # extrapolate the potential to one extra pt if neumann bc
     if config.bc == "neumann":
@@ -137,8 +141,6 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
         xgrid = xgrid_neu
         v = v_neu
 
-    # define the spacing of the xgrid
-    dx = xgrid[1] - xgrid[0]
     # number of grid points
 
     # Set-up the following matrix diagonalization problem
