@@ -123,8 +123,19 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     if eigs_min_guess is None:
         eigs_min_guess = np.zeros((config.spindims, config.lmax))
 
-    # N = config.grid_params["ngrid"]
-    N = np.size(xgrid)
+    if config.bc == "dirichlet":
+        N = np.size(xgrid)
+    elif config.bc == "neumann":
+        N = np.size(xgrid) + 1
+        xgrid_neu = np.linspace(xgrid[0], xgrid[-1], N)
+
+    # extrapolate the potential to one extra pt if neumann bc
+    if config.bc == "neumann":
+        vs_func = interp1d(xgrid, v, fill_value="extrapolate")
+        v_neu = vs_func(xgrid_neu)
+        # reset the xgrid and potential array
+        xgrid = xgrid_neu
+        v = v_neu
 
     # define the spacing of the xgrid
     dx = xgrid[1] - xgrid[0]
@@ -254,6 +265,8 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
 
     if solve_type == "full":
         # retrieve the eigfuncs and eigvals from the joblib output
+        if config.bc == "neumann":
+            N = N - 1
         eigfuncs_flat = np.zeros((pmax, config.nmax, N))
         eigvals_flat = np.zeros((pmax, config.nmax))
         for q in range(pmax):
@@ -466,7 +479,8 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     eigvals = np.array(l_eigvals[idr].real)
     # under neumann bc the RHS pt is junk, convert to correct value
     if bc == "neumann":
-        l_eigfuncs[-1] = l_eigfuncs[-2]
+        xgrid = xgrid[:-1]
+        l_eigfuncs = l_eigfuncs[:-1]
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
     eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
 
