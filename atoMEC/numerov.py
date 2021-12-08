@@ -127,7 +127,7 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     dx = xgrid[1] - xgrid[0]
 
     if config.bc == "dirichlet":
-        N = np.size(xgrid)
+        N = np.size(xgrid) - 1
         xgrid_dir = np.linspace(xgrid[0], xgrid[-1] - dx, N)
     elif config.bc == "neumann":
         N = np.size(xgrid) + 1
@@ -140,6 +140,12 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
         # reset the xgrid and potential array
         xgrid = xgrid_neu
         v = v_neu
+
+    elif config.bc == "dirichlet":
+        v_dir = v[:, :-1]
+        # reset the xgrid and potential array
+        xgrid = xgrid_dir
+        v = v_dir
 
     # number of grid points
 
@@ -164,7 +170,7 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
         A[N - 2, N - 1] = 2 * dx ** (-2)
         B[N - 2, N - 1] = 2 * B[N - 2, N - 1]
         A[N - 1, N - 1] = A[N - 1, N - 1] + 1.0 / dx
-        B[N - 1, N - 1] = B[N - 1, N - 1] - dx / 12.0
+        B[N - 1, N - 1] = B[N - 1, N - 1] + dx / 12.0
 
     # construct kinetic energy matrix
     T = -0.5 * p * A
@@ -269,6 +275,8 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
         # retrieve the eigfuncs and eigvals from the joblib output
         if config.bc == "neumann":
             N = N - 1
+        elif config.bc == "dirichlet":
+            N = N + 1
         eigfuncs_flat = np.zeros((pmax, config.nmax, N))
         eigvals_flat = np.zeros((pmax, config.nmax))
         for q in range(pmax):
@@ -483,6 +491,14 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     if bc == "neumann":
         xgrid = xgrid[:-1]
         l_eigfuncs = l_eigfuncs[:-1]
+    elif bc == "dirichlet":
+        N = np.size(xgrid) + 1
+        dx = xgrid[1] - xgrid[0]
+        nmax = np.shape(l_eigfuncs)[1]
+        xgrid = np.linspace(xgrid[0], xgrid[-1] + dx, N)
+        l_eigfuncs_dir = np.zeros((N, nmax))
+        l_eigfuncs_dir[:-1] = l_eigfuncs.real
+        l_eigfuncs = l_eigfuncs_dir
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
     eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
 
