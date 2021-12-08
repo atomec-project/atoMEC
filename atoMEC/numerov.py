@@ -126,28 +126,8 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     # define the spacing of the xgrid
     dx = xgrid[1] - xgrid[0]
 
-    if config.bc == "dirichlet":
-        N = np.size(xgrid) - 1
-        xgrid_dir = np.linspace(xgrid[0], xgrid[-1] - dx, N)
-    elif config.bc == "neumann":
-        N = np.size(xgrid) + 1
-        xgrid_neu = np.linspace(xgrid[0], xgrid[-1] + dx, N)
-
-    # extrapolate the potential to one extra pt if neumann bc
-    if config.bc == "neumann":
-        vs_func = interp1d(xgrid, v, fill_value="extrapolate")
-        v_neu = vs_func(xgrid_neu)
-        # reset the xgrid and potential array
-        xgrid = xgrid_neu
-        v = v_neu
-
-    elif config.bc == "dirichlet":
-        v_dir = v[:, :-1]
-        # reset the xgrid and potential array
-        xgrid = xgrid_dir
-        v = v_dir
-
-    # number of grid points
+    # number of grid pts
+    N = np.size(xgrid)
 
     # Set-up the following matrix diagonalization problem
     # H*|u>=E*B*|u>; H=T+B*V; T=-p*A
@@ -273,10 +253,6 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
 
     if solve_type == "full":
         # retrieve the eigfuncs and eigvals from the joblib output
-        if config.bc == "neumann":
-            N = N - 1
-        elif config.bc == "dirichlet":
-            N = N + 1
         eigfuncs_flat = np.zeros((pmax, config.nmax, N))
         eigvals_flat = np.zeros((pmax, config.nmax))
         for q in range(pmax):
@@ -430,6 +406,10 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
     # construct Hamiltonians
     H = T + B * V_mat
 
+    if bc == "dirichlet":
+        H = H[:-1, :-1]
+        B = B[:-1, :-1]
+
     # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
     # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
     # the estimated lowest eigenvalue from full diagonalization on coarse grid
@@ -489,13 +469,11 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     eigvals = np.array(l_eigvals[idr].real)
     # under neumann bc the RHS pt is junk, convert to correct value
     if bc == "neumann":
-        xgrid = xgrid[:-1]
-        l_eigfuncs = l_eigfuncs[:-1]
-    elif bc == "dirichlet":
-        N = np.size(xgrid) + 1
         dx = xgrid[1] - xgrid[0]
+        l_eigfuncs[-1] = np.exp(dx / 2.0) * l_eigfuncs[-2]
+    elif bc == "dirichlet":
+        N = np.size(xgrid)
         nmax = np.shape(l_eigfuncs)[1]
-        xgrid = np.linspace(xgrid[0], xgrid[-1] + dx, N)
         l_eigfuncs_dir = np.zeros((N, nmax))
         l_eigfuncs_dir[:-1] = l_eigfuncs.real
         l_eigfuncs = l_eigfuncs_dir
