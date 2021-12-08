@@ -171,7 +171,16 @@ class KuboGreenwood:
 
     @staticmethod
     def calc_sig(
-        eigfuncs, occnums, eigvals, xgrid, orb_subset_1, orb_subset_2, gamma=0.0
+        eigfuncs,
+        occnums,
+        eigvals,
+        xgrid,
+        orb_subset_1,
+        orb_subset_2,
+        gamma=0.0,
+        eig_min_diff=1e-3,
+        eig_max_diff=1e4,
+        occ_min_diff=1e-4,
     ):
 
         sig = 0.0
@@ -179,11 +188,15 @@ class KuboGreenwood:
             for l2, n2 in orb_subset_2:
                 # the eigenvalue difference
                 eig_diff = eigvals[0, l1, n1] - eigvals[0, l2, n2]
-                if eig_diff < 1e-6:
+                # occupation number difference
+                occnum_diff = abs(occnums[0, l1, n1] - occnums[0, l2, n2])
+                if eig_diff < eig_min_diff:
                     continue
-                if abs(l1 - l2) != 1:
+                elif eig_diff > eig_max_diff:
                     continue
-                elif abs(occnums[0, l1, n1] - occnums[0, l2, n2]) < 1e-6:
+                elif abs(l1 - l2) != 1:
+                    continue
+                elif occnum_diff < occ_min_diff:
                     continue
                 else:
                     occnum_diff = -(occnums[0, l1, n1] - occnums[0, l2, n2])
@@ -193,7 +206,6 @@ class KuboGreenwood:
                     orb_l2n2 = sqrt(4 * pi) * eigfuncs[0, l2, n2]
 
                     # compute the matrix element
-                    lsmall = min(l1, l2)
                     mel_sq = 0.0
                     for m1 in range(-l1, l1 + 1):
                         for m2 in range(-l2, l2 + 1):
@@ -205,10 +217,6 @@ class KuboGreenwood:
                                     orb_l1n1, orb_l2n2, l1, n1, l2, n2, m1, xgrid
                                 )
                                 mel_sq += abs(mel * mel_cc)
-
-                    # mel = calc_mel_kg(orb_l1n1, orb_l2n2, l1, n1, l2, n1, xgrid)
-                    # mel_cc = calc_mel_kg(orb_l2n2, orb_l1n1, l2, n2, l1, n1, xgrid)
-                    # mel_sq = mel * mel_cc
 
                     # compute the volume
                     rmax = np.exp(xgrid)[-1]
