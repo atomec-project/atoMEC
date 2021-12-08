@@ -324,14 +324,17 @@ def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
             # fill potential matrices
             np.fill_diagonal(V_mat, v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
 
-            # if dirichlet solve on (N-1) x (N-1) grid
-            if config.bc == "dirichlet":
-                T = T[: N - 1, : N - 1]
-                V_mat = V_mat[: N - 1, : N - 1]
-                B = B[: N - 1, : N - 1]
-
             # construct Hamiltonians
             H = T + B * V_mat
+
+            # if dirichlet solve on (N-1) x (N-1) grid
+            if config.bc == "dirichlet":
+                H_s = H[: N - 1, : N - 1]
+                B_s = B[: N - 1, : N - 1]
+            # if neumann don't change anything
+            elif config.bc == "neumann":
+                H_s = H
+                B_s = B
 
             # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
             # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
@@ -339,9 +342,9 @@ def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
             if solve_type == "full":
 
                 eigs_up, vecs_up = eigs(
-                    H,
+                    H_s,
                     k=config.nmax,
-                    M=B,
+                    M=B_s,
                     which="LM",
                     sigma=eigs_min_guess[i, l],
                     tol=config.conv_params["eigtol"],
@@ -415,17 +418,21 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
 
     # if dirichlet solve on (N-1) x (N-1) grid
     if bc == "dirichlet":
-        H = H[: N - 1, : N - 1]
-        B = B[: N - 1, : N - 1]
+        H_s = H[: N - 1, : N - 1]
+        B_s = B[: N - 1, : N - 1]
+    # if neumann don't change anything
+    elif bc == "neumann":
+        H_s = H
+        B_s = B
 
     # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
     # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
     # the estimated lowest eigenvalue from full diagonalization on coarse grid
     if solve_type == "full":
         evals, evecs = eigs(
-            H,
+            H_s,
             k=nmax,
-            M=B,
+            M=B_s,
             which="LM",
             tol=config.conv_params["eigtol"],
             sigma=eigs_guess[p],
