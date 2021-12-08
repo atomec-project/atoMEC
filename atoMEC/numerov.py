@@ -350,8 +350,13 @@ def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
                     tol=config.conv_params["eigtol"],
                 )
 
+                K = np.zeros((N, config.nmax))
+                for n in range(config.nmax):
+                    K[:, n] = (
+                        -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - eigs_up.real[n])
+                    )
                 eigfuncs[i, l], eigvals[i, l] = update_orbs(
-                    vecs_up, eigs_up, xgrid, config.bc
+                    vecs_up, eigs_up, xgrid, config.bc, K
                 )
 
             elif solve_type == "guess":
@@ -439,7 +444,10 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
         )
 
         # sort and normalize
-        evecs, evals = update_orbs(evecs, evals, xgrid, bc)
+        K = np.zeros((N, nmax))
+        for n in range(nmax):
+            K[:, n] = -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - evals.real[n])
+        evecs, evals = update_orbs(evecs, evals, xgrid, bc, K)
 
         return evecs, evals
 
@@ -457,7 +465,7 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
         return evecs_null, evals
 
 
-def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
+def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     """
     Sort the eigenvalues and functions by ascending energies and normalize orbs.
 
@@ -482,16 +490,23 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     # Sort eigenvalues in ascending order
     idr = np.argsort(l_eigvals)
     eigvals = np.array(l_eigvals[idr].real)
-    # under neumann bc the RHS pt is junk, convert to correct value
-    if bc == "neumann":
-        dx = xgrid[1] - xgrid[0]
-        l_eigfuncs[-1] = np.exp(dx / 2.0) * l_eigfuncs[-2]
-    elif bc == "dirichlet":
+
+    # resize l_eigfuncs from N-1 to N for dirichlet condition
+    if bc == "dirichlet":
         N = np.size(xgrid)
         nmax = np.shape(l_eigfuncs)[1]
         l_eigfuncs_dir = np.zeros((N, nmax))
         l_eigfuncs_dir[:-1] = l_eigfuncs.real
         l_eigfuncs = l_eigfuncs_dir
+
+    # manually propagate to final point for both boundary conditions
+    dx = xgrid[1] - xgrid[0]
+    h = (dx ** 2) / 12.0
+    l_eigfuncs[-1] = (
+        (2 - 10 * h * K[-2]) * l_eigfuncs[-2] - (1 + h * K[-3]) * l_eigfuncs[-3]
+    ) / (1 + h * K[-1])
+
+    # convert to correct dimensions
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
     eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
 
