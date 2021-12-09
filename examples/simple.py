@@ -18,10 +18,8 @@ He = Atom(atom_species, radius=r_s, temp=temperature)
 model = models.ISModel(He, bc="neumann")
 
 # compute the total energy
-# define the number of levels to scan for
-# note that nmax should be much greater than the actual levels interested in
-# and should be tested for convergence
-nmax = 20
+# define the number of levels to scan for, should be tested for convergence
+nmax = 2
 lmax = 2
 output = model.CalcEnergy(nmax, lmax, grid_params={"ngrid": 1000})
 
