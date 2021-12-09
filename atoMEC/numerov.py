@@ -123,12 +123,11 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     if eigs_min_guess is None:
         eigs_min_guess = np.zeros((config.spindims, config.lmax))
 
-    # N = config.grid_params["ngrid"]
-    N = np.size(xgrid)
-
     # define the spacing of the xgrid
     dx = xgrid[1] - xgrid[0]
-    # number of grid points
+
+    # number of grid pts
+    N = np.size(xgrid)
 
     # Set-up the following matrix diagonalization problem
     # H*|u>=E*B*|u>; H=T+B*V; T=-p*A
@@ -151,7 +150,7 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
         A[N - 2, N - 1] = 2 * dx ** (-2)
         B[N - 2, N - 1] = 2 * B[N - 2, N - 1]
         A[N - 1, N - 1] = A[N - 1, N - 1] + 1.0 / dx
-        B[N - 1, N - 1] = B[N - 1, N - 1] - dx / 12.0
+        B[N - 1, N - 1] = B[N - 1, N - 1] + dx / 12.0
 
     # construct kinetic energy matrix
     T = -0.5 * p * A
@@ -353,21 +352,36 @@ def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
             # construct Hamiltonians
             H = T + B * V_mat
 
+            # if dirichlet solve on (N-1) x (N-1) grid
+            if config.bc == "dirichlet":
+                H_s = H[: N - 1, : N - 1]
+                B_s = B[: N - 1, : N - 1]
+            # if neumann don't change anything
+            elif config.bc == "neumann":
+                H_s = H
+                B_s = B
+
             # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
             # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
             # the estimated lowest eigenvalue from full diagonalization on coarse grid
             if solve_type == "full":
+
                 eigs_up, vecs_up = eigs(
-                    H,
+                    H_s,
                     k=config.nmax,
-                    M=B,
+                    M=B_s,
                     which="LM",
                     sigma=eigs_min_guess[i, l],
                     tol=config.conv_params["eigtol"],
                 )
 
+                K = np.zeros((N, config.nmax))
+                for n in range(config.nmax):
+                    K[:, n] = (
+                        -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - eigs_up.real[n])
+                    )
                 eigfuncs[i, l], eigvals[i, l] = update_orbs(
-                    vecs_up, eigs_up, xgrid, config.bc
+                    vecs_up, eigs_up, xgrid, config.bc, K
                 )
 
             elif solve_type == "guess":
@@ -432,21 +446,33 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
     # construct Hamiltonians
     H = T + B * V_mat
 
+    # if dirichlet solve on (N-1) x (N-1) grid
+    if bc == "dirichlet":
+        H_s = H[: N - 1, : N - 1]
+        B_s = B[: N - 1, : N - 1]
+    # if neumann don't change anything
+    elif bc == "neumann":
+        H_s = H
+        B_s = B
+
     # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
     # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
     # the estimated lowest eigenvalue from full diagonalization on coarse grid
     if solve_type == "full":
         evals, evecs = eigs(
-            H,
+            H_s,
             k=nmax,
-            M=B,
+            M=B_s,
             which="LM",
             tol=config.conv_params["eigtol"],
             sigma=eigs_guess[p],
         )
 
         # sort and normalize
-        evecs, evals = update_orbs(evecs, evals, xgrid, bc)
+        K = np.zeros((N, nmax))
+        for n in range(nmax):
+            K[:, n] = -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - evals.real[n])
+        evecs, evals = update_orbs(evecs, evals, xgrid, bc, K)
 
         return evecs, evals
 
@@ -464,7 +490,7 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
         return evecs_null, evals
 
 
-def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
+def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     """
     Sort the eigenvalues and functions by ascending energies and normalize orbs.
 
@@ -489,9 +515,23 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     # Sort eigenvalues in ascending order
     idr = np.argsort(l_eigvals)
     eigvals = np.array(l_eigvals[idr].real)
-    # under neumann bc the RHS pt is junk, convert to correct value
-    if bc == "neumann":
-        l_eigfuncs[-1] = l_eigfuncs[-2]
+
+    # resize l_eigfuncs from N-1 to N for dirichlet condition
+    if bc == "dirichlet":
+        N = np.size(xgrid)
+        nmax = np.shape(l_eigfuncs)[1]
+        l_eigfuncs_dir = np.zeros((N, nmax))
+        l_eigfuncs_dir[:-1] = l_eigfuncs.real
+        l_eigfuncs = l_eigfuncs_dir
+
+    # manually propagate to final point for both boundary conditions
+    dx = xgrid[1] - xgrid[0]
+    h = (dx ** 2) / 12.0
+    l_eigfuncs[-1] = (
+        (2 - 10 * h * K[-2]) * l_eigfuncs[-2] - (1 + h * K[-3]) * l_eigfuncs[-3]
+    ) / (1 + h * K[-1])
+
+    # convert to correct dimensions
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
     eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
 
