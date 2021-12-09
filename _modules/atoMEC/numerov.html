@@ -286,12 +286,11 @@
     <span class="k">if</span> <span class="n">eigs_min_guess</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">eigs_min_guess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">))</span>
 
-    <span class="c1"># N = config.grid_params[&quot;ngrid&quot;]</span>
-    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
-
     <span class="c1"># define the spacing of the xgrid</span>
     <span class="n">dx</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="c1"># number of grid points</span>
+
+    <span class="c1"># number of grid pts</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
 
     <span class="c1"># Set-up the following matrix diagonalization problem</span>
     <span class="c1"># H*|u&gt;=E*B*|u&gt;; H=T+B*V; T=-p*A</span>
@@ -314,7 +313,7 @@
         <span class="n">A</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">A</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">dx</span>
-        <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mf">12.0</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dx</span> <span class="o">/</span> <span class="mf">12.0</span>
 
     <span class="c1"># construct kinetic energy matrix</span>
     <span class="n">T</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">A</span>
@@ -516,21 +515,36 @@
             <span class="c1"># construct Hamiltonians</span>
             <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">V_mat</span>
 
+            <span class="c1"># if dirichlet solve on (N-1) x (N-1) grid</span>
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;dirichlet&quot;</span><span class="p">:</span>
+                <span class="n">H_s</span> <span class="o">=</span> <span class="n">H</span><span class="p">[:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">B_s</span> <span class="o">=</span> <span class="n">B</span><span class="p">[:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># if neumann don&#39;t change anything</span>
+            <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;neumann&quot;</span><span class="p">:</span>
+                <span class="n">H_s</span> <span class="o">=</span> <span class="n">H</span>
+                <span class="n">B_s</span> <span class="o">=</span> <span class="n">B</span>
+
             <span class="c1"># we seek the lowest nmax eigenvalues from sparse matrix diagonalization</span>
             <span class="c1"># use &#39;shift-invert mode&#39; to find the eigenvalues nearest in magnitude to</span>
             <span class="c1"># the estimated lowest eigenvalue from full diagonalization on coarse grid</span>
             <span class="k">if</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+
                 <span class="n">eigs_up</span><span class="p">,</span> <span class="n">vecs_up</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span>
-                    <span class="n">H</span><span class="p">,</span>
+                    <span class="n">H_s</span><span class="p">,</span>
                     <span class="n">k</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span>
-                    <span class="n">M</span><span class="o">=</span><span class="n">B</span><span class="p">,</span>
+                    <span class="n">M</span><span class="o">=</span><span class="n">B_s</span><span class="p">,</span>
                     <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span>
                     <span class="n">sigma</span><span class="o">=</span><span class="n">eigs_min_guess</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span>
                     <span class="n">tol</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">conv_params</span><span class="p">[</span><span class="s2">&quot;eigtol&quot;</span><span class="p">],</span>
                 <span class="p">)</span>
 
+                <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">):</span>
+                    <span class="n">K</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_mat</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">-</span> <span class="n">eigs_up</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+                    <span class="p">)</span>
                 <span class="n">eigfuncs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">],</span> <span class="n">eigvals</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span>
-                    <span class="n">vecs_up</span><span class="p">,</span> <span class="n">eigs_up</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span>
+                    <span class="n">vecs_up</span><span class="p">,</span> <span class="n">eigs_up</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">,</span> <span class="n">K</span>
                 <span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;guess&quot;</span><span class="p">:</span>
@@ -595,21 +609,33 @@
     <span class="c1"># construct Hamiltonians</span>
     <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">V_mat</span>
 
+    <span class="c1"># if dirichlet solve on (N-1) x (N-1) grid</span>
+    <span class="k">if</span> <span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;dirichlet&quot;</span><span class="p">:</span>
+        <span class="n">H_s</span> <span class="o">=</span> <span class="n">H</span><span class="p">[:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">B_s</span> <span class="o">=</span> <span class="n">B</span><span class="p">[:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># if neumann don&#39;t change anything</span>
+    <span class="k">elif</span> <span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;neumann&quot;</span><span class="p">:</span>
+        <span class="n">H_s</span> <span class="o">=</span> <span class="n">H</span>
+        <span class="n">B_s</span> <span class="o">=</span> <span class="n">B</span>
+
     <span class="c1"># we seek the lowest nmax eigenvalues from sparse matrix diagonalization</span>
     <span class="c1"># use &#39;shift-invert mode&#39; to find the eigenvalues nearest in magnitude to</span>
     <span class="c1"># the estimated lowest eigenvalue from full diagonalization on coarse grid</span>
     <span class="k">if</span> <span class="n">solve_type</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
         <span class="n">evals</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">eigs</span><span class="p">(</span>
-            <span class="n">H</span><span class="p">,</span>
+            <span class="n">H_s</span><span class="p">,</span>
             <span class="n">k</span><span class="o">=</span><span class="n">nmax</span><span class="p">,</span>
-            <span class="n">M</span><span class="o">=</span><span class="n">B</span><span class="p">,</span>
+            <span class="n">M</span><span class="o">=</span><span class="n">B_s</span><span class="p">,</span>
             <span class="n">which</span><span class="o">=</span><span class="s2">&quot;LM&quot;</span><span class="p">,</span>
             <span class="n">tol</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">conv_params</span><span class="p">[</span><span class="s2">&quot;eigtol&quot;</span><span class="p">],</span>
             <span class="n">sigma</span><span class="o">=</span><span class="n">eigs_guess</span><span class="p">[</span><span class="n">p</span><span class="p">],</span>
         <span class="p">)</span>
 
         <span class="c1"># sort and normalize</span>
-        <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span><span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">)</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmax</span><span class="p">):</span>
+            <span class="n">K</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_mat</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">-</span> <span class="n">evals</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+        <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span> <span class="o">=</span> <span class="n">update_orbs</span><span class="p">(</span><span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">evecs</span><span class="p">,</span> <span class="n">evals</span>
 
@@ -627,7 +653,7 @@
         <span class="k">return</span> <span class="n">evecs_null</span><span class="p">,</span> <span class="n">evals</span></div>
 
 
-<div class="viewcode-block" id="update_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.update_orbs">[docs]</a><span class="k">def</span> <span class="nf">update_orbs</span><span class="p">(</span><span class="n">l_eigfuncs</span><span class="p">,</span> <span class="n">l_eigvals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">):</span>
+<div class="viewcode-block" id="update_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.update_orbs">[docs]</a><span class="k">def</span> <span class="nf">update_orbs</span><span class="p">(</span><span class="n">l_eigfuncs</span><span class="p">,</span> <span class="n">l_eigvals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sort the eigenvalues and functions by ascending energies and normalize orbs.</span>
 
@@ -652,9 +678,23 @@
     <span class="c1"># Sort eigenvalues in ascending order</span>
     <span class="n">idr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">l_eigvals</span><span class="p">)</span>
     <span class="n">eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">l_eigvals</span><span class="p">[</span><span class="n">idr</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
-    <span class="c1"># under neumann bc the RHS pt is junk, convert to correct value</span>
-    <span class="k">if</span> <span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;neumann&quot;</span><span class="p">:</span>
-        <span class="n">l_eigfuncs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_eigfuncs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="c1"># resize l_eigfuncs from N-1 to N for dirichlet condition</span>
+    <span class="k">if</span> <span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;dirichlet&quot;</span><span class="p">:</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">l_eigfuncs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">l_eigfuncs_dir</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+        <span class="n">l_eigfuncs_dir</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_eigfuncs</span><span class="o">.</span><span class="n">real</span>
+        <span class="n">l_eigfuncs</span> <span class="o">=</span> <span class="n">l_eigfuncs_dir</span>
+
+    <span class="c1"># manually propagate to final point for both boundary conditions</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">12.0</span>
+    <span class="n">l_eigfuncs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">h</span> <span class="o">*</span> <span class="n">K</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="n">l_eigfuncs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">h</span> <span class="o">*</span> <span class="n">K</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span> <span class="o">*</span> <span class="n">l_eigfuncs</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">h</span> <span class="o">*</span> <span class="n">K</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># convert to correct dimensions</span>
     <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">l_eigfuncs</span><span class="o">.</span><span class="n">real</span><span class="p">)[</span><span class="n">idr</span><span class="p">])</span>
     <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">normalize_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>  <span class="c1"># normalize</span>
 
