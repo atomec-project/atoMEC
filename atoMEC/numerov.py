@@ -150,7 +150,7 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
         A[N - 2, N - 1] = 2 * dx ** (-2)
         B[N - 2, N - 1] = 2 * B[N - 2, N - 1]
         A[N - 1, N - 1] = A[N - 1, N - 1] + 1.0 / dx
-        B[N - 1, N - 1] = B[N - 1, N - 1] + dx / 12.0
+        B[N - 1, N - 1] = B[N - 1, N - 1] - dx / 12.0
 
     # construct kinetic energy matrix
     T = -0.5 * p * A
