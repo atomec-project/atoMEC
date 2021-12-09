@@ -1622,7 +1622,7 @@ quantum number <cite>l</cite>.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.KS_matsolve_parallel">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">KS_matsolve_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#KS_matsolve_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.KS_matsolve_parallel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Solve the KS matrix diagonalization by parallelizing over config.ncores.</p>
+<dd><p>Solve the KS matrix diagonalization by parallelizing over config.numcores.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1644,6 +1644,22 @@ should be dimension <cite>config.spindims * config.lmax</cite></p></li>
 </p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>The parallelization is done via the <cite>joblib.Parallel</cite> class of the <cite>joblib</cite> library,
+see <a class="reference external" href="https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html">here</a> for more information.</p>
+<p>For “best” performance (i.e. exactly one core for each call of the diagonalization
+routine plus one extra for the “master” node), the number of cores should be chosen
+as <cite>config.numcores = 1 + config.spindims * config.lmax</cite>. However, if this number is
+larger than the total number of cores available, performance is hindered.</p>
+<p>Therefore for “good” performance, we can suggest:
+<cite>config.numcores = max(1 + config.spindimgs * config.lmax, n_avail)</cite>, where
+<cite>n_avail</cite> is the number of cores available.</p>
+<p>The above is just a guide for how to choose <cite>config.numcores</cite>, there may well
+be better choices. One example where it might not work is for particularly large
+numbers of grid points, when the memory required might be too large for a single
+core.</p>
+<p>N.B. if <cite>config.numcores=-N</cite> then <cite>joblib</cite> detects the number of available cores
+<cite>n_avail</cite> and parallelizes into <cite>n_avail + 1 - N</cite> separate jobs.</p>
 </dd></dl>
 
 <dl class="py function">

@@ -320,12 +320,13 @@
     <span class="n">T</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">A</span>
 
     <span class="c1"># solve in serial or parallel - serial mostly useful for debugging</span>
-    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">numcores</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_parallel</span><span class="p">(</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">numcores</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_serial</span><span class="p">(</span>
             <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span>
         <span class="p">)</span>
+
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_serial</span><span class="p">(</span>
+        <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span> <span class="o">=</span> <span class="n">KS_matsolve_parallel</span><span class="p">(</span>
             <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span>
         <span class="p">)</span>
 
@@ -334,7 +335,7 @@
 
 <div class="viewcode-block" id="KS_matsolve_parallel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_parallel">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_parallel</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Solve the KS matrix diagonalization by parallelizing over config.ncores.</span>
+<span class="sd">    Solve the KS matrix diagonalization by parallelizing over config.numcores.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -359,6 +360,30 @@
 <span class="sd">        radial KS wfns</span>
 <span class="sd">    eigvals : ndarray</span>
 <span class="sd">        KS eigenvalues</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The parallelization is done via the `joblib.Parallel` class of the `joblib` library,</span>
+<span class="sd">    see here_ for more information.</span>
+
+<span class="sd">    .. _here: https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html</span>
+
+<span class="sd">    For &quot;best&quot; performance (i.e. exactly one core for each call of the diagonalization</span>
+<span class="sd">    routine plus one extra for the &quot;master&quot; node), the number of cores should be chosen</span>
+<span class="sd">    as `config.numcores = 1 + config.spindims * config.lmax`. However, if this number is</span>
+<span class="sd">    larger than the total number of cores available, performance is hindered.</span>
+
+<span class="sd">    Therefore for &quot;good&quot; performance, we can suggest:</span>
+<span class="sd">    `config.numcores = max(1 + config.spindimgs * config.lmax, n_avail)`, where</span>
+<span class="sd">    `n_avail` is the number of cores available.</span>
+
+<span class="sd">    The above is just a guide for how to choose `config.numcores`, there may well</span>
+<span class="sd">    be better choices. One example where it might not work is for particularly large</span>
+<span class="sd">    numbers of grid points, when the memory required might be too large for a single</span>
+<span class="sd">    core.</span>
+
+<span class="sd">    N.B. if `config.numcores=-N` then `joblib` detects the number of available cores</span>
+<span class="sd">    `n_avail` and parallelizes into `n_avail + 1 - N` separate jobs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># compute the number of grid points</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
