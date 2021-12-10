@@ -55,7 +55,10 @@ def write_atomic_data(atom):
     at_chrg_str = "{preamble:30s}: {chrg:<3d} / {weight:<.3f}".format(
         preamble="Atomic charge / weight", chrg=atom.at_chrg, weight=atom.at_mass
     )
-    spec_info = species_str + spc + at_chrg_str + spc
+    nvalence_str = "{preamble:30s}: {nval:<3d}".format(
+        preamble="Valence electrons", nval=atom.nvalence
+    )
+    spec_info = species_str + spc + at_chrg_str + spc + nvalence_str + spc
 
     # information about the atomic / mass density
     rho_str = "{preamble:30s}: {rho:<.3g} g cm^-3".format(
@@ -63,7 +66,7 @@ def write_atomic_data(atom):
     )
     rad_ang = atom.radius / unitconv.angstrom_to_bohr
     rad_str = "{preamble:30s}: {rad_b:<.4g} Bohr / {rad_a:<.4g} Angstrom".format(
-        preamble="Wigner-Seitz radius", rad_b=atom.radius, rad_a=rad_ang
+        preamble="Voronoi sphere radius", rad_b=atom.radius, rad_a=rad_ang
     )
     rho_info = rho_str + spc + rad_str + spc
 
@@ -75,8 +78,21 @@ def write_atomic_data(atom):
     )
     temp_info = temp_str + spc
 
+    # information about the dimensionless parameters
+    WS_radius_str = "{preamble:30s}: {rad:<.4g} (Bohr)".format(
+        preamble="Wigner-Seitz radius", rad=atom.WS_radius
+    )
+    gamma_i_str = "{preamble:30s}: {gamma:<.4g}".format(
+        preamble="Ionic coupling parameter", gamma=atom.gamma_ion
+    )
+    theta_e_str = "{preamble:30s}: {theta:<.4g}".format(
+        preamble="Electron degeneracy parameter", theta=atom.theta_e
+    )
+
+    dim_params_str = WS_radius_str + spc + gamma_i_str + spc + theta_e_str + spc
+
     # put all into a single string
-    output_str = init_str + spec_info + rho_info + temp_info + spc
+    output_str = init_str + spec_info + rho_info + temp_info + dim_params_str + spc
 
     return output_str
 
@@ -425,13 +441,17 @@ class SCF:
         occnum_tbl = ""
         for i in range(config.spindims):
 
+            occnums_tot = orbitals.occnums + orbitals.occnums_ub
+
             # truncate the table to include only one unbound state in each direction
             try:
                 lmax_new = min(
-                    np.amax(np.where(orbitals.eigvals[i] < 0)[0]) + 2, config.lmax
+                    np.amax(np.where(occnums_tot[i] > 1e-5)[0]) + 1,
+                    config.lmax,
                 )
                 nmax_new = min(
-                    np.amax(np.where(orbitals.eigvals[i] < 0)[1]) + 2, config.nmax
+                    np.amax(np.where(occnums_tot[i] > 1e-5)[1]) + 1,
+                    config.nmax,
                 )
             except ValueError:
                 lmax_new = 2
@@ -444,7 +464,7 @@ class SCF:
             RowIDs[0] = "l=0"
 
             eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
-            occnums_new = orbitals.occnums[i, :lmax_new, :nmax_new]
+            occnums_new = occnums_tot[i, :lmax_new, :nmax_new]
 
             # the eigenvalue table
             eigval_tbl += (

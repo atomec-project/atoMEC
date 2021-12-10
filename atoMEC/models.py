@@ -7,7 +7,7 @@ releases.
 Classes
 -------
 * :class:`ISModel` : Ion-sphere type model, static properties such as KS orbitals, \
-density and energy are directly computed
+                     density and energy are directly computed
 """
 
 # import standard packages
@@ -188,7 +188,7 @@ class ISModel:
 
     @property
     def unbound(self):
-        """str: the treatment of unbound (free) electrons."""
+        """str: the treatment of unbound/free electrons."""
         return self._unbound
 
     @unbound.setter
@@ -211,7 +211,7 @@ class ISModel:
         """str: formatted description of the ISModel attributes."""
         return writeoutput.write_ISModel_data(self)
 
-    # @writeoutput.timing
+    @writeoutput.timing
     def CalcEnergy(
         self,
         nmax,
@@ -241,16 +241,19 @@ class ISModel:
         grid_params : dict, optional
             dictionary of grid parameters as follows:
             {
-            `ngrid` (``int``)   : number of grid points,
-            `x0`    (``float``) : LHS grid point takes form
-            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            `ngrid` (``int``)        : number of grid points,
+            `x0`    (``float``)      : LHS grid point takes form
+            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified,
+            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation
+            of eigenvalues with full diagonalization
             }
         conv_params : dict, optional
             dictionary of convergence parameters as follows:
             {
-            `econv` (``float``) : convergence for total energy,
-            `nconv` (``float``) : convergence for density,
-            `vconv` (``float``) : convergence for electron number
+            `econv` (``float``)  : convergence for total energy,
+            `nconv` (``float``)  : convergence for density,
+            `vconv` (``float``)  : convergence for electron number,
+            `eigtol` (``float``) : convergence for eigenvalues
             }
         scf_params : dict, optional
             dictionary for scf cycle parameters as follows:
@@ -324,7 +327,7 @@ class ISModel:
         else:
             v_init = staticKS.Potential.calc_v_en(xgrid)
         v_s_old = v_init  # initialize the old potential
-        orbs.compute(v_init, init=True)
+        orbs.compute(v_init, init=True, eig_guess=True)
 
         # occupy orbitals
         orbs.occupy()
@@ -368,7 +371,10 @@ class ISModel:
                     v_s[i, :] = v_s[i, :] - v_s[i, -1]
 
             # update the orbitals with the KS potential
-            orbs.compute(v_s)
+            if iscf < 3:
+                orbs.compute(v_s, eig_guess=True)
+            else:
+                orbs.compute(v_s)
             orbs.occupy()
 
             # update old potential
@@ -442,16 +448,19 @@ class ISModel:
         grid_params : dict, optional
             dictionary of grid parameters as follows:
             {
-            `ngrid` (``int``)   : number of grid points,
-            `x0`    (``float``) : LHS grid point takes form
-            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            `ngrid` (``int``)        : number of grid points,
+            `x0`    (``float``)      : LHS grid point takes form
+            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified,
+            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation
+            of eigenvalues with full diagonalization
             }
         conv_params : dict, optional
             dictionary of convergence parameters as follows:
             {
-            `econv` (``float``) : convergence for total energy,
-            `nconv` (``float``) : convergence for density,
-            `vconv` (``float``) : convergence for electron number
+            `econv` (``float``)  : convergence for total energy,
+            `nconv` (``float``)  : convergence for density,
+            `vconv` (``float``)  : convergence for electron number,
+            `eigtol` (``float``) : tolerance for eigenvalues
             }
         scf_params : dict, optional
            dictionary for scf cycle parameters as follows:

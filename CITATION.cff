@@ -3,18 +3,22 @@ authors:
   - affiliation: "Center for Advanced Systems Understanding (CASUS), Helmholtz-Zentrum Dresden-Rossendorf e.V. (HZDR)"
     family-names: Callow
     given-names: Timothy
+    orchid: https://orcid.org/0000-0002-4878-3521
   - affiliation: "Center for Advanced Systems Understanding (CASUS), Helmholtz-Zentrum Dresden-Rossendorf e.V. (HZDR)"
     family-names: Kotik
     given-names: Daniel
+    orcid: https://orcid.org/0000-0001-8735-3199
   - affiliation: "Center for Advanced Systems Understanding (CASUS), Helmholtz-Zentrum Dresden-Rossendorf e.V. (HZDR)"
     family-names: Tsvetoslavova Stankulova
     given-names: Ekaterina
   - affiliation: "Fritz Haber Center for Molecular Dynamics and Institute of Chemistry, The Hebrew University of Jerusalem"
     family-names: Kraisler
     given-names: Eli
+    orchid: https://orcid.org/0000-0003-0139-258X
   - affiliation: "Center for Advanced Systems Understanding (CASUS), Helmholtz-Zentrum Dresden-Rossendorf e.V. (HZDR)"
     family-names: Cangi
     given-names: Attila
+    orchid: https://orcid.org/0000-0001-9162-262X
 cff-version: 1.1.0
 date-released: 2021-08-16
 keywords:

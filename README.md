@@ -1,10 +1,13 @@
+![image](./docs/source/img/logos/atoMEC_horizontal2.png)
+
+# atoMEC: Average-Atom Code for Matter under Extreme Conditions
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5205719.svg)](https://doi.org/10.5281/zenodo.5205719)
 [![docs](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml)
 [![image](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![PyPI version](https://badge.fury.io/py/atoMEC.svg)](https://badge.fury.io/py/atoMEC)
 
-
-# atoMEC: Average-Atom Code for Matter under Extreme Conditions
 atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
 It is designed as an open-source and modular python package.
 
@@ -31,7 +34,7 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
 
   1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for    installation instructions)
   2. Next, install `atoMEC`'s dependencies with `pipenv install`
-  3. Use `pipenv shell` to activate the virtual environment and install atoMEC with `pip install -e .`
+  3. Use `pipenv shell` to activate the virtual environment and install atoMEC with `pip install atoMEC` (for developers: `pip install -e .`)
   4. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
 
 * Try running the examples in `examples/` and report any problems
@@ -56,7 +59,7 @@ $ pip install -r docs/requirements.txt
 
 1. Change into `docs/` folder.
 2. Run `make apidocs`.
-3. Run `make html`. This creates a `_build` folder inside `docs`. You may also want to use `make html SPHINXOPTS="-W"` sometimes. This treats warnings as errors and stops the output at first occurence of an error (useful for debugging rST syntax).
+3. Run `make html`. This creates a `_build` folder inside `docs`. You may also want to use `make html SPHINXOPTS="-W"` sometimes. This treats warnings as errors and stops the output at first occurrence of an error (useful for debugging rST syntax).
 4. Open `docs/_build/html/index.html`.
 5. `make clean` if required (e.g. after fixing errors) and building again.
 
@@ -74,6 +77,8 @@ $ pip install -r docs/requirements.txt
 - Ekaterina Tsvetoslavova Stankulova ([Center for Advanced Systems Understanding](https://www.casus.science/))
 
 ## Citing atoMEC
-The following paper should be cited in publications which use atoMEC:
+If you use code from this repository in a published work, please cite the DOI corresponding to the specific version of atoMEC that you used (DOIs are listed at [Zenodo.org](https://doi.org/10.5281/zenodo.5205718)).
+
+If appropriate, you might also consider citing the following preprint in publications which use atoMEC:
 
 T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021). First-principles derivation and properties of density-functional average-atom models. arXiv preprint [arXiv:2103.09928](https://arxiv.org/abs/2103.09928).

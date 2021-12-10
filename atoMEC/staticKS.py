@@ -8,22 +8,23 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 Classes
 -------
 * :class:`Orbitals` : Holds the KS orbitals (transformed to the log grid) and related \
-quantities such as eigenvalues and occupation numbers
-* :class:`Density` : Holds the KS density (bound/unbound components) and routines\
-to compute it.
+                      quantities such as eigenvalues and occupation numbers
+* :class:`Density` : Holds the KS density (bound/unbound components) and routines \
+                     to compute it.
 * :class:`Potential` : Holds the KS potential (split into individual components) and \
-the routines to compute them.
+                       the routines to compute them.
 * :class:`Energy` : Holds the free energy and all internal components (KS quantities \
-and entropy) and the routines required to compute them.
+                    and entropy) and the routines required to compute them.
 * :class:`EnergyAlt` : Holds the free energy and all internal components (KS \
-quantities and entropy) and the routines required to compute them. \
-N.B. the :class:`EnergyAlt` class constructs the energy functional in an alternative \
-manner to the main :class:`Energy` class
+                       quantities and entropy) and the routines required to compute \
+                       them. N.B. the :class:`EnergyAlt` class constructs the energy \
+                       functional in an alternative manner to the main :class:`Energy` \
+                       class.
 
 Functions
 ---------
 * :func:`log_grid` : Sets up the logarithmic (and associated real-space) grid on which \
-all computations rely.
+                     all computations rely.
 """
 
 # standard packages
@@ -76,9 +77,12 @@ class Orbitals:
         self._eigfuncs = np.zeros(
             (config.spindims, config.lmax, config.nmax, config.grid_params["ngrid"])
         )
-        self._eigvals = np.zeros((config.spindims, config.lmax, config.lmax))
+        self._eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
         self._occnums = np.zeros_like(self._eigvals)
+        self._occnums_ub = np.zeros_like(self._eigvals)
         self._lbound = np.zeros_like(self._eigvals)
+        self._lunbound = np.zeros_like(self._eigvals)
+        self._eigs_min = np.zeros((config.spindims, config.lmax))
 
     @property
     def eigvals(self):
@@ -112,6 +116,18 @@ class Orbitals:
         return self._occnums
 
     @property
+    def occnums_ub(self):
+        r"""
+        ndarray: KS occupation numbers (Fermi-Dirac).
+
+        The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
+        """
+        if np.all(self._occnums_ub == 0.0):
+            # raise Exception("Occnums have not been initialized")
+            self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
+        return self._occnums_ub
+
+    @property
     def lbound(self):
         r"""
         ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).
@@ -124,7 +140,20 @@ class Orbitals:
             self._lbound = self.make_lbound(self.eigvals)
         return self._lbound
 
-    def compute(self, potential, init=False):
+    @property
+    def lunbound(self):
+        r"""
+        ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).
+
+        The matrix takes the form
+        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`
+        """
+        if np.all(self._lbound == 0.0):
+            # raise Exception("lbound has not been initialized")
+            self._lunbound = self.make_lunbound(self.eigvals)
+        return self._lunbound
+
+    def compute(self, potential, init=False, eig_guess=False):
         """
         Compute the orbitals and their eigenvalues with the given potential.
 
@@ -145,11 +174,19 @@ class Orbitals:
         # set v to equal the input potential
         v[:] = potential
 
+        if eig_guess:
+            self._eigs_min = numerov.calc_eigs_min(v, self._xgrid)
+
         # solve the KS equations
-        self._eigfuncs, self._eigvals = numerov.matrix_solve(v, self._xgrid)
+        self._eigfuncs, self._eigvals = numerov.matrix_solve(
+            v, self._xgrid, eigs_min_guess=self._eigs_min
+        )
 
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals)
+
+        # compute the lunbound array
+        self._lunbound = self.make_lunbound(self.eigvals)
 
         # guess the chemical potential if initializing
         if init:
@@ -174,6 +211,9 @@ class Orbitals:
 
         # compute the occupation numbers using the chemical potential
         self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
+
+        # compute the unbound occupation numbers
+        self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
 
         return
 
@@ -242,6 +282,35 @@ class Orbitals:
 
         return lbound_mat
 
+    @staticmethod
+    def make_lunbound(eigvals):
+        r"""
+        Construct the lunbound matrix denoting the unbound states and degeneracies.
+
+        For each spin channel,
+        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
+
+        Parameters
+        ----------
+        eigvals : ndarray
+            the KS orbital eigenvalues
+
+        Returns
+        -------
+        lunbound_mat : ndarray
+            the lbound matrix
+        """
+        lunbound_mat = np.zeros_like(eigvals)
+
+        # only non-zero if quantum unbound electrons
+        if config.unbound == "quantum":
+            for l in range(config.lmax):
+                lunbound_mat[:, l] = (2.0 / config.spindims) * np.where(
+                    eigvals[:, l] > 0.0, 2 * l + 1.0, 0.0
+                )
+
+        return lunbound_mat
+
 
 class Density:
     """
@@ -283,7 +352,9 @@ class Density:
         electrons respectively.
         """
         if np.all(self._bound["rho"] == 0.0):
-            self._bound = self.construct_rho_bound(self._orbs, self._xgrid)
+            self._bound = self.construct_rho_orbs(
+                self._orbs.eigfuncs, self._orbs.occnums, self._xgrid
+            )
         return self._bound
 
     @property
@@ -295,47 +366,51 @@ class Density:
         unbound density and number of unbound electrons respectively
         """
         if np.all(self._unbound["rho"]) == 0.0:
-            self._unbound = self.construct_rho_unbound(self._orbs)
+            self._unbound = self.construct_rho_unbound(
+                self._orbs.eigfuncs, self._orbs.occnums_ub, self._xgrid
+            )
         return self._unbound
 
     @staticmethod
-    def construct_rho_bound(orbs, xgrid):
+    def construct_rho_orbs(eigfuncs, occnums, xgrid):
         """
-        Construct the bound part of the density.
+        Construct a density from a set of discrete KS orbitals.
 
         Parameters
         ----------
-        orbs : ndarray
+        eigfuncs : ndarray
             the radial eigenfunctions on the xgrid
+        occnums : ndarray
+            the orbital occupations
         xgrid : ndarray
             the logarithmic grid
 
         Returns
         -------
-        rho_bound : dict of ndarrays
-            contains the keys `rho` and `N` denoting the bound density
-            and number of bound electrons respectively
+        dens : dict of ndarrays
+            contains the keys `rho` and `N` denoting the density
+            and number of electrons respectively
         """
-        bound = {}  # initialize empty dict
+        dens = {}  # initialize empty dict
 
         # first of all construct the density
         # rho_b(r) = \sum_{n,l} (2l+1) f_{nl} |R_{nl}(r)|^2
         # occnums in atoMEC are defined as (2l+1)*f_{nl}
 
         # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
-        orbs_R = np.exp(-xgrid / 2.0) * orbs.eigfuncs
+        orbs_R = np.exp(-xgrid / 2.0) * eigfuncs
         orbs_R_sq = orbs_R ** 2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
-        bound["rho"] = np.einsum("ijk,ijkl->il", orbs.occnums, orbs_R_sq)
+        dens["rho"] = np.einsum("ijk,ijkl->il", occnums, orbs_R_sq)
 
         # compute the number of unbound electrons
-        bound["N"] = np.sum(orbs.occnums, axis=(1, 2))
+        dens["N"] = np.sum(occnums, axis=(1, 2))
 
-        return bound
+        return dens
 
     @staticmethod
-    def construct_rho_unbound(orbs):
+    def construct_rho_unbound(eigfuncs, occnums, xgrid):
         """
         Construct the unbound part of the density.
 
@@ -367,7 +442,11 @@ class Density:
                 rho_unbound[i] = n_ub
                 N_unbound[i] = n_ub * config.sph_vol
 
-        unbound = {"rho": rho_unbound, "N": N_unbound}
+            unbound = {"rho": rho_unbound, "N": N_unbound}
+
+        elif config.unbound == "quantum":
+
+            unbound = Density.construct_rho_orbs(eigfuncs, occnums, xgrid)
 
         return unbound
 
@@ -474,12 +553,12 @@ class Potential:
         for i, x0 in enumerate(xgrid):
 
             # set up 'upper' and 'lower' parts of the xgrid (x<=x0; x>x0)
-            x_u = xgrid[np.where(x0 <= xgrid)]
-            x_l = xgrid[np.where(x0 > xgrid)]
+            x_u = xgrid[np.where(x0 < xgrid)]
+            x_l = xgrid[np.where(x0 >= xgrid)]
 
             # likewise for the density
-            rho_u = rho[np.where(x0 <= xgrid)]
-            rho_l = rho[np.where(x0 > xgrid)]
+            rho_u = rho[np.where(x0 < xgrid)]
+            rho_l = rho[np.where(x0 >= xgrid)]
 
             # now compute the hartree potential
             int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
@@ -603,10 +682,12 @@ class Energy:
         E_kin = {}
 
         # bound part
-        E_kin["bound"] = self.calc_E_kin_bound(orbs, xgrid)
+        E_kin["bound"] = self.calc_E_kin_orbs(orbs.eigfuncs, orbs.occnums, xgrid)
 
         # unbound part
-        E_kin["unbound"] = self.calc_E_kin_unbound(orbs, xgrid)
+        E_kin["unbound"] = self.calc_E_kin_unbound(
+            orbs.eigfuncs, orbs.occnums_ub, xgrid
+        )
 
         # total
         E_kin["tot"] = E_kin["bound"] + E_kin["unbound"]
@@ -614,43 +695,116 @@ class Energy:
         return E_kin
 
     @staticmethod
-    def calc_E_kin_bound(orbs, xgrid):
+    def calc_E_kin_orbs(eigfuncs, occnums, xgrid):
         """
-        Compute the kinetic energy contribution from the bound electrons.
+        Compute the kinetic energy contribution from discrete KS orbitals.
 
         Parameters
         ----------
-        orbs : :obj:`Orbitals`
-            the KS orbitals object
+        eigfuncs : ndarray
+            the radial KS orbitals on the log grid
+        occnums : ndarray
+            the orbital occupations
         xgrid : ndarray
             the logarithmic grid
 
         Returns
         -------
-        E_kin_bound : float
-            the bound kinetic energy
+        E_kin : float
+            the kinetic energy
         """
-        # compute the grad^2 component
-        grad2_orbs = mathtools.laplace(orbs.eigfuncs, xgrid)
+        # compute the kinetic energy density (using default method A)
+        e_kin_dens = Energy.calc_E_kin_dens(eigfuncs, occnums, xgrid)
 
-        # compute the (l+1/2)^2 component
-        l_arr = np.array([(l + 0.5) ** 2.0 for l in range(config.lmax)])
-        lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, orbs.eigfuncs)
-
-        # add together and multiply by eigfuncs*exp(-3x)
-        prefac = np.exp(-3.0 * xgrid) * orbs.eigfuncs
-        kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
-
-        # multiply and sum over occupation numbers
-        e_kin_dens = np.einsum("ijk,ijkl->l", orbs.occnums, kin_orbs)
+        # FIXME: this is necessary because the Laplacian is not accurate at the boundary
+        for i in range(config.spindims):
+            e_kin_dens[i, -3:] = e_kin_dens[i, -4]
 
         # integrate over sphere
-        E_kin_bound = -0.5 * mathtools.int_sphere(e_kin_dens, xgrid)
+        E_kin = mathtools.int_sphere(np.sum(e_kin_dens, axis=0), xgrid)
 
-        return E_kin_bound
+        return E_kin
 
     @staticmethod
-    def calc_E_kin_unbound(orbs, xgrid):
+    def calc_E_kin_dens(eigfuncs, occnums, xgrid, method="A"):
+        """
+        Calculate the local kinetic energy density (KED).
+
+        There are multiple definitions in the literature of the local KED, see notes.
+
+        Parameters
+        ----------
+        eigfuncs : ndarray
+            the radial KS orbitals on the log grid
+        occnums : ndarray
+            the orbital occupations
+        xgrid : ndarray
+            the logarithmic grid
+        method : str, optional
+            the definition used for KED, can be 'A' or 'B' (see notes).
+
+        Returns
+        -------
+        e_kin_dens : ndarray
+            the local kinetic energy density
+
+        Notes
+        -----
+        The methods 'A' and 'B' in this function are given according to the definitions
+        in [3]_ and [4]_.
+
+        They of course (should) both integrate to the same kinetic energy. The
+        definition 'B' is the one used in the usual definition of the electron
+        localization function [5]_.
+
+        References
+        ----------
+        .. [3] H. Jiang, The local kinetic energy density revisited,
+           New J. Phys. 22 103050 (2020), `DOI:10.1088/1367-2630/abbf5d
+           <https://doi.org/10.1088/1367-2630/abbf5d>`__.
+        .. [4] L. Cohen, Local kinetic energy in quantum mechanics,
+           J. Chem. Phys. 70, 788 (1979), `DOI:10.1063/1.437511
+           <https://doi.org/10.1063/1.437511>`__.
+        .. [5] A. Savin et al., Electron Localization in Solid-State Structures of the
+           Elements: the Diamond Structure, Angew. Chem. Int. Ed. Engl. 31: 187-188
+           (1992), `DOI:10.1002/anie.199201871
+           <https://doi.org/10.1002/anie.199201871>`__.
+        """
+        if method == "A":
+            # compute the grad^2 component
+            grad2_orbs = mathtools.laplace(eigfuncs, xgrid)
+
+            # compute the (l+1/2)^2 component
+            l_arr = np.fromiter(
+                ((l + 0.5) ** 2.0 for l in range(config.lmax)), float, config.lmax
+            )
+            lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, eigfuncs)
+
+            # add together and multiply by eigfuncs*exp(-3x)
+            prefac = np.exp(-3.0 * xgrid) * eigfuncs
+            kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
+
+            # multiply and sum over occupation numbers
+            e_kin_dens = -0.5 * np.einsum("ijk,ijkl->il", occnums, kin_orbs)
+
+        elif method == "B":
+
+            # compute the gradient of the orbitals
+            grad_eigfuncs = np.gradient(eigfuncs, xgrid, axis=-1, edge_order=2)
+
+            # chain rule to convert from dP_dx to dX_dr
+            grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * eigfuncs)
+
+            # square it
+            grad_orbs_sq = grad_orbs ** 2.0
+
+            # multiply and sum over occupation numbers
+            e_kin_dens = 0.5 * np.einsum("ijk,ijkl->il", occnums, grad_orbs_sq)
+
+        return e_kin_dens
+
+    @staticmethod
+    def calc_E_kin_unbound(eigfuncs, occnums, xgrid):
         r"""
         Compute the contribution from unbound (continuum) electrons to kinetic energy.
 
@@ -685,6 +839,9 @@ class Energy:
                     config.mu[i], config.beta, 3.0
                 )
 
+        elif config.unbound == "quantum":
+            E_kin_unbound = Energy.calc_E_kin_orbs(eigfuncs, occnums, xgrid)
+
         return E_kin_unbound
 
     def calc_entropy(self, orbs):
@@ -707,10 +864,10 @@ class Energy:
         S = {}
 
         # bound part
-        S["bound"] = self.calc_S_bound(orbs)
+        S["bound"] = self.calc_S_orbs(orbs.occnums, orbs.lbound)
 
         # unbound part
-        S["unbound"] = self.calc_S_unbound(orbs)
+        S["unbound"] = self.calc_S_unbound(orbs.occnums_ub, orbs.lunbound)
 
         # total
         S["tot"] = S["bound"] + S["unbound"]
@@ -718,14 +875,16 @@ class Energy:
         return S
 
     @staticmethod
-    def calc_S_bound(orbs):
+    def calc_S_orbs(occnums, lmat):
         r"""
-        Compute the contribution of the bound states to the entropy (see notes).
+        Compute the KS (non-interacting) entropy for specified orbitals (see notes).
 
         Parameters
         ----------
-        orbs : :obj:`Orbitals`
-            the KS orbitals object
+        occnums : ndarray
+            orbital occupation numbers
+        lmat : ndarray
+            the degeneracy array (:math:`(2l+1)`)
 
         Returns
         -------
@@ -742,14 +901,12 @@ class Energy:
         """
         # the occupation numbers are stored as f'_{nl}=f_{nl}*(2l+1)
         # we first need to map them back to their 'pure' form f_{nl}
-        lbound_inv = np.zeros_like(orbs.lbound)
+        lmat_inv = np.zeros_like(lmat)
         for l in range(config.lmax):
-            lbound_inv[:, l] = (config.spindims / 2.0) * np.where(
-                orbs.eigvals[:, l] < 0, 1.0 / (2 * l + 1.0), 0.0
-            )
+            lmat_inv[:, l] = (config.spindims / 2.0) * 1.0 / (2 * l + 1.0)
 
         # pure occupation numbers (with zeros replaced by finite values)
-        occnums_pu = lbound_inv * orbs.occnums
+        occnums_pu = lmat_inv * occnums
         occnums_mod1 = np.where(occnums_pu > 1e-5, occnums_pu, 0.5)
         occnums_mod2 = np.where(occnums_pu < 1.0 - 1e-5, occnums_pu, 0.5)
 
@@ -758,15 +915,15 @@ class Energy:
         term2 = (1.0 - occnums_pu) * np.log(1.0 - occnums_mod2)
 
         # multiply by (2l+1) factor
-        g_nls = orbs.lbound * (term1 + term2)
+        g_nls = lmat * (term1 + term2)
 
         # sum over all quantum numbers to get the total entropy
-        S_bound = -np.sum(g_nls)
+        S_orbs = -np.sum(g_nls)
 
-        return S_bound
+        return S_orbs
 
     @staticmethod
-    def calc_S_unbound(orbs):
+    def calc_S_unbound(occnums_ub, lunbound):
         r"""
         Compute the unbound contribution to the entropy.
 
@@ -804,6 +961,9 @@ class Energy:
                     )
                 else:
                     S_unbound += 0.0
+
+        elif config.unbound == "quantum":
+            S_unbound = Energy.calc_S_orbs(occnums_ub, lunbound)
 
         return S_unbound
 
@@ -1024,7 +1184,14 @@ class EnergyAlt:
             v_xc = pot.v_xc["xc"][i]
             E_v_xc = E_v_xc + mathtools.int_sphere(dens[i] * v_xc, xgrid)
 
-        return E_v_ha + E_v_xc
+        # compute the term due to the constant shift introduced in the potential
+        if config.v_shift:
+            v_shift = pot.v_s[:, -1]
+            E_const = -np.sum(v_shift * config.nele)
+        else:
+            E_const = 0.0
+
+        return E_v_ha + E_v_xc + E_const
 
     def calc_entropy(self, orbs):
         """

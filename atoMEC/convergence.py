@@ -1,13 +1,13 @@
 """
 Contains classes and functions used to compute and store aspects related to convergence.
 
-So far, the only procedure requring convergence is the static SCF cycle. More will \
+So far, the only procedure requring convergence is the static SCF cycle. More will
 be added in future.
 
 Classes
 -------
 * :class:`SCF` : holds the SCF convergence attributes and calculates them for the \
-given cycle
+                 given cycle
 """
 
 # standard libraries
