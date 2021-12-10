@@ -5,6 +5,8 @@ from scipy.special import lpmv
 from scipy.integrate import quad
 import numpy as np
 
+from . import writeoutput
+
 
 ################################################################
 # functions to compute various integrals of legendre functions #
@@ -37,6 +39,10 @@ class KuboGreenwood:
         self._sig_tot = None
         self._N_tot = None
         self._N_free = None
+        self._R1_int = None
+        self._R2_int = None
+        self._P2_int = None
+        self._P4_int = None
 
     @property
     def occnums(self):
@@ -75,7 +81,10 @@ class KuboGreenwood:
     def sig_tot(self):
         if self._sig_tot is None:
             self._sig_tot = self.calc_sig(
-                self._eigfuncs,
+                self.R1_int,
+                self.R2_int,
+                self.P2_int,
+                self.P4_int,
                 self.occnums,
                 self._eigvals,
                 self._xgrid,
@@ -88,7 +97,10 @@ class KuboGreenwood:
     def sig_cc(self):
         if self._sig_cc is None:
             self._sig_cc = self.calc_sig(
-                self._eigfuncs,
+                self.R1_int,
+                self.R2_int,
+                self.P2_int,
+                self.P4_int,
                 self.occnums,
                 self._eigvals,
                 self._xgrid,
@@ -101,7 +113,10 @@ class KuboGreenwood:
     def sig_vv(self):
         if self._sig_vv is None:
             self._sig_vv = self.calc_sig(
-                self._eigfuncs,
+                self.R1_int,
+                self.R2_int,
+                self.P2_int,
+                self.P4_int,
                 self.occnums,
                 self._eigvals,
                 self._xgrid,
@@ -114,7 +129,10 @@ class KuboGreenwood:
     def sig_cv(self):
         if self._sig_cv is None:
             self._sig_cv = self.calc_sig(
-                self._eigfuncs,
+                self.R1_int,
+                self.R2_int,
+                self.P2_int,
+                self.P4_int,
                 self.occnums,
                 self._eigvals,
                 self._xgrid,
@@ -138,6 +156,36 @@ class KuboGreenwood:
             V = (4.0 / 3.0) * pi * rmax ** 3.0
             self._N_free = self.sig_cc * (2 * V / pi)
         return self._N_free
+
+    @property
+    @writeoutput.timing
+    def R1_int(self):
+        if self._R1_int is None:
+            self._R1_int = calc_R1_int_mat(
+                self._eigfuncs[0], self.occnums[0], self._xgrid, self.all_orbs
+            )
+        return self._R1_int
+
+    @property
+    @writeoutput.timing
+    def R2_int(self):
+        if self._R2_int is None:
+            self._R2_int = calc_R2_int_mat(
+                self._eigfuncs[0], self.occnums[0], self._xgrid, self.all_orbs
+            )
+        return self._R2_int
+
+    @property
+    def P2_int(self):
+        if self._P2_int is None:
+            self._P2_int = P_mat_int(2, self._lmax)
+        return self._P2_int
+
+    @property
+    def P4_int(self):
+        if self._P4_int is None:
+            self._P4_int = P_mat_int(4, self._lmax)
+        return self._P4_int
 
     def check_sum_rule(self, l, n, m):
         sum_mom = 0.0
@@ -170,8 +218,12 @@ class KuboGreenwood:
         return sum_mom
 
     @staticmethod
+    @writeoutput.timing
     def calc_sig(
-        eigfuncs,
+        R1_int,
+        R2_int,
+        P2_int,
+        P4_int,
         occnums,
         eigvals,
         xgrid,
@@ -184,6 +236,73 @@ class KuboGreenwood:
     ):
 
         sig = 0.0
+
+        tmp_mat_1 = np.einsum("abcd,ace->abcde", R1_int, P2_int)
+        tmp_mat_2 = np.einsum("abcd,ace->abcde", R2_int, P4_int)
+        tmp_mat_3 = np.einsum("abcd,ace->cdabe", R1_int, P2_int)
+        tmp_mat_4 = np.einsum("abcd,ace->cdabe", R2_int, P4_int)
+
+        mel_sq_mat = np.sum(
+            np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
+            axis=-1,
+        )
+
+        for l1, n1 in orb_subset_1:
+            for l2, n2 in orb_subset_2:
+                # the eigenvalue difference
+                eig_diff = eigvals[0, l1, n1] - eigvals[0, l2, n2]
+                # occupation number difference
+                occnum_diff = abs(occnums[0, l1, n1] - occnums[0, l2, n2])
+                if eig_diff < eig_min_diff:
+                    continue
+                elif eig_diff > eig_max_diff:
+                    continue
+                elif abs(l1 - l2) != 1:
+                    continue
+                elif occnum_diff < occ_min_diff:
+                    continue
+                else:
+                    occnum_diff = -(occnums[0, l1, n1] - occnums[0, l2, n2])
+
+                    # compute the matrix element
+                    # mel_sq = 0.0
+                    # for m1 in range(-l1, l1 + 1):
+                    #     for m2 in range(-l2, l2 + 1):
+                    #         if m1 == m2:
+                    #             mel = calc_mel_kgm_2(R1_int, R2_int, l2, n2, l1, n1, m1)
+                    #             mel_cc = calc_mel_kgm_2(
+                    #                 R1_int, R2_int, l1, n1, l2, n2, m1
+                    #             )
+                    #             mel_sq += abs(mel * mel_cc)
+
+                    # mel_sq = np.sum(tmp_mat, tmp_mat_cc, axis=-1)
+                    mel_sq = mel_sq_mat[l1, n1, l2, n2]
+
+                    # compute the volume
+                    rmax = np.exp(xgrid)[-1]
+                    V = (4.0 / 3.0) * pi * rmax ** 3.0
+
+                    smooth_fac = eig_diff ** 2 / (gamma ** 2 + eig_diff ** 2)
+                    sig += 2 * pi * smooth_fac * occnum_diff * mel_sq / (eig_diff * V)
+
+        return sig
+
+    @staticmethod
+    def calc_sig_func(
+        omega,
+        eigfuncs,
+        occnums,
+        eigvals,
+        xgrid,
+        orb_subset_1,
+        orb_subset_2,
+        gamma=0.0,
+        eig_min_diff=1e-3,
+        eig_max_diff=1e4,
+        occ_min_diff=1e-4,
+    ):
+
+        sig_omega = np.zeros_like(omega)
         for l1, n1 in orb_subset_1:
             for l2, n2 in orb_subset_2:
                 # the eigenvalue difference
@@ -223,15 +342,30 @@ class KuboGreenwood:
                     V = (4.0 / 3.0) * pi * rmax ** 3.0
 
                     smooth_fac = eig_diff ** 2 / (gamma ** 2 + eig_diff ** 2)
-                    sig += 2 * pi * smooth_fac * occnum_diff * mel_sq / (eig_diff * V)
+                    sig_omega += (
+                        2 * pi * smooth_fac * occnum_diff * mel_sq / (eig_diff * V)
+                    )
 
-        return sig
+        return sig_omega
 
 
 def sph_ham_coeff(l, m):
     r"""The coefficients of spherical harmonic functions"""
     c_lm = sqrt((2 * l + 1) * factorial(l - m) / (factorial(l + m) * 4 * pi))
     return c_lm
+
+
+def P_mat_int(func_int, lmax):
+
+    P_mat = np.zeros((lmax, lmax, 2 * lmax + 1))
+
+    for l1 in range(lmax):
+        for l2 in range(lmax):
+            if abs(l1 - l2) == 1:
+                lsmall = min(l1, l2)
+                for m in range(-lsmall, lsmall + 1):
+                    P_mat[l1, l2, m] = P_int(func_int, l1, l2, m)
+    return P_mat
 
 
 def P_int(func_int, l1, l2, m):
@@ -262,6 +396,60 @@ def P4_func(x, l1, l2, m):
     return lpmv(m, l1, x) * factor
 
 
+def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_pairs):
+    r"""Compute the R1 integral."""
+
+    # take the derivative of orb2
+    # compute the gradient of the orbitals
+    deriv_orb2 = np.gradient(eigfuncs, xgrid, axis=-1, edge_order=2)
+
+    # chain rule to convert from dP_dx to dX_dr
+    grad_orb2 = np.exp(-1.5 * xgrid) * (deriv_orb2 - 0.5 * eigfuncs)
+
+    # initiliaze the matrix
+    lmax, nmax = np.shape(occnums)
+    R1_mat = np.zeros((lmax, nmax, lmax, nmax))
+
+    # integrate over the sphere
+    for l1, n1 in orb_pairs:
+        for l2, n2 in orb_pairs:
+            if abs(l1 - l2) != 1:
+                continue
+            elif abs(occnums[l2, n2] - occnums[l1, n1]) < 1e-3:
+                continue
+            else:
+                func_int = eigfuncs[l1, n1] * np.exp(-xgrid / 2.0) * grad_orb2[l2, n2]
+
+                R1_mat[l1, n1, l2, n2] = (
+                    4 * pi * np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
+                )
+    return R1_mat
+
+
+def calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_pairs):
+    r"""Compute the R2 integral."""
+
+    # initiliaze the matrix
+    lmax, nmax = np.shape(occnums)
+    R2_mat = np.zeros((lmax, nmax, lmax, nmax))
+
+    # integrate over the sphere
+    for l1, n1 in orb_pairs:
+        for l2, n2 in orb_pairs:
+            if abs(l1 - l2) != 1:
+                continue
+            elif abs(occnums[l2, n2] - occnums[l1, n1]) < 1e-3:
+                continue
+            else:
+                func_int = eigfuncs[l1, n1] * eigfuncs[l2, n2] * np.exp(-xgrid)
+
+                R2_mat[l1, n1, l2, n2] = (
+                    4 * pi * np.trapz(np.exp(2.0 * xgrid) * func_int, xgrid)
+                )
+
+    return R2_mat
+
+
 def calc_R1_int(orb1, orb2, xgrid):
     r"""Compute the R1 integral."""
 
@@ -273,8 +461,8 @@ def calc_R1_int(orb1, orb2, xgrid):
     grad_orb2 = np.exp(-1.5 * xgrid) * (deriv_orb2 - 0.5 * orb2)
 
     # integrate over the sphere
-    func_int = np.exp(3.0 * xgrid) * orb1 * np.exp(-xgrid / 2.0) * grad_orb2
-    return np.trapz(func_int, xgrid)
+    func_int = orb1 * np.exp(-xgrid / 2.0) * grad_orb2
+    return np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
 
 
 def calc_R2_int(orb1, orb2, xgrid):
@@ -348,3 +536,12 @@ def calc_mel_kgm(orb_l1n1, orb_l2n2, l1, n1, l2, n2, m, xgrid):
     mel_tot += R2_int * P_int(4, l1, l2, m)
 
     return mel_tot
+
+
+def calc_mel_kgm_2(R1_int, R2_int, l1, n1, l2, n2, m):
+
+    mel = R1_int[l1, n1, l2, n2] * P_int(2, l1, l2, m) + R2_int[l1, n1, l2, n2] * P_int(
+        4, l1, l2, m
+    )
+
+    return mel
