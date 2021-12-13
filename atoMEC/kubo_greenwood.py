@@ -37,12 +37,15 @@ class KuboGreenwood:
         self._sig_cv = None
         self._sig_vv = None
         self._sig_tot = None
+        self._cond_tot = None
         self._N_tot = None
         self._N_free = None
         self._R1_int = None
         self._R2_int = None
         self._P2_int = None
         self._P4_int = None
+        self._occ_diff_mat = None
+        self._eig_diff_mat = None
 
     @property
     def occnums(self):
@@ -85,6 +88,8 @@ class KuboGreenwood:
                 self.R2_int,
                 self.P2_int,
                 self.P4_int,
+                self.occ_diff_mat,
+                self.eig_diff_mat,
                 self.occnums,
                 self._eigvals,
                 self._xgrid,
@@ -94,6 +99,25 @@ class KuboGreenwood:
         return self._sig_tot
 
     @property
+    def cond_tot(self, gamma=0.01, maxfreq=50, nfreq=200):
+        if self._cond_tot is None:
+            self._cond_tot = self.calc_sig_func(
+                self.R1_int,
+                self.R2_int,
+                self.P2_int,
+                self.P4_int,
+                self.occnums,
+                self._eigvals,
+                self._xgrid,
+                self.all_orbs,
+                self.all_orbs,
+                omega_max=maxfreq,
+                n_freq=nfreq,
+                gamma=gamma,
+            )
+        return self._cond_tot
+
+    @property
     def sig_cc(self):
         if self._sig_cc is None:
             self._sig_cc = self.calc_sig(
@@ -101,6 +125,8 @@ class KuboGreenwood:
                 self.R2_int,
                 self.P2_int,
                 self.P4_int,
+                self.occ_diff_mat,
+                self.eig_diff_mat,
                 self.occnums,
                 self._eigvals,
                 self._xgrid,
@@ -117,6 +143,8 @@ class KuboGreenwood:
                 self.R2_int,
                 self.P2_int,
                 self.P4_int,
+                self.occ_diff_mat,
+                self.eig_diff_mat,
                 self.occnums,
                 self._eigvals,
                 self._xgrid,
@@ -133,6 +161,8 @@ class KuboGreenwood:
                 self.R2_int,
                 self.P2_int,
                 self.P4_int,
+                self.occ_diff_mat,
+                self.eig_diff_mat,
                 self.occnums,
                 self._eigvals,
                 self._xgrid,
@@ -176,16 +206,36 @@ class KuboGreenwood:
         return self._R2_int
 
     @property
+    @writeoutput.timing
     def P2_int(self):
         if self._P2_int is None:
             self._P2_int = P_mat_int(2, self._lmax)
         return self._P2_int
 
     @property
+    @writeoutput.timing
     def P4_int(self):
         if self._P4_int is None:
             self._P4_int = P_mat_int(4, self._lmax)
         return self._P4_int
+
+    @property
+    @writeoutput.timing
+    def occ_diff_mat(self):
+        if self._occ_diff_mat is None:
+            self._occ_diff_mat = calc_occ_diff_mat(
+                self.occnums, self.all_orbs, self._lmax, self._nmax
+            )
+        return self._occ_diff_mat
+
+    @property
+    @writeoutput.timing
+    def eig_diff_mat(self):
+        if self._eig_diff_mat is None:
+            self._eig_diff_mat = calc_eig_diff_mat(
+                self._eigvals, self.all_orbs, self._lmax, self._nmax
+            )
+        return self._eig_diff_mat
 
     def check_sum_rule(self, l, n, m):
         sum_mom = 0.0
@@ -224,6 +274,8 @@ class KuboGreenwood:
         R2_int,
         P2_int,
         P4_int,
+        occ_diff_mat,
+        eig_diff_mat,
         occnums,
         eigvals,
         xgrid,
@@ -247,106 +299,117 @@ class KuboGreenwood:
             axis=-1,
         )
 
-        for l1, n1 in orb_subset_1:
-            for l2, n2 in orb_subset_2:
-                # the eigenvalue difference
-                eig_diff = eigvals[0, l1, n1] - eigvals[0, l2, n2]
-                # occupation number difference
-                occnum_diff = abs(occnums[0, l1, n1] - occnums[0, l2, n2])
-                if eig_diff < eig_min_diff:
-                    continue
-                elif eig_diff > eig_max_diff:
-                    continue
-                elif abs(l1 - l2) != 1:
-                    continue
-                elif occnum_diff < occ_min_diff:
-                    continue
-                else:
-                    occnum_diff = -(occnums[0, l1, n1] - occnums[0, l2, n2])
+        sig_bare = np.sum(mel_sq_mat * occ_diff_mat / eig_diff_mat)
 
-                    # compute the matrix element
-                    # mel_sq = 0.0
-                    # for m1 in range(-l1, l1 + 1):
-                    #     for m2 in range(-l2, l2 + 1):
-                    #         if m1 == m2:
-                    #             mel = calc_mel_kgm_2(R1_int, R2_int, l2, n2, l1, n1, m1)
-                    #             mel_cc = calc_mel_kgm_2(
-                    #                 R1_int, R2_int, l1, n1, l2, n2, m1
-                    #             )
-                    #             mel_sq += abs(mel * mel_cc)
+        rmax = np.exp(xgrid)[-1]
+        V = (4.0 / 3.0) * pi * rmax ** 3.0
 
-                    # mel_sq = np.sum(tmp_mat, tmp_mat_cc, axis=-1)
-                    mel_sq = mel_sq_mat[l1, n1, l2, n2]
+        # smooth_fac = eig_diff ** 2 / (gamma ** 2 + eig_diff ** 2)
+        sig = 2 * pi * sig_bare / V
 
-                    # compute the volume
-                    rmax = np.exp(xgrid)[-1]
-                    V = (4.0 / 3.0) * pi * rmax ** 3.0
+        # for l1, n1 in orb_subset_1:
+        #     for l2, n2 in orb_subset_2:
+        #         # the eigenvalue difference
+        #         eig_diff = eig_diff_mat[l1, n1, l2, n2]
+        #         # occupation number difference
+        #         occnum_diff = abs(occnums[0, l1, n1] - occnums[0, l2, n2])
+        #         if eig_diff < eig_min_diff:
+        #             continue
+        #         elif eig_diff > eig_max_diff:
+        #             continue
+        #         elif abs(l1 - l2) != 1:
+        #             continue
+        #         elif occnum_diff < occ_min_diff:
+        #             continue
+        #         else:
+        #             occnum_diff = -occ_diff_mat[l1, n1, l2, n2]
 
-                    smooth_fac = eig_diff ** 2 / (gamma ** 2 + eig_diff ** 2)
-                    sig += 2 * pi * smooth_fac * occnum_diff * mel_sq / (eig_diff * V)
+        #             # compute the matrix element
+        #             mel_sq = 0.0
+        #             for m1 in range(-l1, l1 + 1):
+        #                 for m2 in range(-l2, l2 + 1):
+        #                     if m1 == m2:
+        #                         mel = calc_mel_kgm_2(R1_int, R2_int, l2, n2, l1, n1, m1)
+        #                         mel_cc = calc_mel_kgm_2(
+        #                             R1_int, R2_int, l1, n1, l2, n2, m1
+        #                         )
+        #                         mel_sq += abs(mel * mel_cc)
+
+        #             # mel_sq = np.sum(tmp_mat, tmp_mat_cc, axis=-1)
+        #             mel_sq = mel_sq_mat[l1, n1, l2, n2]
+
+        #             # compute the volume
+        #             rmax = np.exp(xgrid)[-1]
+        #             V = (4.0 / 3.0) * pi * rmax ** 3.0
+
+        #             smooth_fac = eig_diff ** 2 / (gamma ** 2 + eig_diff ** 2)
+        #             sig += 2 * pi * smooth_fac * occnum_diff * mel_sq / (eig_diff * V)
 
         return sig
 
     @staticmethod
     def calc_sig_func(
-        omega,
-        eigfuncs,
+        R1_int,
+        R2_int,
+        P2_int,
+        P4_int,
         occnums,
         eigvals,
         xgrid,
         orb_subset_1,
         orb_subset_2,
-        gamma=0.0,
+        omega_max=50,
+        n_freq=100,
+        gamma=0.5,
         eig_min_diff=1e-3,
         eig_max_diff=1e4,
         occ_min_diff=1e-4,
     ):
 
-        sig_omega = np.zeros_like(omega)
-        for l1, n1 in orb_subset_1:
-            for l2, n2 in orb_subset_2:
-                # the eigenvalue difference
-                eig_diff = eigvals[0, l1, n1] - eigvals[0, l2, n2]
-                # occupation number difference
-                occnum_diff = abs(occnums[0, l1, n1] - occnums[0, l2, n2])
-                if eig_diff < eig_min_diff:
-                    continue
-                elif eig_diff > eig_max_diff:
-                    continue
-                elif abs(l1 - l2) != 1:
-                    continue
-                elif occnum_diff < occ_min_diff:
-                    continue
-                else:
-                    occnum_diff = -(occnums[0, l1, n1] - occnums[0, l2, n2])
+        tmp_mat_1 = np.einsum("abcd,ace->abcde", R1_int, P2_int)
+        tmp_mat_2 = np.einsum("abcd,ace->abcde", R2_int, P4_int)
+        tmp_mat_3 = np.einsum("abcd,ace->cdabe", R1_int, P2_int)
+        tmp_mat_4 = np.einsum("abcd,ace->cdabe", R2_int, P4_int)
 
-                    # eigenfunctions
-                    orb_l1n1 = sqrt(4 * pi) * eigfuncs[0, l1, n1]
-                    orb_l2n2 = sqrt(4 * pi) * eigfuncs[0, l2, n2]
+        mel_sq_mat = np.sum(
+            np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
+            axis=-1,
+        )
 
-                    # compute the matrix element
-                    mel_sq = 0.0
-                    for m1 in range(-l1, l1 + 1):
-                        for m2 in range(-l2, l2 + 1):
-                            if m1 == m2:
-                                mel = calc_mel_kgm(
-                                    orb_l2n2, orb_l1n1, l2, n2, l1, n1, m1, xgrid
-                                )
-                                mel_cc = calc_mel_kgm(
-                                    orb_l1n1, orb_l2n2, l1, n1, l2, n2, m1, xgrid
-                                )
-                                mel_sq += abs(mel * mel_cc)
+        omega_arr = np.linspace(0.1, omega_max, n_freq)
+        sig_omega = np.zeros((np.size(omega_arr), 2))
 
-                    # compute the volume
-                    rmax = np.exp(xgrid)[-1]
-                    V = (4.0 / 3.0) * pi * rmax ** 3.0
+        for i, omega in enumerate(omega_arr):
+            sig_omega[i, 0] = omega
+            for l1, n1 in orb_subset_1:
+                for l2, n2 in orb_subset_2:
+                    # the eigenvalue difference
+                    eig_diff = eigvals[0, l1, n1] - eigvals[0, l2, n2]
+                    # occupation number difference
+                    occnum_diff = abs(occnums[0, l1, n1] - occnums[0, l2, n2])
+                    if eig_diff < eig_min_diff:
+                        continue
+                    elif eig_diff > eig_max_diff:
+                        continue
+                    elif abs(l1 - l2) != 1:
+                        continue
+                    elif occnum_diff < occ_min_diff:
+                        continue
+                    else:
+                        occnum_diff = -(occnums[0, l1, n1] - occnums[0, l2, n2])
 
-                    smooth_fac = eig_diff ** 2 / (gamma ** 2 + eig_diff ** 2)
-                    sig_omega += (
-                        2 * pi * smooth_fac * occnum_diff * mel_sq / (eig_diff * V)
-                    )
+                        mel_sq = mel_sq_mat[l1, n1, l2, n2]
+                        # compute the volume
+                        rmax = np.exp(xgrid)[-1]
+                        V = (4.0 / 3.0) * pi * rmax ** 3.0
 
-        return sig_omega
+                        lorentz = lorentzian(omega, eig_diff, gamma)
+                        sig_omega[i, 1] += (
+                            2 * pi * lorentz * occnum_diff * mel_sq / (V * omega)
+                        )
+        sig_tot = (2 * V / pi) * np.trapz(sig_omega[:, 1], x=omega_arr)
+
+        return sig_omega, sig_tot
 
 
 def sph_ham_coeff(l, m):
@@ -365,6 +428,8 @@ def P_mat_int(func_int, lmax):
                 lsmall = min(l1, l2)
                 for m in range(-lsmall, lsmall + 1):
                     P_mat[l1, l2, m] = P_int(func_int, l1, l2, m)
+            else:
+                continue
     return P_mat
 
 
@@ -424,6 +489,37 @@ def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_pairs):
                     4 * pi * np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
                 )
     return R1_mat
+
+
+def calc_occ_diff_mat(occnums, orb_pairs, lmax, nmax):
+
+    occ_diff_mat = np.zeros((lmax, nmax, lmax, nmax))
+
+    for l1, n1 in orb_pairs:
+        for l2, n2 in orb_pairs:
+            if abs(l1 - l2) == 1:
+                occ_diff_mat[l1, n1, l2, n2] = occnums[0, l1, n1] - occnums[0, l2, n2]
+            else:
+                continue
+
+    return occ_diff_mat
+
+
+def calc_eig_diff_mat(eigvals, orb_pairs, lmax, nmax):
+
+    eig_diff_mat = np.zeros((lmax, nmax, lmax, nmax))
+    eig_diff_mat += np.inf
+
+    for l1, n1 in orb_pairs:
+        for l2, n2 in orb_pairs:
+            if abs(l1 - l2) != 1:
+                continue
+            elif eigvals[0, l1, n1] - eigvals[0, l2, n2] < 0:
+                continue
+            else:
+                eig_diff_mat[l1, n1, l2, n2] = eigvals[0, l1, n1] - eigvals[0, l2, n2]
+
+    return eig_diff_mat
 
 
 def calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_pairs):
@@ -545,3 +641,8 @@ def calc_mel_kgm_2(R1_int, R2_int, l1, n1, l2, n2, m):
     )
 
     return mel
+
+
+def lorentzian(x, x0, gamma):
+
+    return (gamma / pi) * (1.0 / (gamma ** 2 + (x - x0) ** 2))
