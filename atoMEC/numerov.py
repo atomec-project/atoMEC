@@ -536,3 +536,52 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
 
     return eigfuncs, eigvals
+
+
+def num_propagate(xgrid, v, l, E):
+    """
+    Propagate the wfn manually for fixed energy with numerov scheme.
+
+    Parameters
+    ----------
+    xgrid : ndarray
+        the logarithmic grid
+    v : ndarray
+        KS potential array
+    l : int
+        angular momentum value
+    E : float
+        energy of the wavefunction
+
+    Returns
+    -------
+    Psi_norm : ndarray
+        normalized wavefunction
+    """
+    # define some initial grid parameters
+    dx = xgrid[1] - xgrid[0]
+    x0 = xgrid[0]
+    h = (dx ** 2) / 12.0  # a parameter for the numerov integration
+    N = np.size(xgrid)  # size of grid
+
+    # 'Potential' for numerov integration
+    W = -2.0 * np.exp(2.0 * xgrid) * (v - E) - (l + 0.5) ** 2
+
+    # Initial conditions
+    Psi = np.zeros((N))  # initialize the wfn
+    Psi[1] = np.exp((l + 0.5) * (x0 + dx))
+
+    # Integration loop
+    for i in range(2, N):
+        Psi[i] = (
+            2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
+            - (1.0 + h * W[i - 2]) * Psi[i - 2]
+        ) / (1.0 + h * W[i])
+
+    # normalize the wavefunction
+    psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
+    integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+    norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
+    Psi_norm = norm * Psi
+
+    return Psi_norm
