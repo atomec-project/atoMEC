@@ -185,6 +185,9 @@ class Orbitals:
         if eig_guess:
             if bc != "bands":
                 self._eigs_min[0] = numerov.calc_eigs_min(v, self._xgrid, bc)
+            else:
+                self._eigs_min[0] = numerov.calc_eigs_min(v, self._xgrid, "neumann")
+                self._eigs_min[1] = numerov.calc_eigs_min(v, self._xgrid, "dirichlet")
 
         # solve the KS equations
         if bc != "bands":
@@ -193,6 +196,20 @@ class Orbitals:
                 self._xgrid,
                 bc,
                 eigs_min_guess=self._eigs_min[0],
+            )
+        else:
+            self._eigfuncs[0], self._eigvals[0] = numerov.matrix_solve(
+                v,
+                self._xgrid,
+                "neumann",
+                eigs_min_guess=self._eigs_min[0],
+            )
+
+            self._eigfuncs[1], self._eigvals[1] = numerov.matrix_solve(
+                v,
+                self._xgrid,
+                "dirichlet",
+                eigs_min_guess=self._eigs_min[1],
             )
 
         # compute the lbound array
@@ -281,8 +298,10 @@ class Orbitals:
         lbound_mat = np.zeros_like(eigvals)
 
         for l in range(config.lmax):
-            lbound_mat[:, :, l] = (2.0 / config.spindims) * np.where(
-                eigvals[:, :, l] < 0.0, 2 * l + 1.0, 0.0
+            lbound_mat[:, :, l] = (
+                (1.0 / config.nbands)
+                * (2.0 / config.spindims)
+                * np.where(eigvals[:, :, l] < 0.0, 2 * l + 1.0, 0.0)
             )
 
         # force bound levels if there are convergence issues
@@ -319,8 +338,10 @@ class Orbitals:
         # only non-zero if quantum unbound electrons
         if config.unbound == "quantum":
             for l in range(config.lmax):
-                lunbound_mat[:, :, l] = (2.0 / config.spindims) * np.where(
-                    eigvals[:, :, l] > 0.0, 2 * l + 1.0, 0.0
+                lunbound_mat[:, :, l] = (
+                    (1.0 / config.nbands)
+                    * (2.0 / config.spindims)
+                    * np.where(eigvals[:, :, l] > 0.0, 2 * l + 1.0, 0.0)
                 )
 
         return lunbound_mat

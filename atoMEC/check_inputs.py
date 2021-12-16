@@ -503,7 +503,7 @@ class ISModel:
             if the boundary condition is not recognised
         """
         # list permitted boundary conditions
-        bcs_permitted = ["dirichlet", "neumann"]
+        bcs_permitted = ["dirichlet", "neumann", "bands"]
 
         # convert to lowercase
         bc.lower()
@@ -522,6 +522,8 @@ class ISModel:
 
         if bc in bcs_no_bands:
             config.nbands = 1
+        elif bc == "bands":
+            config.nbands = 2
 
         return bc
 
