@@ -75,9 +75,17 @@ class Orbitals:
 
         self._xgrid = xgrid
         self._eigfuncs = np.zeros(
-            (config.spindims, config.lmax, config.nmax, config.grid_params["ngrid"])
+            (
+                config.spindims,
+                config.lmax,
+                config.nmax,
+                config.nbands,
+                config.grid_params["ngrid"],
+            )
         )
-        self._eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
+        self._eigvals = np.zeros(
+            (config.spindims, config.lmax, config.nmax, config.nbands)
+        )
         self._occnums = np.zeros_like(self._eigvals)
         self._occnums_ub = np.zeros_like(self._eigvals)
         self._lbound = np.zeros_like(self._eigvals)
@@ -153,7 +161,7 @@ class Orbitals:
             self._lunbound = self.make_lunbound(self.eigvals)
         return self._lunbound
 
-    def compute(self, potential, init=False, eig_guess=False):
+    def compute(self, potential, bc, init=False, eig_guess=False):
         """
         Compute the orbitals and their eigenvalues with the given potential.
 
@@ -175,11 +183,14 @@ class Orbitals:
         v[:] = potential
 
         if eig_guess:
-            self._eigs_min = numerov.calc_eigs_min(v, self._xgrid)
+            self._eigs_min = numerov.calc_eigs_min(v, self._xgrid, bc)
 
         # solve the KS equations
         self._eigfuncs, self._eigvals = numerov.matrix_solve(
-            v, self._xgrid, eigs_min_guess=self._eigs_min
+            v,
+            self._xgrid,
+            bc,
+            eigs_min_guess=self._eigs_min,
         )
 
         # compute the lbound array

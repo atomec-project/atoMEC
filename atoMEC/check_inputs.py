@@ -518,6 +518,11 @@ class ISModel:
                 )
                 raise InputError.bc_error(err_msg)
 
+        bcs_no_bands = ["dirichlet", "neumann"]
+
+        if bc in bcs_no_bands:
+            config.nbands = 1
+
         return bc
 
     def check_spinpol(spinpol):

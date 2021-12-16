@@ -38,7 +38,7 @@ from . import config
 from . import mathtools
 
 
-def calc_eigs_min(v, xgrid):
+def calc_eigs_min(v, xgrid, bc):
     """
     Compute an estimate for the minimum values of the KS eigenvalues.
 
@@ -67,13 +67,13 @@ def calc_eigs_min(v, xgrid):
     v_coarse = func_interp(xgrid_coarse)
 
     # full diagonalization to estimate the lowest eigenvalues
-    eigs_min = matrix_solve(v_coarse, xgrid_coarse, solve_type="guess")[1]
+    eigs_min = matrix_solve(v_coarse, xgrid_coarse, bc, solve_type="guess")[1]
 
     return eigs_min
 
 
 # @writeoutput.timing
-def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
+def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
     r"""
     Solve the radial KS equation via matrix diagonalization of Numerov's method.
 
@@ -146,7 +146,7 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     B = np.matrix((I_minus + 10 * I_zero + I_plus) / 12)
 
     # von neumann boundary conditions
-    if config.bc == "neumann":
+    if bc == "neumann":
         A[N - 2, N - 1] = 2 * dx ** (-2)
         B[N - 2, N - 1] = 2 * B[N - 2, N - 1]
         A[N - 1, N - 1] = A[N - 1, N - 1] + 1.0 / dx
@@ -158,18 +158,18 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     # solve in serial or parallel - serial mostly useful for debugging
     if config.numcores == 0:
         eigfuncs, eigvals = KS_matsolve_serial(
-            T, B, v, xgrid, solve_type, eigs_min_guess
+            T, B, v, xgrid, bc, solve_type, eigs_min_guess
         )
 
     else:
         eigfuncs, eigvals = KS_matsolve_parallel(
-            T, B, v, xgrid, solve_type, eigs_min_guess
+            T, B, v, xgrid, bc, solve_type, eigs_min_guess
         )
 
     return eigfuncs, eigvals
 
 
-def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
+def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     """
     Solve the KS matrix diagonalization by parallelizing over config.numcores.
 
@@ -263,7 +263,7 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
                 v_flat,
                 xgrid,
                 config.nmax,
-                config.bc,
+                bc,
                 eigs_guess_flat,
                 solve_type,
             )
@@ -301,7 +301,7 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
         return eigfuncs_null, eigs_guess
 
 
-def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
+def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     """
     Solve the KS equations via matrix diagonalization in serial.
 
@@ -353,11 +353,11 @@ def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
             H = T + B * V_mat
 
             # if dirichlet solve on (N-1) x (N-1) grid
-            if config.bc == "dirichlet":
+            if bc == "dirichlet":
                 H_s = H[: N - 1, : N - 1]
                 B_s = B[: N - 1, : N - 1]
             # if neumann don't change anything
-            elif config.bc == "neumann":
+            elif bc == "neumann":
                 H_s = H
                 B_s = B
 
@@ -381,7 +381,7 @@ def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
                         -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - eigs_up.real[n])
                     )
                 eigfuncs[i, l], eigvals[i, l] = update_orbs(
-                    vecs_up, eigs_up, xgrid, config.bc, K
+                    vecs_up, eigs_up, xgrid, bc, K
                 )
 
             elif solve_type == "guess":

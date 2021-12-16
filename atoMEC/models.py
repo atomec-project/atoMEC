@@ -327,7 +327,7 @@ class ISModel:
         else:
             v_init = staticKS.Potential.calc_v_en(xgrid)
         v_s_old = v_init  # initialize the old potential
-        orbs.compute(v_init, init=True, eig_guess=True)
+        orbs.compute(v_init, config.bc, init=True, eig_guess=True)
 
         # occupy orbitals
         orbs.occupy()
@@ -372,9 +372,9 @@ class ISModel:
 
             # update the orbitals with the KS potential
             if iscf < 3:
-                orbs.compute(v_s, eig_guess=True)
+                orbs.compute(v_s, config.bc, eig_guess=True)
             else:
-                orbs.compute(v_s)
+                orbs.compute(v_s, config.bc)
             orbs.occupy()
 
             # update old potential
