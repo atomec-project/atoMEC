@@ -463,7 +463,7 @@ class ISModel:
             if the treatment of unbound electrons is not a valid input
         """
         # list all possible treatments for unbound electrons
-        unbound_permitted = ["ideal"]
+        unbound_permitted = ["ideal", "quantum"]
 
         # convert unbound to all lowercase
         unbound.lower()
@@ -666,9 +666,11 @@ class EnergyCalcs:
         grid_params : dict
             dictionary of grid parameters as follows:
             {
-            `ngrid` (``int``)   : number of grid points,
-            `x0`    (``float``) : LHS grid point takes form
+            `ngrid` (``int``)        : number of grid points,
+            `x0`    (``float``)      : LHS grid point takes form
             :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation
+            of eigenvalues with full diagonalization
             }
 
         Raises
@@ -678,7 +680,7 @@ class EnergyCalcs:
         InputError.ngrid_warning
             if `ngrid` is outside a reasonable convergence range
         """
-        # First assign the keys ngrid and x0 if they are not given
+        # First assign the keys ngrid, x0 and ngrid_coarse if they are not given
         try:
             ngrid = grid_params["ngrid"]
         except KeyError:
@@ -688,6 +690,11 @@ class EnergyCalcs:
             x0 = grid_params["x0"]
         except KeyError:
             x0 = config.grid_params["x0"]
+
+        try:
+            ngrid_coarse = grid_params["ngrid_coarse"]
+        except KeyError:
+            ngrid_coarse = config.grid_params["ngrid_coarse"]
 
         # check that ngrid is an integer
         if not isinstance(ngrid, intc):
@@ -700,13 +707,24 @@ class EnergyCalcs:
         elif ngrid > 5000:
             print(InputWarning.ngrid_warning("high", "expensive"))
 
+        # check that ngrid_coarse is an integer
+        if not isinstance(ngrid_coarse, intc):
+            raise InputError.grid_error("Number of coarse grid points not an integer!")
+        # check that ngrid_coarse is a positive number
+        if ngrid_coarse < 0:
+            raise InputError.grid_error("Number of coarse grid points must be positive")
+        elif ngrid_coarse < 100:
+            print(InputWarning.ngrid_warning("low", "inaccurate"))
+        elif ngrid_coarse > 500:
+            print(InputWarning.ngrid_warning("high", "expensive"))
+
         # check that x0 is reasonable
         if x0 > -3:
             raise InputError.grid_error(
                 "x0 is too high, calculation will likely not converge"
             )
 
-        grid_params = {"ngrid": ngrid, "x0": x0}
+        grid_params = {"ngrid": ngrid, "x0": x0, "ngrid_coarse": ngrid_coarse}
 
         return grid_params
 
@@ -726,9 +744,10 @@ class EnergyCalcs:
         conv_params : dict of floats
             dictionary of convergence parameters as follows:
             {
-            `econv` (``float``) : convergence for total energy,
-            `nconv` (``float``) : convergence for density,
-            `vconv` (``float``) : convergence for electron number
+            `econv` (``float``)  : convergence for total energy,
+            `nconv` (``float``)  : convergence for density,
+            `vconv` (``float``)  : convergence for electron number,
+            `eigtol` (``float``) : tolerance for eigenvalues
             }
 
         Raises
@@ -738,7 +757,7 @@ class EnergyCalcs:
         """
         conv_params = {}
         # loop through the convergence parameters
-        for conv in ["econv", "nconv", "vconv"]:
+        for conv in ["econv", "nconv", "vconv", "eigtol"]:
             # assign value if not given
             try:
                 x_conv = input_params[conv]

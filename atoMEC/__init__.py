@@ -15,7 +15,7 @@ Classes
                   about physical material properties
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.1"
 
 # standard libraries
 from math import pi
@@ -121,6 +121,11 @@ class Atom:
         return self.species.atomic_weight
 
     @property
+    def nvalence(self):
+        """int: the number of valence electrons."""
+        return self.species.nvalence()
+
+    @property
     def units_temp(self):
         """str: the units of temperature."""
         return self._units_temp
@@ -178,7 +183,7 @@ class Atom:
 
     @property
     def radius(self):
-        r"""float: radius of the Wigner-Seitz sphere.
+        r"""float: radius of the Voronoi sphere.
 
         The radius is defined as :math:`a_i /2`,
         where :math:`a_i` is the average inter-atomic distance.
@@ -203,6 +208,30 @@ class Atom:
         self._radius = check_inputs.Atom().dens_to_radius(self, self._density)
         config.r_s = self._radius
         config.sph_vol = (4.0 * pi * self._radius ** 3.0) / 3.0
+
+    @property
+    def WS_radius(self):
+        r"""float: the Wigner-Seitz radius, or the electron coupling parameter.
+
+        The Wigner-Seitz radius differs from the Voronoi radius because it depends on
+        the free electron density, defined in atoMEC as the valence electron density.
+        """
+        return self.radius * self.nvalence ** (-1.0 / 3.0)
+
+    @property
+    def E_Fermi(self):
+        r"""float: the Fermi energy."""
+        return 0.5 * (9.0 * pi / 4.0) ** (2.0 / 3.0) * self.WS_radius ** -2.0
+
+    @property
+    def gamma_ion(self):
+        r"""float: the ionic coupling parameter."""
+        return self.at_chrg ** 2.0 / (2.0 * self.radius * self.temp)
+
+    @property
+    def theta_e(self):
+        r"""float: the electron degeneracy parameter."""
+        return self.temp / self.E_Fermi
 
     @property
     def info(self):
