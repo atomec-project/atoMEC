@@ -76,21 +76,21 @@ class Orbitals:
         self._xgrid = xgrid
         self._eigfuncs = np.zeros(
             (
+                config.nbands,
                 config.spindims,
                 config.lmax,
                 config.nmax,
-                config.nbands,
                 config.grid_params["ngrid"],
             )
         )
         self._eigvals = np.zeros(
-            (config.spindims, config.lmax, config.nmax, config.nbands)
+            (config.nbands, config.spindims, config.lmax, config.nmax)
         )
         self._occnums = np.zeros_like(self._eigvals)
         self._occnums_ub = np.zeros_like(self._eigvals)
         self._lbound = np.zeros_like(self._eigvals)
         self._lunbound = np.zeros_like(self._eigvals)
-        self._eigs_min = np.zeros((config.spindims, config.lmax))
+        self._eigs_min = np.zeros((config.nbands, config.spindims, config.lmax))
 
     @property
     def eigvals(self):
@@ -183,15 +183,17 @@ class Orbitals:
         v[:] = potential
 
         if eig_guess:
-            self._eigs_min = numerov.calc_eigs_min(v, self._xgrid, bc)
+            if bc != "bands":
+                self._eigs_min[0] = numerov.calc_eigs_min(v, self._xgrid, bc)
 
         # solve the KS equations
-        self._eigfuncs, self._eigvals = numerov.matrix_solve(
-            v,
-            self._xgrid,
-            bc,
-            eigs_min_guess=self._eigs_min,
-        )
+        if bc != "bands":
+            self._eigfuncs[0], self._eigvals[0] = numerov.matrix_solve(
+                v,
+                self._xgrid,
+                bc,
+                eigs_min_guess=self._eigs_min[0],
+            )
 
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals)
@@ -249,11 +251,12 @@ class Orbitals:
         """
         occnums = np.zeros_like(eigvals)
 
-        for i in range(config.spindims):
-            if config.nele[i] != 0:
-                occnums[i] = lbound[i] * mathtools.fermi_dirac(
-                    eigvals[i], mu[i], config.beta
-                )
+        for band in range(config.nbands):
+            for i in range(config.spindims):
+                if config.nele[i] != 0:
+                    occnums[band, i] = lbound[i] * mathtools.fermi_dirac(
+                        eigvals[band, i], mu[i], config.beta
+                    )
 
         return occnums
 
@@ -278,8 +281,8 @@ class Orbitals:
         lbound_mat = np.zeros_like(eigvals)
 
         for l in range(config.lmax):
-            lbound_mat[:, l] = (2.0 / config.spindims) * np.where(
-                eigvals[:, l] < 0.0, 2 * l + 1.0, 0.0
+            lbound_mat[:, :, l] = (2.0 / config.spindims) * np.where(
+                eigvals[:, :, l] < 0.0, 2 * l + 1.0, 0.0
             )
 
         # force bound levels if there are convergence issues
@@ -316,8 +319,8 @@ class Orbitals:
         # only non-zero if quantum unbound electrons
         if config.unbound == "quantum":
             for l in range(config.lmax):
-                lunbound_mat[:, l] = (2.0 / config.spindims) * np.where(
-                    eigvals[:, l] > 0.0, 2 * l + 1.0, 0.0
+                lunbound_mat[:, :, l] = (2.0 / config.spindims) * np.where(
+                    eigvals[:, :, l] > 0.0, 2 * l + 1.0, 0.0
                 )
 
         return lunbound_mat
@@ -413,10 +416,10 @@ class Density:
         orbs_R_sq = orbs_R ** 2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
-        dens["rho"] = np.einsum("ijk,ijkl->il", occnums, orbs_R_sq)
+        dens["rho"] = np.einsum("ijkl,ijklm->jm", occnums, orbs_R_sq)
 
         # compute the number of unbound electrons
-        dens["N"] = np.sum(occnums, axis=(1, 2))
+        dens["N"] = np.sum(occnums, axis=(0, 2, 3))
 
         return dens
 
@@ -789,14 +792,14 @@ class Energy:
             l_arr = np.fromiter(
                 ((l + 0.5) ** 2.0 for l in range(config.lmax)), float, config.lmax
             )
-            lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, eigfuncs)
+            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigfuncs)
 
             # add together and multiply by eigfuncs*exp(-3x)
             prefac = np.exp(-3.0 * xgrid) * eigfuncs
             kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
 
             # multiply and sum over occupation numbers
-            e_kin_dens = -0.5 * np.einsum("ijk,ijkl->il", occnums, kin_orbs)
+            e_kin_dens = -0.5 * np.einsum("ijkl,ijklm->jm", occnums, kin_orbs)
 
         elif method == "B":
 
@@ -810,7 +813,7 @@ class Energy:
             grad_orbs_sq = grad_orbs ** 2.0
 
             # multiply and sum over occupation numbers
-            e_kin_dens = 0.5 * np.einsum("ijk,ijkl->il", occnums, grad_orbs_sq)
+            e_kin_dens = 0.5 * np.einsum("ijkl,ijklm->jm", occnums, grad_orbs_sq)
 
         return e_kin_dens
 
@@ -914,7 +917,7 @@ class Energy:
         # we first need to map them back to their 'pure' form f_{nl}
         lmat_inv = np.zeros_like(lmat)
         for l in range(config.lmax):
-            lmat_inv[:, l] = (config.spindims / 2.0) * 1.0 / (2 * l + 1.0)
+            lmat_inv[:, :, l] = (config.spindims / 2.0) * 1.0 / (2 * l + 1.0)
 
         # pure occupation numbers (with zeros replaced by finite values)
         occnums_pu = lmat_inv * occnums
