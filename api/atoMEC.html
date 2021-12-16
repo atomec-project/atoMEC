@@ -1786,6 +1786,28 @@ Schrödinger’s equation, American Journal of Physics 80,
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.numerov.num_propagate">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">num_propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#num_propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.num_propagate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Propagate the wfn manually for fixed energy with numerov scheme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>v</strong> (<em>ndarray</em>) – KS potential array</p></li>
+<li><p><strong>l</strong> (<em>int</em>) – angular momentum value</p></li>
+<li><p><strong>E</strong> (<em>float</em>) – energy of the wavefunction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>Psi_norm</strong> – normalized wavefunction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.update_orbs">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">update_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_eigvals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#update_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.update_orbs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the eigenvalues and functions by ascending energies and normalize orbs.</p>
