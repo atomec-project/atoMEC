@@ -27,8 +27,6 @@ import random
 # external libs
 import numpy as np
 from scipy.sparse.linalg import eigs
-import scipy.integrate as integ
-from math import pi
 from scipy import linalg
 from scipy.interpolate import interp1d
 from joblib import Parallel, delayed, dump, load
@@ -540,9 +538,9 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     return eigfuncs, eigvals
 
 
-def Num_integrate(xgrid, v, l, E):
+def num_propagate(xgrid, v, l, E):
     """
-    Integrates a function based on the numerov integration method.
+    Propagate the wfn manually for fixed energy with numerov scheme.
 
     Parameters
     ----------
@@ -553,47 +551,37 @@ def Num_integrate(xgrid, v, l, E):
     l : int
         angular momentum value
     E : float
-        energy of the integrated function
+        energy of the wavefunction
 
     Returns
     -------
     Psi_norm : ndarray
-        normalized wavefunction integrated by the numerov scheme
+        normalized wavefunction
     """
-    dx = xgrid[1] - xgrid[0]  # spatial resolution
+    # define some initial grid parameters
+    dx = xgrid[1] - xgrid[0]
+    x0 = xgrid[0]
     h = (dx ** 2) / 12.0  # a parameter for the numerov integration
     N = np.size(xgrid)  # size of grid
-    Psi = np.zeros(N, dtype=np.float64)  # Wavefunction array
-    K = np.zeros(N, dtype=np.float64)  # the 'potential' for integration
-    v = v.reshape(-1)  # reshaping the input potential for integration purposes
-    v = v - v[-1]
-
-    a = config.grid_params["x0"]
-
-    # Initial conditions
-    # Psi[0] = np.exp((l + 0.5) * a)
-    Psi[0] = 0.0
-    Psi[1] = np.exp((l + 0.5) * (a + dx))
-    # Psi[1]=np.exp((l+0.5)*a)
 
     # 'Potential' for numerov integration
-    K = -2.0 * np.exp(2.0 * xgrid) * (v - E) - (l + 0.5) ** 2
+    W = -2.0 * np.exp(2.0 * xgrid) * (v - E) - (l + 0.5) ** 2
+
+    # Initial conditions
+    Psi = np.zeros((N))  # initialize the wfn
+    Psi[1] = np.exp((l + 0.5) * (x0 + dx))
 
     # Integration loop
     for i in range(2, N):
         Psi[i] = (
-            2.0 * (1.0 - 5.0 * h * K[i - 1]) * Psi[i - 1]
-            - (1.0 + h * K[i - 2]) * Psi[i - 2]
-        ) / (1.0 + h * K[i])
+            2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
+            - (1.0 + h * W[i - 2]) * Psi[i - 2]
+        ) / (1.0 + h * W[i])
 
-    # normalizing the wavefunciton
-    f = np.exp(-xgrid) * np.square(Psi)
-    Integrand = 4 * pi * np.exp(3 * xgrid) * f
-    I = integ.simps(Integrand, x=xgrid)
-    norm = I ** (-0.5)
+    # normalize the wavefunction
+    psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
+    integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+    norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
     Psi_norm = norm * Psi
-
-    # Changing to the radial grid
-    # Psi_radial = np.exp(0.5 * xgrid) * Psi_norm
 
     return Psi_norm
