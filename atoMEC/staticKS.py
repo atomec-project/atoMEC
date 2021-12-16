@@ -198,19 +198,51 @@ class Orbitals:
                 eigs_min_guess=self._eigs_min[0],
             )
         else:
-            self._eigfuncs[0], self._eigvals[0] = numerov.matrix_solve(
+            eigfuncs_l, eigvals_l = numerov.matrix_solve(
                 v,
                 self._xgrid,
                 "neumann",
                 eigs_min_guess=self._eigs_min[0],
             )
 
-            self._eigfuncs[1], self._eigvals[1] = numerov.matrix_solve(
+            eigfuncs_u, eigvals_u = numerov.matrix_solve(
                 v,
                 self._xgrid,
                 "dirichlet",
                 eigs_min_guess=self._eigs_min[1],
             )
+
+            e_gap_arr = eigvals_u - eigvals_l
+            e_min = np.amin(eigvals_l[np.where(e_gap_arr > 0.05)])
+            e_max = np.amax(eigvals_u)
+            e_arr = np.arange(e_min, e_max, 0.05)
+            eigfuncs_e = np.zeros(
+                (
+                    config.spindims,
+                    np.size(e_arr),
+                    config.lmax,
+                    config.grid_params["ngrid"],
+                )
+            )
+
+            for sp in range(config.spindims):
+                for e, energy in enumerate(e_arr):
+                    for l in range(config.lmax):
+                        eigfuncs_e[sp, e, l] = numerov.num_propagate(
+                            self._xgrid, v[sp], l, energy
+                        )
+
+            for sp in range(config.spindims):
+                for l in range(config.lmax):
+                    for n in range(config.nmax):
+                        if e_gap_arr[sp, l, n] < 0.05:
+                            self._eigfuncs[:] = eigfuncs_l
+                            self._eigvals[:] = eigvals_l
+                        else:
+                            self._eigfuncs[: int(config.nbands / 2) - 1] = eigfuncs_l
+                            self._eigfuncs[int(config.nbands / 2) :] = eigfuncs_u
+                            self._eigvals[: int(config.nbands / 2) - 1] = eigvals_l
+                            self._eigvals[int(config.nbands / 2) :] = eigvals_u
 
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals)
