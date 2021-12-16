@@ -439,58 +439,60 @@ class SCF:
         # loop over the spin dimensions
         eigval_tbl = ""
         occnum_tbl = ""
-        for i in range(config.spindims):
 
-            occnums_tot = orbitals.occnums + orbitals.occnums_ub
+        for band in range(config.nbands):
+            for i in range(config.spindims):
 
-            # truncate the table to include only one unbound state in each direction
-            try:
-                lmax_new = min(
-                    np.amax(np.where(occnums_tot[i] > 1e-5)[0]) + 1,
-                    config.lmax,
+                occnums_tot = orbitals.occnums + orbitals.occnums_ub
+
+                # truncate the table to include only one unbound state in each direction
+                try:
+                    lmax_new = min(
+                        np.amax(np.where(occnums_tot[band, i] > 1e-5)[0]) + 1,
+                        config.lmax,
+                    )
+                    nmax_new = min(
+                        np.amax(np.where(occnums_tot[band, i] > 1e-5)[1]) + 1,
+                        config.nmax,
+                    )
+                except ValueError:
+                    lmax_new = 2
+                    nmax_new = 2
+
+                # define row and column headers
+                headers = [n + 1 for n in range(nmax_new)]
+                headers[0] = "n=l+1"
+                RowIDs = [*range(lmax_new)]
+                RowIDs[0] = "l=0"
+
+                eigvals_new = orbitals.eigvals[band, i, :lmax_new, :nmax_new]
+                occnums_new = occnums_tot[band, i, :lmax_new, :nmax_new]
+
+                # the eigenvalue table
+                eigval_tbl += (
+                    tabulate.tabulate(
+                        eigvals_new,
+                        headers,
+                        tablefmt="presto",
+                        showindex=RowIDs,
+                        floatfmt="7.3f",
+                        stralign="right",
+                    )
+                    + dblspc
                 )
-                nmax_new = min(
-                    np.amax(np.where(occnums_tot[i] > 1e-5)[1]) + 1,
-                    config.nmax,
+
+                # the occnums table
+                occnum_tbl += (
+                    tabulate.tabulate(
+                        occnums_new,
+                        headers,
+                        tablefmt="presto",
+                        showindex=RowIDs,
+                        floatfmt="7.3f",
+                        stralign="right",
+                    )
+                    + dblspc
                 )
-            except ValueError:
-                lmax_new = 2
-                nmax_new = 2
-
-            # define row and column headers
-            headers = [n + 1 for n in range(nmax_new)]
-            headers[0] = "n=l+1"
-            RowIDs = [*range(lmax_new)]
-            RowIDs[0] = "l=0"
-
-            eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
-            occnums_new = occnums_tot[i, :lmax_new, :nmax_new]
-
-            # the eigenvalue table
-            eigval_tbl += (
-                tabulate.tabulate(
-                    eigvals_new,
-                    headers,
-                    tablefmt="presto",
-                    showindex=RowIDs,
-                    floatfmt="7.3f",
-                    stralign="right",
-                )
-                + dblspc
-            )
-
-            # the occnums table
-            occnum_tbl += (
-                tabulate.tabulate(
-                    occnums_new,
-                    headers,
-                    tablefmt="presto",
-                    showindex=RowIDs,
-                    floatfmt="7.3f",
-                    stralign="right",
-                )
-                + dblspc
-            )
 
         return eigval_tbl, occnum_tbl
 
