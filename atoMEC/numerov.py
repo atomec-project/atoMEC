@@ -565,10 +565,12 @@ def num_propagate(xgrid, v, l, E):
     N = np.size(xgrid)  # size of grid
 
     # 'Potential' for numerov integration
-    W = -2.0 * np.exp(2.0 * xgrid) * (v - E) - (l + 0.5) ** 2
+    W = np.zeros((N, len(E)))
+    for i in range(N):
+        W[i] = -2.0 * np.exp(2.0 * xgrid[i]) * (v[i] - E) - (l + 0.5) ** 2
 
     # Initial conditions
-    Psi = np.zeros((N))  # initialize the wfn
+    Psi = np.zeros((N, len(E)))  # initialize the wfn
     Psi[1] = np.exp((l + 0.5) * (x0 + dx))
 
     # Integration loop
@@ -579,9 +581,10 @@ def num_propagate(xgrid, v, l, E):
         ) / (1.0 + h * W[i])
 
     # normalize the wavefunction
+    Psi = Psi.transpose()
     psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
     integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
-    norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
-    Psi_norm = norm * Psi
+    norm = (np.trapz(integrand, x=xgrid, axis=-1)) ** (-0.5)
+    Psi_norm = np.einsum("i,ij->ij", norm, Psi)
 
     return Psi_norm

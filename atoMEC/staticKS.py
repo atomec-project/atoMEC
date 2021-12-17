@@ -219,18 +219,17 @@ class Orbitals:
             eigfuncs_e = np.zeros(
                 (
                     config.spindims,
-                    np.size(e_arr),
                     config.lmax,
+                    np.size(e_arr),
                     config.grid_params["ngrid"],
                 )
             )
 
             for sp in range(config.spindims):
-                for e, energy in enumerate(e_arr):
-                    for l in range(config.lmax):
-                        eigfuncs_e[sp, e, l] = numerov.num_propagate(
-                            self._xgrid, v[sp], l, energy
-                        )
+                for l in range(config.lmax):
+                    eigfuncs_e[sp, l] = numerov.num_propagate(
+                        self._xgrid, v[sp], l, e_arr
+                    )
 
             for sp in range(config.spindims):
                 for l in range(config.lmax):
@@ -241,8 +240,11 @@ class Orbitals:
                         for nband, e in enumerate(e_tmp_arr):
                             e_loc = np.argmin(np.abs(e - e_arr))
 
-                            self._eigfuncs[nband, sp, l, n] = eigfuncs_e[sp, e_loc, l]
+                            self._eigfuncs[nband, sp, l, n] = eigfuncs_e[sp, l, e_loc]
                             self._eigvals[nband, sp, l, n] = e_arr[e_loc]
+
+            self._eigvals[:] = eigvals_l
+            self._eigfuncs[:] = eigfuncs_u
 
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals)
