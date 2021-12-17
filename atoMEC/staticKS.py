@@ -213,9 +213,9 @@ class Orbitals:
             )
 
             e_gap_arr = eigvals_u - eigvals_l
-            e_min = np.amin(eigvals_l[np.where(e_gap_arr > 0.05)])
+            e_min = np.amin(eigvals_l[np.where(e_gap_arr > 0.01)])
             e_max = np.amax(eigvals_u)
-            e_arr = np.arange(e_min, e_max, 0.05)
+            e_arr = np.arange(e_min, e_max, 0.01)
             eigfuncs_e = np.zeros(
                 (
                     config.spindims,
@@ -235,14 +235,14 @@ class Orbitals:
             for sp in range(config.spindims):
                 for l in range(config.lmax):
                     for n in range(config.nmax):
-                        if e_gap_arr[sp, l, n] < 0.05:
-                            self._eigfuncs[:] = eigfuncs_l
-                            self._eigvals[:] = eigvals_l
-                        else:
-                            self._eigfuncs[: int(config.nbands / 2) - 1] = eigfuncs_l
-                            self._eigfuncs[int(config.nbands / 2) :] = eigfuncs_u
-                            self._eigvals[: int(config.nbands / 2) - 1] = eigvals_l
-                            self._eigvals[int(config.nbands / 2) :] = eigvals_u
+                        e_tmp_arr = np.linspace(
+                            eigvals_l[sp, l, n], eigvals_u[sp, l, n], config.nbands
+                        )
+                        for nband, e in enumerate(e_tmp_arr):
+                            e_loc = np.argmin(np.abs(e - e_arr))
+
+                            self._eigfuncs[nband, sp, l, n] = eigfuncs_e[sp, e_loc, l]
+                            self._eigvals[nband, sp, l, n] = e_arr[e_loc]
 
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals)
