@@ -90,6 +90,7 @@ class Orbitals:
         self._occnums_ub = np.zeros_like(self._eigvals)
         self._lbound = np.zeros_like(self._eigvals)
         self._lunbound = np.zeros_like(self._eigvals)
+        self._DOS = np.zeros_like(self._eigvals)
         self._eigs_min = np.zeros((config.nbands, config.spindims, config.lmax))
 
     @property
@@ -145,7 +146,7 @@ class Orbitals:
         """
         if np.all(self._lbound == 0.0):
             # raise Exception("lbound has not been initialized")
-            self._lbound = self.make_lbound(self.eigvals)
+            self._lbound = self.make_lbound(self.eigvals, self.DOS)
         return self._lbound
 
     @property
@@ -158,8 +159,21 @@ class Orbitals:
         """
         if np.all(self._lbound == 0.0):
             # raise Exception("lbound has not been initialized")
-            self._lunbound = self.make_lunbound(self.eigvals)
+            self._lunbound = self.make_lunbound(self.eigvals, self.DOS)
         return self._lunbound
+
+    @property
+    def DOS(self):
+        r"""ndarray: the density of states (DOS) matrix."""
+
+        if np.all(self._DOS == 0.0):
+            if config.bc != "bands":
+                self._DOS += 1.0
+            else:
+                self._DOS = self.make_DOS_bands(
+                    self.eigs_min, self.eigs_max, self.eigvals
+                )
+        return self._DOS
 
     def compute(self, potential, bc, init=False, eig_guess=False):
         """
@@ -198,23 +212,23 @@ class Orbitals:
                 eigs_min_guess=self._eigs_min[0],
             )
         else:
-            eigfuncs_l, eigvals_l = numerov.matrix_solve(
+            eigfuncs_l, self.eigs_min = numerov.matrix_solve(
                 v,
                 self._xgrid,
                 "neumann",
                 eigs_min_guess=self._eigs_min[0],
             )
 
-            eigfuncs_u, eigvals_u = numerov.matrix_solve(
+            eigfuncs_u, self.eigs_max = numerov.matrix_solve(
                 v,
                 self._xgrid,
                 "dirichlet",
                 eigs_min_guess=self._eigs_min[1],
             )
 
-            e_gap_arr = eigvals_u - eigvals_l
-            e_min = np.amin(eigvals_l[np.where(e_gap_arr > 0.01)])
-            e_max = np.amax(eigvals_u)
+            e_gap_arr = self.eigs_max - self.eigs_min
+            e_min = np.amin(self.eigs_min[np.where(e_gap_arr > 0.01)])
+            e_max = np.amax(self.eigs_max)
             e_arr = np.arange(e_min, e_max, 0.01)
             eigfuncs_e = np.zeros(
                 (
@@ -235,22 +249,27 @@ class Orbitals:
                 for l in range(config.lmax):
                     for n in range(config.nmax):
                         e_tmp_arr = np.linspace(
-                            eigvals_l[sp, l, n], eigvals_u[sp, l, n], config.nbands
+                            self.eigs_min[sp, l, n],
+                            self.eigs_max[sp, l, n],
+                            config.nbands,
                         )
-                        for nband, e in enumerate(e_tmp_arr):
-                            e_loc = np.argmin(np.abs(e - e_arr))
+                        if e_gap_arr[sp, l, n] > 0.01:
+                            for nband, e in enumerate(e_tmp_arr):
+                                e_loc = np.argmin(np.abs(e - e_arr))
 
-                            self._eigfuncs[nband, sp, l, n] = eigfuncs_e[sp, l, e_loc]
-                            self._eigvals[nband, sp, l, n] = e_arr[e_loc]
-
-            self._eigvals[:] = eigvals_l
-            self._eigfuncs[:] = eigfuncs_u
+                                self._eigfuncs[nband, sp, l, n] = eigfuncs_e[
+                                    sp, l, e_loc
+                                ]
+                                self._eigvals[nband, sp, l, n] = e_arr[e_loc]
+                        else:
+                            self._eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
+                            self._eigvals[:, sp, l, n] = self.eigs_min[sp, l, n]
 
         # compute the lbound array
-        self._lbound = self.make_lbound(self.eigvals)
+        self._lbound = self.make_lbound(self.eigvals, self.DOS)
 
         # compute the lunbound array
-        self._lunbound = self.make_lunbound(self.eigvals)
+        self._lunbound = self.make_lunbound(self.eigvals, self.DOS)
 
         # guess the chemical potential if initializing
         if init:
@@ -312,7 +331,7 @@ class Orbitals:
         return occnums
 
     @staticmethod
-    def make_lbound(eigvals):
+    def make_lbound(eigvals, DOS_mat):
         r"""
         Construct the lbound matrix denoting the bound states and their degeneracies.
 
@@ -333,8 +352,8 @@ class Orbitals:
 
         for l in range(config.lmax):
             lbound_mat[:, :, l] = (
-                (1.0 / config.nbands)
-                * (2.0 / config.spindims)
+                (2.0 / config.spindims)
+                * DOS_mat[:, :, l]
                 * np.where(eigvals[:, :, l] < 0.0, 2 * l + 1.0, 0.0)
             )
 
@@ -350,7 +369,7 @@ class Orbitals:
         return lbound_mat
 
     @staticmethod
-    def make_lunbound(eigvals):
+    def make_lunbound(eigvals, DOS_mat):
         r"""
         Construct the lunbound matrix denoting the unbound states and degeneracies.
 
@@ -373,12 +392,26 @@ class Orbitals:
         if config.unbound == "quantum":
             for l in range(config.lmax):
                 lunbound_mat[:, :, l] = (
-                    (1.0 / config.nbands)
-                    * (2.0 / config.spindims)
+                    (2.0 / config.spindims)
+                    * DOS_mat[:, :, l]
                     * np.where(eigvals[:, :, l] > 0.0, 2 * l + 1.0, 0.0)
                 )
 
         return lunbound_mat
+
+    @staticmethod
+    def make_DOS_bands(eigs_min, eigs_max, eigvals):
+
+        min_h = 0.01
+
+        delta = 0.5 * (eigs_max - eigs_min)
+
+        hub_func = np.abs((eigs_max - eigvals) * (eigvals - eigs_min))
+        f_sqrt = np.where(hub_func > min_h, np.sqrt(hub_func), 1.0 / config.nbands)
+
+        prefac = np.where(hub_func > min_h, 2.0 / (pi * delta ** 2.0), 1.0)
+
+        return prefac * f_sqrt
 
 
 class Density:
