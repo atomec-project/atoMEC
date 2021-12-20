@@ -523,7 +523,7 @@ class ISModel:
         if bc in bcs_no_bands:
             config.nbands = 1
         elif bc == "bands":
-            config.nbands = 2
+            config.nbands = 50
 
         return bc
 
