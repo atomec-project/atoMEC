@@ -440,7 +440,11 @@ class SCF:
         eigval_tbl = ""
         occnum_tbl = ""
 
-        for band in range(config.nbands):
+        if config.nbands > 1:
+            band_list = [0, -1]
+        else:
+            band_list = [0]
+        for band in band_list:
             for i in range(config.spindims):
 
                 occnums_tot = orbitals.occnums + orbitals.occnums_ub
@@ -466,7 +470,7 @@ class SCF:
                 RowIDs[0] = "l=0"
 
                 eigvals_new = orbitals.eigvals[band, i, :lmax_new, :nmax_new]
-                occnums_new = occnums_tot[band, i, :lmax_new, :nmax_new]
+                occnums_new = orbitals.occnums[band, i, :lmax_new, :nmax_new]
 
                 # the eigenvalue table
                 eigval_tbl += (
