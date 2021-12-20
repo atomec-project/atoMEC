@@ -92,6 +92,7 @@ class Orbitals:
         self._lunbound = np.zeros_like(self._eigvals)
         self._DOS = np.zeros_like(self._eigvals)
         self._eigs_min = np.zeros((config.nbands, config.spindims, config.lmax))
+        self.nband_weight = np.zeros_like(self._eigvals)
 
     @property
     def eigvals(self):
@@ -171,7 +172,7 @@ class Orbitals:
                 self._DOS += 1.0
             else:
                 self._DOS = self.make_DOS_bands(
-                    self.eigs_min, self.eigs_max, self.eigvals
+                    self.eigs_min, self.eigs_max, self.eigvals, self.nband_weight
                 )
         return self._DOS
 
@@ -254,16 +255,32 @@ class Orbitals:
                             config.nbands,
                         )
                         if e_gap_arr[sp, l, n] > 0.01:
+                            e_new_arr = np.where(
+                                (e_arr > e_tmp_arr[0]) & (e_arr < e_tmp_arr[-1]),
+                                e_arr,
+                                np.inf,
+                            )
+                            e_loc_arr = np.zeros((config.nbands), dtype=int)
                             for nband, e in enumerate(e_tmp_arr):
-                                e_loc = np.argmin(np.abs(e - e_arr))
-
+                                e_loc = np.argmin(np.abs(e - e_new_arr))
+                                e_loc_arr[nband] = e_loc
                                 self._eigfuncs[nband, sp, l, n] = eigfuncs_e[
                                     sp, l, e_loc
                                 ]
                                 self._eigvals[nband, sp, l, n] = e_arr[e_loc]
+                            for nband, n_e in enumerate(e_loc_arr):
+                                self.nband_weight[
+                                    nband, sp, l, n
+                                ] = 1.0 / np.count_nonzero(e_loc_arr == n_e)
                         else:
                             self._eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
                             self._eigvals[:, sp, l, n] = self.eigs_min[sp, l, n]
+                            self.nband_weight[:, sp, l, n] = 1.0 / config.nbands
+
+            # compute the DOS
+            self._DOS = self.make_DOS_bands(
+                self.eigs_min, self.eigs_max, self.eigvals, self.nband_weight
+            )
 
         # compute the lbound array
         self._lbound = self.make_lbound(self.eigvals, self.DOS)
@@ -324,7 +341,7 @@ class Orbitals:
         for band in range(config.nbands):
             for i in range(config.spindims):
                 if config.nele[i] != 0:
-                    occnums[band, i] = lbound[i] * mathtools.fermi_dirac(
+                    occnums[band, i] = lbound[band, i] * mathtools.fermi_dirac(
                         eigvals[band, i], mu[i], config.beta
                     )
 
@@ -400,16 +417,42 @@ class Orbitals:
         return lunbound_mat
 
     @staticmethod
-    def make_DOS_bands(eigs_min, eigs_max, eigvals):
+    def make_DOS_bands(eigs_min, eigs_max, eigvals, nband_weight):
 
-        min_h = 0.01
+        min_dE = 0.01
+        # delta = 0.5 * (eigs_max - eigs_min)
 
-        delta = 0.5 * (eigs_max - eigs_min)
+        # hub_func = (eigs_max - eigvals) * (eigvals - eigs_min)
+        # f_sqrt = np.where(
+        #     hub_func >= min_h ** 2,
+        #     min_h * nband_weight * np.sqrt(hub_func),
+        #     1.0 / config.nbands,
+        # )
 
-        hub_func = np.abs((eigs_max - eigvals) * (eigvals - eigs_min))
-        f_sqrt = np.where(hub_func > min_h, np.sqrt(hub_func), 1.0 / config.nbands)
+        # prefac = np.where(hub_func >= min_h ** 2, 2.0 / (pi * delta ** 2.0), 1.0)
 
-        prefac = np.where(hub_func > min_h, 2.0 / (pi * delta ** 2.0), 1.0)
+        delta_E_plus = np.zeros_like(eigvals)
+        delta_E_plus[1:] = eigvals[1:] - eigvals[:-1]
+        delta_E_minus = np.zeros_like(eigvals)
+        delta_E_minus[:-1] = eigvals[1:] - eigvals[:-1]
+        delta_E_tot = 0.5 * (delta_E_minus + delta_E_plus)
+
+        delta_E_tot = np.where(delta_E_tot > min_dE, delta_E_tot, min_dE)
+
+        eig_diff = np.einsum(
+            "ijk,lijk->lijk", eigs_max - eigs_min, np.ones_like(eigvals)
+        )
+
+        delta = 0.5 * eig_diff
+        hub_func = (eigs_max - eigvals) * (eigvals - eigs_min)
+
+        f_sqrt = np.where(
+            eig_diff > min_dE,
+            delta_E_tot * nband_weight * np.sqrt(hub_func),
+            1.0 / config.nbands,
+        )
+
+        prefac = np.where(eig_diff > min_dE, 2.0 / (pi * delta ** 2.0), 1.0)
 
         return prefac * f_sqrt
 
