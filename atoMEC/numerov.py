@@ -538,7 +538,91 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     return eigfuncs, eigvals
 
 
-def num_propagate(xgrid, v, l, E):
+def calc_wfns_e_grid(xgrid, v, e_arr):
+    """
+    Compute all the wavefunctions defined on the energy grid.
+
+    """
+    N = np.size(xgrid)
+
+    # Compute the number pmax of distinct diagonizations to be solved
+    pmax = config.spindims * config.lmax
+
+    # now flatten the potential matrix over spins
+    W_flat = np.zeros((pmax, N, len(e_arr)))
+
+    for sp in range(config.spindims):
+        for l in range(config.lmax):
+            for i in range(N):
+                W_flat[l + (sp * config.lmax), i] = (
+                    -2.0 * np.exp(2.0 * xgrid[i]) * (v[sp, i] - e_arr) - (l + 0.5) ** 2
+                )
+
+    if config.numcores == 0:
+        eigfuncs_e = calc_wfns_e_grid_serial(xgrid, W_flat)
+    else:
+        eigfuncs_e = calc_wfns_e_grid_parallel(xgrid, W_flat)
+
+    return eigfuncs_e
+
+
+def calc_wfns_e_grid_serial(xgrid, W):
+
+    pmax = config.spindims * config.lmax
+    N = np.size(xgrid)
+    n_e_grid = np.shape(W)[-1]
+    eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
+
+    for p in range(pmax):
+        eigfuncs_flat[p] = num_propagate(p, xgrid, W, config.lmax)
+
+    eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
+
+    return eigfuncs_e
+
+
+def calc_wfns_e_grid_parallel(xgrid, W):
+
+    pmax = config.spindims * config.lmax
+    N = np.size(xgrid)
+    n_e_grid = np.shape(W)[-1]
+    eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
+
+    while True:
+        try:
+            joblib_folder = "".join(
+                random.choices(string.ascii_uppercase + string.digits, k=30)
+            )
+            os.mkdir(joblib_folder)
+            break
+        except FileExistsError as e:
+            print(e)
+
+    # dump and load the large numpy arrays from file
+    data_filename_memmap = os.path.join(joblib_folder, "data_memmap")
+    dump(W, data_filename_memmap)
+    W = load(data_filename_memmap, mmap_mode="r")
+
+    with Parallel(n_jobs=config.numcores) as parallel:
+        X = parallel(
+            delayed(num_propagate)(q, xgrid, W, config.lmax) for q in range(pmax)
+        )
+
+    # remove the joblib arrays
+    try:
+        shutil.rmtree(joblib_folder)
+    except:  # noqa
+        print("Could not clean-up automatically.")
+
+    for q in range(pmax):
+        eigfuncs_flat[q] = X[q]
+
+    eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
+
+    return eigfuncs_e
+
+
+def num_propagate(p, xgrid, W, lmax):
     """
     Propagate the wfn manually for fixed energy with numerov scheme.
 
@@ -565,20 +649,19 @@ def num_propagate(xgrid, v, l, E):
     N = np.size(xgrid)  # size of grid
 
     # 'Potential' for numerov integration
-    W = np.zeros((N, len(E)))
-    for i in range(N):
-        W[i] = -2.0 * np.exp(2.0 * xgrid[i]) * (v[i] - E) - (l + 0.5) ** 2
 
     # Initial conditions
-    Psi = np.zeros((N, len(E)))  # initialize the wfn
+    n_e_grid = np.shape(W)[-1]
+    Psi = np.zeros((N, n_e_grid))  # initialize the wfn
+    l = p % lmax
     Psi[1] = np.exp((l + 0.5) * (x0 + dx))
 
     # Integration loop
     for i in range(2, N):
         Psi[i] = (
-            2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
-            - (1.0 + h * W[i - 2]) * Psi[i - 2]
-        ) / (1.0 + h * W[i])
+            2.0 * (1.0 - 5.0 * h * W[p, i - 1]) * Psi[i - 1]
+            - (1.0 + h * W[p, i - 2]) * Psi[i - 2]
+        ) / (1.0 + h * W[p, i])
 
     # normalize the wavefunction
     Psi = Psi.transpose()

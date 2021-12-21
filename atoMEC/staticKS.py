@@ -231,20 +231,7 @@ class Orbitals:
             e_min = np.amin(self.eigs_min[np.where(e_gap_arr > config.E_spc)])
             e_max = np.amax(self.eigs_max)
             e_arr = np.arange(e_min, e_max, config.E_spc)
-            eigfuncs_e = np.zeros(
-                (
-                    config.spindims,
-                    config.lmax,
-                    np.size(e_arr),
-                    config.grid_params["ngrid"],
-                )
-            )
-
-            for sp in range(config.spindims):
-                for l in range(config.lmax):
-                    eigfuncs_e[sp, l] = numerov.num_propagate(
-                        self._xgrid, v[sp], l, e_arr
-                    )
+            eigfuncs_e = numerov.calc_wfns_e_grid(self._xgrid, v, e_arr)
 
             for sp in range(config.spindims):
                 for l in range(config.lmax):
