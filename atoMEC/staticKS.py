@@ -228,9 +228,9 @@ class Orbitals:
             )
 
             e_gap_arr = self.eigs_max - self.eigs_min
-            e_min = np.amin(self.eigs_min[np.where(e_gap_arr > 0.01)])
+            e_min = np.amin(self.eigs_min[np.where(e_gap_arr > config.E_spc)])
             e_max = np.amax(self.eigs_max)
-            e_arr = np.arange(e_min, e_max, 0.01)
+            e_arr = np.arange(e_min, e_max, config.E_spc)
             eigfuncs_e = np.zeros(
                 (
                     config.spindims,
@@ -254,7 +254,7 @@ class Orbitals:
                             self.eigs_max[sp, l, n],
                             config.nbands,
                         )
-                        if e_gap_arr[sp, l, n] > 0.01:
+                        if e_gap_arr[sp, l, n] > config.E_spc:
                             e_new_arr = np.where(
                                 (e_arr > e_tmp_arr[0]) & (e_arr < e_tmp_arr[-1]),
                                 e_arr,
@@ -419,7 +419,6 @@ class Orbitals:
     @staticmethod
     def make_DOS_bands(eigs_min, eigs_max, eigvals, nband_weight):
 
-        min_dE = 0.01
         # delta = 0.5 * (eigs_max - eigs_min)
 
         # hub_func = (eigs_max - eigvals) * (eigvals - eigs_min)
@@ -437,7 +436,7 @@ class Orbitals:
         delta_E_minus[:-1] = eigvals[1:] - eigvals[:-1]
         delta_E_tot = 0.5 * (delta_E_minus + delta_E_plus)
 
-        delta_E_tot = np.where(delta_E_tot > min_dE, delta_E_tot, min_dE)
+        delta_E_tot = np.where(delta_E_tot > config.E_spc, delta_E_tot, config.E_spc)
 
         eig_diff = np.einsum(
             "ijk,lijk->lijk", eigs_max - eigs_min, np.ones_like(eigvals)
@@ -447,12 +446,12 @@ class Orbitals:
         hub_func = (eigs_max - eigvals) * (eigvals - eigs_min)
 
         f_sqrt = np.where(
-            eig_diff > min_dE,
+            eig_diff > config.E_spc,
             delta_E_tot * nband_weight * np.sqrt(hub_func),
             1.0 / config.nbands,
         )
 
-        prefac = np.where(eig_diff > min_dE, 2.0 / (pi * delta ** 2.0), 1.0)
+        prefac = np.where(eig_diff > config.E_spc, 2.0 / (pi * delta ** 2.0), 1.0)
 
         return prefac * f_sqrt
 

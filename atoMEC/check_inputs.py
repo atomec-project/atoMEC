@@ -518,14 +518,68 @@ class ISModel:
                 )
                 raise InputError.bc_error(err_msg)
 
+        return bc
+
+    def check_nbands(nbands):
+        """
+        Check the number of energy levels per band is accepted.
+
+        Parameters
+        ----------
+        nbands : int
+            the number of levels per energy band
+
+        Returns
+        -------
+        nbands : int
+            the number of levels per energy band
+
+        Raises
+        ------
+        InputError.bands_error
+            if the number of bands is not a positive integer
+        """
+        # dirichlet and neumann bcs should only have one band
         bcs_no_bands = ["dirichlet", "neumann"]
 
-        if bc in bcs_no_bands:
-            config.nbands = 1
-        elif bc == "bands":
-            config.nbands = 50
+        if config.bc in bcs_no_bands:
+            nbands = 1
+        else:
+            if not isinstance(nbands, intc):
+                raise InputError.bands_error("nbands is not an integer")
+            else:
+                if nbands < 1:
+                    raise InputError.bands_error("nbands must be positive")
 
-        return bc
+        return nbands
+
+    def check_E_spc(E_spc):
+        """
+        Check the energy grid spacing for bands calculations is accepted.
+
+        Parameters
+        ----------
+        E_spc : float
+            the resolution of the energy grid for bands calculations
+
+        Returns
+        -------
+        E_spc : float
+            the resolution of the energy grid for bands calculations
+
+        Raises
+        ------
+        InputError.bands_error
+            if the energy grid resolution is not a positive number
+        """
+
+        if not isinstance(E_spc, (float, intc)):
+            raise InputError.bands_error("E_spc is not a number")
+        else:
+            if E_spc < 0:
+                raise InputError.bands_error("E_spc must be positive")
+
+        return E_spc
 
     def check_spinpol(spinpol):
         """
@@ -965,6 +1019,23 @@ class InputError(Exception):
         None
         """
         print("Error in boundary condition input: " + err_msg)
+        sys.exit("Exiting atoMEC")
+
+    def bands_error(err_msg):
+        """
+        Raise exception if `nbands` not positive int or `dE_spc` not positive number.
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Returns
+        -------
+        None
+        """
+
+        print("Error in bands input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def spinpol_error(err_msg):

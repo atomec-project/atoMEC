@@ -90,6 +90,8 @@ class ISModel:
         spinmag=-1,
         unbound=config.unbound,
         v_shift=config.v_shift,
+        nbands=config.nbands,
+        E_spc=config.E_spc,
         write_info=True,
     ):
 
@@ -102,6 +104,8 @@ class ISModel:
         self.bc = bc
         self.unbound = unbound
         self.v_shift = v_shift
+        self.E_spc = E_spc
+        self.nbands = nbands
 
         # print the information
         if write_info:
@@ -195,6 +199,26 @@ class ISModel:
     def unbound(self, unbound):
         self._unbound = check_inputs.ISModel.check_unbound(unbound)
         config.unbound = self._unbound
+
+    @property
+    def nbands(self):
+        """int: number of levels per band in massacrier's bandstructure model."""
+        return self._nbands
+
+    @nbands.setter
+    def nbands(self, nbands):
+        self._nbands = check_inputs.ISModel.check_nbands(nbands)
+        config.nbands = self._nbands
+
+    @property
+    def E_spc(self):
+        """float: spacing of the energy grid for massacrier's bandstructure model."""
+        return self._E_spc
+
+    @E_spc.setter
+    def E_spc(self, E_spc):
+        self._E_spc = check_inputs.ISModel.check_E_spc(E_spc)
+        config.E_spc = self._E_spc
 
     @property
     def v_shift(self):
