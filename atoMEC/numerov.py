@@ -30,6 +30,7 @@ from scipy.sparse.linalg import eigs
 from scipy import linalg
 from scipy.interpolate import interp1d
 from joblib import Parallel, delayed, dump, load
+from numba import jit
 
 # from staticKS import Orbitals
 
@@ -540,107 +541,119 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
 
 def calc_wfns_e_grid(xgrid, v, e_arr):
     """
-    Compute all the wavefunctions defined on the energy grid.
+    Compute all KS orbitals defined on the energy grid.
 
+    This routine is used to propagate a set of orbitals defined with a fixed
+    set of energies. It is used for the `bands` boundary condition in the
+    `models.ISModel` class.
+
+    Parameters
+    ----------
+    xgrid : ndarray
+        the spatial (logarithmic) grid
+    v : ndarray
+        the KS potential
+    e_arr : ndarray
+        the energy grid
+
+    Returns
+    -------
+    eigfuncs_e : ndarray
+        the KS orbitals with defined energies
     """
+    # size of spaital grid
     N = np.size(xgrid)
 
-    # Compute the number pmax of distinct diagonizations to be solved
+    # compute the number of distinct propagations over spin and angular momentum
     pmax = config.spindims * config.lmax
 
-    # now flatten the potential matrix over spins
+    # initialize the flattened potential matrix
     W_flat = np.zeros((pmax, N, len(e_arr)))
 
+    # set up the flattened potential matrix
+    # W = -2*exp(x)*(v - E) - (l + 1/2)**2
     for sp in range(config.spindims):
         for l in range(config.lmax):
-            for i in range(N):
-                W_flat[l + (sp * config.lmax), i] = (
-                    -2.0 * np.exp(2.0 * xgrid[i]) * (v[sp, i] - e_arr) - (l + 0.5) ** 2
-                )
+            W_flat[l + (sp * config.lmax)] = (
+                -2.0
+                * np.exp(2.0 * xgrid[:, np.newaxis])
+                * (v[sp, :, np.newaxis] - e_arr)
+                - (l + 0.5) ** 2
+            )
 
-    if config.numcores == 0:
-        eigfuncs_e = calc_wfns_e_grid_serial(xgrid, W_flat)
-    else:
-        eigfuncs_e = calc_wfns_e_grid_parallel(xgrid, W_flat)
+    # solve numerov eqn for the wfns
+    eigfuncs_e = calc_wfns_e_grid_serial(xgrid, W_flat)
 
     return eigfuncs_e
 
 
 def calc_wfns_e_grid_serial(xgrid, W):
+    r"""Compute the KS orbitals in serial.
 
+    Parameters
+    ----------
+    xgrid : ndarray
+        the logarithmic grid
+    W : ndarray
+        the modified KS potential (see notes)
+
+    Returns
+    -------
+    eigfuncs_e : ndarray
+        the KS orbitals for all values of spin and angular momenta,
+        across the full energy spectrum given
+
+    Notes
+    -----
+    The modified KS potential is given by
+    :math:`W = -2 * \exp(x) * (v(x) - E) - (l + \frac{1}{2})**2`
+    """
+    # total number of propagations over spin and angular momenta
     pmax = config.spindims * config.lmax
+
+    # spatial grid size
     N = np.size(xgrid)
+
+    # energy grid size
     n_e_grid = np.shape(W)[-1]
+
+    # intialize the flattened eigenfucntions
     eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
 
+    # solve numerov over each value of spin and angular momentum
     for p in range(pmax):
         eigfuncs_flat[p] = num_propagate(p, xgrid, W, config.lmax)
 
-    eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
-
-    return eigfuncs_e
-
-
-def calc_wfns_e_grid_parallel(xgrid, W):
-
-    pmax = config.spindims * config.lmax
-    N = np.size(xgrid)
-    n_e_grid = np.shape(W)[-1]
-    eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
-
-    while True:
-        try:
-            joblib_folder = "".join(
-                random.choices(string.ascii_uppercase + string.digits, k=30)
-            )
-            os.mkdir(joblib_folder)
-            break
-        except FileExistsError as e:
-            print(e)
-
-    # dump and load the large numpy arrays from file
-    data_filename_memmap = os.path.join(joblib_folder, "data_memmap")
-    dump(W, data_filename_memmap)
-    W = load(data_filename_memmap, mmap_mode="r")
-
-    with Parallel(n_jobs=config.numcores) as parallel:
-        X = parallel(
-            delayed(num_propagate)(q, xgrid, W, config.lmax) for q in range(pmax)
-        )
-
-    # remove the joblib arrays
-    try:
-        shutil.rmtree(joblib_folder)
-    except:  # noqa
-        print("Could not clean-up automatically.")
-
-    for q in range(pmax):
-        eigfuncs_flat[q] = X[q]
-
+    # return the eigenfucntions to their correct shape
     eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
 
     return eigfuncs_e
 
 
 def num_propagate(p, xgrid, W, lmax):
-    """
-    Propagate the wfn manually for fixed energy with numerov scheme.
+    r"""
+    Propagate the wfn manually for energy grid with numerov scheme.
 
     Parameters
     ----------
+    p : int
+        the index of spin and angular momentum
     xgrid : ndarray
         the logarithmic grid
-    v : ndarray
-        KS potential array
-    l : int
-        angular momentum value
-    E : float
-        energy of the wavefunction
+    W : ndarray
+        modified KS potential array (see notes)
+    lmax : int
+        maximum value of angular momentum
 
     Returns
     -------
     Psi_norm : ndarray
-        normalized wavefunction
+        normalized wavefunctions
+
+    Notes
+    -----
+    The modified KS potential is given by
+    :math:`W = -2 * \exp(x) * (v(x) - E) - (l + \frac{1}{2})**2`
     """
     # define some initial grid parameters
     dx = xgrid[1] - xgrid[0]
@@ -653,7 +666,7 @@ def num_propagate(p, xgrid, W, lmax):
     # Initial conditions
     n_e_grid = np.shape(W)[-1]
     Psi = np.zeros((N, n_e_grid))  # initialize the wfn
-    l = p % lmax
+    l = p % lmax  # retrieve the value of angular momentum from p
     Psi[1] = np.exp((l + 0.5) * (x0 + dx))
 
     # Integration loop
@@ -671,3 +684,104 @@ def num_propagate(p, xgrid, W, lmax):
     Psi_norm = np.einsum("i,ij->ij", norm, Psi)
 
     return Psi_norm
+
+
+# def calc_wfns_e_grid_parallel(xgrid, W):
+
+#     pmax = config.spindims * config.lmax
+#     N = np.size(xgrid)
+#     n_e_grid = np.shape(W)[-1]
+#     eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
+
+#     while True:
+#         try:
+#             joblib_folder = "".join(
+#                 random.choices(string.ascii_uppercase + string.digits, k=30)
+#             )
+#             os.mkdir(joblib_folder)
+#             break
+#         except FileExistsError as e:
+#             print(e)
+
+#     # dump and load the large numpy arrays from file
+#     data_filename_memmap = os.path.join(joblib_folder, "data_memmap")
+#     dump(W, data_filename_memmap)
+#     W = load(data_filename_memmap, mmap_mode="r")
+
+#     with Parallel(n_jobs=config.numcores) as parallel:
+#         X = parallel(
+#             delayed(num_propagate)(q, xgrid, W, config.lmax) for q in range(pmax)
+#         )
+
+#     # remove the joblib arrays
+#     try:
+#         shutil.rmtree(joblib_folder)
+#     except:  # noqa
+#         print("Could not clean-up automatically.")
+
+#     for q in range(pmax):
+#         eigfuncs_flat[q] = X[q]
+
+#     eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
+
+#     return eigfuncs_e
+
+
+# def num_propagate_2(xgrid, v, e_arr):
+#     """
+#     Propagate the wfn manually for fixed energy with numerov scheme.
+
+#     Parameters
+#     ----------
+#     xgrid : ndarray
+#         the logarithmic grid
+#     v : ndarray
+#         KS potential array
+#     l : int
+#         angular momentum value
+#     E : float
+#         energy of the wavefunction
+
+#     Returns
+#     -------
+#     Psi_norm : ndarray
+#         normalized wavefunction
+#     """
+#     # define some initial grid parameters
+#     dx = xgrid[1] - xgrid[0]
+#     x0 = xgrid[0]
+#     h = (dx ** 2) / 12.0  # a parameter for the numerov integration
+#     N = np.size(xgrid)  # size of grid
+
+#     # 'Potential' for numerov integration
+
+#     # Initial conditions
+#     # 'Potential' for numerov integration
+#     W = np.zeros((N, len(e_arr), config.lmax, config.spindims))
+#     for i in range(N):
+#         for sp in range(config.spindims):
+#             for l in range(config.lmax):
+#                 W[i, :, l, sp] = (
+#                     -2.0 * np.exp(2.0 * xgrid[i]) * (v[sp, i] - e_arr) - (l + 0.5) ** 2
+#                 )
+
+#     # Initial conditions
+#     Psi = np.zeros((N, len(e_arr), config.lmax, config.spindims))  # initialize the wfn
+#     for l in range(config.lmax):
+#         Psi[:, :, l] = np.exp((l + 0.5) * (x0 + dx))
+
+#     # Integration loop
+#     for i in range(2, N):
+#         Psi[i] = (
+#             2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
+#             - (1.0 + h * W[i - 2]) * Psi[i - 2]
+#         ) / (1.0 + h * W[i])
+
+#     # normalize the wavefunction
+#     Psi = Psi.transpose()
+#     psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
+#     integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+#     norm = (np.trapz(integrand, x=xgrid, axis=-1)) ** (-0.5)
+#     Psi_norm = np.einsum("ijl,ijlk->ijlk", norm, Psi)
+
+#     return Psi_norm
