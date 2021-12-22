@@ -227,42 +227,9 @@ class Orbitals:
                 eigs_min_guess=self._eigs_min[1],
             )
 
-            e_gap_arr = self.eigs_max - self.eigs_min
-            e_min = np.amin(self.eigs_min[np.where(e_gap_arr > config.E_spc)])
-            e_max = np.amax(self.eigs_max)
-            e_arr = np.arange(e_min, e_max, config.E_spc)
-            eigfuncs_e = numerov.calc_wfns_e_grid(self._xgrid, v, e_arr)
-
-            for sp in range(config.spindims):
-                for l in range(config.lmax):
-                    for n in range(config.nmax):
-                        e_tmp_arr = np.linspace(
-                            self.eigs_min[sp, l, n],
-                            self.eigs_max[sp, l, n],
-                            config.nbands,
-                        )
-                        if e_gap_arr[sp, l, n] > config.E_spc:
-                            e_new_arr = np.where(
-                                (e_arr > e_tmp_arr[0]) & (e_arr < e_tmp_arr[-1]),
-                                e_arr,
-                                np.inf,
-                            )
-                            e_loc_arr = np.zeros((config.nbands), dtype=int)
-                            for nband, e in enumerate(e_tmp_arr):
-                                e_loc = np.argmin(np.abs(e - e_new_arr))
-                                e_loc_arr[nband] = e_loc
-                                self._eigfuncs[nband, sp, l, n] = eigfuncs_e[
-                                    sp, l, e_loc
-                                ]
-                                self._eigvals[nband, sp, l, n] = e_arr[e_loc]
-                            for nband, n_e in enumerate(e_loc_arr):
-                                self.nband_weight[
-                                    nband, sp, l, n
-                                ] = 1.0 / np.count_nonzero(e_loc_arr == n_e)
-                        else:
-                            self._eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
-                            self._eigvals[:, sp, l, n] = self.eigs_min[sp, l, n]
-                            self.nband_weight[:, sp, l, n] = 1.0 / config.nbands
+            self._eigvals, self._eigfuncs, self.nband_weight = self.calc_bands(
+                self, v, eigfuncs_l
+            )
 
             # compute the DOS
             self._DOS = self.make_DOS_bands(
@@ -280,6 +247,99 @@ class Orbitals:
             config.mu = np.zeros((config.spindims))
 
         return
+
+    def calc_bands(self, v, eigfuncs_l):
+        """
+        Compute the eigenfunctions which fill the energy bands.
+
+        Parameters
+        ----------
+        v : ndarray
+            the KS potential
+        eigfuncs_l : ndarray
+            the lower bound (neumann) eigenfunctions
+
+        Returns
+        -------
+        eigvals : ndarray
+            the orbital energies across all the bands
+        eigfuncs : ndarray
+            the KS eigenfunctions for all energies covered
+        nband_weight : ndarray
+            the weighting which each energy contributes to the occupation
+        """
+        # initialize some arrays
+        eigfuncs = np.zeros_like(self._eigfuncs)
+        eigvals = np.zeros_like(self._eigvals)
+        nband_weight = np.zeros_like(self._eigvals)
+
+        # the energy band
+        e_gap_arr = self.eigs_max - self.eigs_min
+
+        # only create bands when the gap satisfies a minimum requirement
+        e_min = np.amin(self.eigs_min[np.where(e_gap_arr > config.E_spc)])
+        e_max = np.amax(self.eigs_max)
+
+        # the full energy grid
+        e_arr = np.arange(e_min, e_max, config.E_spc)
+
+        # propagate the wavefunctions on the energy grid
+        eigfuncs_e = numerov.calc_wfns_e_grid(self._xgrid, v, e_arr)
+
+        # assign the wavefunctions to their energy value
+        for sp in range(config.spindims):
+            for l in range(config.lmax):
+                for n in range(config.nmax):
+
+                    # create a temporary array for the energy band
+                    e_tmp_arr = np.linspace(
+                        self.eigs_min[sp, l, n],
+                        self.eigs_max[sp, l, n],
+                        config.nbands,
+                    )
+
+                    # match the energy in the band to an energy that has been solved for
+                    # first check the energy band is wide enough to solve for sub-levels
+                    if e_gap_arr[sp, l, n] > config.E_spc:
+                        e_new_arr = np.where(
+                            (e_arr > e_tmp_arr[0]) & (e_arr < e_tmp_arr[-1]),
+                            e_arr,
+                            np.inf,
+                        )
+                        e_loc_arr = np.zeros((config.nbands), dtype=int)
+                        for nband, e in enumerate(e_tmp_arr):
+                            e_loc = np.argmin(np.abs(e - e_new_arr))
+                            e_loc_arr[nband] = e_loc
+                            eigfuncs[nband, sp, l, n] = eigfuncs_e[sp, l, e_loc]
+                            eigvals[nband, sp, l, n] = e_arr[e_loc]
+
+                        # work out weighting due to degenerate levels
+                        for nband, n_e in enumerate(e_loc_arr):
+                            nband_weight[nband, sp, l, n] = 1.0 / np.count_nonzero(
+                                e_loc_arr == n_e
+                            )
+                    # when there are no distinct levels in a band
+                    # just assign lower eigenvalue and eigenfucntion
+                    else:
+                        eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
+                        eigvals[:, sp, l, n] = self.eigs_min[sp, l, n]
+                        nband_weight[:, sp, l, n] = 1.0 / config.nbands
+
+        # now create the energy spacing weighting for the integral
+        # integral is done by trapezoid method: w_i = 0.5 * dE * (w_(i+1) + w_i)
+        delta_E_plus = np.zeros_like(eigvals)
+        delta_E_plus[1:] = eigvals[1:] - eigvals[:-1]
+        delta_E_minus = np.zeros_like(eigvals)
+        delta_E_minus[:-1] = eigvals[1:] - eigvals[:-1]
+        delta_E_tot = 0.5 * (delta_E_minus + delta_E_plus)
+
+        # E spacing is always >= the minimum spacing for the energy band
+        delta_E_tot = np.where(delta_E_tot > config.E_spc, delta_E_tot, config.E_spc)
+
+        # adjust the band weighting accordingly
+        nband_weight = nband_weight * delta_E_tot
+
+        return eigvals, eigfuncs, nband_weight
 
     def occupy(self):
         """
@@ -405,42 +465,58 @@ class Orbitals:
 
     @staticmethod
     def make_DOS_bands(eigs_min, eigs_max, eigvals, nband_weight):
+        r"""
+        Compute the density-of-states using the method of Massacrier et al (see notes).
 
-        # delta = 0.5 * (eigs_max - eigs_min)
+        Parameters
+        ----------
+        eigs_min : ndarray
+            the lower bound of the energy band
+        eigs_max : ndarray
+            the upper bound of the energy band
+        eigvals : ndarray
+            the KS energy eigenvalues
+        nband_weight: ndarray
+            the band weighting
 
-        # hub_func = (eigs_max - eigvals) * (eigvals - eigs_min)
-        # f_sqrt = np.where(
-        #     hub_func >= min_h ** 2,
-        #     min_h * nband_weight * np.sqrt(hub_func),
-        #     1.0 / config.nbands,
-        # )
+        Returns
+        -------
+        dos : ndarray
+            the density-of-states
 
-        # prefac = np.where(hub_func >= min_h ** 2, 2.0 / (pi * delta ** 2.0), 1.0)
+        Notes
+        -----
+        The density-of-states is defined in this model as:
+        .. math::
+            g(\epsilon) = \frac{2}{pi * delta**2) * \sqrt[(\epsilon^+ - \epsilon) \
+                        (\epsilon - \epsilon^-)],
+            \delta = /frac{1}{2} (\epsilon^+ - \epsilon^-)\,,
 
-        delta_E_plus = np.zeros_like(eigvals)
-        delta_E_plus[1:] = eigvals[1:] - eigvals[:-1]
-        delta_E_minus = np.zeros_like(eigvals)
-        delta_E_minus[:-1] = eigvals[1:] - eigvals[:-1]
-        delta_E_tot = 0.5 * (delta_E_minus + delta_E_plus)
-
-        delta_E_tot = np.where(delta_E_tot > config.E_spc, delta_E_tot, config.E_spc)
-
+        where :math:`\epsilon^\pm` are the upper and lower band limits respectively.
+        """
+        # get the eigenvalue difference in a correctly shaped array
         eig_diff = np.einsum(
             "ijk,lijk->lijk", eigs_max - eigs_min, np.ones_like(eigvals)
         )
 
+        # compute delta and (e_+ - e) * (e - e_-)
         delta = 0.5 * eig_diff
         hub_func = (eigs_max - eigvals) * (eigvals - eigs_min)
 
+        # take the sqrt when the energy gap is big enough to justify a band
         f_sqrt = np.where(
             eig_diff > config.E_spc,
-            delta_E_tot * nband_weight * np.sqrt(hub_func),
+            nband_weight * np.sqrt(hub_func),
             1.0 / config.nbands,
         )
 
+        # compute the pre-factor when the energy gap is large enough for a band
         prefac = np.where(eig_diff > config.E_spc, 2.0 / (pi * delta ** 2.0), 1.0)
 
-        return prefac * f_sqrt
+        # compute the dos
+        dos = prefac * f_sqrt
+
+        return dos
 
 
 class Density:
