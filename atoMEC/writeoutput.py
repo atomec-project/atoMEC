@@ -447,7 +447,7 @@ class SCF:
         for band in band_list:
             for i in range(config.spindims):
 
-                occnums_tot = orbitals.occnums + orbitals.occnums_ub
+                occnums_tot = orbitals.occnums_w
 
                 # truncate the table to include only one unbound state in each direction
                 try:
@@ -470,7 +470,7 @@ class SCF:
                 RowIDs[0] = "l=0"
 
                 eigvals_new = orbitals.eigvals[band, i, :lmax_new, :nmax_new]
-                occnums_new = orbitals.occnums[band, i, :lmax_new, :nmax_new]
+                occnums_new = orbitals.occnums_w[band, i, :lmax_new, :nmax_new]
 
                 # the eigenvalue table
                 eigval_tbl += (
@@ -589,6 +589,39 @@ def potential_to_csv(rgrid, potential, filename):
         )
 
     np.savetxt(filename, data, fmt="%8.3e", header=headstr)
+
+    return
+
+
+def eigs_occs_to_csv(orbitals, file_prefix):
+
+    sp_names = ["up", "dw"]
+
+    for sp in range(config.spindims):
+        eigs_sp = orbitals.eigvals[:, sp].flatten()
+        idr = np.argsort(eigs_sp)
+        eigs_sp = eigs_sp[idr]
+        occs_sp = orbitals.occnums[:, sp].flatten()[idr]
+        dos_sp = orbitals.DOS[:, sp].flatten()[idr]
+        ldegen_sp = orbitals.ldegen[:, sp].flatten()[idr]
+        band_weight_sp = orbitals.nband_weight[:, sp].flatten()[idr]
+
+        data = np.column_stack([eigs_sp, occs_sp, dos_sp, ldegen_sp, band_weight_sp])
+        headstr = (
+            "eigs"
+            + 5 * " "
+            + "occs"
+            + 5 * " "
+            + "dos"
+            + 6 * " "
+            + "l_degen"
+            + 2 * " "
+            + "band_weight"
+        )
+
+        np.savetxt(
+            file_prefix + "_" + sp_names[sp] + ".csv", data, fmt="%8.3e", header=headstr
+        )
 
     return
 

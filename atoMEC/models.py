@@ -433,6 +433,8 @@ class ISModel:
         if write_potential:
             writeoutput.potential_to_csv(rgrid, pot, potential_file)
 
+        writeoutput.eigs_occs_to_csv(orbs, "eigs_occs")
+
         output_dict = {
             "energy": energy,
             "density": rho,
