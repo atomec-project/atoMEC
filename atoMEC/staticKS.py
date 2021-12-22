@@ -87,12 +87,14 @@ class Orbitals:
             (config.nbands, config.spindims, config.lmax, config.nmax)
         )
         self._occnums = np.zeros_like(self._eigvals)
-        self._occnums_ub = np.zeros_like(self._eigvals)
-        self._lbound = np.zeros_like(self._eigvals)
-        self._lunbound = np.zeros_like(self._eigvals)
+        self._occnums_w = np.zeros_like(self._eigvals)
+        # self._occnums_ub = np.zeros_like(self._eigvals)
+        self._ldegen = np.zeros_like(self._eigvals)
+        # self._lunbound = np.zeros_like(self._eigvals)
         self._DOS = np.zeros_like(self._eigvals)
         self._eigs_min = np.zeros((config.nbands, config.spindims, config.lmax))
-        self.nband_weight = np.zeros_like(self._eigvals)
+        self.nband_weight = np.ones_like(self._eigvals)
+        self._occ_weight = np.zeros_like(self._eigvals)
 
     @property
     def eigvals(self):
@@ -114,28 +116,49 @@ class Orbitals:
         return self._eigfuncs
 
     @property
-    def occnums(self):
+    def occnums_w(self):
         r"""
         ndarray: KS occupation numbers (Fermi-Dirac).
 
         The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
         """
-        if np.all(self._occnums == 0.0):
+        if np.all(self._occnums_w == 0.0):
             # raise Exception("Occnums have not been initialized")
-            self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
+            self._occnums_w = self.occnums * self.occ_weight
+        return self._occnums_w
+
+    @property
+    def occnums(self):
+
+        if np.all(self._occnums == 0.0):
+            self._occnums = self.calc_occnums(self.eigvals, config.mu)
         return self._occnums
 
     @property
-    def occnums_ub(self):
-        r"""
-        ndarray: KS occupation numbers (Fermi-Dirac).
+    def occ_weight(self):
 
-        The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
-        """
-        if np.all(self._occnums_ub == 0.0):
-            # raise Exception("Occnums have not been initialized")
-            self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
-        return self._occnums_ub
+        if np.all(self._occ_weight == 0.0):
+            self._occ_weight = self.DOS * self.ldegen * self.nband_weight
+        return self._occ_weight
+
+    @property
+    def ldegen(self):
+
+        if np.all(self._ldegen == 0.0):
+            self._ldegen = self.make_ldegen(self.eigvals)
+        return self._ldegen
+
+    # @property
+    # def occnums_ub(self):
+    #     r"""
+    #     ndarray: KS occupation numbers (Fermi-Dirac).
+
+    #     The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
+    #     """
+    #     if np.all(self._occnums_ub == 0.0):
+    #         # raise Exception("Occnums have not been initialized")
+    #         self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
+    #     return self._occnums_ub
 
     @property
     def lbound(self):
@@ -150,18 +173,18 @@ class Orbitals:
             self._lbound = self.make_lbound(self.eigvals, self.DOS)
         return self._lbound
 
-    @property
-    def lunbound(self):
-        r"""
-        ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).
+    # @property
+    # def lunbound(self):
+    #     r"""
+    #     ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).
 
-        The matrix takes the form
-        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`
-        """
-        if np.all(self._lbound == 0.0):
-            # raise Exception("lbound has not been initialized")
-            self._lunbound = self.make_lunbound(self.eigvals, self.DOS)
-        return self._lunbound
+    #     The matrix takes the form
+    #     :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`
+    #     """
+    #     if np.all(self._lbound == 0.0):
+    #         # raise Exception("lbound has not been initialized")
+    #         self._lunbound = self.make_lunbound(self.eigvals, self.DOS)
+    #     return self._lunbound
 
     @property
     def DOS(self):
@@ -228,7 +251,7 @@ class Orbitals:
             )
 
             self._eigvals, self._eigfuncs, self.nband_weight = self.calc_bands(
-                self, v, eigfuncs_l
+                v, eigfuncs_l
             )
 
             # compute the DOS
@@ -237,10 +260,10 @@ class Orbitals:
             )
 
         # compute the lbound array
-        self._lbound = self.make_lbound(self.eigvals, self.DOS)
+        # self._lbound = self.make_lbound(self.eigvals, self.DOS)
 
-        # compute the lunbound array
-        self._lunbound = self.make_lunbound(self.eigvals, self.DOS)
+        # # compute the lunbound array
+        # self._lunbound = self.make_lunbound(self.eigvals, self.DOS)
 
         # guess the chemical potential if initializing
         if init:
@@ -337,7 +360,9 @@ class Orbitals:
         delta_E_tot = np.where(delta_E_tot > config.E_spc, delta_E_tot, config.E_spc)
 
         # adjust the band weighting accordingly
-        nband_weight = nband_weight * delta_E_tot
+        nband_weight = np.where(
+            e_gap_arr > config.E_spc, nband_weight * delta_E_tot, nband_weight
+        )
 
         return eigvals, eigfuncs, nband_weight
 
@@ -357,15 +382,15 @@ class Orbitals:
         config.mu = mathtools.chem_pot(self)
 
         # compute the occupation numbers using the chemical potential
-        self._occnums = self.calc_occnums(self.eigvals, self.lbound, config.mu)
+        self._occnums = self.calc_occnums(self.eigvals, config.mu)
 
         # compute the unbound occupation numbers
-        self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
+        # self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
 
         return
 
     @staticmethod
-    def calc_occnums(eigvals, lbound, mu):
+    def calc_occnums(eigvals, mu):
         """
         Compute the Fermi-Dirac occupations for the eigenvalues.
 
@@ -388,7 +413,7 @@ class Orbitals:
         for band in range(config.nbands):
             for i in range(config.spindims):
                 if config.nele[i] != 0:
-                    occnums[band, i] = lbound[band, i] * mathtools.fermi_dirac(
+                    occnums[band, i] = mathtools.fermi_dirac(
                         eigvals[band, i], mu[i], config.beta
                     )
 
@@ -431,6 +456,46 @@ class Orbitals:
                 lbound_mat[sp, l, n] = (2.0 / config.spindims) * (2 * l + 1.0)
 
         return lbound_mat
+
+    @staticmethod
+    def make_ldegen(eigvals):
+        r"""
+        Construct the lbound matrix denoting the bound states and their degeneracies.
+
+        For each spin channel,
+        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
+
+        Parameters
+        ----------
+        eigvals : ndarray
+            the KS orbital eigenvalues
+
+        Returns
+        -------
+        lbound_mat : ndarray
+            the lbound matrix
+        """
+        ldegen_mat = np.zeros_like(eigvals)
+
+        if config.unbound == "quantum":
+            for l in range(config.lmax):
+                ldegen_mat[:, :, l] = (2.0 / config.spindims) * (2 * l + 1.0)
+        elif config.unbound == "ideal":
+            for l in range(config.lmax):
+                ldegen_mat[:, :, l] = (2.0 / config.spindims) * np.where(
+                    eigvals[:, :, l] < 0.0, 2 * l + 1.0, 0.0
+                )
+
+        # force bound levels if there are convergence issues
+
+        if config.force_bound:
+            for levels in config.force_bound:
+                sp = levels[0]
+                l = levels[1]
+                n = levels[2]
+                ldegen_mat[sp, l, n] = (2.0 / config.spindims) * (2 * l + 1.0)
+
+        return ldegen_mat
 
     @staticmethod
     def make_lunbound(eigvals, DOS_mat):
@@ -504,11 +569,7 @@ class Orbitals:
         hub_func = (eigs_max - eigvals) * (eigvals - eigs_min)
 
         # take the sqrt when the energy gap is big enough to justify a band
-        f_sqrt = np.where(
-            eig_diff > config.E_spc,
-            nband_weight * np.sqrt(hub_func),
-            1.0 / config.nbands,
-        )
+        f_sqrt = np.where(eig_diff > config.E_spc, np.sqrt(hub_func), 1.0)
 
         # compute the pre-factor when the energy gap is large enough for a band
         prefac = np.where(eig_diff > config.E_spc, 2.0 / (pi * delta ** 2.0), 1.0)
@@ -560,7 +621,7 @@ class Density:
         """
         if np.all(self._bound["rho"] == 0.0):
             self._bound = self.construct_rho_orbs(
-                self._orbs.eigfuncs, self._orbs.occnums, self._xgrid
+                self._orbs.eigfuncs, self._orbs.occnums_w, self._xgrid
             )
         return self._bound
 
@@ -573,9 +634,8 @@ class Density:
         unbound density and number of unbound electrons respectively
         """
         if np.all(self._unbound["rho"]) == 0.0:
-            self._unbound = self.construct_rho_unbound(
-                self._orbs.eigfuncs, self._orbs.occnums_ub, self._xgrid
-            )
+            if config.unbound == "ideal":
+                self._unbound = self.construct_rho_unbound()
         return self._unbound
 
     @staticmethod
@@ -617,7 +677,7 @@ class Density:
         return dens
 
     @staticmethod
-    def construct_rho_unbound(eigfuncs, occnums, xgrid):
+    def construct_rho_unbound():
         """
         Construct the unbound part of the density.
 
@@ -650,10 +710,6 @@ class Density:
                 N_unbound[i] = n_ub * config.sph_vol
 
             unbound = {"rho": rho_unbound, "N": N_unbound}
-
-        elif config.unbound == "quantum":
-
-            unbound = Density.construct_rho_orbs(eigfuncs, occnums, xgrid)
 
         return unbound
 
@@ -889,12 +945,13 @@ class Energy:
         E_kin = {}
 
         # bound part
-        E_kin["bound"] = self.calc_E_kin_orbs(orbs.eigfuncs, orbs.occnums, xgrid)
+        E_kin["bound"] = self.calc_E_kin_orbs(orbs.eigfuncs, orbs.occnums_w, xgrid)
 
         # unbound part
-        E_kin["unbound"] = self.calc_E_kin_unbound(
-            orbs.eigfuncs, orbs.occnums_ub, xgrid
-        )
+        if config.unbound == "ideal":
+            E_kin["unbound"] = self.calc_E_kin_unbound()
+        else:
+            E_kin["unbound"] = 0.0
 
         # total
         E_kin["tot"] = E_kin["bound"] + E_kin["unbound"]
@@ -1011,7 +1068,7 @@ class Energy:
         return e_kin_dens
 
     @staticmethod
-    def calc_E_kin_unbound(eigfuncs, occnums, xgrid):
+    def calc_E_kin_unbound():
         r"""
         Compute the contribution from unbound (continuum) electrons to kinetic energy.
 
@@ -1046,9 +1103,6 @@ class Energy:
                     config.mu[i], config.beta, 3.0
                 )
 
-        elif config.unbound == "quantum":
-            E_kin_unbound = Energy.calc_E_kin_orbs(eigfuncs, occnums, xgrid)
-
         return E_kin_unbound
 
     def calc_entropy(self, orbs):
@@ -1071,10 +1125,13 @@ class Energy:
         S = {}
 
         # bound part
-        S["bound"] = self.calc_S_orbs(orbs.occnums, orbs.lbound)
+        S["bound"] = self.calc_S_orbs(orbs.occnums, orbs.occ_weight)
 
         # unbound part
-        S["unbound"] = self.calc_S_unbound(orbs.occnums_ub, orbs.lunbound)
+        if config.unbound == "ideal":
+            S["unbound"] = self.calc_S_unbound()
+        else:
+            S["unbound"] = 0.0
 
         # total
         S["tot"] = S["bound"] + S["unbound"]
@@ -1130,7 +1187,7 @@ class Energy:
         return S_orbs
 
     @staticmethod
-    def calc_S_unbound(occnums_ub, lunbound):
+    def calc_S_unbound():
         r"""
         Compute the unbound contribution to the entropy.
 
@@ -1168,9 +1225,6 @@ class Energy:
                     )
                 else:
                     S_unbound += 0.0
-
-        elif config.unbound == "quantum":
-            S_unbound = Energy.calc_S_orbs(occnums_ub, lunbound)
 
         return S_unbound
 
@@ -1306,7 +1360,7 @@ class EnergyAlt:
         Given by :math:`E=\sum_{nl\sigma} (2l+1) f_{nl}^\sigma \epsilon_{nl}^\sigma`
         """
         if self._E_eps == 0.0:
-            self._E_eps = np.sum(self._orbs.occnums * self._orbs.eigvals)
+            self._E_eps = np.sum(self._orbs.occnums_w * self._orbs.eigvals)
         return self._E_eps
 
     @property

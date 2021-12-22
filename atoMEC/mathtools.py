@@ -325,7 +325,7 @@ def chem_pot(orbs):
                 soln = optimize.root_scalar(
                     f_root_id,
                     x0=mu0[i],
-                    args=(orbs.eigvals[:, i], orbs.lbound[:, i], config.nele[i]),
+                    args=(orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i]),
                     method="brentq",
                     bracket=[-100, 100],
                     options={"maxiter": 100},
@@ -343,8 +343,7 @@ def chem_pot(orbs):
                     x0=mu0[i],
                     args=(
                         orbs.eigvals[:, i],
-                        orbs.lbound[:, i],
-                        orbs.lunbound[:, i],
+                        orbs.occ_weight[:, i],
                         config.nele[i],
                     ),
                     method="brentq",
@@ -405,7 +404,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     return f_root
 
 
-def f_root_qu(mu, eigvals, lbound, lunbound, nele):
+def f_root_qu(mu, eigvals, occ_weight, nele):
     r"""
     Functional input for the chemical potential root finding function (ideal approx).
 
@@ -436,16 +435,9 @@ def f_root_qu(mu, eigvals, lbound, lunbound, nele):
         N_{ub}(\beta,\mu) - N_e
     """
     # caluclate the contribution from the bound electrons
-    occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
-    contrib_bound = occnums.sum()
-
-    # now compute the contribution from the unbound electrons
-    # this function uses the ideal approximation
-
-    occnums_ub = lunbound * fermi_dirac(eigvals, mu, config.beta)
-    contrib_unbound = occnums_ub.sum()
+    occnums = occ_weight * fermi_dirac(eigvals, mu, config.beta)
 
     # return the function whose roots are to be found
-    f_root = contrib_bound + contrib_unbound - nele
+    f_root = occnums.sum() - nele
 
     return f_root
