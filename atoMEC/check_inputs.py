@@ -520,67 +520,6 @@ class ISModel:
 
         return bc
 
-    def check_nbands(nbands):
-        """
-        Check the number of energy levels per band is accepted.
-
-        Parameters
-        ----------
-        nbands : int
-            the number of levels per energy band
-
-        Returns
-        -------
-        nbands : int
-            the number of levels per energy band
-
-        Raises
-        ------
-        InputError.bands_error
-            if the number of bands is not a positive integer
-        """
-        # dirichlet and neumann bcs should only have one band
-        bcs_no_bands = ["dirichlet", "neumann"]
-
-        if config.bc in bcs_no_bands:
-            nbands = 1
-        else:
-            if not isinstance(nbands, intc):
-                raise InputError.bands_error("nbands is not an integer")
-            else:
-                if nbands < 1:
-                    raise InputError.bands_error("nbands must be positive")
-
-        return nbands
-
-    def check_E_spc(E_spc):
-        """
-        Check the energy grid spacing for bands calculations is accepted.
-
-        Parameters
-        ----------
-        E_spc : float
-            the resolution of the energy grid for bands calculations
-
-        Returns
-        -------
-        E_spc : float
-            the resolution of the energy grid for bands calculations
-
-        Raises
-        ------
-        InputError.bands_error
-            if the energy grid resolution is not a positive number
-        """
-
-        if not isinstance(E_spc, (float, intc)):
-            raise InputError.bands_error("E_spc is not a number")
-        else:
-            if E_spc < 0:
-                raise InputError.bands_error("E_spc must be positive")
-
-        return E_spc
-
     def check_spinpol(spinpol):
         """
         Check the spin polarization is a boolean.
@@ -887,6 +826,80 @@ class EnergyCalcs:
             raise InputError.SCF_error("mixfrac must be in range [0,1]")
 
         return scf_params
+
+    @staticmethod
+    def check_band_params(input_params):
+        r"""
+        Check if band parameters are reasonable, or assign if empty.
+
+        Parameters
+        ----------
+        input_params : dict
+            can contain the keys `maxscf` and `mixfrac` for max scf cycle
+            and potential mixing fraction
+
+        Returns
+        -------
+        band_params : dict
+            dictionary for band parameters as follows:
+            {
+            `nbands`   (``int``)   : number of levels per band,
+            `dE_min`   (``float``) : minimum energy gap to make a band,
+            `ngrid_e`  (``int``)   : number of grid points for the energy
+            `e_cut`    (``int``)   : maximum energy for integration
+            }
+
+        Raises
+        ------
+        InputError.bands_error
+            if band parameters are of invalid type or range
+        """
+
+        band_params = {}
+
+        for p in ["nbands", "de_min", "ngrid_e", "e_cut"]:
+            try:
+                band_params[p] = input_params[p]
+            except KeyError:
+                band_params[p] = config.band_params[p]
+
+        # dirichlet and neumann bcs should only have one band
+        bcs_no_bands = ["dirichlet", "neumann"]
+        if config.bc in bcs_no_bands:
+            config.band_params["nbands"] = 1
+
+        # check the number of bands is valid
+        else:
+            if not isinstance(band_params["nbands"], intc):
+                raise InputError.bands_error("nbands is not an integer")
+            else:
+                if band_params["nbands"] < 1:
+                    raise InputError.bands_error("nbands must be positive")
+
+        # check the minimum band spacing is valid
+        if not isinstance(band_params["de_min"], (float, intc)):
+            raise InputError.bands_error("de_min is not a number")
+        else:
+            if band_params["de_min"] < 0:
+                raise InputError.bands_error("de_min must be positive")
+
+        # check the number of points in the energy grid
+        if not isinstance(band_params["ngrid_e"], intc):
+            raise InputError.bands_error("ngrid_e is not an integer")
+        else:
+            if band_params["ngrid_e"] < 100:
+                raise InputError.bands_error(
+                    "ngrid_e must be positive and at least 100 in size"
+                )
+
+        # check the cutoff energy is valid
+        if not isinstance(band_params["e_cut"], (float, intc)):
+            raise InputError.bands_error("e_cut is not a number")
+        else:
+            if band_params["e_cut"] < 0:
+                raise InputError.bands_error("e_cut must be positive")
+
+        return band_params
 
 
 class InputError(Exception):

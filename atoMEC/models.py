@@ -90,8 +90,6 @@ class ISModel:
         spinmag=-1,
         unbound=config.unbound,
         v_shift=config.v_shift,
-        nbands=config.nbands,
-        E_spc=config.E_spc,
         write_info=True,
     ):
 
@@ -104,8 +102,6 @@ class ISModel:
         self.bc = bc
         self.unbound = unbound
         self.v_shift = v_shift
-        self.E_spc = E_spc
-        self.nbands = nbands
 
         # print the information
         if write_info:
@@ -201,26 +197,6 @@ class ISModel:
         config.unbound = self._unbound
 
     @property
-    def nbands(self):
-        """int: number of levels per band in massacrier's bandstructure model."""
-        return self._nbands
-
-    @nbands.setter
-    def nbands(self, nbands):
-        self._nbands = check_inputs.ISModel.check_nbands(nbands)
-        config.nbands = self._nbands
-
-    @property
-    def E_spc(self):
-        """float: spacing of the energy grid for massacrier's bandstructure model."""
-        return self._E_spc
-
-    @E_spc.setter
-    def E_spc(self, E_spc):
-        self._E_spc = check_inputs.ISModel.check_E_spc(E_spc)
-        config.E_spc = self._E_spc
-
-    @property
     def v_shift(self):
         """bool: shift the potential vertically by a constant."""
         return self._v_shift
@@ -243,6 +219,7 @@ class ISModel:
         grid_params={},
         conv_params={},
         scf_params={},
+        band_params={},
         force_bound=[],
         verbosity=0,
         write_info=True,
@@ -284,6 +261,14 @@ class ISModel:
             {
             `maxscf`  (``int``)   : maximum number of scf cycles,
             `mixfrac` (``float``) : density mixing fraction
+            }
+        band_params : dict, optional
+            dictionary for band parameters as follows:
+            {
+            `nbands`   (``int``)   : number of levels per band,
+            `dE_min`   (``float``) : minimum energy gap to make a band,
+            `ngrid_e`  (``int``)   : number of grid points for the energy
+            `e_cut`    (``int``)   : maximum energy for integration
             }
         force_bound : list of list of ints, optional
             force certain levels to be bound, for example:
@@ -336,6 +321,7 @@ class ISModel:
         config.grid_params = check_inputs.EnergyCalcs.check_grid_params(grid_params)
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
+        config.band_params = check_inputs.EnergyCalcs.check_band_params(band_params)
 
         # experimental change
         config.force_bound = force_bound
@@ -433,7 +419,9 @@ class ISModel:
         if write_potential:
             writeoutput.potential_to_csv(rgrid, pot, potential_file)
 
-        writeoutput.eigs_occs_to_csv(orbs, "eigs_occs")
+        if config.bc == "bands":
+            writeoutput.eigs_occs_to_csv(orbs, "eigs_occs")
+            writeoutput.dos_to_csv(orbs, "dos")
 
         output_dict = {
             "energy": energy,
