@@ -626,6 +626,29 @@ def eigs_occs_to_csv(orbitals, file_prefix):
     return
 
 
+def dos_to_csv(orbitals, file_prefix):
+
+    sp_names = ["up", "dw"]
+
+    for sp in range(config.spindims):
+
+        e_arr, fd_arr, DOS_arr = orbitals.calc_DOS_sum(
+            orbitals.eigvals_min, orbitals.eigvals_max, orbitals.ldegen
+        )
+
+        print(np.shape(e_arr), np.shape(fd_arr), np.shape(DOS_arr))
+
+        data = np.column_stack([e_arr, fd_arr[:, sp], DOS_arr[:, sp]])
+
+        headstr = "energy" + 3 * " " + "fd occ" + 3 * " " + "dos"
+
+        np.savetxt(
+            file_prefix + "_" + sp_names[sp] + ".csv", data, fmt="%8.3e", header=headstr
+        )
+
+    return
+
+
 # timing wrapper
 def timing(f):
     """
