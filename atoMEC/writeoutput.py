@@ -25,6 +25,7 @@ import tabulate
 # internal libs
 from . import unitconv
 from . import config
+from . import mathtools
 
 # define some line spacings
 spc = "\n"
@@ -440,63 +441,58 @@ class SCF:
         eigval_tbl = ""
         occnum_tbl = ""
 
-        if config.nbands > 1:
-            band_list = [0, -1]
-        else:
-            band_list = [0]
-        for band in band_list:
-            for i in range(config.spindims):
+        for i in range(config.spindims):
 
-                occnums_tot = orbitals.occnums_w
+            occnums_tot = orbitals.occnums_w
 
-                # truncate the table to include only one unbound state in each direction
-                try:
-                    lmax_new = min(
-                        np.amax(np.where(occnums_tot[band, i] > 1e-5)[0]) + 1,
-                        config.lmax,
-                    )
-                    nmax_new = min(
-                        np.amax(np.where(occnums_tot[band, i] > 1e-5)[1]) + 1,
-                        config.nmax,
-                    )
-                except ValueError:
-                    lmax_new = 2
-                    nmax_new = 2
-
-                # define row and column headers
-                headers = [n + 1 for n in range(nmax_new)]
-                headers[0] = "n=l+1"
-                RowIDs = [*range(lmax_new)]
-                RowIDs[0] = "l=0"
-
-                eigvals_new = orbitals.eigvals[band, i, :lmax_new, :nmax_new]
-                occnums_new = orbitals.occnums_w[band, i, :lmax_new, :nmax_new]
-
-                # the eigenvalue table
-                eigval_tbl += (
-                    tabulate.tabulate(
-                        eigvals_new,
-                        headers,
-                        tablefmt="presto",
-                        showindex=RowIDs,
-                        floatfmt="7.3f",
-                        stralign="right",
-                    )
-                    + dblspc
+            # truncate the table to include only one unbound state in each direction
+            try:
+                lmax_new = min(
+                    np.amax(np.where(occnums_tot[i] > 1e-5)[0]) + 1,
+                    config.lmax,
                 )
-
-                # the occnums table
-                occnum_tbl += (
-                    tabulate.tabulate(
-                        occnums_new,
-                        headers,
-                        tablefmt="presto",
-                        showindex=RowIDs,
-                        floatfmt="7.3f",
-                        stralign="right",
-                    )
-                    + dblspc
+                nmax_new = min(
+                    np.amax(np.where(occnums_tot[i] > 1e-5)[1]) + 1,
+                    config.nmax,
                 )
+            except ValueError:
+                lmax_new = 2
+                nmax_new = 2
+
+            # define row and column headers
+            headers = [n + 1 for n in range(nmax_new)]
+            headers[0] = "n=l+1"
+            RowIDs = [*range(lmax_new)]
+            RowIDs[0] = "l=0"
+
+            eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
+            occnums_new = orbitals.occ_weight[i, :lmax_new, :nmax_new]
+
+            # the eigenvalue table
+            eigval_tbl += (
+                tabulate.tabulate(
+                    eigvals_new,
+                    headers,
+                    tablefmt="presto",
+                    showindex=RowIDs,
+                    floatfmt="7.3f",
+                    stralign="right",
+                )
+                + dblspc
+            )
+
+            # the occnums table
+            occnum_tbl += (
+                tabulate.tabulate(
+                    occnums_new,
+                    headers,
+                    tablefmt="presto",
+                    showindex=RowIDs,
+                    floatfmt="7.3f",
+                    stralign="right",
+                )
+                + dblspc
+            )
 
         return eigval_tbl, occnum_tbl
 
@@ -598,13 +594,13 @@ def eigs_occs_to_csv(orbitals, file_prefix):
     sp_names = ["up", "dw"]
 
     for sp in range(config.spindims):
-        eigs_sp = orbitals.eigvals[:, sp].flatten()
+        eigs_sp = orbitals.eigvals[sp].flatten()
         idr = np.argsort(eigs_sp)
         eigs_sp = eigs_sp[idr]
-        occs_sp = orbitals.occnums[:, sp].flatten()[idr]
-        dos_sp = orbitals.DOS[:, sp].flatten()[idr]
-        ldegen_sp = orbitals.ldegen[:, sp].flatten()[idr]
-        band_weight_sp = orbitals.nband_weight[:, sp].flatten()[idr]
+        occs_sp = orbitals.occnums[sp].flatten()[idr]
+        dos_sp = orbitals.DOS[sp].flatten()[idr]
+        ldegen_sp = orbitals.ldegen[sp].flatten()[idr]
+        band_weight_sp = orbitals.nband_weight[sp].flatten()[idr]
 
         data = np.column_stack([eigs_sp, occs_sp, dos_sp, ldegen_sp, band_weight_sp])
         headstr = (
@@ -632,13 +628,14 @@ def dos_to_csv(orbitals, file_prefix):
 
     for sp in range(config.spindims):
 
-        e_arr, fd_arr, DOS_arr = orbitals.calc_DOS_sum(
-            orbitals.eigvals_min, orbitals.eigvals_max, orbitals.ldegen
+        dos_sum = np.sum(orbitals.DOS[sp] * orbitals.ldegen[sp], axis=0)
+        eigs = orbitals.eigvals[sp, -1]
+
+        occnums_fd = mathtools.fermi_dirac(
+            orbitals.eigvals[sp, -1], config.mu[sp], config.beta
         )
 
-        print(np.shape(e_arr), np.shape(fd_arr), np.shape(DOS_arr))
-
-        data = np.column_stack([e_arr, fd_arr[:, sp], DOS_arr[:, sp]])
+        data = np.column_stack([eigs, occnums_fd, dos_sum])
 
         headstr = "energy" + 3 * " " + "fd occ" + 3 * " " + "dos"
 
