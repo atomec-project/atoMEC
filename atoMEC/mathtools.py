@@ -325,7 +325,7 @@ def chem_pot(orbs):
                 soln = optimize.root_scalar(
                     f_root_id,
                     x0=mu0[i],
-                    args=(orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i]),
+                    args=(orbs.eigvals[i], orbs.occ_weight[i], config.nele[i]),
                     method="brentq",
                     bracket=[-100, 100],
                     options={"maxiter": 100},
@@ -342,8 +342,8 @@ def chem_pot(orbs):
                     f_root_qu,
                     x0=mu0[i],
                     args=(
-                        orbs.eigvals[:, i],
-                        orbs.occ_weight[:, i],
+                        orbs.eigvals[i],
+                        orbs.occ_weight[i],
                         config.nele[i],
                     ),
                     method="brentq",

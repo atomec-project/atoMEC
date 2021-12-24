@@ -73,34 +73,25 @@ class Orbitals:
 
     def __init__(self, xgrid):
 
+        if config.bc == "bands":
+            self._nmax = config.band_params["ngrid_e"]
+        else:
+            self._nmax = config.nmax
+
         self._xgrid = xgrid
         self._eigfuncs = np.zeros(
-            (
-                config.band_params["nbands"],
-                config.spindims,
-                config.lmax,
-                config.nmax,
-                config.grid_params["ngrid"],
-            )
+            (config.spindims, config.lmax, self._nmax, config.grid_params["ngrid"])
         )
-        self._eigvals = np.zeros(
-            (config.band_params["nbands"], config.spindims, config.lmax, config.nmax)
-        )
+        self._eigvals = np.zeros((config.spindims, config.lmax, self._nmax))
         self._occnums = np.zeros_like(self._eigvals)
         self._occnums_w = np.zeros_like(self._eigvals)
         # self._occnums_ub = np.zeros_like(self._eigvals)
         self._ldegen = np.zeros_like(self._eigvals)
         # self._lunbound = np.zeros_like(self._eigvals)
         self._DOS = np.zeros_like(self._eigvals)
-        self._eigs_min = np.zeros(
-            (config.band_params["nbands"], config.spindims, config.lmax)
-        )
-        self._eigvals_min = np.zeros(
-            (config.band_params["nbands"], config.spindims, config.lmax)
-        )
-        self._eigvals_max = np.zeros(
-            (config.band_params["nbands"], config.spindims, config.lmax)
-        )
+        self._eigs_min = np.zeros((2, config.spindims, config.lmax))
+        self._eigvals_min = np.zeros((config.spindims, config.lmax, config.nmax))
+        self._eigvals_max = np.zeros((config.spindims, config.lmax, config.nmax))
         self.nband_weight = np.ones_like(self._eigvals)
         self._occ_weight = np.zeros_like(self._eigvals)
 
@@ -130,23 +121,19 @@ class Orbitals:
 
         The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
         """
-        if np.all(self._occnums_w == 0.0):
-            # raise Exception("Occnums have not been initialized")
-            self._occnums_w = self.occnums * self.occ_weight
+        self._occnums_w = self.occnums * self.occ_weight
         return self._occnums_w
 
     @property
     def occnums(self):
 
-        if np.all(self._occnums == 0.0):
-            self._occnums = self.calc_occnums(self.eigvals, config.mu)
+        self._occnums = self.calc_occnums(self.eigvals, config.mu)
         return self._occnums
 
     @property
     def occ_weight(self):
 
-        if np.all(self._occ_weight == 0.0):
-            self._occ_weight = self.DOS * self.ldegen * self.nband_weight
+        self._occ_weight = self.DOS * self.ldegen * self.nband_weight
         return self._occ_weight
 
     @property
@@ -202,8 +189,8 @@ class Orbitals:
             if config.bc != "bands":
                 self._DOS += 1.0
             else:
-                self._DOS = self.make_DOS_bands(
-                    self.eigvals_min, self.eigvals_max, self.eigvals, self.nband_weight
+                self._DOS = self.calc_DOS_sum(
+                    self.eigvals, self.eigvals_min, self.eigvals_max
                 )
         return self._DOS
 
@@ -275,8 +262,8 @@ class Orbitals:
             )
 
             # compute the DOS
-            self._DOS = self.make_DOS_bands(
-                self.eigvals_min, self.eigvals_max, self.eigvals, self.nband_weight
+            self._DOS = self.calc_DOS_sum(
+                self.eigvals, self.eigvals_min, self.eigvals_max
             )
 
         # compute the lbound array
@@ -315,8 +302,6 @@ class Orbitals:
         eigfuncs = np.zeros_like(self._eigfuncs)
         eigvals = np.zeros_like(self._eigvals)
         nband_weight = np.zeros_like(self._eigvals)
-
-        # the energy band
         e_gap_arr = self.eigvals_max - self.eigvals_min
 
         # only create bands when the gap satisfies a minimum requirement
@@ -324,6 +309,9 @@ class Orbitals:
             self.eigvals_min[np.where(e_gap_arr > config.band_params["de_min"])]
         )
         e_max = min(np.amax(self.eigvals_max), config.band_params["e_cut"])
+        len_e_arr = config.band_params["ngrid_e"] - np.count_nonzero(
+            e_gap_arr > config.band_params["de_min"]
+        )
 
         # the full energy grid
         # e_arr = np.arange(e_min, e_max, config.band_params["de_min"])
@@ -332,8 +320,9 @@ class Orbitals:
         #     + (np.linspace(0, np.sqrt(e_max - e_min), config.band_params["ngrid_e"]))
         #     ** 2
         # )
-        # e_arr = np.linspace(e_min, e_max, config.band_params["ngrid_e"])
-        e_arr = np.arange(e_min, e_max, config.band_params["de_min"])
+        e_arr = np.linspace(e_min, e_max, config.band_params["ngrid_e"])
+        e_gap_arr = np.zeros_like(self._eigvals)
+        # e_arr = np.arange(e_min, e_max, len_e_arr)
 
         # propagate the wavefunctions on the energy grid
         eigfuncs_e = numerov.calc_wfns_e_grid(self._xgrid, v, e_arr)
@@ -341,65 +330,39 @@ class Orbitals:
         # assign the wavefunctions to their energy value
         for sp in range(config.spindims):
             for l in range(config.lmax):
-                for n in range(config.nmax):
+                for n in range(config.band_params["ngrid_e"]):
 
-                    # create a temporary array for the energy band
-                    e_tmp_arr = np.linspace(
-                        self.eigvals_min[sp, l, n],
-                        self.eigvals_max[sp, l, n],
-                        config.band_params["nbands"],
-                    )
-
-                    # match the energy in the band to an energy that has been solved for
-                    # first check the energy band is wide enough to solve for sub-levels
-                    if (
-                        e_gap_arr[sp, l, n] > config.band_params["de_min"]
-                        and self.eigvals_max[sp, l, n] < config.band_params["e_cut"]
-                    ):
-                        e_new_arr = np.where(
-                            (e_arr > e_tmp_arr[0]) & (e_arr < e_tmp_arr[-1]),
-                            e_arr,
-                            np.inf,
+                    try:
+                        e_gap_arr[sp, l, n] = (
+                            self.eigvals_max[sp, l, n] - self.eigvals_min[sp, l, n]
                         )
-                        e_loc_arr = np.zeros((config.band_params["nbands"]), dtype=int)
-                        for nband, e in enumerate(e_tmp_arr):
-                            e_loc = np.argmin(np.abs(e - e_new_arr))
-                            e_loc_arr[nband] = e_loc
-                            eigfuncs[nband, sp, l, n] = eigfuncs_e[sp, l, e_loc]
-                            eigvals[nband, sp, l, n] = e_arr[e_loc]
-
-                        # work out weighting due to degenerate levels
-                        for nband, n_e in enumerate(e_loc_arr):
-                            nband_weight[nband, sp, l, n] = 1.0 / np.count_nonzero(
-                                e_loc_arr == n_e
-                            )
-                    # when there are no distinct levels in a band
-                    # just assign lower eigenvalue and eigenfucntion
+                    except IndexError:
+                        e_gap_arr[sp, l, n] = np.inf
+                    if e_gap_arr[sp, l, n] < config.band_params["de_min"]:
+                        eigvals[sp, l, n] = self.eigvals_min[sp, l, n]
+                        eigfuncs[sp, l, n] = eigfuncs_l[sp, l, n]
                     else:
-                        eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
-                        eigvals[:, sp, l, n] = self.eigvals_min[sp, l, n]
-                        nband_weight[:, sp, l, n] = 1.0 / config.band_params["nbands"]
+                        eigvals[sp, l, n] = e_arr[n]
+                        eigfuncs[sp, l, n] = eigfuncs_e[sp, l, n]
 
         # now create the energy spacing weighting for the integral
         # integral is done by trapezoid method: w_i = 0.5 * dE * (w_(i+1) + w_i)
+        # TODO: small numerical error here, but probably has no effect when DOS added
         delta_E_plus = np.zeros_like(eigvals)
-        delta_E_plus[1:] = eigvals[1:] - eigvals[:-1]
-        delta_E_minus = np.zeros_like(eigvals)
-        delta_E_minus[:-1] = eigvals[1:] - eigvals[:-1]
-        delta_E_tot = 0.5 * (delta_E_minus + delta_E_plus)
-
-        # E spacing is always >= the minimum spacing for the energy band
-        delta_E_tot = np.where(
-            delta_E_tot > config.band_params["de_min"],
-            delta_E_tot,
-            config.band_params["de_min"],
+        delta_E_plus[:, :, 1:] = (
+            e_arr[np.newaxis, np.newaxis, 1:] - e_arr[np.newaxis, np.newaxis, :-1]
         )
+        delta_E_minus = np.zeros_like(eigvals)
+        delta_E_minus[:, :, :-1] = (
+            e_arr[np.newaxis, np.newaxis, 1:] - e_arr[np.newaxis, np.newaxis, :-1]
+        )
+        delta_E_tot = 0.5 * (delta_E_minus + delta_E_plus)
 
         # adjust the band weighting accordingly
         nband_weight = np.where(
             e_gap_arr > config.band_params["de_min"],
-            nband_weight * delta_E_tot,
-            nband_weight,
+            delta_E_tot,
+            1.0,
         )
 
         return eigvals, eigfuncs, nband_weight
@@ -448,12 +411,9 @@ class Orbitals:
         """
         occnums = np.zeros_like(eigvals)
 
-        for band in range(config.band_params["nbands"]):
-            for i in range(config.spindims):
-                if config.nele[i] != 0:
-                    occnums[band, i] = mathtools.fermi_dirac(
-                        eigvals[band, i], mu[i], config.beta
-                    )
+        for i in range(config.spindims):
+            if config.nele[i] != 0:
+                occnums[i] = mathtools.fermi_dirac(eigvals[i], mu[i], config.beta)
 
         return occnums
 
@@ -517,7 +477,7 @@ class Orbitals:
 
         if config.unbound == "quantum":
             for l in range(config.lmax):
-                ldegen_mat[:, :, l] = (2.0 / config.spindims) * (2 * l + 1.0)
+                ldegen_mat[:, l] = (2.0 / config.spindims) * (2 * l + 1.0)
         elif config.unbound == "ideal":
             for l in range(config.lmax):
                 ldegen_mat[:, :, l] = (2.0 / config.spindims) * np.where(
@@ -628,7 +588,7 @@ class Orbitals:
         return dos
 
     @staticmethod
-    def calc_DOS_sum(eigs_min, eigs_max, ldegen):
+    def calc_DOS_sum(eigvals, eigs_min, eigs_max):
 
         # create the gapped array
         e_gap_arr = eigs_max - eigs_min
@@ -644,11 +604,10 @@ class Orbitals:
         # ) ** 2
         # e_arr = e_tmp + e_min
         # e_arr = np.linspace(e_min, e_max, config.band_params["ngrid_e"])
-        e_arr = np.arange(e_min, e_max, config.band_params["de_min"])
+        e_arr = np.linspace(e_min, e_max, config.band_params["ngrid_e"])
 
         nspin, lmax, nmax = np.shape(eigs_max)
-        dos_knl = np.zeros((len(e_arr), nspin, lmax, nmax))
-        fd_dist = np.zeros((len(e_arr), nspin))
+        dos_knl = np.zeros((nspin, lmax, len(e_arr), nmax))
 
         for i, e in enumerate(e_arr):
 
@@ -665,16 +624,17 @@ class Orbitals:
             )
 
             # compute the dos
-            dos_knl[i] = prefac * f_sqrt
+            dos_knl[:, :, i] = prefac * f_sqrt
 
-            fd_dist[i] = mathtools.fermi_dirac(e, config.mu, config.beta)
+        # # sum over the n quantum number
+        # dos_knl = np.where(
+        #     e_gap_arr[np.newaxis] > config.band_params["de_min"], dos_knl, 1.0
+        # )
 
-        ldegen0 = ldegen[0, :, :, 0]
+        dos_kl = np.sum(dos_knl, axis=-1)
+        dos_kl = np.where(eigvals >= e_min, dos_kl, 1.0)
 
-        DOS_sum = np.einsum("ijkl,jk->ij", dos_knl, ldegen0)
-        # DOS_sum = np.sum(dos_knl, axis=(2, 3))
-
-        return e_arr, fd_dist, DOS_sum
+        return dos_kl
 
 
 class Density:
@@ -766,10 +726,10 @@ class Density:
         orbs_R_sq = orbs_R ** 2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
-        dens["rho"] = np.einsum("ijkl,ijklm->jm", occnums, orbs_R_sq)
+        dens["rho"] = np.einsum("ijk,ijkl->il", occnums, orbs_R_sq)
 
         # compute the number of unbound electrons
-        dens["N"] = np.sum(occnums, axis=(0, 2, 3))
+        dens["N"] = np.sum(occnums, axis=(1, 2))
 
         return dens
 
@@ -1139,14 +1099,14 @@ class Energy:
             l_arr = np.fromiter(
                 ((l + 0.5) ** 2.0 for l in range(config.lmax)), float, config.lmax
             )
-            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigfuncs)
+            lhalf_orbs = np.einsum("j,ijkl->ijkl", l_arr, eigfuncs)
 
             # add together and multiply by eigfuncs*exp(-3x)
             prefac = np.exp(-3.0 * xgrid) * eigfuncs
             kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
 
             # multiply and sum over occupation numbers
-            e_kin_dens = -0.5 * np.einsum("ijkl,ijklm->jm", occnums, kin_orbs)
+            e_kin_dens = -0.5 * np.einsum("ijk,ijkl->il", occnums, kin_orbs)
 
         elif method == "B":
 
@@ -1160,7 +1120,7 @@ class Energy:
             grad_orbs_sq = grad_orbs ** 2.0
 
             # multiply and sum over occupation numbers
-            e_kin_dens = 0.5 * np.einsum("ijkl,ijklm->jm", occnums, grad_orbs_sq)
+            e_kin_dens = 0.5 * np.einsum("ijk,ijkl->il", occnums, grad_orbs_sq)
 
         return e_kin_dens
 
