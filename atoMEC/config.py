@@ -22,7 +22,13 @@ conv_params = {"econv": 1.0e-5, "nconv": 1.0e-4, "vconv": 1.0e-4, "eigtol": 1.0e
 # scf parameters
 scf_params = {"maxscf": 50, "mixfrac": 0.3}
 # band parameters
-band_params = {"nbands": 50, "de_min": 1e-3, "ngrid_e": 10000, "e_cut": 5}
+band_params = {
+    "nbands": 50,
+    "de_min": 1e-3,
+    "ngrid_e": 10000,
+    "e_cut": 5,
+    "core_states": [],
+}
 
 # parallelization
 numcores = 0  # defaults to serial

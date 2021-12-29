@@ -857,7 +857,7 @@ class EnergyCalcs:
 
         band_params = {}
 
-        for p in ["nbands", "de_min", "ngrid_e", "e_cut"]:
+        for p in ["nbands", "de_min", "ngrid_e", "e_cut", "core_states"]:
             try:
                 band_params[p] = input_params[p]
             except KeyError:
