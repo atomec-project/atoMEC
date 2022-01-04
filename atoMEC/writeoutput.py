@@ -465,8 +465,13 @@ class SCF:
             RowIDs = [*range(lmax_new)]
             RowIDs[0] = "l=0"
 
-            eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
-            occnums_new = orbitals.occ_weight[i, :lmax_new, :nmax_new]
+            if config.bc != "bands":
+                occnums_new = orbitals.occnums_w[i, :lmax_new, :nmax_new]
+                eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
+
+            else:
+                occnums_new = orbitals.eigvals_min[i, :lmax_new, :nmax_new]
+                eigvals_new = orbitals.eigvals_max[i, :lmax_new, :nmax_new]
 
             # the eigenvalue table
             eigval_tbl += (
@@ -628,6 +633,7 @@ def dos_to_csv(orbitals, file_prefix):
 
     for sp in range(config.spindims):
 
+        config.band_params["core_states"] = [[]]
         dos_sum = np.sum(orbitals.DOS[sp] * orbitals.ldegen[sp], axis=0)
         eigs = orbitals.eigvals[sp, -1]
 
