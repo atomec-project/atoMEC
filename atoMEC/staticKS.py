@@ -750,7 +750,7 @@ class Density:
         # sum over the (l,n) dimensions of the orbitals to get the density
         dens["rho"] = np.einsum("ijk,ijkl->il", occnums, orbs_R_sq)
 
-        # compute the number of unbound electrons
+        # compute the number of electrons
         dens["N"] = np.sum(occnums, axis=(1, 2))
 
         return dens

@@ -419,6 +419,7 @@ class ISModel:
         if write_potential:
             writeoutput.potential_to_csv(rgrid, pot, potential_file)
 
+        # write the eigs, occs and dos if bands bc used
         if config.bc == "bands":
             writeoutput.eigs_occs_to_csv(orbs, "eigs_occs")
             writeoutput.dos_to_csv(orbs, "dos")
