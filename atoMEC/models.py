@@ -227,6 +227,8 @@ class ISModel:
         write_potential=True,
         density_file="density.csv",
         potential_file="potential.csv",
+        eigs_occs_prefix="eigs_occs",
+        dos_prefix="dos",
         guess=False,
         guess_pot=0,
     ):
@@ -295,6 +297,12 @@ class ISModel:
         potential_file : str, optional
             name of the file to write the potential to
             default: `potential.csv`
+        eigs_occs_prefix : str, optional
+            prefix of the filename for the orbital energies and occupations
+            default: `eigs_occs`
+        dos_prefix : str, optional
+            prefix of the filename for the density-of-states
+            default `dos`
         guess : bool, optional
             use coulomb pot (guess=False) or given pot (guess=True) as initial guess
         guess_pot : numpy array, optional
@@ -420,8 +428,8 @@ class ISModel:
             writeoutput.potential_to_csv(rgrid, pot, potential_file)
 
         if config.bc == "bands":
-            writeoutput.eigs_occs_to_csv(orbs, "eigs_occs")
-            writeoutput.dos_to_csv(orbs, "dos")
+            writeoutput.eigs_occs_to_csv(orbs, eigs_occs_prefix)
+            writeoutput.dos_to_csv(orbs, dos_prefix)
 
         output_dict = {
             "energy": energy,
