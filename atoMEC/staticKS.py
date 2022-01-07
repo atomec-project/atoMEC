@@ -123,43 +123,43 @@ class Orbitals:
 
     @property
     def nband_weight(self):
-
+        r"""ndarray: The integration weight for the Fermi-Dirac / DOS integral."""
         if np.all(self._nband_weight == 0.0):
             raise Exception("Band weightings have not been initialized")
         return self._nband_weight
 
     @property
     def occnums_w(self):
-        r"""
-        ndarray: KS occupation numbers (Fermi-Dirac).
-
-        The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
-        """
+        r"""ndarray: Weighted KS occupation numbers."""
         self._occnums_w = self.occnums * self.occ_weight
         return self._occnums_w
 
     @property
     def occnums(self):
-
+        r"""ndarray: Bare KS occupation numbers (Fermi-Dirac)."""
         self._occnums = self.calc_occnums(self.eigvals, config.mu)
         return self._occnums
 
     @property
     def occ_weight(self):
+        r"""
+        ndarray: KS occupation number weightings.
 
+        The occupation weighting is the product of the DOS, degeneracy of the
+        angular momentum, and the integration weight.
+        """
         self._occ_weight = self.DOS * self.ldegen * self.nband_weight
         return self._occ_weight
 
     @property
     def ldegen(self):
-
+        r"""ndarray: Angular momentum degeneracy matrix."""
         self._ldegen = self.make_ldegen(self.eigvals)
         return self._ldegen
 
     @property
     def DOS(self):
-        r"""ndarray: the density of states (DOS) matrix."""
-
+        r"""ndarray: Density of states (DOS) matrix."""
         if config.bc == "bands":
             self._DOS = self.make_DOS_bands(
                 self.eigvals_min, self.eigvals_max, self.eigvals
@@ -168,12 +168,14 @@ class Orbitals:
 
     @property
     def eigvals_min(self):
+        r"""ndarray: Lower bound (for bands bc) of KS eigenvalues."""
         if np.all(self._eigvals_min == 0.0):
             raise Exception("eigs_min has not been initialized")
         return self._eigvals_min
 
     @property
     def eigvals_max(self):
+        r"""ndarray: Upper bound (for bands bc) of KS eigenvalues."""
         if np.all(self._eigvals_max == 0.0):
             raise Exception("eigs_min has not been initialized")
         return self._eigvals_max
@@ -292,7 +294,8 @@ class Orbitals:
                         )
                         eigvals[:, sp, l, n] = e_arr
 
-                        # make the integration weighting
+                        # make the integration weighting using trapezoid rule
+                        # W_i = 0.5 * dE * (f_{i+1} - f_{i})
                         delta_E_plus = np.zeros((config.band_params["nbands"]))
                         delta_E_plus[1:] = e_arr[1:] - e_arr[:-1]
                         delta_E_minus = np.zeros((config.band_params["nbands"]))
@@ -326,9 +329,6 @@ class Orbitals:
         # compute the occupation numbers using the chemical potential
         self._occnums = self.calc_occnums(self.eigvals, config.mu)
 
-        # compute the unbound occupation numbers
-        # self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
-
         return
 
     @staticmethod
@@ -360,44 +360,6 @@ class Orbitals:
                     )
 
         return occnums
-
-    @staticmethod
-    def make_lbound(eigvals, DOS_mat):
-        r"""
-        Construct the lbound matrix denoting the bound states and their degeneracies.
-
-        For each spin channel,
-        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
-
-        Parameters
-        ----------
-        eigvals : ndarray
-            the KS orbital eigenvalues
-
-        Returns
-        -------
-        lbound_mat : ndarray
-            the lbound matrix
-        """
-        lbound_mat = np.zeros_like(eigvals)
-
-        for l in range(config.lmax):
-            lbound_mat[:, :, l] = (
-                (2.0 / config.spindims)
-                * DOS_mat[:, :, l]
-                * np.where(eigvals[:, :, l] < 0.0, 2 * l + 1.0, 0.0)
-            )
-
-        # force bound levels if there are convergence issues
-
-        if config.force_bound:
-            for levels in config.force_bound:
-                sp = levels[0]
-                l = levels[1]
-                n = levels[2]
-                lbound_mat[sp, l, n] = (2.0 / config.spindims) * (2 * l + 1.0)
-
-        return lbound_mat
 
     @staticmethod
     def make_ldegen(eigvals):
@@ -498,7 +460,31 @@ class Orbitals:
 
     @staticmethod
     def calc_DOS_sum(eigs_min, eigs_max, ldegen):
+        r"""
+        Compute the summed density-of-states using the method of Massacrier et al.
 
+        This function sums the DOS over `l` and `n` quantum numbers and is used for
+        writing the output of the DOS only. Refer to `make_DOS_bands` for details on
+        the functional form of the DOS.
+
+        Parameters
+        ----------
+        eigs_min : ndarray
+            the lower bound of the energy band
+        eigs_max : ndarray
+            the upper bound of the energy band
+        ldegen : ndarray
+            degeneracy matrix
+
+        Returns
+        -------
+        e_arr : ndarray
+            sorted array of energies
+        fd_dist : ndarray
+            Fermi-Dirac occupation numbers
+        DOS_sum : ndarray
+            Density-of-states multiplied and summed over (l,n) quanutum numbers.
+        """
         # create the gapped array
         e_gap_arr = eigs_max - eigs_min
 
@@ -582,6 +568,8 @@ class Orbitals:
                 )
                 e_tot_arr = np.concatenate((e_tot_arr, e_pt_arr))
 
+        # sort the array
+        e_tot_arr = np.sort(e_tot_arr)
         return e_tot_arr
 
 
