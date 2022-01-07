@@ -282,8 +282,8 @@ class SCF:
         output_str += self.write_final_energies(energy) + spc
 
         # write the chemical potential and mean ionization state
-
-        N_ub = density.unbound["N"]
+        occs_pos = np.where(orbitals.eigvals > 0, orbitals.occnums_w, 0)
+        N_ub = np.sum(occs_pos, axis=(0, 2, 3)) + density.unbound["N"]
 
         if config.spindims == 2:
             mu_str = "Chemical potential (u/d)"
@@ -440,63 +440,54 @@ class SCF:
         eigval_tbl = ""
         occnum_tbl = ""
 
-        if config.nbands > 1:
-            band_list = [0, -1]
-        else:
-            band_list = [0]
-        for band in band_list:
-            for i in range(config.spindims):
+        for i in range(config.spindims):
 
-                occnums_tot = orbitals.occnums_w
+            occnums_tot = orbitals.occnums_w
 
-                # truncate the table to include only one unbound state in each direction
-                try:
-                    lmax_new = min(
-                        np.amax(np.where(occnums_tot[band, i] > 1e-5)[0]) + 1,
-                        config.lmax,
-                    )
-                    nmax_new = min(
-                        np.amax(np.where(occnums_tot[band, i] > 1e-5)[1]) + 1,
-                        config.nmax,
-                    )
-                except ValueError:
-                    lmax_new = 2
-                    nmax_new = 2
+            # truncate the table to include only one unbound state in each direction
 
-                # define row and column headers
-                headers = [n + 1 for n in range(nmax_new)]
-                headers[0] = "n=l+1"
-                RowIDs = [*range(lmax_new)]
-                RowIDs[0] = "l=0"
+            lmax_new = min(config.lmax, 8)
+            nmax_new = min(config.nmax, 5)
 
-                eigvals_new = orbitals.eigvals[band, i, :lmax_new, :nmax_new]
-                occnums_new = orbitals.occnums_w[band, i, :lmax_new, :nmax_new]
+            # define row and column headers
+            headers = [n + 1 for n in range(nmax_new)]
+            headers[0] = "n=l+1"
+            RowIDs = [*range(lmax_new)]
+            RowIDs[0] = "l=0"
 
-                # the eigenvalue table
-                eigval_tbl += (
-                    tabulate.tabulate(
-                        eigvals_new,
-                        headers,
-                        tablefmt="presto",
-                        showindex=RowIDs,
-                        floatfmt="7.3f",
-                        stralign="right",
-                    )
-                    + dblspc
+            if config.bc != "bands":
+                occnums_new = orbitals.occnums_w[0, i, :lmax_new, :nmax_new]
+                eigvals_new = orbitals.eigvals[0, i, :lmax_new, :nmax_new]
+
+            else:
+                occnums_new = orbitals.eigvals_min[i, :lmax_new, :nmax_new]
+                eigvals_new = orbitals.eigvals_max[i, :lmax_new, :nmax_new]
+
+            # the eigenvalue table
+            eigval_tbl += (
+                tabulate.tabulate(
+                    eigvals_new,
+                    headers,
+                    tablefmt="presto",
+                    showindex=RowIDs,
+                    floatfmt="7.3f",
+                    stralign="right",
                 )
+                + dblspc
+            )
 
-                # the occnums table
-                occnum_tbl += (
-                    tabulate.tabulate(
-                        occnums_new,
-                        headers,
-                        tablefmt="presto",
-                        showindex=RowIDs,
-                        floatfmt="7.3f",
-                        stralign="right",
-                    )
-                    + dblspc
+            # the occnums table
+            occnum_tbl += (
+                tabulate.tabulate(
+                    occnums_new,
+                    headers,
+                    tablefmt="presto",
+                    showindex=RowIDs,
+                    floatfmt="7.3f",
+                    stralign="right",
                 )
+                + dblspc
+            )
 
         return eigval_tbl, occnum_tbl
 
