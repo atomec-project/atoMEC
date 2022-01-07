@@ -225,10 +225,12 @@ class ISModel:
         write_info=True,
         write_density=True,
         write_potential=True,
+        write_eigs_occs=True,
+        write_dos=True,
         density_file="density.csv",
         potential_file="potential.csv",
-        eigs_occs_prefix="eigs_occs",
-        dos_prefix="dos",
+        eigs_occs_file="eigs_occs.csv",
+        dos_file="dos.csv",
         guess=False,
         guess_pot=0,
     ):
@@ -297,12 +299,12 @@ class ISModel:
         potential_file : str, optional
             name of the file to write the potential to
             default: `potential.csv`
-        eigs_occs_prefix : str, optional
-            prefix of the filename for the orbital energies and occupations
+        eigs_occs_file : str, optional
+            filename for the orbital energies and occupations
             default: `eigs_occs`
-        dos_prefix : str, optional
-            prefix of the filename for the density-of-states
-            default `dos`
+        dos_file : str, optional
+            filename for the density-of-states and fd distribution
+            default: `dos`
         guess : bool, optional
             use coulomb pot (guess=False) or given pot (guess=True) as initial guess
         guess_pot : numpy array, optional
@@ -427,9 +429,13 @@ class ISModel:
         if write_potential:
             writeoutput.potential_to_csv(rgrid, pot, potential_file)
 
-        if config.bc == "bands":
-            writeoutput.eigs_occs_to_csv(orbs, eigs_occs_prefix)
-            writeoutput.dos_to_csv(orbs, dos_prefix)
+        # write the eigs and their occs to file
+        if write_eigs_occs:
+            writeoutput.eigs_occs_to_csv(orbs, eigs_occs_file)
+
+        # write the dos to file if using bands bc
+        if config.bc == "bands" and write_dos:
+            writeoutput.dos_to_csv(orbs, dos_file)
 
         output_dict = {
             "energy": energy,

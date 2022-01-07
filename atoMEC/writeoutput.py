@@ -584,10 +584,23 @@ def potential_to_csv(rgrid, potential, filename):
     return
 
 
-def eigs_occs_to_csv(orbitals, file_prefix):
+def eigs_occs_to_csv(orbitals, filename):
+    """
+    Write all the orbital energies and their occupations to file.
 
-    sp_names = ["up", "dw"]
+    Parameters
+    ----------
+    orbitals: staticKS.Orbitals
+        the orbitals object
+    filename : str
+        name of the file to write to
 
+    Returns
+    -------
+    None
+    """
+
+    data_tot = np.array([])
     for sp in range(config.spindims):
         eigs_sp = orbitals.eigvals[:, sp].flatten()
         idr = np.argsort(eigs_sp)
@@ -598,29 +611,46 @@ def eigs_occs_to_csv(orbitals, file_prefix):
         band_weight_sp = orbitals.nband_weight[:, sp].flatten()[idr]
 
         data = np.column_stack([eigs_sp, occs_sp, dos_sp, ldegen_sp, band_weight_sp])
-        headstr = (
-            "eigs"
-            + 5 * " "
-            + "occs"
-            + 5 * " "
-            + "dos"
-            + 6 * " "
-            + "l_degen"
-            + 2 * " "
-            + "band_weight"
-        )
+        try:
+            data_tot = np.concatenate((data_tot, data))
+        except ValueError:
+            data_tot = data
 
-        np.savetxt(
-            file_prefix + "_" + sp_names[sp] + ".csv", data, fmt="%8.3e", header=headstr
-        )
+    headstr = config.spindims * (
+        "eigs"
+        + 5 * " "
+        + "occs"
+        + 5 * " "
+        + "dos"
+        + 6 * " "
+        + "l_degen"
+        + 2 * " "
+        + "band_weight"
+        + 5 * " "
+    )
+
+    np.savetxt(filename, data_tot, fmt="%8.3e", header=headstr)
 
     return
 
 
-def dos_to_csv(orbitals, file_prefix):
+def dos_to_csv(orbitals, filename):
+    """
+    Write the energy eigenvalues, Fermi-Dirac occupations and DOS to file.
 
-    sp_names = ["up", "dw"]
+    Parameters
+    ----------
+    orbitals: staticKS.Orbitals
+        the orbitals object
+    filename : str
+        name of the file to write to
 
+    Returns
+    -------
+    None
+    """
+
+    data_tot = np.array([])
     for sp in range(config.spindims):
 
         e_arr, fd_arr, DOS_arr = orbitals.calc_DOS_sum(
@@ -629,14 +659,21 @@ def dos_to_csv(orbitals, file_prefix):
 
         data = np.column_stack([e_arr, fd_arr[:, sp], DOS_arr[:, sp]])
 
-        headstr = "energy" + 3 * " " + "fd occ" + 3 * " " + "dos"
+        try:
+            data_tot = np.concatenate((data_tot, data))
+        except ValueError:
+            data_tot = data
 
-        np.savetxt(
-            file_prefix + "_" + sp_names[sp] + ".csv",
-            data,
-            fmt="%10.5e",
-            header=headstr,
-        )
+    headstr = (
+        config.spindims * "energy" + 3 * " " + "fd occ" + 3 * " " + "dos" + 3 * " "
+    )
+
+    np.savetxt(
+        filename,
+        data,
+        fmt="%10.5e",
+        header=headstr,
+    )
 
     return
 
