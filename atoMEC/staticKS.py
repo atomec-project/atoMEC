@@ -88,10 +88,8 @@ class Orbitals:
         )
         self._occnums = np.zeros_like(self._eigvals)
         self._occnums_w = np.zeros_like(self._eigvals)
-        # self._occnums_ub = np.zeros_like(self._eigvals)
         self._ldegen = np.zeros_like(self._eigvals)
-        # self._lunbound = np.zeros_like(self._eigvals)
-        self._DOS = np.zeros_like(self._eigvals)
+        self._DOS = np.ones_like(self._eigvals)
         self._eigs_min = np.zeros(
             (config.band_params["nbands"], config.spindims, config.lmax)
         )
@@ -101,7 +99,7 @@ class Orbitals:
         self._eigvals_max = np.zeros(
             (config.band_params["nbands"], config.spindims, config.lmax)
         )
-        self.nband_weight = np.ones_like(self._eigvals)
+        self._nband_weight = np.ones_like(self._eigvals)
         self._occ_weight = np.zeros_like(self._eigvals)
 
     @property
@@ -124,87 +122,48 @@ class Orbitals:
         return self._eigfuncs
 
     @property
+    def nband_weight(self):
+
+        if np.all(self._nband_weight == 0.0):
+            raise Exception("Band weightings have not been initialized")
+        return self._nband_weight
+
+    @property
     def occnums_w(self):
         r"""
         ndarray: KS occupation numbers (Fermi-Dirac).
 
         The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
         """
-        if np.all(self._occnums_w == 0.0):
-            # raise Exception("Occnums have not been initialized")
-            self._occnums_w = self.occnums * self.occ_weight
+        self._occnums_w = self.occnums * self.occ_weight
         return self._occnums_w
 
     @property
     def occnums(self):
 
-        if np.all(self._occnums == 0.0):
-            self._occnums = self.calc_occnums(self.eigvals, config.mu)
+        self._occnums = self.calc_occnums(self.eigvals, config.mu)
         return self._occnums
 
     @property
     def occ_weight(self):
 
-        if np.all(self._occ_weight == 0.0):
-            self._occ_weight = self.DOS * self.ldegen * self.nband_weight
+        self._occ_weight = self.DOS * self.ldegen * self.nband_weight
         return self._occ_weight
 
     @property
     def ldegen(self):
 
-        if np.all(self._ldegen == 0.0):
-            self._ldegen = self.make_ldegen(self.eigvals)
+        self._ldegen = self.make_ldegen(self.eigvals)
         return self._ldegen
-
-    # @property
-    # def occnums_ub(self):
-    #     r"""
-    #     ndarray: KS occupation numbers (Fermi-Dirac).
-
-    #     The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.
-    #     """
-    #     if np.all(self._occnums_ub == 0.0):
-    #         # raise Exception("Occnums have not been initialized")
-    #         self._occnums_ub = self.calc_occnums(self.eigvals, self.lunbound, config.mu)
-    #     return self._occnums_ub
-
-    @property
-    def lbound(self):
-        r"""
-        ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).
-
-        The matrix takes the form
-        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`
-        """
-        if np.all(self._lbound == 0.0):
-            # raise Exception("lbound has not been initialized")
-            self._lbound = self.make_lbound(self.eigvals, self.DOS)
-        return self._lbound
-
-    # @property
-    # def lunbound(self):
-    #     r"""
-    #     ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).
-
-    #     The matrix takes the form
-    #     :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`
-    #     """
-    #     if np.all(self._lbound == 0.0):
-    #         # raise Exception("lbound has not been initialized")
-    #         self._lunbound = self.make_lunbound(self.eigvals, self.DOS)
-    #     return self._lunbound
 
     @property
     def DOS(self):
         r"""ndarray: the density of states (DOS) matrix."""
 
-        if np.all(self._DOS == 0.0):
-            if config.bc != "bands":
-                self._DOS += 1.0
-            else:
-                self._DOS = self.make_DOS_bands(
-                    self.eigvals_min, self.eigvals_max, self.eigvals, self.nband_weight
-                )
+        if config.bc == "bands":
+            self._DOS = self.make_DOS_bands(
+                self.eigvals_min, self.eigvals_max, self.eigvals
+            )
         return self._DOS
 
     @property
@@ -255,6 +214,8 @@ class Orbitals:
                 bc,
                 eigs_min_guess=self._eigs_min[0],
             )
+
+            self._nband_weight = np.ones_like(self._eigvals)
         else:
             eigfuncs_l, self._eigvals_min = numerov.matrix_solve(
                 v,
@@ -270,20 +231,9 @@ class Orbitals:
                 eigs_min_guess=self._eigs_min[1],
             )
 
-            self._eigvals, self._eigfuncs, self.nband_weight = self.calc_bands(
+            self._eigvals, self._eigfuncs, self._nband_weight = self.calc_bands(
                 v, eigfuncs_l
             )
-
-            # compute the DOS
-            self._DOS = self.make_DOS_bands(
-                self.eigvals_min, self.eigvals_max, self.eigvals
-            )
-
-        # compute the lbound array
-        # self._lbound = self.make_lbound(self.eigvals, self.DOS)
-
-        # # compute the lunbound array
-        # self._lunbound = self.make_lunbound(self.eigvals, self.DOS)
 
         # guess the chemical potential if initializing
         if init:
@@ -490,37 +440,6 @@ class Orbitals:
         return ldegen_mat
 
     @staticmethod
-    def make_lunbound(eigvals, DOS_mat):
-        r"""
-        Construct the lunbound matrix denoting the unbound states and degeneracies.
-
-        For each spin channel,
-        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`
-
-        Parameters
-        ----------
-        eigvals : ndarray
-            the KS orbital eigenvalues
-
-        Returns
-        -------
-        lunbound_mat : ndarray
-            the lbound matrix
-        """
-        lunbound_mat = np.zeros_like(eigvals)
-
-        # only non-zero if quantum unbound electrons
-        if config.unbound == "quantum":
-            for l in range(config.lmax):
-                lunbound_mat[:, :, l] = (
-                    (2.0 / config.spindims)
-                    * DOS_mat[:, :, l]
-                    * np.where(eigvals[:, :, l] > 0.0, 2 * l + 1.0, 0.0)
-                )
-
-        return lunbound_mat
-
-    @staticmethod
     def make_DOS_bands(eigs_min, eigs_max, eigvals):
         r"""
         Compute the density-of-states using the method of Massacrier et al (see notes).
@@ -647,91 +566,22 @@ class Orbitals:
 
         e_gap_arr = eigvals_max - eigvals_min
 
-        # core_energies = []
-        # try:
-        #     for state in config.band_params["core_states"]:
-        #         sp, l, n = state
-        #         core_energies.append(eigvals_max[sp, l, n])
-        #     core_max = max(core_energies)
-        # except ValueError:
-        #     core_max = -np.inf
-
-        # only create bands when the gap satisfies a minimum requirement
-        # e_min = np.amin(eigvals_min[np.where(eigvals_max > core_max)])
         e_min = np.amin(
             eigvals_min[np.where(e_gap_arr >= config.band_params["de_min"])]
         )
 
-        sum_e_gaps = 0.0
-        core_count = 0
         e_tot_arr = np.array([])
-        ngrid_left = config.band_params["ngrid_e"]
         for p in range(len(eigs_min) - 1):
 
             if eigs_min[p] < e_min:
-                core_count += 1
                 continue
 
-            # elif eigs_min[p + 1] < eigs_max[p]:
-            #     e_pt_arr = np.linspace(
-            #         eigs_min[p], config.band_params["e_cut"], ngrid_left
-            #     )
-            #     # e_pt_arr = np.arange(
-            #     #     eigs_min[p],
-            #     #     config.band_params["e_cut"],
-            #     #     config.band_params["de_min"],
-            #     # )
-            #     e_tot_arr = np.concatenate((e_tot_arr, e_pt_arr))
-            #     break
-
             else:
-                sum_e_gaps += eigs_min[p + 1] - eigs_max[p]
                 e_pt_arr = np.linspace(
                     eigs_min[p], eigs_max[p], config.band_params["nbands"]
                 )
-                ngrid_left -= config.band_params["nbands"]
                 e_tot_arr = np.concatenate((e_tot_arr, e_pt_arr))
 
-        tot_range = config.band_params["e_cut"] - e_min - sum_e_gaps
-
-        e_spc_arr = (
-            np.linspace(0, tot_range ** 0.5, config.band_params["ngrid_e"])
-        ) ** 2.0
-
-        # e_tot_arr = np.array([])
-        # for p in range(len(eigs_min) - 1):
-
-        #     if eigs_min[p] < e_min:
-        #         continue
-
-        #     elif eigs_min[p + 1] > eigs_max[p]:
-        #         e0 = eigs_min[p]
-        #         e_arr_pt = e0 + e_spc_arr[np.where(e0 + e_spc_arr <= eigs_max[p])]
-        #         e_spc_arr = e_spc_arr[np.where(e0 + e_spc_arr > eigs_max[p])]
-        #         e_spc_arr = e_spc_arr - e_spc_arr[0]
-        #         e_tot_arr = np.concatenate((e_tot_arr, e_arr_pt))
-
-        #     else:
-        #         e0 = eigs_min[p]
-        #         e_arr_pt = (
-        #             e0
-        #             + e_spc_arr[np.where(e0 + e_spc_arr < config.band_params["e_cut"])]
-        #         )
-
-        #         e_tot_arr = np.concatenate((e_tot_arr, e_arr_pt))
-        #         break
-
-        # size_diff = config.band_params["ngrid_e"] - len(e_tot_arr)
-        # if size_diff > 0:
-        #     de = e_tot_arr[-1] - e_tot_arr[-2]
-        #     extra_arr = np.linspace(
-        #         e_tot_arr[-1] + de, e_tot_arr[-1] + de * (size_diff + 1), size_diff
-        #     )
-        #     e_tot_arr = np.concatenate((e_tot_arr, extra_arr))
-
-        # e_tot_arr = np.arange(
-        #     e_min, config.band_params["e_cut"], config.band_params["de_min"]
-        # )
         return e_tot_arr
 
 
