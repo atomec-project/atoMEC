@@ -261,9 +261,9 @@ class Atom:
         if not isinstance(density, (float, intc)):
             raise InputError.density_error("Density is not a number")
         else:
-            if density > 100 or density < 0:
+            if density > 1000 or density < 0:
                 raise InputError.density_error(
-                    "Density must be a positive number less than 100"
+                    "Density must be a positive number less than 1000"
                 )
 
         return density
@@ -313,9 +313,9 @@ class Atom:
                 else:
                     density = self.radius_to_dens(atom, radius)
             elif radius == -1 and density != -1:
-                if density > 100 or density < 0:
+                if density > 1000 or density < 0:
                     raise InputError.density_error(
-                        "Density must be a positive number less than 100"
+                        "Density must be a positive number less than 1000"
                     )
                 else:
                     radius = self.dens_to_radius(atom, density)
@@ -866,7 +866,7 @@ class EnergyCalcs:
         # dirichlet and neumann bcs should only have one band
         bcs_no_bands = ["dirichlet", "neumann"]
         if config.bc in bcs_no_bands:
-            config.band_params["nbands"] = 1
+            band_params["nbands"] = 1
 
         # check the number of bands is valid
         else:
