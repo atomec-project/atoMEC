@@ -636,14 +636,15 @@ def dos_to_csv(orbitals, file_prefix):
             orbitals.eigvals_min, orbitals.eigvals_max, orbitals.ldegen
         )
 
-        print(np.shape(e_arr), np.shape(fd_arr), np.shape(DOS_arr))
-
         data = np.column_stack([e_arr, fd_arr[:, sp], DOS_arr[:, sp]])
 
         headstr = "energy" + 3 * " " + "fd occ" + 3 * " " + "dos"
 
         np.savetxt(
-            file_prefix + "_" + sp_names[sp] + ".csv", data, fmt="%8.3e", header=headstr
+            file_prefix + "_" + sp_names[sp] + ".csv",
+            data,
+            fmt="%10.5e",
+            header=headstr,
         )
 
     return
