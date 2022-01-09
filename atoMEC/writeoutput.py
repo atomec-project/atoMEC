@@ -282,8 +282,8 @@ class SCF:
         output_str += self.write_final_energies(energy) + spc
 
         # write the chemical potential and mean ionization state
-
-        N_ub = density.unbound["N"]
+        occs_pos = np.where(orbitals.eigvals > 0, orbitals.occnums_w, 0)
+        N_ub = np.sum(occs_pos, axis=(0, 2, 3)) + density.unbound["N"]
 
         if config.spindims == 2:
             mu_str = "Chemical potential (u/d)"
@@ -439,23 +439,15 @@ class SCF:
         # loop over the spin dimensions
         eigval_tbl = ""
         occnum_tbl = ""
+
         for i in range(config.spindims):
 
-            occnums_tot = orbitals.occnums + orbitals.occnums_ub
+            occnums_tot = orbitals.occnums_w
 
             # truncate the table to include only one unbound state in each direction
-            try:
-                lmax_new = min(
-                    np.amax(np.where(occnums_tot[i] > 1e-5)[0]) + 1,
-                    config.lmax,
-                )
-                nmax_new = min(
-                    np.amax(np.where(occnums_tot[i] > 1e-5)[1]) + 1,
-                    config.nmax,
-                )
-            except ValueError:
-                lmax_new = 2
-                nmax_new = 2
+
+            lmax_new = min(config.lmax, 8)
+            nmax_new = min(config.nmax, 5)
 
             # define row and column headers
             headers = [n + 1 for n in range(nmax_new)]
@@ -463,8 +455,13 @@ class SCF:
             RowIDs = [*range(lmax_new)]
             RowIDs[0] = "l=0"
 
-            eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
-            occnums_new = occnums_tot[i, :lmax_new, :nmax_new]
+            if config.bc != "bands":
+                occnums_new = orbitals.occnums_w[0, i, :lmax_new, :nmax_new]
+                eigvals_new = orbitals.eigvals[0, i, :lmax_new, :nmax_new]
+
+            else:
+                occnums_new = orbitals.eigvals_min[i, :lmax_new, :nmax_new]
+                eigvals_new = orbitals.eigvals_max[i, :lmax_new, :nmax_new]
 
             # the eigenvalue table
             eigval_tbl += (
@@ -583,6 +580,100 @@ def potential_to_csv(rgrid, potential, filename):
         )
 
     np.savetxt(filename, data, fmt="%8.3e", header=headstr)
+
+    return
+
+
+def eigs_occs_to_csv(orbitals, filename):
+    """
+    Write all the orbital energies and their occupations to file.
+
+    Parameters
+    ----------
+    orbitals: staticKS.Orbitals
+        the orbitals object
+    filename : str
+        name of the file to write to
+
+    Returns
+    -------
+    None
+    """
+
+    data_tot = np.array([])
+    for sp in range(config.spindims):
+        eigs_sp = orbitals.eigvals[:, sp].flatten()
+        idr = np.argsort(eigs_sp)
+        eigs_sp = eigs_sp[idr]
+        occs_sp = orbitals.occnums[:, sp].flatten()[idr]
+        dos_sp = orbitals.DOS[:, sp].flatten()[idr]
+        ldegen_sp = orbitals.ldegen[:, sp].flatten()[idr]
+        band_weight_sp = orbitals.nband_weight[:, sp].flatten()[idr]
+
+        data = np.column_stack([eigs_sp, occs_sp, dos_sp, ldegen_sp, band_weight_sp])
+        try:
+            data_tot = np.concatenate((data_tot, data))
+        except ValueError:
+            data_tot = data
+
+    headstr = config.spindims * (
+        "eigs"
+        + 5 * " "
+        + "occs"
+        + 5 * " "
+        + "dos"
+        + 6 * " "
+        + "l_degen"
+        + 2 * " "
+        + "band_weight"
+        + 5 * " "
+    )
+
+    np.savetxt(filename, data_tot, fmt="%8.3e", header=headstr)
+
+    return
+
+
+def dos_to_csv(orbitals, filename):
+    """
+    Write the energy eigenvalues, Fermi-Dirac occupations and DOS to file.
+
+    Parameters
+    ----------
+    orbitals: staticKS.Orbitals
+        the orbitals object
+    filename : str
+        name of the file to write to
+
+    Returns
+    -------
+    None
+    """
+
+    data_tot = np.array([])
+    for sp in range(config.spindims):
+
+        e_arr, fd_arr, DOS_arr = orbitals.calc_DOS_sum(
+            orbitals.eigvals_min, orbitals.eigvals_max, orbitals.ldegen
+        )
+
+        data = np.column_stack([e_arr, fd_arr[:, sp], DOS_arr[:, sp]])
+
+        try:
+            data_tot = np.concatenate((data_tot, data))
+        except ValueError:
+            data_tot = data
+
+    headstr = (
+        config.spindims * "energy" + 3 * " " + "fd occ" + 3 * " " + "dos" + 3 * " "
+    )
+
+    np.savetxt(
+        filename,
+        data,
+        fmt="%10.5e",
+        header=headstr,
+    )
 
     return
 

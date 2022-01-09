@@ -38,7 +38,7 @@ from . import config
 from . import mathtools
 
 
-def calc_eigs_min(v, xgrid):
+def calc_eigs_min(v, xgrid, bc):
     """
     Compute an estimate for the minimum values of the KS eigenvalues.
 
@@ -67,13 +67,13 @@ def calc_eigs_min(v, xgrid):
     v_coarse = func_interp(xgrid_coarse)
 
     # full diagonalization to estimate the lowest eigenvalues
-    eigs_min = matrix_solve(v_coarse, xgrid_coarse, solve_type="guess")[1]
+    eigs_min = matrix_solve(v_coarse, xgrid_coarse, bc, solve_type="guess")[1]
 
     return eigs_min
 
 
 # @writeoutput.timing
-def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
+def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
     r"""
     Solve the radial KS equation via matrix diagonalization of Numerov's method.
 
@@ -123,12 +123,11 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     if eigs_min_guess is None:
         eigs_min_guess = np.zeros((config.spindims, config.lmax))
 
-    # N = config.grid_params["ngrid"]
-    N = np.size(xgrid)
-
     # define the spacing of the xgrid
     dx = xgrid[1] - xgrid[0]
-    # number of grid points
+
+    # number of grid pts
+    N = np.size(xgrid)
 
     # Set-up the following matrix diagonalization problem
     # H*|u>=E*B*|u>; H=T+B*V; T=-p*A
@@ -147,7 +146,7 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     B = np.matrix((I_minus + 10 * I_zero + I_plus) / 12)
 
     # von neumann boundary conditions
-    if config.bc == "neumann":
+    if bc == "neumann":
         A[N - 2, N - 1] = 2 * dx ** (-2)
         B[N - 2, N - 1] = 2 * B[N - 2, N - 1]
         A[N - 1, N - 1] = A[N - 1, N - 1] + 1.0 / dx
@@ -157,21 +156,22 @@ def matrix_solve(v, xgrid, solve_type="full", eigs_min_guess=None):
     T = -0.5 * p * A
 
     # solve in serial or parallel - serial mostly useful for debugging
-    if config.numcores > 0:
-        eigfuncs, eigvals = KS_matsolve_parallel(
-            T, B, v, xgrid, solve_type, eigs_min_guess
-        )
-    else:
+    if config.numcores == 0:
         eigfuncs, eigvals = KS_matsolve_serial(
-            T, B, v, xgrid, solve_type, eigs_min_guess
+            T, B, v, xgrid, bc, solve_type, eigs_min_guess
+        )
+
+    else:
+        eigfuncs, eigvals = KS_matsolve_parallel(
+            T, B, v, xgrid, bc, solve_type, eigs_min_guess
         )
 
     return eigfuncs, eigvals
 
 
-def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
+def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     """
-    Solve the KS matrix diagonalization by parallelizing over config.ncores.
+    Solve the KS matrix diagonalization by parallelizing over config.numcores.
 
     Parameters
     ----------
@@ -196,6 +196,30 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
         radial KS wfns
     eigvals : ndarray
         KS eigenvalues
+
+    Notes
+    -----
+    The parallelization is done via the `joblib.Parallel` class of the `joblib` library,
+    see here_ for more information.
+
+    .. _here: https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html
+
+    For "best" performance (i.e. exactly one core for each call of the diagonalization
+    routine plus one extra for the "master" node), the number of cores should be chosen
+    as `config.numcores = 1 + config.spindims * config.lmax`. However, if this number is
+    larger than the total number of cores available, performance is hindered.
+
+    Therefore for "good" performance, we can suggest:
+    `config.numcores = max(1 + config.spindimgs * config.lmax, n_avail)`, where
+    `n_avail` is the number of cores available.
+
+    The above is just a guide for how to choose `config.numcores`, there may well
+    be better choices. One example where it might not work is for particularly large
+    numbers of grid points, when the memory required might be too large for a single
+    core.
+
+    N.B. if `config.numcores=-N` then `joblib` detects the number of available cores
+    `n_avail` and parallelizes into `n_avail + 1 - N` separate jobs.
     """
     # compute the number of grid points
     N = np.size(xgrid)
@@ -239,7 +263,7 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
                 v_flat,
                 xgrid,
                 config.nmax,
-                config.bc,
+                bc,
                 eigs_guess_flat,
                 solve_type,
             )
@@ -277,7 +301,7 @@ def KS_matsolve_parallel(T, B, v, xgrid, solve_type, eigs_min_guess):
         return eigfuncs_null, eigs_guess
 
 
-def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
+def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     """
     Solve the KS equations via matrix diagonalization in serial.
 
@@ -328,21 +352,36 @@ def KS_matsolve_serial(T, B, v, xgrid, solve_type, eigs_min_guess):
             # construct Hamiltonians
             H = T + B * V_mat
 
+            # if dirichlet solve on (N-1) x (N-1) grid
+            if bc == "dirichlet":
+                H_s = H[: N - 1, : N - 1]
+                B_s = B[: N - 1, : N - 1]
+            # if neumann don't change anything
+            elif bc == "neumann":
+                H_s = H
+                B_s = B
+
             # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
             # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
             # the estimated lowest eigenvalue from full diagonalization on coarse grid
             if solve_type == "full":
+
                 eigs_up, vecs_up = eigs(
-                    H,
+                    H_s,
                     k=config.nmax,
-                    M=B,
+                    M=B_s,
                     which="LM",
                     sigma=eigs_min_guess[i, l],
                     tol=config.conv_params["eigtol"],
                 )
 
+                K = np.zeros((N, config.nmax))
+                for n in range(config.nmax):
+                    K[:, n] = (
+                        -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - eigs_up.real[n])
+                    )
                 eigfuncs[i, l], eigvals[i, l] = update_orbs(
-                    vecs_up, eigs_up, xgrid, config.bc
+                    vecs_up, eigs_up, xgrid, bc, K
                 )
 
             elif solve_type == "guess":
@@ -407,21 +446,33 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
     # construct Hamiltonians
     H = T + B * V_mat
 
+    # if dirichlet solve on (N-1) x (N-1) grid
+    if bc == "dirichlet":
+        H_s = H[: N - 1, : N - 1]
+        B_s = B[: N - 1, : N - 1]
+    # if neumann don't change anything
+    elif bc == "neumann":
+        H_s = H
+        B_s = B
+
     # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
     # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
     # the estimated lowest eigenvalue from full diagonalization on coarse grid
     if solve_type == "full":
         evals, evecs = eigs(
-            H,
+            H_s,
             k=nmax,
-            M=B,
+            M=B_s,
             which="LM",
             tol=config.conv_params["eigtol"],
             sigma=eigs_guess[p],
         )
 
         # sort and normalize
-        evecs, evals = update_orbs(evecs, evals, xgrid, bc)
+        K = np.zeros((N, nmax))
+        for n in range(nmax):
+            K[:, n] = -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - evals.real[n])
+        evecs, evals = update_orbs(evecs, evals, xgrid, bc, K)
 
         return evecs, evals
 
@@ -439,7 +490,7 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
         return evecs_null, evals
 
 
-def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
+def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     """
     Sort the eigenvalues and functions by ascending energies and normalize orbs.
 
@@ -464,10 +515,323 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc):
     # Sort eigenvalues in ascending order
     idr = np.argsort(l_eigvals)
     eigvals = np.array(l_eigvals[idr].real)
-    # under neumann bc the RHS pt is junk, convert to correct value
-    if bc == "neumann":
-        l_eigfuncs[-1] = l_eigfuncs[-2]
+
+    # resize l_eigfuncs from N-1 to N for dirichlet condition
+    if bc == "dirichlet":
+        N = np.size(xgrid)
+        nmax = np.shape(l_eigfuncs)[1]
+        l_eigfuncs_dir = np.zeros((N, nmax))
+        l_eigfuncs_dir[:-1] = l_eigfuncs.real
+        l_eigfuncs = l_eigfuncs_dir
+
+    # manually propagate to final point for both boundary conditions
+    dx = xgrid[1] - xgrid[0]
+    h = (dx ** 2) / 12.0
+    l_eigfuncs[-1] = (
+        (2 - 10 * h * K[-2]) * l_eigfuncs[-2] - (1 + h * K[-3]) * l_eigfuncs[-3]
+    ) / (1 + h * K[-1])
+
+    # convert to correct dimensions
     eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
     eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid)  # normalize
 
     return eigfuncs, eigvals
+
+
+def calc_wfns_e_grid(xgrid, v, e_arr):
+    """
+    Compute all KS orbitals defined on the energy grid.
+
+    This routine is used to propagate a set of orbitals defined with a fixed
+    set of energies. It is used for the `bands` boundary condition in the
+    `models.ISModel` class.
+
+    Parameters
+    ----------
+    xgrid : ndarray
+        the spatial (logarithmic) grid
+    v : ndarray
+        the KS potential
+    e_arr : ndarray
+        the energy grid
+
+    Returns
+    -------
+    eigfuncs_e : ndarray
+        the KS orbitals with defined energies
+    """
+    # size of spaital grid
+    N = np.size(xgrid)
+
+    # compute the number of distinct propagations over spin and angular momentum
+    pmax = config.spindims * config.lmax
+
+    # initialize the flattened potential matrix
+    W_flat = np.zeros((pmax, N, len(e_arr)))
+
+    # set up the flattened potential matrix
+    # W = -2*exp(x)*(v - E) - (l + 1/2)**2
+    for sp in range(config.spindims):
+        for l in range(config.lmax):
+            W_flat[l + (sp * config.lmax)] = (
+                -2.0
+                * np.exp(2.0 * xgrid[:, np.newaxis])
+                * (v[sp, :, np.newaxis] - e_arr)
+                - (l + 0.5) ** 2
+            )
+
+    # solve numerov eqn for the wfns
+    eigfuncs_e = calc_wfns_e_grid_serial(xgrid, W_flat)
+
+    return eigfuncs_e
+
+
+def calc_wfns_e_grid_serial(xgrid, W):
+    r"""Compute the KS orbitals in serial.
+
+    Parameters
+    ----------
+    xgrid : ndarray
+        the logarithmic grid
+    W : ndarray
+        the modified KS potential (see notes)
+
+    Returns
+    -------
+    eigfuncs_e : ndarray
+        the KS orbitals for all values of spin and angular momenta,
+        across the full energy spectrum given
+
+    Notes
+    -----
+    The modified KS potential is given by
+    :math:`W = -2 * \exp(x) * (v(x) - E) - (l + \frac{1}{2})**2`
+    """
+    # total number of propagations over spin and angular momenta
+    pmax = config.spindims * config.lmax
+
+    # spatial grid size
+    N = np.size(xgrid)
+
+    # energy grid size
+    n_e_grid = np.shape(W)[-1]
+
+    # intialize the flattened eigenfucntions
+    eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
+
+    # solve numerov over each value of spin and angular momentum
+    for p in range(pmax):
+        eigfuncs_flat[p] = num_propagate(p, xgrid, W, config.lmax)
+
+    # return the eigenfucntions to their correct shape
+    eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
+
+    return eigfuncs_e
+
+
+def num_propagate(p, xgrid, W, lmax):
+    r"""
+    Propagate the wfn manually for energy grid with numerov scheme.
+
+    Parameters
+    ----------
+    p : int
+        the index of spin and angular momentum
+    xgrid : ndarray
+        the logarithmic grid
+    W : ndarray
+        modified KS potential array (see notes)
+    lmax : int
+        maximum value of angular momentum
+
+    Returns
+    -------
+    Psi_norm : ndarray
+        normalized wavefunctions
+
+    Notes
+    -----
+    The modified KS potential is given by
+    :math:`W = -2 * \exp(x) * (v(x) - E) - (l + \frac{1}{2})**2`
+    """
+    # define some initial grid parameters
+    dx = xgrid[1] - xgrid[0]
+    x0 = xgrid[0]
+    h = (dx ** 2) / 12.0  # a parameter for the numerov integration
+    N = np.size(xgrid)  # size of grid
+
+    # 'Potential' for numerov integration
+
+    # Initial conditions
+    n_e_grid = np.shape(W)[-1]
+    Psi = np.zeros((N, n_e_grid))  # initialize the wfn
+    l = p % lmax  # retrieve the value of angular momentum from p
+    Psi[1] = np.exp((l + 0.5) * (x0 + dx))
+
+    # Integration loop
+    for i in range(2, N):
+        Psi[i] = (
+            2.0 * (1.0 - 5.0 * h * W[p, i - 1]) * Psi[i - 1]
+            - (1.0 + h * W[p, i - 2]) * Psi[i - 2]
+        ) / (1.0 + h * W[p, i])
+
+    # normalize the wavefunction
+    Psi = Psi.transpose()
+    psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
+    integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+    norm = (np.trapz(integrand, x=xgrid, axis=-1)) ** (-0.5)
+    Psi_norm = np.einsum("i,ij->ij", norm, Psi)
+
+    return Psi_norm
+
+
+def num_propagate_alt(xgrid, v, l, e_arr):
+    """
+    Propagate the wfn manually for fixed energy with numerov scheme.
+    Parameters
+    ----------
+    xgrid : ndarray
+        the logarithmic grid
+    v : ndarray
+        KS potential array
+    l : int
+        angular momentum value
+    E : float
+        energy of the wavefunction
+    Returns
+    -------
+    Psi_norm : ndarray
+        normalized wavefunction
+    """
+    # define some initial grid parameters
+    dx = xgrid[1] - xgrid[0]
+    x0 = xgrid[0]
+    h = (dx ** 2) / 12.0  # a parameter for the numerov integration
+    N = np.size(xgrid)  # size of grid
+
+    # 'Potential' for numerov integration
+    W = (
+        -2.0 * np.exp(2.0 * xgrid[:, np.newaxis]) * (v[:, np.newaxis] - e_arr)
+        - (l + 0.5) ** 2
+    )
+
+    # Initial conditions
+    Psi = np.zeros((N, len(e_arr)))  # initialize the wfn
+    Psi[1] = np.exp((l + 0.5) * (x0 + dx))
+
+    # Integration loop
+    for i in range(2, N):
+        Psi[i] = (
+            2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
+            - (1.0 + h * W[i - 2]) * Psi[i - 2]
+        ) / (1.0 + h * W[i])
+
+    # normalize the wavefunction
+    Psi = Psi.transpose()
+    psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
+    integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+    norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
+    Psi_norm = np.einsum("i,ij->ij", norm, Psi)
+
+    return Psi_norm
+
+
+# def calc_wfns_e_grid_parallel(xgrid, W):
+
+#     pmax = config.spindims * config.lmax
+#     N = np.size(xgrid)
+#     n_e_grid = np.shape(W)[-1]
+#     eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
+
+#     while True:
+#         try:
+#             joblib_folder = "".join(
+#                 random.choices(string.ascii_uppercase + string.digits, k=30)
+#             )
+#             os.mkdir(joblib_folder)
+#             break
+#         except FileExistsError as e:
+#             print(e)
+
+#     # dump and load the large numpy arrays from file
+#     data_filename_memmap = os.path.join(joblib_folder, "data_memmap")
+#     dump(W, data_filename_memmap)
+#     W = load(data_filename_memmap, mmap_mode="r")
+
+#     with Parallel(n_jobs=config.numcores) as parallel:
+#         X = parallel(
+#             delayed(num_propagate)(q, xgrid, W, config.lmax) for q in range(pmax)
+#         )
+
+#     # remove the joblib arrays
+#     try:
+#         shutil.rmtree(joblib_folder)
+#     except:  # noqa
+#         print("Could not clean-up automatically.")
+
+#     for q in range(pmax):
+#         eigfuncs_flat[q] = X[q]
+
+#     eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
+
+#     return eigfuncs_e
+
+
+# def num_propagate_2(xgrid, v, e_arr):
+#     """
+#     Propagate the wfn manually for fixed energy with numerov scheme.
+
+#     Parameters
+#     ----------
+#     xgrid : ndarray
+#         the logarithmic grid
+#     v : ndarray
+#         KS potential array
+#     l : int
+#         angular momentum value
+#     E : float
+#         energy of the wavefunction
+
+#     Returns
+#     -------
+#     Psi_norm : ndarray
+#         normalized wavefunction
+#     """
+#     # define some initial grid parameters
+#     dx = xgrid[1] - xgrid[0]
+#     x0 = xgrid[0]
+#     h = (dx ** 2) / 12.0  # a parameter for the numerov integration
+#     N = np.size(xgrid)  # size of grid
+
+#     # 'Potential' for numerov integration
+
+#     # Initial conditions
+#     # 'Potential' for numerov integration
+#     W = np.zeros((N, len(e_arr), config.lmax, config.spindims))
+#     for i in range(N):
+#         for sp in range(config.spindims):
+#             for l in range(config.lmax):
+#                 W[i, :, l, sp] = (
+#                     -2.0 * np.exp(2.0 * xgrid[i]) * (v[sp, i] - e_arr) - (l + 0.5) ** 2
+#                 )
+
+#     # Initial conditions
+#     Psi = np.zeros((N, len(e_arr), config.lmax, config.spindims))  # initialize the wfn
+#     for l in range(config.lmax):
+#         Psi[:, :, l] = np.exp((l + 0.5) * (x0 + dx))
+
+#     # Integration loop
+#     for i in range(2, N):
+#         Psi[i] = (
+#             2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
+#             - (1.0 + h * W[i - 2]) * Psi[i - 2]
+#         ) / (1.0 + h * W[i])
+
+#     # normalize the wavefunction
+#     Psi = Psi.transpose()
+#     psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
+#     integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+#     norm = (np.trapz(integrand, x=xgrid, axis=-1)) ** (-0.5)
+#     Psi_norm = np.einsum("ijl,ijlk->ijlk", norm, Psi)
+
+#     return Psi_norm

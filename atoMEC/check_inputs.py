@@ -261,9 +261,9 @@ class Atom:
         if not isinstance(density, (float, intc)):
             raise InputError.density_error("Density is not a number")
         else:
-            if density > 100 or density < 0:
+            if density > 1000 or density < 0:
                 raise InputError.density_error(
-                    "Density must be a positive number less than 100"
+                    "Density must be a positive number less than 1000"
                 )
 
         return density
@@ -313,9 +313,9 @@ class Atom:
                 else:
                     density = self.radius_to_dens(atom, radius)
             elif radius == -1 and density != -1:
-                if density > 100 or density < 0:
+                if density > 1000 or density < 0:
                     raise InputError.density_error(
-                        "Density must be a positive number less than 100"
+                        "Density must be a positive number less than 1000"
                     )
                 else:
                     radius = self.dens_to_radius(atom, density)
@@ -503,7 +503,7 @@ class ISModel:
             if the boundary condition is not recognised
         """
         # list permitted boundary conditions
-        bcs_permitted = ["dirichlet", "neumann"]
+        bcs_permitted = ["dirichlet", "neumann", "bands"]
 
         # convert to lowercase
         bc.lower()
@@ -827,6 +827,80 @@ class EnergyCalcs:
 
         return scf_params
 
+    @staticmethod
+    def check_band_params(input_params):
+        r"""
+        Check if band parameters are reasonable, or assign if empty.
+
+        Parameters
+        ----------
+        input_params : dict
+            can contain the keys `maxscf` and `mixfrac` for max scf cycle
+            and potential mixing fraction
+
+        Returns
+        -------
+        band_params : dict
+            dictionary for band parameters as follows:
+            {
+            `nbands`   (``int``)   : number of levels per band,
+            `dE_min`   (``float``) : minimum energy gap to make a band,
+            `ngrid_e`  (``int``)   : number of grid points for the energy
+            `e_cut`    (``int``)   : maximum energy for integration
+            }
+
+        Raises
+        ------
+        InputError.bands_error
+            if band parameters are of invalid type or range
+        """
+
+        band_params = {}
+
+        for p in ["nbands", "de_min", "ngrid_e", "e_cut"]:
+            try:
+                band_params[p] = input_params[p]
+            except KeyError:
+                band_params[p] = config.band_params[p]
+
+        # dirichlet and neumann bcs should only have one band
+        bcs_no_bands = ["dirichlet", "neumann"]
+        if config.bc in bcs_no_bands:
+            band_params["nbands"] = 1
+
+        # check the number of bands is valid
+        else:
+            if not isinstance(band_params["nbands"], intc):
+                raise InputError.bands_error("nbands is not an integer")
+            else:
+                if band_params["nbands"] < 1:
+                    raise InputError.bands_error("nbands must be positive")
+
+        # check the minimum band spacing is valid
+        if not isinstance(band_params["de_min"], (float, intc)):
+            raise InputError.bands_error("de_min is not a number")
+        else:
+            if band_params["de_min"] < 0:
+                raise InputError.bands_error("de_min must be positive")
+
+        # check the number of points in the energy grid
+        if not isinstance(band_params["ngrid_e"], intc):
+            raise InputError.bands_error("ngrid_e is not an integer")
+        else:
+            if band_params["ngrid_e"] < 100:
+                raise InputError.bands_error(
+                    "ngrid_e must be positive and at least 100 in size"
+                )
+
+        # check the cutoff energy is valid
+        if not isinstance(band_params["e_cut"], (float, intc)):
+            raise InputError.bands_error("e_cut is not a number")
+        else:
+            if band_params["e_cut"] < 0:
+                raise InputError.bands_error("e_cut must be positive")
+
+        return band_params
+
 
 class InputError(Exception):
     """Exit atoMEC and print relevant input error message."""
@@ -958,6 +1032,23 @@ class InputError(Exception):
         None
         """
         print("Error in boundary condition input: " + err_msg)
+        sys.exit("Exiting atoMEC")
+
+    def bands_error(err_msg):
+        """
+        Raise exception if `nbands` not positive int or `dE_spc` not positive number.
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Returns
+        -------
+        None
+        """
+
+        print("Error in bands input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
     def spinpol_error(err_msg):
