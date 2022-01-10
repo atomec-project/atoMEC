@@ -4,6 +4,7 @@ from math import pi, sqrt, factorial
 from scipy.special import lpmv
 from scipy.integrate import quad
 import numpy as np
+from numba import jit
 
 from . import writeoutput
 
@@ -19,9 +20,11 @@ class KuboGreenwood:
         self._orbitals = orbitals
         self._xgrid = orbitals._xgrid
         self._eigfuncs = orbitals.eigfuncs
+        self._eigfuncs_mod = gs_ortho(orbitals.eigfuncs, self._xgrid)
         self._eigvals = orbitals.eigvals
-        self._occnums = np.zeros_like(self._eigvals)
-        self._spindims, lmax_default, nmax_default = np.shape(self._eigvals)
+        self._occnums = orbitals.occnums
+        self._dos = orbitals.DOS * orbitals.nband_weight
+        nbands, self._spindims, lmax_default, nmax_default = np.shape(self._eigvals)
         if nmax == 0:
             self._nmax = nmax_default
         else:
@@ -46,22 +49,23 @@ class KuboGreenwood:
         self._P4_int = None
         self._occ_diff_mat = None
         self._eig_diff_mat = None
+        self._dos_prod_mat = None
 
-    @property
-    def occnums(self):
-        if np.all(self._occnums == 0.0):
-            self._occnums = self.calc_occnums()
-        return self._occnums
+    # @property
+    # def occnums(self):
+    #     if np.all(self._occnums == 0.0):
+    #         self._occnums = self.calc_occnums()
+    #     return self._occnums
 
-    def calc_occnums(self):
-        # convert the occupation numbers to be "pure" occnums
-        lmat_inv = np.zeros_like(self._orbitals.lbound)
-        occnums_tot = self._orbitals.occnums + self._orbitals._occnums_ub
-        for l in range(self._lmax):
-            lmat_inv[:, l] = 0.5 / (2 * l + 1.0)
-        occnums = lmat_inv * occnums_tot
+    # def calc_occnums(self):
+    #     # convert the occupation numbers to be "pure" occnums
+    #     lmat_inv = np.zeros_like(self._orbitals.lbound)
+    #     occnums_tot = self._orbitals.occnums + self._orbitals._occnums_ub
+    #     for l in range(self._lmax):
+    #         lmat_inv[:, l] = 0.5 / (2 * l + 1.0)
+    #     occnums = lmat_inv * occnums_tot
 
-        return occnums
+    #     return occnums
 
     @property
     def all_orbs(self):
@@ -82,33 +86,33 @@ class KuboGreenwood:
 
     @property
     def sig_tot(self):
-        if self._sig_tot is None:
-            self._sig_tot = self.calc_sig(
-                self.R1_int,
-                self.R2_int,
-                self.P2_int,
-                self.P4_int,
-                self.occ_diff_mat,
-                self.eig_diff_mat,
-                self.occnums,
-                self._eigvals,
-                self._xgrid,
-                self.all_orbs,
-                self.all_orbs,
-            )
-        return self._sig_tot
-
-    def cond_tot(self, gamma=0.01, maxfreq=50, nfreq=200):
-        _cond_tot = self.calc_sig_func(
-            self._eigfuncs[0],
+        self._sig_tot = self.calc_sig(
             self.R1_int,
             self.R2_int,
             self.P2_int,
             self.P4_int,
             self.occ_diff_mat,
             self.eig_diff_mat,
-            self.occnums[0],
-            self._eigvals[0],
+            self.dos_prod_mat,
+            self._occnums,
+            self._eigvals,
+            self._xgrid,
+            self.all_orbs,
+            self.all_orbs,
+        )
+        return self._sig_tot
+
+    def cond_tot(self, gamma=0.01, maxfreq=50, nfreq=200):
+        _cond_tot = self.calc_sig_func(
+            self._eigfuncs,
+            self.R1_int,
+            self.R2_int,
+            self.P2_int,
+            self.P4_int,
+            self.occ_diff_mat,
+            self.eig_diff_mat,
+            self._occnums,
+            self._eigvals,
             self._xgrid,
             self.all_orbs,
             self.all_orbs,
@@ -120,131 +124,131 @@ class KuboGreenwood:
 
     @property
     def sig_cc(self):
-        if self._sig_cc is None:
-            self._sig_cc = self.calc_sig(
-                self.R1_int,
-                self.R2_int,
-                self.P2_int,
-                self.P4_int,
-                self.occ_diff_mat,
-                self.eig_diff_mat,
-                self.occnums,
-                self._eigvals,
-                self._xgrid,
-                self.cond_orbs,
-                self.cond_orbs,
-            )
+        self._sig_cc = self.calc_sig(
+            self.R1_int,
+            self.R2_int,
+            self.P2_int,
+            self.P4_int,
+            self.occ_diff_mat,
+            self.eig_diff_mat,
+            self.dos_prod_mat,
+            self._occnums,
+            self._eigvals,
+            self._xgrid,
+            self.cond_orbs,
+            self.cond_orbs,
+        )
         return self._sig_cc
 
     @property
     def sig_vv(self):
-        if self._sig_vv is None:
-            self._sig_vv = self.calc_sig(
-                self.R1_int,
-                self.R2_int,
-                self.P2_int,
-                self.P4_int,
-                self.occ_diff_mat,
-                self.eig_diff_mat,
-                self.occnums,
-                self._eigvals,
-                self._xgrid,
-                self.valence_orbs,
-                self.valence_orbs,
-            )
+        self._sig_vv = self.calc_sig(
+            self.R1_int,
+            self.R2_int,
+            self.P2_int,
+            self.P4_int,
+            self.occ_diff_mat,
+            self.eig_diff_mat,
+            self.dos_prod_mat,
+            self._occnums,
+            self._eigvals,
+            self._xgrid,
+            self.valence_orbs,
+            self.valence_orbs,
+        )
         return self._sig_vv
 
     @property
     def sig_cv(self):
-        if self._sig_cv is None:
-            self._sig_cv = self.calc_sig(
-                self.R1_int,
-                self.R2_int,
-                self.P2_int,
-                self.P4_int,
-                self.occ_diff_mat,
-                self.eig_diff_mat,
-                self.occnums,
-                self._eigvals,
-                self._xgrid,
-                self.valence_orbs,
-                self.cond_orbs,
-            )
+        self._sig_cv = self.calc_sig(
+            self.R1_int,
+            self.R2_int,
+            self.P2_int,
+            self.P4_int,
+            self.occ_diff_mat,
+            self.eig_diff_mat,
+            self.dos_prod_mat,
+            self._occnums,
+            self._eigvals,
+            self._xgrid,
+            self.valence_orbs,
+            self.cond_orbs,
+        )
         return self._sig_cv
 
     @property
     def N_tot(self):
-        if self._N_tot is None:
-            rmax = np.exp(self._xgrid)[-1]
-            V = (4.0 / 3.0) * pi * rmax ** 3.0
-            self._N_tot = self.sig_tot * (2 * V / pi)
+        rmax = np.exp(self._xgrid)[-1]
+        V = (4.0 / 3.0) * pi * rmax ** 3.0
+        self._N_tot = self.sig_tot * (2 * V / pi)
         return self._N_tot
 
     @property
     def N_free(self):
-        if self._N_free is None:
-            rmax = np.exp(self._xgrid)[-1]
-            V = (4.0 / 3.0) * pi * rmax ** 3.0
-            self._N_free = self.sig_cc * (2 * V / pi)
+        rmax = np.exp(self._xgrid)[-1]
+        V = (4.0 / 3.0) * pi * rmax ** 3.0
+        self._N_free = self.sig_cc * (2 * V / pi)
         return self._N_free
 
     @property
     @writeoutput.timing
     def R1_int(self):
-        if self._R1_int is None:
-            self._R1_int = calc_R1_int_mat(
-                self._eigfuncs[0],
-                self.occnums[0],
-                self._xgrid,
-                self.all_orbs,
-                self.all_orbs,
-            )
+        self._R1_int = calc_R1_int_mat(
+            self._eigfuncs,
+            self._occnums,
+            self._xgrid,
+            self.all_orbs,
+            self.all_orbs,
+        )
         return self._R1_int
 
     @property
     @writeoutput.timing
     def R2_int(self):
-        if self._R2_int is None:
-            self._R2_int = calc_R2_int_mat(
-                self._eigfuncs[0],
-                self.occnums[0],
-                self._xgrid,
-                self.all_orbs,
-                self.all_orbs,
-            )
+        self._R2_int = calc_R2_int_mat(
+            self._eigfuncs,
+            self._occnums,
+            self._xgrid,
+            self.all_orbs,
+            self.all_orbs,
+        )
         return self._R2_int
 
     @property
     @writeoutput.timing
     def P2_int(self):
-        if self._P2_int is None:
-            self._P2_int = P_mat_int(2, self._lmax)
+        self._P2_int = P_mat_int(2, self._lmax)
         return self._P2_int
 
     @property
     @writeoutput.timing
     def P4_int(self):
-        if self._P4_int is None:
-            self._P4_int = P_mat_int(4, self._lmax)
+        self._P4_int = P_mat_int(4, self._lmax)
         return self._P4_int
 
     @property
     @writeoutput.timing
     def occ_diff_mat(self):
-        if self._occ_diff_mat is None:
-            self._occ_diff_mat = calc_occ_diff_mat(
-                self.occnums[0], self.all_orbs, self.all_orbs
-            )
+        self._occ_diff_mat = calc_occ_diff_mat(
+            self._occnums, self.all_orbs, self.all_orbs
+        )
         return self._occ_diff_mat
 
     @property
     @writeoutput.timing
     def eig_diff_mat(self):
-        if self._eig_diff_mat is None:
-            self._eig_diff_mat = calc_eig_diff_mat(
-                self._eigvals[0], self.all_orbs, self.all_orbs
-            )
+        self._eig_diff_mat = calc_eig_diff_mat(
+            self._eigvals, self.all_orbs, self.all_orbs
+        )
         return self._eig_diff_mat
+
+    @property
+    @writeoutput.timing
+    def dos_prod_mat(self):
+        self._dos_prod_mat = calc_dos_prod_mat(
+            self._dos, self._occnums, self.all_orbs, self.all_orbs
+        )
+        return self._dos_prod_mat
 
     def check_sum_rule(self, l, n, m):
         sum_mom = 0.0
@@ -285,6 +289,7 @@ class KuboGreenwood:
         P4_int,
         occ_diff_mat,
         eig_diff_mat,
+        dos_prod_mat,
         occnums,
         eigvals,
         xgrid,
@@ -298,17 +303,20 @@ class KuboGreenwood:
 
         sig = 0.0
 
-        tmp_mat_1 = np.einsum("abcd,ace->abcde", R1_int, P2_int)
-        tmp_mat_2 = np.einsum("abcd,ace->abcde", R2_int, P4_int)
-        tmp_mat_3 = np.einsum("abcd,ace->cdabe", R1_int, P2_int)
-        tmp_mat_4 = np.einsum("abcd,ace->cdabe", R2_int, P4_int)
+        tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
+        tmp_mat_2 = np.einsum("kabcd,ace->kabcde", R2_int, P4_int)
+        tmp_mat_3 = np.einsum("kabcd,ace->kcdabe", R1_int, P2_int)
+        tmp_mat_4 = np.einsum("kabcd,ace->kcdabe", R2_int, P4_int)
 
         mel_sq_mat = np.sum(
             np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
             axis=-1,
         )
 
-        sig_bare = np.sum(mel_sq_mat * occ_diff_mat / eig_diff_mat)
+        # sig_bare = np.sum(dos_prod_mat * mel_sq_mat * occ_diff_mat / eig_diff_mat)
+        sig_bare = np.einsum(
+            "kln,klnpq->", dos_prod_mat, mel_sq_mat * occ_diff_mat / eig_diff_mat
+        )
 
         rmax = np.exp(xgrid)[-1]
         V = (4.0 / 3.0) * pi * rmax ** 3.0
@@ -498,6 +506,8 @@ def P4_func(x, l1, l2, m):
     return lpmv(m, l1, x) * factor
 
 
+# jit
+@writeoutput.timing
 def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
     r"""Compute the R1 integral."""
 
@@ -509,77 +519,119 @@ def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
     grad_orb2 = np.exp(-1.5 * xgrid) * (deriv_orb2 - 0.5 * eigfuncs)
 
     # initiliaze the matrix
-    lmax, nmax = np.shape(occnums)
-    R1_mat = np.zeros((lmax, nmax, lmax, nmax))
+    nbands, nspin, lmax, nmax = np.shape(occnums)
+    R1_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
 
     # integrate over the sphere
-    for l1, n1 in orb_subset_1:
-        for l2, n2 in orb_subset_2:
-            if abs(l1 - l2) != 1:
-                continue
-            elif abs(occnums[l2, n2] - occnums[l1, n1]) < 1e-3:
-                continue
-            else:
-                func_int = eigfuncs[l1, n1] * np.exp(-xgrid / 2.0) * grad_orb2[l2, n2]
+    for k in range(nbands):
+        for l1, n1 in orb_subset_1:
+            for l2, n2 in orb_subset_2:
+                if abs(l1 - l2) != 1:
+                    continue
+                elif abs(occnums[k, 0, l2, n2] - occnums[k, 0, l1, n1]) < 1e-3:
+                    continue
+                else:
+                    func_int = (
+                        eigfuncs[k, 0, l1, n1]
+                        * np.exp(-xgrid / 2.0)
+                        * grad_orb2[k, 0, l2, n2]
+                    )
 
-                R1_mat[l1, n1, l2, n2] = (
-                    4 * pi * np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
-                )
+                    R1_mat[k, l1, n1, l2, n2] = (
+                        4 * pi * np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
+                    )
     return R1_mat
 
 
+# jit
+@writeoutput.timing
 def calc_occ_diff_mat(occnums, orb_subset_1, orb_subset_2):
 
-    lmax, nmax = np.shape(occnums)
-    occ_diff_mat = np.zeros((lmax, nmax, lmax, nmax))
+    nbands, nspin, lmax, nmax = np.shape(occnums)
+    occ_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
 
-    for l1, n1 in orb_subset_1:
-        for l2, n2 in orb_subset_2:
-            occ_diff = -(occnums[l1, n1] - occnums[l2, n2])
-            if abs(l1 - l2) != 1:
-                continue
-            elif occ_diff < 0:
-                continue
-            else:
-                occ_diff_mat[l1, n1, l2, n2] = occ_diff
+    for k in range(nbands):
+        for l1, n1 in orb_subset_1:
+            for l2, n2 in orb_subset_2:
+                occ_diff = -(occnums[k, 0, l1, n1] - occnums[k, 0, l2, n2])
+                if abs(l1 - l2) != 1:
+                    continue
+                elif occ_diff < 0:
+                    continue
+                else:
+                    occ_diff_mat[k, l1, n1, l2, n2] = occ_diff
     return occ_diff_mat
 
 
+# jit
+@writeoutput.timing
+def calc_dos_prod_mat(dos, occnums, orb_subset_1, orb_subset_2):
+
+    nbands, nspin, lmax, nmax = np.shape(dos)
+    dos_prod_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
+
+    for k in range(nbands):
+        for l1, n1 in orb_subset_1:
+            for l2, n2 in orb_subset_2:
+                occ_diff = -(occnums[k, 0, l1, n1] - occnums[k, 0, l2, n2])
+                if abs(l1 - l2) != 1:
+                    continue
+                elif occ_diff < 0:
+                    continue
+                else:
+                    dos_prod_mat[k, l1, n1, l2, n2] = dos[
+                        k, 0, l2, n2
+                    ]  # * dos[k, 0, l2, n2]
+
+    dos_prod_mat = dos[:, 0]
+    return dos_prod_mat
+
+
+# jit
+@writeoutput.timing
 def calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2):
 
-    lmax, nmax = np.shape(eigvals)
-    eig_diff_mat = np.zeros((lmax, nmax, lmax, nmax))
+    nbands, nspin, lmax, nmax = np.shape(eigvals)
+    eig_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
     eig_diff_mat += 1e-6
 
-    for l1, n1 in orb_subset_1:
-        for l2, n2 in orb_subset_2:
-            if abs(l1 - l2) != 1:
-                continue
-            elif eigvals[l1, n1] - eigvals[l2, n2] < 0:
-                continue
-            else:
-                eig_diff_mat[l1, n1, l2, n2] = eigvals[l1, n1] - eigvals[l2, n2]
+    for k in range(nbands):
+        for l1, n1 in orb_subset_1:
+            for l2, n2 in orb_subset_2:
+                if abs(l1 - l2) != 1:
+                    continue
+                elif eigvals[k, 0, l1, n1] - eigvals[k, 0, l2, n2] < 0:
+                    continue
+                else:
+                    eig_diff_mat[k, l1, n1, l2, n2] = (
+                        eigvals[k, 0, l1, n1] - eigvals[k, 0, l2, n2]
+                    )
     return eig_diff_mat
 
 
+# jit
+@writeoutput.timing
 def calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
     r"""Compute the R2 integral."""
 
     # initiliaze the matrix
-    lmax, nmax = np.shape(occnums)
-    R2_mat = np.zeros((lmax, nmax, lmax, nmax))
+    nbands, nspin, lmax, nmax = np.shape(occnums)
+    R2_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
 
     # integrate over the sphere
-    for l1, n1 in orb_subset_1:
-        for l2, n2 in orb_subset_2:
-            if abs(l1 - l2) != 1:
-                continue
-            elif abs(occnums[l2, n2] - occnums[l1, n1]) < 1e-3:
-                continue
-            else:
-                func_int = eigfuncs[l1, n1] * eigfuncs[l2, n2] * np.exp(-xgrid)
+    for k in range(nbands):
+        for l1, n1 in orb_subset_1:
+            for l2, n2 in orb_subset_2:
+                if abs(l1 - l2) != 1:
+                    continue
+                elif abs(occnums[k, 0, l2, n2] - occnums[k, 0, l1, n1]) < 1e-3:
+                    continue
+                else:
+                    func_int = (
+                        eigfuncs[k, 0, l1, n1] * eigfuncs[k, 0, l2, n2] * np.exp(-xgrid)
+                    )
 
-                R2_mat[l1, n1, l2, n2] = (
+                R2_mat[k, l1, n1, l2, n2] = (
                     4 * pi * np.trapz(np.exp(2.0 * xgrid) * func_int, xgrid)
                 )
 
@@ -689,3 +741,43 @@ def lorentzian(x, x0, gamma):
     prefac = 1.0
     # prefac = 1 / x
     return (gamma / pi) * (prefac / (gamma ** 2 + (x - x0) ** 2))
+
+
+def prod_eigfuncs(phi0, phi1, xgrid):
+
+    return 4 * pi * np.trapz(np.exp(2.0 * xgrid) * phi0 * phi1, xgrid)
+
+
+def proj_eigfuncs(phi0, phi1, xgrid):
+
+    return (prod_eigfuncs(phi0, phi1, xgrid) / prod_eigfuncs(phi0, phi0, xgrid)) * phi0
+
+
+@writeoutput.timing
+def gs_ortho(eigfuncs, xgrid):
+
+    nbands, nspin, lmax, nmax, ngrid = np.shape(eigfuncs)
+    eigfuncs_ortho = np.zeros_like(eigfuncs)
+    norm = np.zeros_like(eigfuncs)
+
+    for k in range(nbands):
+        for sp in range(nspin):
+            for l in range(lmax):
+                for n1 in range(nmax):
+                    eigfuncs_ortho[k, sp, l, n1] = eigfuncs[k, sp, l, n1]
+                    for n2 in range(n1):
+                        eigfuncs_ortho[k, sp, l, n1] -= proj_eigfuncs(
+                            eigfuncs_ortho[k, sp, l, n2],
+                            eigfuncs[k, sp, l, n1],
+                            xgrid,
+                        )
+                    norm[k, sp, l, n1] = prod_eigfuncs(
+                        eigfuncs_ortho[k, sp, l, n1],
+                        eigfuncs_ortho[k, sp, l, n1],
+                        xgrid,
+                    )
+
+    a = norm ** (-0.5)
+    eigfuncs_ortho = eigfuncs_ortho * a
+
+    return eigfuncs_ortho
