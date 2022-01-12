@@ -812,11 +812,11 @@ def num_propagate_alt(xgrid, v, l, e_arr):
 #         for sp in range(config.spindims):
 #             for l in range(config.lmax):
 #                 W[i, :, l, sp] = (
-#                     -2.0 * np.exp(2.0 * xgrid[i]) * (v[sp, i] - e_arr) - (l + 0.5) ** 2
+#                     -2 * np.exp(2.0 * xgrid[i]) * (v[sp, i] - e_arr) - (l + 0.5) ** 2
 #                 )
 
 #     # Initial conditions
-#     Psi = np.zeros((N, len(e_arr), config.lmax, config.spindims))  # initialize the wfn
+#     Psi = np.zeros((N, len(e_arr), config.lmax, config.spindims))  # initialize wfn
 #     for l in range(config.lmax):
 #         Psi[:, :, l] = np.exp((l + 0.5) * (x0 + dx))
 
