@@ -99,7 +99,7 @@ class Orbitals:
         self._eigvals_max = np.zeros(
             (config.band_params["nkpts"], config.spindims, config.lmax)
         )
-        self._nband_weight = np.ones_like(self._eigvals)
+        self._kpt_int_weight = np.ones_like(self._eigvals)
         self._occ_weight = np.zeros_like(self._eigvals)
 
     @property
@@ -122,11 +122,11 @@ class Orbitals:
         return self._eigfuncs
 
     @property
-    def nband_weight(self):
+    def kpt_int_weight(self):
         r"""ndarray: The integration weight for the Fermi-Dirac / DOS integral."""
-        if np.all(self._nband_weight == 0.0):
+        if np.all(self._kpt_int_weight == 0.0):
             raise Exception("Band weightings have not been initialized")
-        return self._nband_weight
+        return self._kpt_int_weight
 
     @property
     def occnums_w(self):
@@ -148,7 +148,7 @@ class Orbitals:
         The occupation weighting is the product of the DOS, degeneracy of the
         angular momentum, and the integration weight.
         """
-        self._occ_weight = self.DOS * self.ldegen * self.nband_weight
+        self._occ_weight = self.DOS * self.ldegen * self.kpt_int_weight
         return self._occ_weight
 
     @property
@@ -221,13 +221,13 @@ class Orbitals:
                 eigs_min_guess=self._eigs_min_guess[0],
             )
 
-            self._nband_weight = np.ones_like(self._eigvals)
+            self._kpt_int_weight = np.ones_like(self._eigvals)
         else:
             eigfuncs_l, self._eigvals_min = numerov.matrix_solve(
                 v,
                 self._xgrid,
                 "neumann",
-                eigs_min_guess=self._eigs_min[0],
+                eigs_min_guess=self._eigs_min_guess[0],
             )
 
             eigfuncs_u, self._eigvals_max = numerov.matrix_solve(
@@ -237,7 +237,7 @@ class Orbitals:
                 eigs_min_guess=self._eigs_min_guess[1],
             )
 
-            self._eigvals, self._eigfuncs, self._nband_weight = self.calc_bands(
+            self._eigvals, self._eigfuncs, self._kpt_int_weight = self.calc_bands(
                 v, eigfuncs_l
             )
 
@@ -264,13 +264,11 @@ class Orbitals:
             the orbital energies across all the bands
         eigfuncs : ndarray
             the KS eigenfunctions for all energies covered
-        nband_weight : ndarray
-            the weighting which each energy contributes to the occupation
         """
         # initialize some arrays
         eigfuncs = np.zeros_like(self._eigfuncs)
         eigvals = np.zeros_like(self._eigvals)
-        nband_weight = np.zeros_like(self._eigvals)
+        kpt_int_weight = np.zeros_like(self._eigvals)
 
         # the energy band
         e_gap_arr = self.eigvals_max - self.eigvals_min
@@ -304,16 +302,18 @@ class Orbitals:
                         delta_E_plus[1:] = e_arr[1:] - e_arr[:-1]
                         delta_E_minus = np.zeros((config.band_params["nkpts"]))
                         delta_E_minus[:-1] = e_arr[1:] - e_arr[:-1]
-                        nband_weight[:, sp, l, n] = 0.5 * (delta_E_minus + delta_E_plus)
+                        kpt_int_weight[:, sp, l, n] = 0.5 * (
+                            delta_E_minus + delta_E_plus
+                        )
 
                     # when there are no distinct levels in a band
                     # just assign lower eigenvalue and eigenfucntion
                     else:
                         eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
                         eigvals[:, sp, l, n] = self.eigvals_min[sp, l, n]
-                        nband_weight[:, sp, l, n] = 1.0 / config.band_params["nkpts"]
+                        kpt_int_weight[:, sp, l, n] = 1.0 / config.band_params["nkpts"]
 
-        return eigvals, eigfuncs, nband_weight
+        return eigvals, eigfuncs, kpt_int_weight
 
     def occupy(self):
         """
