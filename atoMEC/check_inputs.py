@@ -844,9 +844,7 @@ class EnergyCalcs:
             dictionary for band parameters as follows:
             {
             `nkpts`   (``int``)   : number of levels per band,
-            `dE_min`   (``float``) : minimum energy gap to make a band,
-            `ngrid_e`  (``int``)   : number of grid points for the energy
-            `e_cut`    (``int``)   : maximum energy for integration
+            `de_min`   (``float``) : minimum energy gap to make a band
             }
 
         Raises
@@ -857,7 +855,7 @@ class EnergyCalcs:
 
         band_params = {}
 
-        for p in ["nkpts", "de_min", "ngrid_e", "e_cut"]:
+        for p in ["nkpts", "de_min"]:
             try:
                 band_params[p] = input_params[p]
             except KeyError:
@@ -882,22 +880,6 @@ class EnergyCalcs:
         else:
             if band_params["de_min"] < 0:
                 raise InputError.bands_error("de_min must be positive")
-
-        # check the number of points in the energy grid
-        if not isinstance(band_params["ngrid_e"], intc):
-            raise InputError.bands_error("ngrid_e is not an integer")
-        else:
-            if band_params["ngrid_e"] < 100:
-                raise InputError.bands_error(
-                    "ngrid_e must be positive and at least 100 in size"
-                )
-
-        # check the cutoff energy is valid
-        if not isinstance(band_params["e_cut"], (float, intc)):
-            raise InputError.bands_error("e_cut is not a number")
-        else:
-            if band_params["e_cut"] < 0:
-                raise InputError.bands_error("e_cut must be positive")
 
         return band_params
 

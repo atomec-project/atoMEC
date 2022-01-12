@@ -11,18 +11,14 @@ bc = "dirichlet"  # boundary condition
 unbound = "ideal"  # treatment for unbound electrons
 v_shift = True  # whether to shift the KS potential vertically
 
-nkpts = 50  # number of levels per band for massacrier model
-E_spc = 0.01  # energy spacing for massacrier model
-E_cut = 5  # energy cut-off for bands model
-
 # numerical grid for static calculations
 grid_params = {"ngrid": 1000, "x0": -12, "ngrid_coarse": 300}
 # convergence parameters for static calculations
 conv_params = {"econv": 1.0e-5, "nconv": 1.0e-4, "vconv": 1.0e-4, "eigtol": 1.0e-4}
 # scf parameters
 scf_params = {"maxscf": 50, "mixfrac": 0.3}
-# band parameters
-band_params = {"nkpts": 50, "de_min": 1e-3, "ngrid_e": 10000, "e_cut": 5}
+# band parameters for massacrier band model
+band_params = {"nkpts": 50, "de_min": 1e-3}
 
 # parallelization
 numcores = 0  # defaults to serial
