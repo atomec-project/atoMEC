@@ -852,7 +852,6 @@ class EnergyCalcs:
         InputError.bands_error
             if band parameters are of invalid type or range
         """
-
         band_params = {}
 
         for p in ["nkpts", "de_min"]:
@@ -1029,7 +1028,6 @@ class InputError(Exception):
         -------
         None
         """
-
         print("Error in bands input: " + err_msg)
         sys.exit("Exiting atoMEC")
 

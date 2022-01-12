@@ -663,7 +663,6 @@ def dos_to_csv(orbitals, filename):
     -------
     None
     """
-
     data_tot = np.array([])
     for sp in range(config.spindims):
 
