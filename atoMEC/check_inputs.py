@@ -843,7 +843,7 @@ class EnergyCalcs:
         band_params : dict
             dictionary for band parameters as follows:
             {
-            `nbands`   (``int``)   : number of levels per band,
+            `nkpts`   (``int``)   : number of levels per band,
             `dE_min`   (``float``) : minimum energy gap to make a band,
             `ngrid_e`  (``int``)   : number of grid points for the energy
             `e_cut`    (``int``)   : maximum energy for integration
@@ -857,7 +857,7 @@ class EnergyCalcs:
 
         band_params = {}
 
-        for p in ["nbands", "de_min", "ngrid_e", "e_cut"]:
+        for p in ["nkpts", "de_min", "ngrid_e", "e_cut"]:
             try:
                 band_params[p] = input_params[p]
             except KeyError:
@@ -866,15 +866,15 @@ class EnergyCalcs:
         # dirichlet and neumann bcs should only have one band
         bcs_no_bands = ["dirichlet", "neumann"]
         if config.bc in bcs_no_bands:
-            band_params["nbands"] = 1
+            band_params["nkpts"] = 1
 
         # check the number of bands is valid
         else:
-            if not isinstance(band_params["nbands"], intc):
-                raise InputError.bands_error("nbands is not an integer")
+            if not isinstance(band_params["nkpts"], intc):
+                raise InputError.bands_error("nkpts is not an integer")
             else:
-                if band_params["nbands"] < 1:
-                    raise InputError.bands_error("nbands must be positive")
+                if band_params["nkpts"] < 1:
+                    raise InputError.bands_error("nkpts must be positive")
 
         # check the minimum band spacing is valid
         if not isinstance(band_params["de_min"], (float, intc)):
@@ -1036,7 +1036,7 @@ class InputError(Exception):
 
     def bands_error(err_msg):
         """
-        Raise exception if `nbands` not positive int or `dE_spc` not positive number.
+        Raise exception if `nkpts` not positive int or `dE_spc` not positive number.
 
         Parameters
         ----------

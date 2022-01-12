@@ -76,7 +76,7 @@ class Orbitals:
         self._xgrid = xgrid
         self._eigfuncs = np.zeros(
             (
-                config.band_params["nbands"],
+                config.band_params["nkpts"],
                 config.spindims,
                 config.lmax,
                 config.nmax,
@@ -84,20 +84,20 @@ class Orbitals:
             )
         )
         self._eigvals = np.zeros(
-            (config.band_params["nbands"], config.spindims, config.lmax, config.nmax)
+            (config.band_params["nkpts"], config.spindims, config.lmax, config.nmax)
         )
         self._occnums = np.zeros_like(self._eigvals)
         self._occnums_w = np.zeros_like(self._eigvals)
         self._ldegen = np.zeros_like(self._eigvals)
         self._DOS = np.ones_like(self._eigvals)
         self._eigs_min = np.zeros(
-            (config.band_params["nbands"], config.spindims, config.lmax)
+            (config.band_params["nkpts"], config.spindims, config.lmax)
         )
         self._eigvals_min = np.zeros(
-            (config.band_params["nbands"], config.spindims, config.lmax)
+            (config.band_params["nkpts"], config.spindims, config.lmax)
         )
         self._eigvals_max = np.zeros(
-            (config.band_params["nbands"], config.spindims, config.lmax)
+            (config.band_params["nkpts"], config.spindims, config.lmax)
         )
         self._nband_weight = np.ones_like(self._eigvals)
         self._occ_weight = np.zeros_like(self._eigvals)
@@ -283,7 +283,7 @@ class Orbitals:
                     e_arr = np.linspace(
                         self.eigvals_min[sp, l, n],
                         self.eigvals_max[sp, l, n],
-                        config.band_params["nbands"],
+                        config.band_params["nkpts"],
                     )
 
                     # match the energy in the band to an energy that has been solved for
@@ -296,9 +296,9 @@ class Orbitals:
 
                         # make the integration weighting using trapezoid rule
                         # W_i = 0.5 * dE * (f_{i+1} - f_{i})
-                        delta_E_plus = np.zeros((config.band_params["nbands"]))
+                        delta_E_plus = np.zeros((config.band_params["nkpts"]))
                         delta_E_plus[1:] = e_arr[1:] - e_arr[:-1]
-                        delta_E_minus = np.zeros((config.band_params["nbands"]))
+                        delta_E_minus = np.zeros((config.band_params["nkpts"]))
                         delta_E_minus[:-1] = e_arr[1:] - e_arr[:-1]
                         nband_weight[:, sp, l, n] = 0.5 * (delta_E_minus + delta_E_plus)
 
@@ -307,7 +307,7 @@ class Orbitals:
                     else:
                         eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
                         eigvals[:, sp, l, n] = self.eigvals_min[sp, l, n]
-                        nband_weight[:, sp, l, n] = 1.0 / config.band_params["nbands"]
+                        nband_weight[:, sp, l, n] = 1.0 / config.band_params["nkpts"]
 
         return eigvals, eigfuncs, nband_weight
 
@@ -352,7 +352,7 @@ class Orbitals:
         """
         occnums = np.zeros_like(eigvals)
 
-        for band in range(config.band_params["nbands"]):
+        for band in range(config.band_params["nkpts"]):
             for i in range(config.spindims):
                 if config.nele[i] != 0:
                     occnums[band, i] = mathtools.fermi_dirac(
@@ -569,7 +569,7 @@ class Orbitals:
             # populate linearly spaced energies in the band
             else:
                 e_pt_arr = np.linspace(
-                    eigs_min[p], eigs_max[p], config.band_params["nbands"]
+                    eigs_min[p], eigs_max[p], config.band_params["nkpts"]
                 )
                 e_tot_arr = np.concatenate((e_tot_arr, e_pt_arr))
 

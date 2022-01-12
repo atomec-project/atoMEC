@@ -269,7 +269,7 @@ class ISModel:
         band_params : dict, optional
             dictionary for band parameters as follows:
             {
-            `nbands`   (``int``)   : number of levels per band,
+            `nkpts`   (``int``)   : number of levels per band,
             `dE_min`   (``float``) : minimum energy gap to make a band,
             `ngrid_e`  (``int``)   : number of grid points for the energy
             `e_cut`    (``int``)   : maximum energy for integration
