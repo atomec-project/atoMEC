@@ -443,7 +443,7 @@ class ISModel:
 
         return xc_func
 
-    def check_unbound(unbound):
+    def check_unbound(unbound, bc):
         """
         Check the unbound electron input is accepted.
 
@@ -451,6 +451,8 @@ class ISModel:
         ----------
         unbound : str
             defines the treatment of the unbound electrons
+        bc : str
+            the boundary condition
 
         Returns
         -------
@@ -478,6 +480,10 @@ class ISModel:
                     "Treatment of unbound electrons not recognised. \n                "
                     " Allowed treatments are: " + [ub for ub in unbound_permitted]
                 )
+                raise InputError.unbound_error(err_msg)
+            elif bc == "bands" and unbound == "ideal":
+                err_msg = "bands bc cannot be used with ideal treatment of unbound \
+electrons. Only quantum treatment is permitted."
                 raise InputError.unbound_error(err_msg)
 
         return unbound

@@ -193,7 +193,7 @@ class ISModel:
 
     @unbound.setter
     def unbound(self, unbound):
-        self._unbound = check_inputs.ISModel.check_unbound(unbound)
+        self._unbound = check_inputs.ISModel.check_unbound(unbound, self.bc)
         config.unbound = self._unbound
 
     @property
