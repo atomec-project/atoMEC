@@ -544,24 +544,29 @@ class Orbitals:
         e_tot_arr : ndarray
             the banded energy array
         """
-
+        # flatten and sort the minimum and maximum eigenvalues
         eigs_min = eigvals_min[0].flatten()
         eigs_max = eigvals_max[0].flatten()
         eigs_min = eigs_min[np.argsort(eigs_min)]
         eigs_max = eigs_max[np.argsort(eigs_max)]
 
+        # make an array of the band energy differences
         e_gap_arr = eigvals_max - eigvals_min
 
+        # start array from lowest eigenvalue to be treated as a band
         e_min = np.amin(
             eigvals_min[np.where(e_gap_arr >= config.band_params["de_min"])]
         )
 
+        # make the energy array
         e_tot_arr = np.array([])
         for p in range(len(eigs_min) - 1):
 
+            # ignore energies below the minimum for bands
             if eigs_min[p] < e_min:
                 continue
 
+            # populate linearly spaced energies in the band
             else:
                 e_pt_arr = np.linspace(
                     eigs_min[p], eigs_max[p], config.band_params["nbands"]
