@@ -289,7 +289,7 @@ class Orbitals:
                     # match the energy in the band to an energy that has been solved for
                     # first check the energy band is wide enough to solve for sub-levels
                     if e_gap_arr[sp, l, n] >= config.band_params["de_min"]:
-                        eigfuncs[:, sp, l, n] = numerov.num_propagate_alt(
+                        eigfuncs[:, sp, l, n] = numerov.num_propagate(
                             xgrid, v[sp], l, e_arr
                         )
                         eigvals[:, sp, l, n] = e_arr

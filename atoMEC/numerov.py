@@ -538,156 +538,10 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     return eigfuncs, eigvals
 
 
-def calc_wfns_e_grid(xgrid, v, e_arr):
-    """
-    Compute all KS orbitals defined on the energy grid.
-
-    This routine is used to propagate a set of orbitals defined with a fixed
-    set of energies. It is used for the `bands` boundary condition in the
-    `models.ISModel` class.
-
-    Parameters
-    ----------
-    xgrid : ndarray
-        the spatial (logarithmic) grid
-    v : ndarray
-        the KS potential
-    e_arr : ndarray
-        the energy grid
-
-    Returns
-    -------
-    eigfuncs_e : ndarray
-        the KS orbitals with defined energies
-    """
-    # size of spaital grid
-    N = np.size(xgrid)
-
-    # compute the number of distinct propagations over spin and angular momentum
-    pmax = config.spindims * config.lmax
-
-    # initialize the flattened potential matrix
-    W_flat = np.zeros((pmax, N, len(e_arr)))
-
-    # set up the flattened potential matrix
-    # W = -2*exp(x)*(v - E) - (l + 1/2)**2
-    for sp in range(config.spindims):
-        for l in range(config.lmax):
-            W_flat[l + (sp * config.lmax)] = (
-                -2.0
-                * np.exp(2.0 * xgrid[:, np.newaxis])
-                * (v[sp, :, np.newaxis] - e_arr)
-                - (l + 0.5) ** 2
-            )
-
-    # solve numerov eqn for the wfns
-    eigfuncs_e = calc_wfns_e_grid_serial(xgrid, W_flat)
-
-    return eigfuncs_e
-
-
-def calc_wfns_e_grid_serial(xgrid, W):
-    r"""Compute the KS orbitals in serial.
-
-    Parameters
-    ----------
-    xgrid : ndarray
-        the logarithmic grid
-    W : ndarray
-        the modified KS potential (see notes)
-
-    Returns
-    -------
-    eigfuncs_e : ndarray
-        the KS orbitals for all values of spin and angular momenta,
-        across the full energy spectrum given
-
-    Notes
-    -----
-    The modified KS potential is given by
-    :math:`W = -2 * \exp(x) * (v(x) - E) - (l + \frac{1}{2})**2`
-    """
-    # total number of propagations over spin and angular momenta
-    pmax = config.spindims * config.lmax
-
-    # spatial grid size
-    N = np.size(xgrid)
-
-    # energy grid size
-    n_e_grid = np.shape(W)[-1]
-
-    # intialize the flattened eigenfucntions
-    eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
-
-    # solve numerov over each value of spin and angular momentum
-    for p in range(pmax):
-        eigfuncs_flat[p] = num_propagate(p, xgrid, W, config.lmax)
-
-    # return the eigenfucntions to their correct shape
-    eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
-
-    return eigfuncs_e
-
-
-def num_propagate(p, xgrid, W, lmax):
-    r"""
-    Propagate the wfn manually for energy grid with numerov scheme.
-
-    Parameters
-    ----------
-    p : int
-        the index of spin and angular momentum
-    xgrid : ndarray
-        the logarithmic grid
-    W : ndarray
-        modified KS potential array (see notes)
-    lmax : int
-        maximum value of angular momentum
-
-    Returns
-    -------
-    Psi_norm : ndarray
-        normalized wavefunctions
-
-    Notes
-    -----
-    The modified KS potential is given by
-    :math:`W = -2 * \exp(x) * (v(x) - E) - (l + \frac{1}{2})**2`
-    """
-    # define some initial grid parameters
-    dx = xgrid[1] - xgrid[0]
-    x0 = xgrid[0]
-    h = (dx ** 2) / 12.0  # a parameter for the numerov integration
-    N = np.size(xgrid)  # size of grid
-
-    # 'Potential' for numerov integration
-
-    # Initial conditions
-    n_e_grid = np.shape(W)[-1]
-    Psi = np.zeros((N, n_e_grid))  # initialize the wfn
-    l = p % lmax  # retrieve the value of angular momentum from p
-    Psi[1] = np.exp((l + 0.5) * (x0 + dx))
-
-    # Integration loop
-    for i in range(2, N):
-        Psi[i] = (
-            2.0 * (1.0 - 5.0 * h * W[p, i - 1]) * Psi[i - 1]
-            - (1.0 + h * W[p, i - 2]) * Psi[i - 2]
-        ) / (1.0 + h * W[p, i])
-
-    # normalize the wavefunction
-    Psi = Psi.transpose()
-    psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
-    integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
-    norm = (np.trapz(integrand, x=xgrid, axis=-1)) ** (-0.5)
-    Psi_norm = np.einsum("i,ij->ij", norm, Psi)
-
-    return Psi_norm
-
-
-def num_propagate_alt(xgrid, v, l, e_arr):
+def num_propagate(xgrid, v, l, e_arr):
     """
     Propagate the wfn manually for fixed energy with numerov scheme.
+
     Parameters
     ----------
     xgrid : ndarray
@@ -734,6 +588,157 @@ def num_propagate_alt(xgrid, v, l, e_arr):
     Psi_norm = np.einsum("i,ij->ij", norm, Psi)
 
     return Psi_norm
+
+
+################################################################################
+#            deprecated functions that may be useful in future                 #
+################################################################################
+
+# def calc_wfns_e_grid(xgrid, v, e_arr):
+#     """
+#     Compute all KS orbitals defined on the energy grid.
+
+#     This routine is used to propagate a set of orbitals defined with a fixed
+#     set of energies. It is used for the `bands` boundary condition in the
+#     `models.ISModel` class.
+
+#     Parameters
+#     ----------
+#     xgrid : ndarray
+#         the spatial (logarithmic) grid
+#     v : ndarray
+#         the KS potential
+#     e_arr : ndarray
+#         the energy grid
+
+#     Returns
+#     -------
+#     eigfuncs_e : ndarray
+#         the KS orbitals with defined energies
+#     """
+#     # size of spaital grid
+#     N = np.size(xgrid)
+
+#     # compute the number of distinct propagations over spin and angular momentum
+#     pmax = config.spindims * config.lmax
+
+#     # initialize the flattened potential matrix
+#     W_flat = np.zeros((pmax, N, len(e_arr)))
+
+#     # set up the flattened potential matrix
+#     # W = -2*exp(x)*(v - E) - (l + 1/2)**2
+#     for sp in range(config.spindims):
+#         for l in range(config.lmax):
+#             W_flat[l + (sp * config.lmax)] = (
+#                 -2.0
+#                 * np.exp(2.0 * xgrid[:, np.newaxis])
+#                 * (v[sp, :, np.newaxis] - e_arr)
+#                 - (l + 0.5) ** 2
+#             )
+
+#     # solve numerov eqn for the wfns
+#     eigfuncs_e = calc_wfns_e_grid_serial(xgrid, W_flat)
+
+#     return eigfuncs_e
+
+
+# def calc_wfns_e_grid_serial(xgrid, W):
+#     r"""Compute the KS orbitals in serial.
+
+#     Parameters
+#     ----------
+#     xgrid : ndarray
+#         the logarithmic grid
+#     W : ndarray
+#         the modified KS potential (see notes)
+
+#     Returns
+#     -------
+#     eigfuncs_e : ndarray
+#         the KS orbitals for all values of spin and angular momenta,
+#         across the full energy spectrum given
+
+#     Notes
+#     -----
+#     The modified KS potential is given by
+#     :math:`W = -2 * \exp(x) * (v(x) - E) - (l + \frac{1}{2})**2`
+#     """
+#     # total number of propagations over spin and angular momenta
+#     pmax = config.spindims * config.lmax
+
+#     # spatial grid size
+#     N = np.size(xgrid)
+
+#     # energy grid size
+#     n_e_grid = np.shape(W)[-1]
+
+#     # intialize the flattened eigenfucntions
+#     eigfuncs_flat = np.zeros((pmax, n_e_grid, N))
+
+#     # solve numerov over each value of spin and angular momentum
+#     for p in range(pmax):
+#         eigfuncs_flat[p] = num_propagate(p, xgrid, W, config.lmax)
+
+#     # return the eigenfucntions to their correct shape
+#     eigfuncs_e = eigfuncs_flat.reshape(config.spindims, config.lmax, n_e_grid, N)
+
+#     return eigfuncs_e
+
+
+# def num_propagate(p, xgrid, W, lmax):
+#     r"""
+#     Propagate the wfn manually for energy grid with numerov scheme.
+
+#     Parameters
+#     ----------
+#     p : int
+#         the index of spin and angular momentum
+#     xgrid : ndarray
+#         the logarithmic grid
+#     W : ndarray
+#         modified KS potential array (see notes)
+#     lmax : int
+#         maximum value of angular momentum
+
+#     Returns
+#     -------
+#     Psi_norm : ndarray
+#         normalized wavefunctions
+
+#     Notes
+#     -----
+#     The modified KS potential is given by
+#     :math:`W = -2 * \exp(x) * (v(x) - E) - (l + \frac{1}{2})**2`
+#     """
+#     # define some initial grid parameters
+#     dx = xgrid[1] - xgrid[0]
+#     x0 = xgrid[0]
+#     h = (dx ** 2) / 12.0  # a parameter for the numerov integration
+#     N = np.size(xgrid)  # size of grid
+
+#     # 'Potential' for numerov integration
+
+#     # Initial conditions
+#     n_e_grid = np.shape(W)[-1]
+#     Psi = np.zeros((N, n_e_grid))  # initialize the wfn
+#     l = p % lmax  # retrieve the value of angular momentum from p
+#     Psi[1] = np.exp((l + 0.5) * (x0 + dx))
+
+#     # Integration loop
+#     for i in range(2, N):
+#         Psi[i] = (
+#             2.0 * (1.0 - 5.0 * h * W[p, i - 1]) * Psi[i - 1]
+#             - (1.0 + h * W[p, i - 2]) * Psi[i - 2]
+#         ) / (1.0 + h * W[p, i])
+
+#     # normalize the wavefunction
+#     Psi = Psi.transpose()
+#     psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
+#     integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+#     norm = (np.trapz(integrand, x=xgrid, axis=-1)) ** (-0.5)
+#     Psi_norm = np.einsum("i,ij->ij", norm, Psi)
+
+#     return Psi_norm
 
 
 # def calc_wfns_e_grid_parallel(xgrid, W):
