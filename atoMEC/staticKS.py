@@ -90,7 +90,7 @@ class Orbitals:
         self._occnums_w = np.zeros_like(self._eigvals)
         self._ldegen = np.zeros_like(self._eigvals)
         self._DOS = np.ones_like(self._eigvals)
-        self._eigs_min = np.zeros(
+        self._eigs_min_guess = np.zeros(
             (config.band_params["nkpts"], config.spindims, config.lmax)
         )
         self._eigvals_min = np.zeros(
@@ -203,10 +203,14 @@ class Orbitals:
 
         if eig_guess:
             if bc != "bands":
-                self._eigs_min[0] = numerov.calc_eigs_min(v, self._xgrid, bc)
+                self._eigs_min_guess[0] = numerov.calc_eigs_min(v, self._xgrid, bc)
             else:
-                self._eigs_min[0] = numerov.calc_eigs_min(v, self._xgrid, "neumann")
-                self._eigs_min[1] = numerov.calc_eigs_min(v, self._xgrid, "dirichlet")
+                self._eigs_min_guess[0] = numerov.calc_eigs_min(
+                    v, self._xgrid, "neumann"
+                )
+                self._eigs_min_guess[1] = numerov.calc_eigs_min(
+                    v, self._xgrid, "dirichlet"
+                )
 
         # solve the KS equations
         if bc != "bands":
@@ -214,7 +218,7 @@ class Orbitals:
                 v,
                 self._xgrid,
                 bc,
-                eigs_min_guess=self._eigs_min[0],
+                eigs_min_guess=self._eigs_min_guess[0],
             )
 
             self._nband_weight = np.ones_like(self._eigvals)
@@ -230,7 +234,7 @@ class Orbitals:
                 v,
                 self._xgrid,
                 "dirichlet",
-                eigs_min_guess=self._eigs_min[1],
+                eigs_min_guess=self._eigs_min_guess[1],
             )
 
             self._eigvals, self._eigfuncs, self._nband_weight = self.calc_bands(
