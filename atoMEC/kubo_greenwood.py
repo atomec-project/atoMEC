@@ -19,7 +19,7 @@ class KuboGreenwood:
 
         self._orbitals = orbitals
         self._xgrid = orbitals._xgrid
-        self._eigfuncs = orbitals.eigfuncs
+        self._eigfuncs = orbitals._eigfuncs
         self._eigfuncs_mod = gs_ortho(orbitals.eigfuncs, self._xgrid)
         self._eigvals = orbitals.eigvals
         self._occnums = orbitals.occnums
@@ -87,15 +87,10 @@ class KuboGreenwood:
     @property
     def sig_tot(self):
         self._sig_tot = self.calc_sig(
-            self.R1_int,
-            self.R2_int,
-            self.P2_int,
-            self.P4_int,
-            self.occ_diff_mat,
-            self.eig_diff_mat,
-            self.dos_prod_mat,
+            self._eigfuncs,
             self._occnums,
             self._eigvals,
+            self._dos,
             self._xgrid,
             self.all_orbs,
             self.all_orbs,
@@ -105,14 +100,9 @@ class KuboGreenwood:
     def cond_tot(self, gamma=0.01, maxfreq=50, nfreq=200):
         _cond_tot = self.calc_sig_func(
             self._eigfuncs,
-            self.R1_int,
-            self.R2_int,
-            self.P2_int,
-            self.P4_int,
-            self.occ_diff_mat,
-            self.eig_diff_mat,
             self._occnums,
             self._eigvals,
+            self._dos,
             self._xgrid,
             self.all_orbs,
             self.all_orbs,
@@ -125,15 +115,10 @@ class KuboGreenwood:
     @property
     def sig_cc(self):
         self._sig_cc = self.calc_sig(
-            self.R1_int,
-            self.R2_int,
-            self.P2_int,
-            self.P4_int,
-            self.occ_diff_mat,
-            self.eig_diff_mat,
-            self.dos_prod_mat,
+            self._eigfuncs,
             self._occnums,
             self._eigvals,
+            self._dos,
             self._xgrid,
             self.cond_orbs,
             self.cond_orbs,
@@ -143,15 +128,10 @@ class KuboGreenwood:
     @property
     def sig_vv(self):
         self._sig_vv = self.calc_sig(
-            self.R1_int,
-            self.R2_int,
-            self.P2_int,
-            self.P4_int,
-            self.occ_diff_mat,
-            self.eig_diff_mat,
-            self.dos_prod_mat,
+            self._eigfuncs,
             self._occnums,
             self._eigvals,
+            self._dos,
             self._xgrid,
             self.valence_orbs,
             self.valence_orbs,
@@ -161,15 +141,10 @@ class KuboGreenwood:
     @property
     def sig_cv(self):
         self._sig_cv = self.calc_sig(
-            self.R1_int,
-            self.R2_int,
-            self.P2_int,
-            self.P4_int,
-            self.occ_diff_mat,
-            self.eig_diff_mat,
-            self.dos_prod_mat,
+            self._eigfuncs,
             self._occnums,
             self._eigvals,
+            self._dos,
             self._xgrid,
             self.valence_orbs,
             self.cond_orbs,
@@ -254,44 +229,43 @@ class KuboGreenwood:
         sum_mom = 0.0
         new_orbs = self.all_orbs
         new_orbs.remove((l, n))
+        nbands, nspin, lmax, nmax = np.shape(self._eigvals)
 
-        for l1, n1 in new_orbs:
-            # the eigenvalue difference
-            eig_diff = self._eigvals[0, l1, n1] - self._eigvals[0, l, n]
-            if abs(eig_diff) < 1e-3:
-                continue
-            if abs(l1 - l) != 1:
-                continue
-            else:
-
-                # eigenfunctions
-                orb_l1n1 = sqrt(4 * pi) * self._eigfuncs[0, l1, n1]
-                orb_ln = sqrt(4 * pi) * self._eigfuncs[0, l, n]
-
-                # compute the matrix element
-                if abs(m) > l1:
-                    mel_sq = 0
+        for k in range(nbands):
+            sum_mom = 0.0
+            for l1, n1 in new_orbs:
+                # the eigenvalue difference
+                eig_diff = self._eigvals[k, 0, l1, n1] - self._eigvals[k, 0, l, n]
+                if abs(l1 - l) != 1:
+                    continue
                 else:
-                    mel = calc_mel_kgm(orb_ln, orb_l1n1, l, n, l1, n1, m, self._xgrid)
-                    mel_cc = calc_mel_kgm(
-                        orb_l1n1, orb_ln, l1, n1, l, n, m, self._xgrid
-                    )
-                    mel_sq = abs(mel * mel_cc)
-                sum_mom += mel_sq / eig_diff
+
+                    # eigenfunctions
+                    orb_l1n1 = sqrt(4 * pi) * self._eigfuncs[k, 0, l1, n1]
+                    orb_ln = sqrt(4 * pi) * self._eigfuncs[k, 0, l, n]
+
+                    # compute the matrix element
+                    if abs(m) > l1:
+                        mel_sq = 0
+                    else:
+                        mel = calc_mel_kgm(
+                            orb_ln, orb_l1n1, l, n, l1, n1, m, self._xgrid
+                        )
+                        mel_cc = calc_mel_kgm(
+                            orb_l1n1, orb_ln, l1, n1, l, n, m, self._xgrid
+                        )
+                        mel_sq = np.abs(mel_cc * mel)
+                    sum_mom += mel_sq / eig_diff
+                    print(l1, n1, sum_mom)
         return sum_mom
 
     @staticmethod
     @writeoutput.timing
     def calc_sig(
-        R1_int,
-        R2_int,
-        P2_int,
-        P4_int,
-        occ_diff_mat,
-        eig_diff_mat,
-        dos_prod_mat,
+        eigfuncs,
         occnums,
         eigvals,
+        dos,
         xgrid,
         orb_subset_1,
         orb_subset_2,
@@ -303,6 +277,13 @@ class KuboGreenwood:
 
         sig = 0.0
 
+        nbands, nspin, lmax, nmax = np.shape(occnums)
+
+        R1_int = calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2)
+        R2_int = calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2)
+        P2_int = P_mat_int(2, lmax)
+        P4_int = P_mat_int(4, lmax)
+
         tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
         tmp_mat_2 = np.einsum("kabcd,ace->kabcde", R2_int, P4_int)
         tmp_mat_3 = np.einsum("kabcd,ace->kcdabe", R1_int, P2_int)
@@ -312,6 +293,10 @@ class KuboGreenwood:
             np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
             axis=-1,
         )
+
+        occ_diff_mat = calc_occ_diff_mat(occnums, orb_subset_1, orb_subset_2)
+        eig_diff_mat = calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2)
+        dos_prod_mat = calc_dos_prod_mat(dos, occnums, orb_subset_1, orb_subset_2)
 
         # sig_bare = np.sum(dos_prod_mat * mel_sq_mat * occ_diff_mat / eig_diff_mat)
         sig_bare = np.einsum(
@@ -368,14 +353,9 @@ class KuboGreenwood:
     @writeoutput.timing
     def calc_sig_func(
         eigfuncs,
-        R1_int,
-        R2_int,
-        P2_int,
-        P4_int,
-        occ_diff_mat,
-        eig_diff_mat,
         occnums,
         eigvals,
+        dos,
         xgrid,
         orb_subset_1,
         orb_subset_2,
@@ -387,16 +367,21 @@ class KuboGreenwood:
         occ_min_diff=1e-4,
     ):
 
+        nbands, nspin, lmax, nmax = np.shape(occnums)
+
         R1_int = calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2)
         R2_int = calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2)
+        P2_int = P_mat_int(2, lmax)
+        P4_int = P_mat_int(4, lmax)
 
-        tmp_mat_1 = np.einsum("abcd,ace->abcde", R1_int, P2_int)
-        tmp_mat_2 = np.einsum("abcd,ace->abcde", R2_int, P4_int)
-        tmp_mat_3 = np.einsum("abcd,ace->cdabe", R1_int, P2_int)
-        tmp_mat_4 = np.einsum("abcd,ace->cdabe", R2_int, P4_int)
+        tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
+        tmp_mat_2 = np.einsum("kabcd,ace->kabcde", R2_int, P4_int)
+        tmp_mat_3 = np.einsum("kabcd,ace->kcdabe", R1_int, P2_int)
+        tmp_mat_4 = np.einsum("kabcd,ace->kcdabe", R2_int, P4_int)
 
         occ_diff_mat = calc_occ_diff_mat(occnums, orb_subset_1, orb_subset_2)
         eig_diff_mat = calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2)
+        dos_prod_mat = calc_dos_prod_mat(dos, occnums, orb_subset_1, orb_subset_2)
 
         mel_sq_mat = np.sum(
             np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
@@ -408,20 +393,19 @@ class KuboGreenwood:
         omega_arr = np.linspace(omega_0, np.sqrt(omega_max), n_freq) ** 2
         # omega_arr = np.linspace(omega_0, omega_max, n_freq)
         sig_omega = np.zeros((np.size(omega_arr), 2))
-        lmax, nmax = np.shape(occnums)
-        omega_dummy_mat = np.ones((lmax, nmax, lmax, nmax, n_freq))
+        omega_dummy_mat = np.ones((nbands, lmax, nmax, lmax, nmax, n_freq))
         eig_diff_omega_mat = np.einsum(
-            "ijkl,ijklm->ijklm", eig_diff_mat, omega_dummy_mat
+            "nijkl,nijklm->nijklm", eig_diff_mat, omega_dummy_mat
         )
         eig_diff_lorentz_mat = lorentzian(omega_arr, eig_diff_omega_mat, gamma)
 
-        mat1 = mel_sq_mat * occ_diff_mat
+        mat1 = np.einsum("kln,klnpq->klnpq", dos_prod_mat, mel_sq_mat * occ_diff_mat)
         mat2 = eig_diff_lorentz_mat / eig_diff_omega_mat
 
         rmax = np.exp(xgrid)[-1]
         V = (4.0 / 3.0) * pi * rmax ** 3.0
 
-        sig_omega[:, 1] = np.einsum("ijkl,ijklm->m", mat1, mat2) * 2 * pi / V
+        sig_omega[:, 1] = np.einsum("nijkl,nijklm->m", mat1, mat2) * 2 * pi / V
         sig_omega[:, 0] = omega_arr
 
         # for i, omega in enumerate(omega_arr):
@@ -528,7 +512,7 @@ def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
             for l2, n2 in orb_subset_2:
                 if abs(l1 - l2) != 1:
                     continue
-                elif abs(occnums[k, 0, l2, n2] - occnums[k, 0, l1, n1]) < 1e-3:
+                elif abs(occnums[k, 0, l2, n2] - occnums[k, 0, l1, n1]) < 0:
                     continue
                 else:
                     func_int = (
@@ -624,7 +608,7 @@ def calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
             for l2, n2 in orb_subset_2:
                 if abs(l1 - l2) != 1:
                     continue
-                elif abs(occnums[k, 0, l2, n2] - occnums[k, 0, l1, n1]) < 1e-3:
+                elif abs(occnums[k, 0, l2, n2] - occnums[k, 0, l1, n1]) < 0:
                     continue
                 else:
                     func_int = (
