@@ -442,7 +442,7 @@ class Orbitals:
         # take the sqrt when the energy gap is big enough to justify a band
         f_sqrt = np.where(
             eig_diff > config.band_params["de_min"],
-            np.sqrt(hub_func),
+            np.sqrt(np.abs(hub_func)),
             1.0,
         )
 
@@ -503,7 +503,7 @@ class Orbitals:
             hub_func = (eigs_max - e) * (e - eigs_min)
 
             # take the sqrt when the energy gap is big enough to justify a band
-            f_sqrt = np.where(hub_func > 0, np.sqrt(hub_func), 0.0)
+            f_sqrt = np.where(hub_func > 0, np.sqrt(np.abs(hub_func)), 0.0)
 
             # compute the pre-factor when the energy gap is large enough for a band
             prefac = np.where(
