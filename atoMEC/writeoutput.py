@@ -622,7 +622,7 @@ def eigs_occs_to_csv(orbitals, filename):
         occs_sp = orbitals.occnums[:, sp].flatten()[idr]
         dos_sp = orbitals.DOS[:, sp].flatten()[idr]
         ldegen_sp = orbitals.ldegen[:, sp].flatten()[idr]
-        band_weight_sp = orbitals.nband_weight[:, sp].flatten()[idr]
+        band_weight_sp = orbitals.kpt_int_weight[:, sp].flatten()[idr]
 
         data = np.column_stack([eigs_sp, occs_sp, dos_sp, ldegen_sp, band_weight_sp])
         try:
