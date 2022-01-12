@@ -303,8 +303,16 @@ class SCF:
         output_str += spc.join([chem_pot_str, MIS_str])
 
         eigvals, occnums = self.write_orb_info(orbitals)
-        output_str += dblspc + "Orbital eigenvalues (Ha) :" + dblspc + eigvals
-        output_str += spc + "Orbital occupations (2l+1) * f_{nl} :" + dblspc + occnums
+        if config.bc == "bands":
+            output_str += (
+                dblspc + "Max band orbital eigenvalues (Ha) :" + dblspc + eigvals
+            )
+            output_str += spc + "Min band orbital eigenvalues (Ha) :" + dblspc + occnums
+        else:
+            output_str += dblspc + "Orbital eigenvalues (Ha) :" + dblspc + eigvals
+            output_str += (
+                spc + "Orbital occupations (2l+1) * f_{nl} :" + dblspc + occnums
+            )
 
         return output_str
 
@@ -448,9 +456,7 @@ class SCF:
 
         for i in range(config.spindims):
 
-            occnums_tot = orbitals.occnums_w
-
-            # truncate the table to include only one unbound state in each direction
+            # truncate the table otherwise it becomes too large
 
             lmax_new = min(config.lmax, 8)
             nmax_new = min(config.nmax, 5)
@@ -461,10 +467,11 @@ class SCF:
             RowIDs = [*range(lmax_new)]
             RowIDs[0] = "l=0"
 
+            # if bands write the upper and lower band limits of eigenvalues
             if config.bc != "bands":
                 occnums_new = orbitals.occnums_w[0, i, :lmax_new, :nmax_new]
                 eigvals_new = orbitals.eigvals[0, i, :lmax_new, :nmax_new]
-
+            # if not using bands write the eigenvalues and their occupations
             else:
                 occnums_new = orbitals.eigvals_min[i, :lmax_new, :nmax_new]
                 eigvals_new = orbitals.eigvals_max[i, :lmax_new, :nmax_new]
