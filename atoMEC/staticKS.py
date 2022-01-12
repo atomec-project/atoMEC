@@ -408,7 +408,7 @@ class Orbitals:
     @staticmethod
     def make_DOS_bands(eigs_min, eigs_max, eigvals):
         r"""
-        Compute the density-of-states using the method of Massacrier et al (see notes).
+        Compute the density-of-states using the method of Massacrier (see notes, [6]_).
 
         Parameters
         ----------
@@ -427,12 +427,21 @@ class Orbitals:
         Notes
         -----
         The density-of-states is defined in this model as:
+
         .. math::
-            g(\epsilon) = \frac{2}{pi * delta**2) * \sqrt[(\epsilon^+ - \epsilon) \
-                        (\epsilon - \epsilon^-)],
-            \delta = /frac{1}{2} (\epsilon^+ - \epsilon^-)\,,
+            g(\epsilon) = \frac{2}{\pi  \delta^2} \sqrt{(\epsilon^+ - \epsilon)\
+                        (\epsilon - \epsilon^-)},\
+            \delta = \frac{1}{2} (\epsilon^+ - \epsilon^-),
 
         where :math:`\epsilon^\pm` are the upper and lower band limits respectively.
+
+        References
+        ----------
+        .. [6] Massacrier, G. et al, Reconciling ionization energies and band gaps of
+           warm dense matter derived with ab initio simulations and average atom models,
+           Physical Review Research 3.2 (2021): 023026.
+           `DOI:10.1103/PhysRevResearch.3.023026
+           <https://doi.org/10.1103/PhysRevResearch.3.023026>`__.
         """
         # get the eigenvalue difference in a correctly shaped array
         eig_diff = np.einsum(
