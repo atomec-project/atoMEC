@@ -1137,7 +1137,7 @@ class Energy:
         return S
 
     @staticmethod
-    def calc_S_orbs(occnums, lmat):
+    def calc_S_orbs(occnums, degen):
         r"""
         Compute the KS (non-interacting) entropy for specified orbitals (see notes).
 
@@ -1145,8 +1145,8 @@ class Energy:
         ----------
         occnums : ndarray
             orbital occupation numbers
-        lmat : ndarray
-            the degeneracy array (:math:`(2l+1)`)
+        degen : ndarray
+            product of dos and degeneracy array (:math:`(2l+1)`)
 
         Returns
         -------
@@ -1158,26 +1158,19 @@ class Energy:
         The entropy of non-interacting (KS) electrons is given by:
 
         .. math::
-            S_\mathrm{b} = -\sum_{s,l,n} (2l+1) [ f_{nls} \log(f_{nls}) \
+            S_\mathrm{b} = -\sum_{s,l,n} g_{ln} (2l+1) [ f_{nls} \log(f_{nls}) \
                            + (1-f_{nls}) (\log(1-f_{nls}) ]
         """
-        # the occupation numbers are stored as f'_{nl}=f_{nl}*(2l+1)
-        # we first need to map them back to their 'pure' form f_{nl}
-        lmat_inv = np.zeros_like(lmat)
-        for l in range(config.lmax):
-            lmat_inv[:, :, l] = (config.spindims / 2.0) * 1.0 / (2 * l + 1.0)
-
-        # pure occupation numbers (with zeros replaced by finite values)
-        occnums_pu = lmat_inv * occnums
-        occnums_mod1 = np.where(occnums_pu > 1e-5, occnums_pu, 0.5)
-        occnums_mod2 = np.where(occnums_pu < 1.0 - 1e-5, occnums_pu, 0.5)
+        # replace zeros in occupation numbers with finite numbers (for taking log)
+        occnums_mod1 = np.where(occnums > 1e-5, occnums, 0.5)
+        occnums_mod2 = np.where(occnums < 1.0 - 1e-5, occnums, 0.5)
 
         # now compute the terms in the square bracket
-        term1 = occnums_pu * np.log(occnums_mod1)
-        term2 = (1.0 - occnums_pu) * np.log(1.0 - occnums_mod2)
+        term1 = occnums * np.log(occnums_mod1)
+        term2 = (1.0 - occnums) * np.log(1.0 - occnums_mod2)
 
-        # multiply by (2l+1) factor
-        g_nls = lmat * (term1 + term2)
+        # multiply by degeneracy (dos * (2l+1))
+        g_nls = degen * (term1 + term2)
 
         # sum over all quantum numbers to get the total entropy
         S_orbs = -np.sum(g_nls)
