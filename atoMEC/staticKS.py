@@ -488,44 +488,49 @@ class Orbitals:
         # create the gapped array
         e_gap_arr = eigs_max - eigs_min
 
-        # make the total energy array
-        e_arr = Orbitals.make_e_arr(eigs_min, eigs_max)
-
         nspin, lmax, nmax = np.shape(eigs_max)
-        dos_knl = np.zeros((len(e_arr), nspin, lmax, nmax))
-        fd_dist = np.zeros((len(e_arr), nspin))
 
-        # loop over the energy array
-        for i, e in enumerate(e_arr):
+        e_arr_dummy = Orbitals.make_e_arr(eigs_min, eigs_max, 0)
+        e_arr = np.zeros((len(e_arr_dummy), nspin))
+        dos_knl = np.zeros((len(e_arr_dummy), nspin, lmax, nmax))
+        fd_dist = np.zeros((len(e_arr_dummy), nspin))
 
-            # compute delta and (e_+ - e) * (e - e_-)
-            delta = 0.5 * e_gap_arr
-            hub_func = (eigs_max - e) * (e - eigs_min)
+        for sp in range(nspin):
 
-            # take the sqrt when the energy gap is big enough to justify a band
-            f_sqrt = np.where(hub_func > 0, np.sqrt(np.abs(hub_func)), 0.0)
+            # make the total energy array
+            e_arr[:, sp] = Orbitals.make_e_arr(eigs_min, eigs_max, sp)
 
-            # compute the pre-factor when the energy gap is large enough for a band
-            prefac = np.where(
-                e_gap_arr > config.band_params["de_min"], 2.0 / (pi * delta ** 2.0), 0.0
-            )
+            for i, e in enumerate(e_arr[:, sp]):
 
-            # compute the dos
-            dos_knl[i] = prefac * f_sqrt
+                # compute delta and (e_+ - e) * (e - e_-)
+                delta = 0.5 * e_gap_arr
+                hub_func = (eigs_max - e) * (e - eigs_min)
 
-            # compute the Fermi-Dirac distribution
-            fd_dist[i] = mathtools.fermi_dirac(e, config.mu, config.beta)
+                # take the sqrt when the energy gap is big enough to justify a band
+                f_sqrt = np.where(hub_func > 0, np.sqrt(np.abs(hub_func)), 0.0)
 
-        # extract only the required part of the degeneracy array
-        ldegen0 = ldegen[0, :, :, 0]
+                # compute the pre-factor when the energy gap is large enough for a band
+                prefac = np.where(
+                    e_gap_arr > config.band_params["de_min"],
+                    2.0 / (pi * delta ** 2.0),
+                    0.0,
+                )
+
+                # compute the dos
+                dos_knl[i, sp] = prefac[sp] * f_sqrt[sp]
+
+                # compute the Fermi-Dirac distribution
+                fd_dist[i, sp] = mathtools.fermi_dirac(e, config.mu[sp], config.beta)
+
+        ldegen0 = ldegen[0, 0, :, 0]
 
         # sum over the l and n axes
-        DOS_sum = np.einsum("ijkl,jk->ij", dos_knl, ldegen0)
+        DOS_sum = np.einsum("ijkl,k->ij", dos_knl, ldegen0)
 
         return e_arr, fd_dist, DOS_sum
 
     @staticmethod
-    def make_e_arr(eigvals_min, eigvals_max):
+    def make_e_arr(eigvals_min, eigvals_max, sp):
         """Make the energy array for the bands boundary condition.
 
         Energies are populated from the lowest band up to the maximum specified energy,
@@ -545,8 +550,8 @@ class Orbitals:
             the banded energy array
         """
         # flatten and sort the minimum and maximum eigenvalues
-        eigs_min = eigvals_min[0].flatten()
-        eigs_max = eigvals_max[0].flatten()
+        eigs_min = eigvals_min[sp].flatten()
+        eigs_max = eigvals_max[sp].flatten()
         eigs_min = eigs_min[np.argsort(eigs_min)]
         eigs_max = eigs_max[np.argsort(eigs_max)]
 

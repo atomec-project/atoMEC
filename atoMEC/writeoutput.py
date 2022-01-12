@@ -335,12 +335,14 @@ class SCF:
         )
         KE_str += (
             4 * " "
-            + "{KE:26s} : {KE_x:10.4f}".format(KE="bound", KE_x=E_kin["bound"])
+            + "{KE:26s} : {KE_x:10.4f}".format(KE="orbitals", KE_x=E_kin["bound"])
             + spc
         )
         KE_str += (
             4 * " "
-            + "{KE:26s} : {KE_x:10.4f}".format(KE="unbound", KE_x=E_kin["unbound"])
+            + "{KE:26s} : {KE_x:10.4f}".format(
+                KE="unbound ideal approx.", KE_x=E_kin["unbound"]
+            )
             + spc
         )
 
@@ -396,11 +398,15 @@ class SCF:
         ent = energy.entropy
         ent_str = "{S:30s} : {S_x:10.4f}".format(S="Entropy", S_x=ent["tot"]) + spc
         ent_str += (
-            4 * " " + "{S:26s} : {S_x:10.4f}".format(S="bound", S_x=ent["bound"]) + spc
+            4 * " "
+            + "{S:26s} : {S_x:10.4f}".format(S="orbitals", S_x=ent["bound"])
+            + spc
         )
         ent_str += (
             4 * " "
-            + "{S:26s} : {S_x:10.4f}".format(S="unbound", S_x=ent["unbound"])
+            + "{S:26s} : {S_x:10.4f}".format(
+                S="unbound ideal approx.", S_x=ent["unbound"]
+            )
             + spc
         )
 
@@ -507,16 +513,16 @@ def density_to_csv(rgrid, density, filename):
     """
     if config.spindims == 2:
         headstr = (
-            "r"
-            + 7 * " "
-            + "n^up_b"
+            "r (a_0)"
             + 4 * " "
-            + "n^up_ub"
+            + "n^u (orbs)"
             + 3 * " "
-            + "n^dw_b"
-            + 4 * " "
-            + "n^dw_ub"
+            + "n^u (ideal)"
+            + 2 * " "
+            + "n^d (orbs)"
             + 3 * " "
+            + "n^d (ideal)"
+            + 1 * " "
         )
         data = np.column_stack(
             [
@@ -528,12 +534,12 @@ def density_to_csv(rgrid, density, filename):
             ]
         )
     else:
-        headstr = "r" + 8 * " " + "n_b" + 6 * " " + "n^_ub" + 3 * " "
+        headstr = "r (a_0)" + 4 * " " + "n (orbs)" + 5 * " " + "n (ideal)" + 3 * " "
         data = np.column_stack(
             [rgrid, density.bound["rho"][0], density.unbound["rho"][0]]
         )
 
-    np.savetxt(filename, data, fmt="%8.3e", header=headstr)
+    np.savetxt(filename, data, fmt="%11.6e", header=headstr)
 
     return
 
@@ -599,9 +605,10 @@ def eigs_occs_to_csv(orbitals, filename):
     -------
     None
     """
-
     data_tot = np.array([])
     for sp in range(config.spindims):
+        # flatten out the relevant matrices
+        # and sort by energy eigenvalue
         eigs_sp = orbitals.eigvals[:, sp].flatten()
         idr = np.argsort(eigs_sp)
         eigs_sp = eigs_sp[idr]
@@ -612,7 +619,7 @@ def eigs_occs_to_csv(orbitals, filename):
 
         data = np.column_stack([eigs_sp, occs_sp, dos_sp, ldegen_sp, band_weight_sp])
         try:
-            data_tot = np.concatenate((data_tot, data))
+            data_tot = np.concatenate((data_tot, data), axis=-1)
         except ValueError:
             data_tot = data
 
@@ -620,13 +627,13 @@ def eigs_occs_to_csv(orbitals, filename):
         "eigs"
         + 5 * " "
         + "occs"
-        + 5 * " "
-        + "dos"
         + 6 * " "
+        + "dos"
+        + 7 * " "
         + "l_degen"
-        + 2 * " "
-        + "band_weight"
-        + 5 * " "
+        + 3 * " "
+        + "k_int_wt"
+        + 4 * " "
     )
 
     np.savetxt(filename, data_tot, fmt="%8.3e", header=headstr)
@@ -653,24 +660,25 @@ def dos_to_csv(orbitals, filename):
     data_tot = np.array([])
     for sp in range(config.spindims):
 
+        # compute the dos (*(2l+1)) and FD dist in amenable format
         e_arr, fd_arr, DOS_arr = orbitals.calc_DOS_sum(
             orbitals.eigvals_min, orbitals.eigvals_max, orbitals.ldegen
         )
 
-        data = np.column_stack([e_arr, fd_arr[:, sp], DOS_arr[:, sp]])
+        data = np.column_stack([e_arr[:, sp], fd_arr[:, sp], DOS_arr[:, sp]])
 
         try:
-            data_tot = np.concatenate((data_tot, data))
+            data_tot = np.concatenate((data_tot, data), axis=-1)
         except ValueError:
             data_tot = data
 
-    headstr = (
-        config.spindims * "energy" + 3 * " " + "fd occ" + 3 * " " + "dos" + 3 * " "
+    headstr = config.spindims * (
+        "energy" + 5 * " " + "fd occ" + 6 * " " + "dos" + 10 * " "
     )
 
     np.savetxt(
         filename,
-        data,
+        data_tot,
         fmt="%10.5e",
         header=headstr,
     )
