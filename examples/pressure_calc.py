@@ -20,10 +20,9 @@ model = models.ISModel(Be, bc="dirichlet")
 
 # compute the total energy
 # define the number of levels to scan for
-# note that nmax should be much greater than the actual levels interested in
-# and should be tested for convergence
-nmax = 40
-lmax = 3
+# test these nos for convergence
+nmax = 2
+lmax = 2
 scf_output = model.CalcEnergy(nmax, lmax, grid_params={"ngrid": 2000})
 
 # with the energy output compute the pressure

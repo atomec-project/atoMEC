@@ -15,7 +15,7 @@ atom = Atom("H", radius=4.0, temp=0.01)
 model = models.ISModel(atom, xfunc_id="lda_x", cfunc_id="lda_c_pw", spinpol=True)
 
 # compute the total energy
-lda_out = model.CalcEnergy(20, 3, scf_params={"mixfrac": 0.6})
+lda_out = model.CalcEnergy(2, 2, scf_params={"mixfrac": 0.6})
 energy_lda = lda_out["energy"]
 
 # now change the exchange and correlation functionals
@@ -26,7 +26,7 @@ model.cfunc_id = "None"
 print(model.info)
 
 # compute the total energy again
-clmb_out = model.CalcEnergy(20, 3)
+clmb_out = model.CalcEnergy(2, 2)
 energy_clmb = clmb_out["energy"]
 
 print("Total free energy with LDA :" + str(energy_lda.F_tot))

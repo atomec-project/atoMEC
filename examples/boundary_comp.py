@@ -16,7 +16,7 @@ model = models.ISModel(Al, bc="dirichlet")
 
 # compute the total energy
 dirichlet_out = model.CalcEnergy(
-    25, 4, grid_params={"ngrid": 1000}, scf_params={"mixfrac": 0.7}
+    4, 4, grid_params={"ngrid": 1000}, scf_params={"mixfrac": 0.7}
 )
 energy_dirichlet = dirichlet_out["energy"]
 
