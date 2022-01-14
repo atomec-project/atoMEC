@@ -137,7 +137,8 @@ class Orbitals:
     @property
     def occnums(self):
         r"""ndarray: Bare KS occupation numbers (Fermi-Dirac)."""
-        self._occnums = self.calc_occnums(self.eigvals, config.mu)
+        if np.all(self._occnums == 0.0):
+            raise Exception("Occupation numbers have not been initialized")
         return self._occnums
 
     @property
