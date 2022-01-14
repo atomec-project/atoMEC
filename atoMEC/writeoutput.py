@@ -305,9 +305,11 @@ class SCF:
         eigvals, occnums = self.write_orb_info(orbitals)
         if config.bc == "bands":
             output_str += (
-                dblspc + "Max band orbital eigenvalues (Ha) :" + dblspc + eigvals
+                dblspc + "Orbital eigenvalues (band limits) (Ha) :" + dblspc + eigvals
             )
-            output_str += spc + "Min band orbital eigenvalues (Ha) :" + dblspc + occnums
+            output_str += (
+                spc + "Weighted band occupations (sum over k pts) :" + dblspc + occnums
+            )
         else:
             output_str += dblspc + "Orbital eigenvalues (Ha) :" + dblspc + eigvals
             output_str += (
@@ -467,27 +469,30 @@ class SCF:
             RowIDs = [*range(lmax_new)]
             RowIDs[0] = "l=0"
 
-            # if bands write the upper and lower band limits of eigenvalues
-            if config.bc != "bands":
-                occnums_new = orbitals.occnums_w[0, i, :lmax_new, :nmax_new]
-                eigvals_new = orbitals.eigvals[0, i, :lmax_new, :nmax_new]
-            # if not using bands write the eigenvalues and their occupations
+            if config.bc == "bands":
+                eigvals_list = [orbitals.eigvals_min, orbitals.eigvals_max]
             else:
-                occnums_new = orbitals.eigvals_min[i, :lmax_new, :nmax_new]
-                eigvals_new = orbitals.eigvals_max[i, :lmax_new, :nmax_new]
+                eigvals_list = [orbitals.eigvals[0]]
 
-            # the eigenvalue table
-            eigval_tbl += (
-                tabulate.tabulate(
-                    eigvals_new,
-                    headers,
-                    tablefmt="presto",
-                    showindex=RowIDs,
-                    floatfmt="7.3f",
-                    stralign="right",
+            for eigvals in eigvals_list:
+                eigvals_new = eigvals[i, :lmax_new, :nmax_new]
+
+                # the eigenvalue table
+                eigval_tbl += (
+                    tabulate.tabulate(
+                        eigvals_new,
+                        headers,
+                        tablefmt="presto",
+                        showindex=RowIDs,
+                        floatfmt="7.3f",
+                        stralign="right",
+                    )
+                    + dblspc
                 )
-                + dblspc
-            )
+
+            # sum up the occupation numbers over each band
+            occnums_band = np.sum(orbitals.occnums_w, axis=0)
+            occnums_new = occnums_band[i, :lmax_new, :nmax_new]
 
             # the occnums table
             occnum_tbl += (
