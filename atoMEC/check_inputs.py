@@ -876,8 +876,8 @@ class EnergyCalcs:
             if not isinstance(band_params["nkpts"], intc):
                 raise InputError.bands_error("nkpts is not an integer")
             else:
-                if band_params["nkpts"] < 1:
-                    raise InputError.bands_error("nkpts must be positive")
+                if band_params["nkpts"] < 10:
+                    raise InputError.bands_error("bands requires at least 10 k points")
 
         # check the minimum band spacing is valid
         if not isinstance(band_params["de_min"], (float, intc)):
