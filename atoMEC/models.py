@@ -193,7 +193,7 @@ class ISModel:
 
     @unbound.setter
     def unbound(self, unbound):
-        self._unbound = check_inputs.ISModel.check_unbound(unbound)
+        self._unbound = check_inputs.ISModel.check_unbound(unbound, self.bc)
         config.unbound = self._unbound
 
     @property
@@ -269,10 +269,8 @@ class ISModel:
         band_params : dict, optional
             dictionary for band parameters as follows:
             {
-            `nbands`   (``int``)   : number of levels per band,
-            `dE_min`   (``float``) : minimum energy gap to make a band,
-            `ngrid_e`  (``int``)   : number of grid points for the energy
-            `e_cut`    (``int``)   : maximum energy for integration
+            `nkpts`   (``int``)   : number of levels per band,
+            `de_min`   (``float``) : minimum energy gap to make a band
             }
         force_bound : list of list of ints, optional
             force certain levels to be bound, for example:

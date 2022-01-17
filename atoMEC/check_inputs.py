@@ -443,7 +443,7 @@ class ISModel:
 
         return xc_func
 
-    def check_unbound(unbound):
+    def check_unbound(unbound, bc):
         """
         Check the unbound electron input is accepted.
 
@@ -451,6 +451,8 @@ class ISModel:
         ----------
         unbound : str
             defines the treatment of the unbound electrons
+        bc : str
+            the boundary condition
 
         Returns
         -------
@@ -478,6 +480,10 @@ class ISModel:
                     "Treatment of unbound electrons not recognised. \n                "
                     " Allowed treatments are: " + [ub for ub in unbound_permitted]
                 )
+                raise InputError.unbound_error(err_msg)
+            elif bc == "bands" and unbound == "ideal":
+                err_msg = "bands bc cannot be used with ideal treatment of unbound \
+electrons. Only quantum treatment is permitted."
                 raise InputError.unbound_error(err_msg)
 
         return unbound
@@ -843,10 +849,8 @@ class EnergyCalcs:
         band_params : dict
             dictionary for band parameters as follows:
             {
-            `nbands`   (``int``)   : number of levels per band,
-            `dE_min`   (``float``) : minimum energy gap to make a band,
-            `ngrid_e`  (``int``)   : number of grid points for the energy
-            `e_cut`    (``int``)   : maximum energy for integration
+            `nkpts`   (``int``)   : number of levels per band,
+            `de_min`   (``float``) : minimum energy gap to make a band
             }
 
         Raises
@@ -854,10 +858,9 @@ class EnergyCalcs:
         InputError.bands_error
             if band parameters are of invalid type or range
         """
-
         band_params = {}
 
-        for p in ["nbands", "de_min", "ngrid_e", "e_cut"]:
+        for p in ["nkpts", "de_min"]:
             try:
                 band_params[p] = input_params[p]
             except KeyError:
@@ -866,15 +869,15 @@ class EnergyCalcs:
         # dirichlet and neumann bcs should only have one band
         bcs_no_bands = ["dirichlet", "neumann"]
         if config.bc in bcs_no_bands:
-            band_params["nbands"] = 1
+            band_params["nkpts"] = 1
 
         # check the number of bands is valid
         else:
-            if not isinstance(band_params["nbands"], intc):
-                raise InputError.bands_error("nbands is not an integer")
+            if not isinstance(band_params["nkpts"], intc):
+                raise InputError.bands_error("nkpts is not an integer")
             else:
-                if band_params["nbands"] < 1:
-                    raise InputError.bands_error("nbands must be positive")
+                if band_params["nkpts"] < 10:
+                    raise InputError.bands_error("bands requires at least 10 k points")
 
         # check the minimum band spacing is valid
         if not isinstance(band_params["de_min"], (float, intc)):
@@ -882,22 +885,6 @@ class EnergyCalcs:
         else:
             if band_params["de_min"] < 0:
                 raise InputError.bands_error("de_min must be positive")
-
-        # check the number of points in the energy grid
-        if not isinstance(band_params["ngrid_e"], intc):
-            raise InputError.bands_error("ngrid_e is not an integer")
-        else:
-            if band_params["ngrid_e"] < 100:
-                raise InputError.bands_error(
-                    "ngrid_e must be positive and at least 100 in size"
-                )
-
-        # check the cutoff energy is valid
-        if not isinstance(band_params["e_cut"], (float, intc)):
-            raise InputError.bands_error("e_cut is not a number")
-        else:
-            if band_params["e_cut"] < 0:
-                raise InputError.bands_error("e_cut must be positive")
 
         return band_params
 
@@ -1036,7 +1023,7 @@ class InputError(Exception):
 
     def bands_error(err_msg):
         """
-        Raise exception if `nbands` not positive int or `dE_spc` not positive number.
+        Raise exception if `nkpts` not positive int or `dE_spc` not positive number.
 
         Parameters
         ----------
@@ -1047,7 +1034,6 @@ class InputError(Exception):
         -------
         None
         """
-
         print("Error in bands input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
