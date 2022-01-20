@@ -524,17 +524,15 @@ def density_to_csv(rgrid, density, filename):
         name of the file to write to
     """
     if config.spindims == 2:
-        headstr = (
-            "r (a_0)"
-            + 4 * " "
-            + "n^u (orbs)"
-            + 3 * " "
-            + "n^u (ideal)"
-            + 2 * " "
-            + "n^d (orbs)"
-            + 3 * " "
-            + "n^d (ideal)"
-            + 1 * " "
+        headstr = " ".join(
+            s.rjust(12)
+            for s in [
+                "r (a_0)",
+                "n^u (orbs)",
+                "n^u (ideal)",
+                "n^d (orbs)",
+                "n^d (ideal)",
+            ]
         )
         data = np.column_stack(
             [
@@ -546,12 +544,12 @@ def density_to_csv(rgrid, density, filename):
             ]
         )
     else:
-        headstr = "r (a_0)" + 4 * " " + "n (orbs)" + 5 * " " + "n (ideal)" + 3 * " "
+        headstr = " ".join(s.rjust(12) for s in ["r (a_0)", "n (orbs)", "n (ideal)"])
         data = np.column_stack(
             [rgrid, density.bound["rho"][0], density.unbound["rho"][0]]
         )
 
-    np.savetxt(filename, data, fmt="%11.6e", header=headstr)
+    np.savetxt(filename, data, fmt="%11.6e", header=headstr, comments="")
 
     return
 
@@ -570,17 +568,8 @@ def potential_to_csv(rgrid, potential, filename):
         name of the file to write to
     """
     if config.spindims == 2:
-        headstr = (
-            "r"
-            + 7 * " "
-            + "v_en"
-            + 4 * " "
-            + "v_ha"
-            + 3 * " "
-            + "v^up_xc"
-            + 4 * " "
-            + "v^dw_xc"
-            + 3 * " "
+        headstr = " ".join(
+            s.rjust(12) for s in ["r (a_0)", "v_en", "v_ha", "v^u_xc", "v^d_xc"]
         )
         data = np.column_stack(
             [
@@ -592,12 +581,12 @@ def potential_to_csv(rgrid, potential, filename):
             ]
         )
     else:
-        headstr = "r" + 8 * " " + "v_en" + 6 * " " + "v_ha" + 3 * " "
+        headstr = " ".join(s.rjust(12) for s in ["r (a_0)", "v_en", "v_ha", "v_xc"])
         data = np.column_stack(
             [rgrid, potential.v_en, potential.v_ha, potential.v_xc["xc"][0]]
         )
 
-    np.savetxt(filename, data, fmt="%8.3e", header=headstr)
+    np.savetxt(filename, data, fmt="% 10.5e", header=headstr, comments="")
 
     return
 
@@ -636,19 +625,11 @@ def eigs_occs_to_csv(orbitals, filename):
             data_tot = data
 
     headstr = config.spindims * (
-        "eigs"
-        + 5 * " "
-        + "occs"
-        + 6 * " "
-        + "dos"
-        + 7 * " "
-        + "l_degen"
-        + 3 * " "
-        + "k_int_wt"
-        + 4 * " "
+        " ".join(s.rjust(12) for s in ["eigs", "occs", "dos", "l_degen", "k_int_wt"])
+        + " "
     )
 
-    np.savetxt(filename, data_tot, fmt="%8.3e", header=headstr)
+    np.savetxt(filename, data_tot, fmt="% 10.5e", header=headstr, comments="")
 
     return
 
@@ -684,13 +665,13 @@ def dos_to_csv(orbitals, filename):
             data_tot = data
 
     headstr = config.spindims * (
-        "energy" + 5 * " " + "fd occ" + 6 * " " + "dos" + 10 * " "
+        " ".join(s.rjust(12) for s in ["energy", " fd occ", "dos"]) + " "
     )
 
     np.savetxt(
         filename,
         data_tot,
-        fmt="%10.5e",
+        fmt="% 10.5e",
         header=headstr,
     )
 
