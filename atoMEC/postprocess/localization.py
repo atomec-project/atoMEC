@@ -346,20 +346,23 @@ def calc_IPR_mat(eigfuncs, xgrid):
     contribution is correctly accounted for). Use at your own peril...
     """
     # get the dimensions for the IPR matrix
-    spindims = np.shape(eigfuncs)[0]
-    lmax = np.shape(eigfuncs)[1]
-    nmax = np.shape(eigfuncs)[2]
+    spindims = np.shape(eigfuncs)[1]
+    lmax = np.shape(eigfuncs)[2]
+    nmax = np.shape(eigfuncs)[3]
 
-    IPR_mat = np.zeros((spindims, lmax, nmax))
+    nkpts, spindims, lmax, nmax, ngrid = np.shape(eigfuncs)
+
+    IPR_mat = np.zeros((nkpts, spindims, lmax, nmax))
 
     # compute the IPR matrix
     # FIXME: add spherical harmonic term
-    for i in range(spindims):
-        for l in range(lmax):
-            for n in range(nmax):
-                # compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)
-                Psi4 = eigfuncs[i, l, n, :] ** 4.0 * np.exp(-2 * xgrid)
-                # integrate over sphere
-                IPR_mat[i, l, n] = mathtools.int_sphere(Psi4, xgrid)
+    for k in range(nkpts):
+        for i in range(spindims):
+            for l in range(lmax):
+                for n in range(nmax):
+                    # compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)
+                    Psi4 = eigfuncs[k, i, l, n, :] ** 4.0 * np.exp(-2 * xgrid)
+                    # integrate over sphere
+                    IPR_mat[k, i, l, n] = mathtools.int_sphere(Psi4, xgrid)
 
     return IPR_mat
