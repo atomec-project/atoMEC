@@ -550,7 +550,7 @@ def num_propagate(xgrid, v, l, e_arr):
         KS potential array
     l : int
         angular momentum value
-    E : float
+    e_arr : float
         energy of the wavefunction
     Returns
     -------
