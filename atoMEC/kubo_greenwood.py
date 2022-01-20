@@ -20,10 +20,10 @@ class KuboGreenwood:
         self._orbitals = orbitals
         self._xgrid = orbitals._xgrid
         self._eigfuncs = orbitals._eigfuncs
-        self._eigfuncs_mod = gs_ortho(orbitals.eigfuncs, self._xgrid)
+        # self._eigfuncs_mod = gs_ortho(orbitals.eigfuncs, self._xgrid)
         self._eigvals = orbitals.eigvals
         self._occnums = orbitals.occnums
-        self._dos = orbitals.DOS * orbitals.nband_weight
+        self._dos = orbitals.DOS * orbitals.kpt_int_weight
         nbands, self._spindims, lmax_default, nmax_default = np.shape(self._eigvals)
         if nmax == 0:
             self._nmax = nmax_default
