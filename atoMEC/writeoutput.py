@@ -668,12 +668,7 @@ def dos_to_csv(orbitals, filename):
         " ".join(s.rjust(12) for s in ["energy", " fd occ", "dos"]) + " "
     )
 
-    np.savetxt(
-        filename,
-        data_tot,
-        fmt="% 10.5e",
-        header=headstr,
-    )
+    np.savetxt(filename, data_tot, fmt="% 10.5e", header=headstr, comments="")
 
     return
 
