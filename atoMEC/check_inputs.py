@@ -316,7 +316,7 @@ class Atom:
                 max_density = 1000
                 if density > max_density or density < 0:
                     raise InputError.density_error(
-                        "Density must be a positive number less than 1000"
+                        f"Density must be a positive number less than {max_density}"
                     )
                 else:
                     radius = self.dens_to_radius(atom, density)
