@@ -861,10 +861,7 @@ class EnergyCalcs:
         band_params = {}
 
         for p in ["nkpts", "de_min"]:
-            try:
-                band_params[p] = input_params[p]
-            except KeyError:
-                band_params[p] = config.band_params[p]
+            band_params[p] = input_params.get(p, config.band_params[p])
 
         # dirichlet and neumann bcs should only have one band
         bcs_no_bands = ["dirichlet", "neumann"]
