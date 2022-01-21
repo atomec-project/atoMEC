@@ -524,6 +524,7 @@ def density_to_csv(rgrid, density, filename):
         name of the file to write to
     """
     if config.spindims == 2:
+        # right-justifing column heads with fixed width of 12 characters
         headstr = " ".join(
             s.rjust(12)
             for s in [
@@ -544,6 +545,7 @@ def density_to_csv(rgrid, density, filename):
             ]
         )
     else:
+        # right-justifing column heads with fixed width of 12 characters
         headstr = " ".join(s.rjust(12) for s in ["r (a_0)", "n (orbs)", "n (ideal)"])
         data = np.column_stack(
             [rgrid, density.bound["rho"][0], density.unbound["rho"][0]]
@@ -568,6 +570,7 @@ def potential_to_csv(rgrid, potential, filename):
         name of the file to write to
     """
     if config.spindims == 2:
+        # right-justifing column heads with fixed width of 12 characters
         headstr = " ".join(
             s.rjust(12) for s in ["r (a_0)", "v_en", "v_ha", "v^u_xc", "v^d_xc"]
         )
@@ -581,6 +584,7 @@ def potential_to_csv(rgrid, potential, filename):
             ]
         )
     else:
+        # right-justifing column heads with fixed width of 12 characters
         headstr = " ".join(s.rjust(12) for s in ["r (a_0)", "v_en", "v_ha", "v_xc"])
         data = np.column_stack(
             [rgrid, potential.v_en, potential.v_ha, potential.v_xc["xc"][0]]
@@ -624,6 +628,7 @@ def eigs_occs_to_csv(orbitals, filename):
         except ValueError:
             data_tot = data
 
+    # right-justifing column heads with fixed width of 12 characters
     headstr = config.spindims * (
         " ".join(s.rjust(12) for s in ["eigs", "occs", "dos", "l_degen", "k_int_wt"])
         + " "
@@ -664,6 +669,7 @@ def dos_to_csv(orbitals, filename):
         except ValueError:
             data_tot = data
 
+    # right-justifing column heads with fixed width of 12 characters
     headstr = config.spindims * (
         " ".join(s.rjust(12) for s in ["energy", " fd occ", "dos"]) + " "
     )
