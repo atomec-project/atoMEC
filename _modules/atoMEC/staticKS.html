@@ -238,14 +238,32 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">xgrid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">])</span>
+            <span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ldegen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_DOS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kpt_int_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occ_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">eigvals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -267,56 +285,66 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">occnums</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        ndarray: KS occupation numbers (Fermi-Dirac).</span>
+    <span class="k">def</span> <span class="nf">kpt_int_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: The integration weight for the Fermi-Dirac / DOS integral.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kpt_int_weight</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Band weightings have not been initialized&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kpt_int_weight</span>
 
-<span class="sd">        The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">occnums_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: Weighted KS occupation numbers.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">occnums</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">occ_weight</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">occnums</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: Bare KS occupation numbers (Fermi-Dirac).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="c1"># raise Exception(&quot;Occnums have not been initialized&quot;)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_occnums</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lbound</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Occupation numbers have not been initialized&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">occnums_ub</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">occ_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        ndarray: KS occupation numbers (Fermi-Dirac).</span>
+<span class="sd">        ndarray: KS occupation number weightings.</span>
 
-<span class="sd">        The occupation numbers are multiplied by the :obj:`lbound` (degeneracy) matrix.</span>
+<span class="sd">        The occupation weighting is the product of the DOS, degeneracy of the</span>
+<span class="sd">        angular momentum, and the integration weight.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="c1"># raise Exception(&quot;Occnums have not been initialized&quot;)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_occnums</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lunbound</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occ_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DOS</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ldegen</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">kpt_int_weight</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occ_weight</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">lbound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).</span>
-
-<span class="sd">        The matrix takes the form</span>
-<span class="sd">        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="c1"># raise Exception(&quot;lbound has not been initialized&quot;)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span>
+    <span class="k">def</span> <span class="nf">ldegen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: Angular momentum degeneracy matrix.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ldegen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_ldegen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ldegen</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">lunbound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        ndarray: Matrix denoting bound eigenvalues and their degeneracies (DOS).</span>
+    <span class="k">def</span> <span class="nf">DOS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: Density of states (DOS) matrix.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;bands&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_DOS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_DOS_bands</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DOS</span>
 
-<span class="sd">        The matrix takes the form</span>
-<span class="sd">        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl}).`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="c1"># raise Exception(&quot;lbound has not been initialized&quot;)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lunbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">eigvals_min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: Lower bound (for bands bc) of KS eigenvalues.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_min</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;eigs_min has not been initialized&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_min</span>
 
-<div class="viewcode-block" id="Orbitals.compute"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">eigvals_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: Upper bound (for bands bc) of KS eigenvalues.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_max</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;eigs_min has not been initialized&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_max</span>
+
+<div class="viewcode-block" id="Orbitals.compute"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the orbitals and their eigenvalues with the given potential.</span>
 
@@ -338,24 +366,118 @@
         <span class="n">v</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">potential</span>
 
         <span class="k">if</span> <span class="n">eig_guess</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bc</span> <span class="o">!=</span> <span class="s2">&quot;bands&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span>
+                    <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="s2">&quot;neumann&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span>
+                    <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="s2">&quot;dirichlet&quot;</span>
+                <span class="p">)</span>
 
         <span class="c1"># solve the KS equations</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
-            <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">bc</span> <span class="o">!=</span> <span class="s2">&quot;bands&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
+                <span class="n">v</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
+                <span class="n">bc</span><span class="p">,</span>
+                <span class="n">eigs_min_guess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="p">)</span>
 
-        <span class="c1"># compute the lbound array</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kpt_int_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">eigfuncs_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_min</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
+                <span class="n">v</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
+                <span class="s2">&quot;neumann&quot;</span><span class="p">,</span>
+                <span class="n">eigs_min_guess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="p">)</span>
 
-        <span class="c1"># compute the lunbound array</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lunbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_lunbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
+            <span class="n">eigfuncs_u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_max</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
+                <span class="n">v</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
+                <span class="s2">&quot;dirichlet&quot;</span><span class="p">,</span>
+                <span class="n">eigs_min_guess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kpt_int_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_bands</span><span class="p">(</span>
+                <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span>
+            <span class="p">)</span>
 
         <span class="c1"># guess the chemical potential if initializing</span>
         <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
             <span class="n">config</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
 
         <span class="k">return</span></div>
+
+<div class="viewcode-block" id="Orbitals.calc_bands"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_bands">[docs]</a>    <span class="k">def</span> <span class="nf">calc_bands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the eigenfunctions which fill the energy bands.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        v : ndarray</span>
+<span class="sd">            the KS potential</span>
+<span class="sd">        eigfuncs_l : ndarray</span>
+<span class="sd">            the lower bound (neumann) eigenfunctions</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        eigvals : ndarray</span>
+<span class="sd">            the orbital energies across all the bands</span>
+<span class="sd">        eigfuncs : ndarray</span>
+<span class="sd">            the KS eigenfunctions for all energies covered</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># initialize some arrays</span>
+        <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">)</span>
+        <span class="n">eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="n">kpt_int_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+
+        <span class="c1"># the energy band</span>
+        <span class="n">e_gap_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span>
+
+        <span class="c1"># log grid</span>
+        <span class="n">xgrid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span>
+
+        <span class="c1"># assign the wavefunctions to their energy value</span>
+        <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">):</span>
+
+                    <span class="c1"># create a temporary array for the energy band</span>
+                    <span class="n">e_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_max</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">],</span>
+                        <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span>
+                    <span class="p">)</span>
+
+                    <span class="c1"># match the energy in the band to an energy that has been solved for</span>
+                    <span class="c1"># first check the energy band is wide enough to solve for sub-levels</span>
+                    <span class="k">if</span> <span class="n">e_gap_arr</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">]:</span>
+                        <span class="n">eigfuncs</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">num_propagate</span><span class="p">(</span>
+                            <span class="n">xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">sp</span><span class="p">],</span> <span class="n">l</span><span class="p">,</span> <span class="n">e_arr</span>
+                        <span class="p">)</span>
+                        <span class="n">eigvals</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_arr</span>
+
+                        <span class="c1"># make the integration weighting using trapezoid rule</span>
+                        <span class="c1"># W_i = 0.5 * dE * (f_{i+1} - f_{i})</span>
+                        <span class="n">delta_E_plus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]))</span>
+                        <span class="n">delta_E_plus</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">e_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">e_arr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">delta_E_minus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]))</span>
+                        <span class="n">delta_E_minus</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">e_arr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">kpt_int_weight</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+                            <span class="n">delta_E_minus</span> <span class="o">+</span> <span class="n">delta_E_plus</span>
+                        <span class="p">)</span>
+
+                    <span class="c1"># when there are no distinct levels in a band</span>
+                    <span class="c1"># just assign lower eigenvalue and eigenfucntion</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">eigfuncs</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">eigfuncs_l</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span>
+                        <span class="n">eigvals</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span>
+                        <span class="n">kpt_int_weight</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">kpt_int_weight</span></div>
 
 <div class="viewcode-block" id="Orbitals.occupy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.occupy">[docs]</a>    <span class="k">def</span> <span class="nf">occupy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -373,15 +495,12 @@
         <span class="n">config</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">chem_pot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># compute the occupation numbers using the chemical potential</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_occnums</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lbound</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
-
-        <span class="c1"># compute the unbound occupation numbers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_ub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_occnums</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lunbound</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_occnums</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
 
         <span class="k">return</span></div>
 
 <div class="viewcode-block" id="Orbitals.calc_occnums"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_occnums">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_occnums</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">lbound</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_occnums</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Fermi-Dirac occupations for the eigenvalues.</span>
 
@@ -401,16 +520,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">occnums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">occnums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lbound</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">fermi_dirac</span><span class="p">(</span>
-                    <span class="n">eigvals</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span>
-                <span class="p">)</span>
+        <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">occnums</span><span class="p">[</span><span class="n">band</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">fermi_dirac</span><span class="p">(</span>
+                        <span class="n">eigvals</span><span class="p">[</span><span class="n">band</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span>
+                    <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">occnums</span></div>
 
-<div class="viewcode-block" id="Orbitals.make_lbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_lbound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">make_lbound</span><span class="p">(</span><span class="n">eigvals</span><span class="p">):</span>
+<div class="viewcode-block" id="Orbitals.make_ldegen"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_ldegen">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">make_ldegen</span><span class="p">(</span><span class="n">eigvals</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the lbound matrix denoting the bound states and their degeneracies.</span>
 
@@ -427,12 +547,16 @@
 <span class="sd">        lbound_mat : ndarray</span>
 <span class="sd">            the lbound matrix</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">lbound_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
+        <span class="n">ldegen_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
-            <span class="n">lbound_mat</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                <span class="n">eigvals</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
+                <span class="n">ldegen_mat</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
+                <span class="n">ldegen_mat</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">eigvals</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span>
+                <span class="p">)</span>
 
         <span class="c1"># force bound levels if there are convergence issues</span>
 
@@ -441,38 +565,199 @@
                 <span class="n">sp</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">l</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-                <span class="n">lbound_mat</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+                <span class="n">ldegen_mat</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">lbound_mat</span></div>
+        <span class="k">return</span> <span class="n">ldegen_mat</span></div>
 
-<div class="viewcode-block" id="Orbitals.make_lunbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_lunbound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">make_lunbound</span><span class="p">(</span><span class="n">eigvals</span><span class="p">):</span>
+<div class="viewcode-block" id="Orbitals.make_DOS_bands"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_DOS_bands">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">make_DOS_bands</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">,</span> <span class="n">eigs_max</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Construct the lunbound matrix denoting the unbound states and degeneracies.</span>
-
-<span class="sd">        For each spin channel,</span>
-<span class="sd">        :math:`L^\mathrm{B}_{ln}=(2l+1)\times\Theta(\epsilon_{nl})`</span>
+<span class="sd">        Compute the density-of-states using the method of Massacrier (see notes, [6]_).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
+<span class="sd">        eigs_min : ndarray</span>
+<span class="sd">            the lower bound of the energy band</span>
+<span class="sd">        eigs_max : ndarray</span>
+<span class="sd">            the upper bound of the energy band</span>
 <span class="sd">        eigvals : ndarray</span>
-<span class="sd">            the KS orbital eigenvalues</span>
+<span class="sd">            the KS energy eigenvalues</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        lunbound_mat : ndarray</span>
-<span class="sd">            the lbound matrix</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">lunbound_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
+<span class="sd">        dos : ndarray</span>
+<span class="sd">            the density-of-states</span>
 
-        <span class="c1"># only non-zero if quantum unbound electrons</span>
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
-                <span class="n">lunbound_mat</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                    <span class="n">eigvals</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The density-of-states is defined in this model as:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            g(\epsilon) = \frac{2}{\pi  \delta^2} \sqrt{(\epsilon^+ - \epsilon)\</span>
+<span class="sd">                        (\epsilon - \epsilon^-)},\</span>
+<span class="sd">            \delta = \frac{1}{2} (\epsilon^+ - \epsilon^-),</span>
+
+<span class="sd">        where :math:`\epsilon^\pm` are the upper and lower band limits respectively.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        .. [6] Massacrier, G. et al, Reconciling ionization energies and band gaps of</span>
+<span class="sd">           warm dense matter derived with ab initio simulations and average atom models,</span>
+<span class="sd">           Physical Review Research 3.2 (2021): 023026.</span>
+<span class="sd">           `DOI:10.1103/PhysRevResearch.3.023026</span>
+<span class="sd">           &lt;https://doi.org/10.1103/PhysRevResearch.3.023026&gt;`__.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get the eigenvalue difference in a correctly shaped array</span>
+        <span class="n">eig_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span>
+            <span class="s2">&quot;ijk,lijk-&gt;lijk&quot;</span><span class="p">,</span> <span class="n">eigs_max</span> <span class="o">-</span> <span class="n">eigs_min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">eigvals</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># compute delta and (e_+ - e) * (e - e_-)</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">eig_diff</span>
+        <span class="n">hub_func</span> <span class="o">=</span> <span class="p">(</span><span class="n">eigs_max</span> <span class="o">-</span> <span class="n">eigvals</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigvals</span> <span class="o">-</span> <span class="n">eigs_min</span><span class="p">)</span>
+
+        <span class="c1"># take the sqrt when the energy gap is big enough to justify a band</span>
+        <span class="n">f_sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">eig_diff</span> <span class="o">&gt;</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">],</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hub_func</span><span class="p">)),</span>
+            <span class="mf">1.0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># compute the pre-factor when the energy gap is large enough for a band</span>
+        <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">eig_diff</span> <span class="o">&gt;</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">],</span>
+            <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delta</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">),</span>
+            <span class="mf">1.0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># compute the dos</span>
+        <span class="n">dos</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">f_sqrt</span>
+
+        <span class="k">return</span> <span class="n">dos</span></div>
+
+<div class="viewcode-block" id="Orbitals.calc_DOS_sum"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_DOS_sum">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_DOS_sum</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">,</span> <span class="n">eigs_max</span><span class="p">,</span> <span class="n">ldegen</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the summed density-of-states using the method of Massacrier et al.</span>
+
+<span class="sd">        This function sums the DOS over `l` and `n` quantum numbers and is used for</span>
+<span class="sd">        writing the output of the DOS only. Refer to `make_DOS_bands` for details on</span>
+<span class="sd">        the functional form of the DOS.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eigs_min : ndarray</span>
+<span class="sd">            the lower bound of the energy band</span>
+<span class="sd">        eigs_max : ndarray</span>
+<span class="sd">            the upper bound of the energy band</span>
+<span class="sd">        ldegen : ndarray</span>
+<span class="sd">            degeneracy matrix</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        e_arr : ndarray</span>
+<span class="sd">            sorted array of energies</span>
+<span class="sd">        fd_dist : ndarray</span>
+<span class="sd">            Fermi-Dirac occupation numbers</span>
+<span class="sd">        DOS_sum : ndarray</span>
+<span class="sd">            Density-of-states multiplied and summed over (l,n) quanutum numbers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create the gapped array</span>
+        <span class="n">e_gap_arr</span> <span class="o">=</span> <span class="n">eigs_max</span> <span class="o">-</span> <span class="n">eigs_min</span>
+
+        <span class="n">nspin</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigs_max</span><span class="p">)</span>
+
+        <span class="n">e_arr_dummy</span> <span class="o">=</span> <span class="n">Orbitals</span><span class="o">.</span><span class="n">make_e_arr</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">,</span> <span class="n">eigs_max</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">e_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">e_arr_dummy</span><span class="p">),</span> <span class="n">nspin</span><span class="p">))</span>
+        <span class="n">dos_knl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">e_arr_dummy</span><span class="p">),</span> <span class="n">nspin</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+        <span class="n">fd_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">e_arr_dummy</span><span class="p">),</span> <span class="n">nspin</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nspin</span><span class="p">):</span>
+
+            <span class="c1"># make the total energy array</span>
+            <span class="n">e_arr</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">]</span> <span class="o">=</span> <span class="n">Orbitals</span><span class="o">.</span><span class="n">make_e_arr</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">,</span> <span class="n">eigs_max</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">e_arr</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">]):</span>
+
+                <span class="c1"># compute delta and (e_+ - e) * (e - e_-)</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">e_gap_arr</span>
+                <span class="n">hub_func</span> <span class="o">=</span> <span class="p">(</span><span class="n">eigs_max</span> <span class="o">-</span> <span class="n">e</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">e</span> <span class="o">-</span> <span class="n">eigs_min</span><span class="p">)</span>
+
+                <span class="c1"># take the sqrt when the energy gap is big enough to justify a band</span>
+                <span class="n">f_sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">hub_func</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hub_func</span><span class="p">)),</span> <span class="mf">0.0</span><span class="p">)</span>
+
+                <span class="c1"># compute the pre-factor when the energy gap is large enough for a band</span>
+                <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                    <span class="n">e_gap_arr</span> <span class="o">&gt;</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">],</span>
+                    <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delta</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">),</span>
+                    <span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">lunbound_mat</span></div></div>
+                <span class="c1"># compute the dos</span>
+                <span class="n">dos_knl</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">sp</span><span class="p">]</span> <span class="o">=</span> <span class="n">prefac</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span> <span class="o">*</span> <span class="n">f_sqrt</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span>
+
+                <span class="c1"># compute the Fermi-Dirac distribution</span>
+                <span class="n">fd_dist</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">sp</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">fermi_dirac</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">sp</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+
+        <span class="n">ldegen0</span> <span class="o">=</span> <span class="n">ldegen</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># sum over the l and n axes</span>
+        <span class="n">DOS_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,k-&gt;ij&quot;</span><span class="p">,</span> <span class="n">dos_knl</span><span class="p">,</span> <span class="n">ldegen0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">e_arr</span><span class="p">,</span> <span class="n">fd_dist</span><span class="p">,</span> <span class="n">DOS_sum</span></div>
+
+<div class="viewcode-block" id="Orbitals.make_e_arr"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_e_arr">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">make_e_arr</span><span class="p">(</span><span class="n">eigvals_min</span><span class="p">,</span> <span class="n">eigvals_max</span><span class="p">,</span> <span class="n">sp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make the energy array for the bands boundary condition.</span>
+
+<span class="sd">        Energies are populated from the lowest band up to the maximum specified energy,</span>
+<span class="sd">        with band gaps (forbidden energies) accounted for. The array is non-linear in</span>
+<span class="sd">        order to optimize computation time.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eigvals_min : ndarray</span>
+<span class="sd">            the lower bound of the energy bands</span>
+<span class="sd">        eigvals_max : ndarray</span>
+<span class="sd">            the upper bound of the energy bands</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        e_tot_arr : ndarray</span>
+<span class="sd">            the banded energy array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># flatten and sort the minimum and maximum eigenvalues</span>
+        <span class="n">eigs_min</span> <span class="o">=</span> <span class="n">eigvals_min</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">eigs_max</span> <span class="o">=</span> <span class="n">eigvals_max</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">eigs_min</span> <span class="o">=</span> <span class="n">eigs_min</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">)]</span>
+        <span class="n">eigs_max</span> <span class="o">=</span> <span class="n">eigs_max</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">eigs_max</span><span class="p">)]</span>
+
+        <span class="c1"># make an array of the band energy differences</span>
+        <span class="n">e_gap_arr</span> <span class="o">=</span> <span class="n">eigvals_max</span> <span class="o">-</span> <span class="n">eigvals_min</span>
+
+        <span class="c1"># start array from lowest eigenvalue to be treated as a band</span>
+        <span class="n">e_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span>
+            <span class="n">eigvals_min</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">e_gap_arr</span> <span class="o">&gt;=</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">])]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># make the energy array</span>
+        <span class="n">e_tot_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+
+            <span class="c1"># ignore energies below the minimum for bands</span>
+            <span class="k">if</span> <span class="n">eigs_min</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">e_min</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># populate linearly spaced energies in the band</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">e_pt_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                    <span class="n">eigs_min</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">eigs_max</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">e_tot_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">e_tot_arr</span><span class="p">,</span> <span class="n">e_pt_arr</span><span class="p">))</span>
+
+        <span class="c1"># sort the array</span>
+        <span class="n">e_tot_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">e_tot_arr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">e_tot_arr</span></div></div>
 
 
 <div class="viewcode-block" id="Density"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density">[docs]</a><span class="k">class</span> <span class="nc">Density</span><span class="p">:</span>
@@ -516,7 +801,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bound</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_rho_orbs</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bound</span>
 
@@ -529,9 +814,8 @@
 <span class="sd">        unbound density and number of unbound electrons respectively</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_rho_unbound</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_rho_unbound</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span>
 
 <div class="viewcode-block" id="Density.construct_rho_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
@@ -565,15 +849,15 @@
         <span class="n">orbs_R_sq</span> <span class="o">=</span> <span class="n">orbs_R</span> <span class="o">**</span> <span class="mf">2.0</span>
 
         <span class="c1"># sum over the (l,n) dimensions of the orbitals to get the density</span>
-        <span class="n">dens</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;il&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">orbs_R_sq</span><span class="p">)</span>
+        <span class="n">dens</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,ijklm-&gt;jm&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">orbs_R_sq</span><span class="p">)</span>
 
         <span class="c1"># compute the number of unbound electrons</span>
-        <span class="n">dens</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">occnums</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">dens</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">occnums</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">dens</span></div>
 
 <div class="viewcode-block" id="Density.construct_rho_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">construct_rho_unbound</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">construct_rho_unbound</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the unbound part of the density.</span>
 
@@ -606,10 +890,6 @@
                 <span class="n">N_unbound</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_ub</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span>
 
             <span class="n">unbound</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="n">rho_unbound</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="n">N_unbound</span><span class="p">}</span>
-
-        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
-
-            <span class="n">unbound</span> <span class="o">=</span> <span class="n">Density</span><span class="o">.</span><span class="n">construct_rho_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">unbound</span></div></div>
 
@@ -845,12 +1125,13 @@
         <span class="n">E_kin</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># bound part</span>
-        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_orbs</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_orbs</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
         <span class="c1"># unbound part</span>
-        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_unbound</span><span class="p">(</span>
-            <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="n">xgrid</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
+            <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_unbound</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="c1"># total</span>
         <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span>
@@ -941,14 +1222,14 @@
             <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
                 <span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
             <span class="p">)</span>
-            <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;j,ijkl-&gt;ijkl&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span>
+            <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span>
 
             <span class="c1"># add together and multiply by eigfuncs*exp(-3x)</span>
             <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
             <span class="n">kin_orbs</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad2_orbs</span> <span class="o">-</span> <span class="n">lhalf_orbs</span><span class="p">)</span>
 
             <span class="c1"># multiply and sum over occupation numbers</span>
-            <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;il&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">kin_orbs</span><span class="p">)</span>
+            <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,ijklm-&gt;jm&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">kin_orbs</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
 
@@ -962,12 +1243,12 @@
             <span class="n">grad_orbs_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span> <span class="o">**</span> <span class="mf">2.0</span>
 
             <span class="c1"># multiply and sum over occupation numbers</span>
-            <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijkl-&gt;il&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">grad_orbs_sq</span><span class="p">)</span>
+            <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,ijklm-&gt;jm&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">grad_orbs_sq</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">e_kin_dens</span></div>
 
 <div class="viewcode-block" id="Energy.calc_E_kin_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_E_kin_unbound</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_E_kin_unbound</span><span class="p">():</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the contribution from unbound (continuum) electrons to kinetic energy.</span>
 
@@ -1002,9 +1283,6 @@
                     <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="mf">3.0</span>
                 <span class="p">)</span>
 
-        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
-            <span class="n">E_kin_unbound</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
-
         <span class="k">return</span> <span class="n">E_kin_unbound</span></div>
 
 <div class="viewcode-block" id="Energy.calc_entropy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_entropy">[docs]</a>    <span class="k">def</span> <span class="nf">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">):</span>
@@ -1027,10 +1305,13 @@
         <span class="n">S</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># bound part</span>
-        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_S_orbs</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">lbound</span><span class="p">)</span>
+        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_S_orbs</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occ_weight</span><span class="p">)</span>
 
         <span class="c1"># unbound part</span>
-        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_S_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">lunbound</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
+            <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_S_unbound</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="c1"># total</span>
         <span class="n">S</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span>
@@ -1038,7 +1319,7 @@
         <span class="k">return</span> <span class="n">S</span></div>
 
 <div class="viewcode-block" id="Energy.calc_S_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_S_orbs</span><span class="p">(</span><span class="n">occnums</span><span class="p">,</span> <span class="n">lmat</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_S_orbs</span><span class="p">(</span><span class="n">occnums</span><span class="p">,</span> <span class="n">degen</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the KS (non-interacting) entropy for specified orbitals (see notes).</span>
 
@@ -1046,8 +1327,8 @@
 <span class="sd">        ----------</span>
 <span class="sd">        occnums : ndarray</span>
 <span class="sd">            orbital occupation numbers</span>
-<span class="sd">        lmat : ndarray</span>
-<span class="sd">            the degeneracy array (:math:`(2l+1)`)</span>
+<span class="sd">        degen : ndarray</span>
+<span class="sd">            product of dos and degeneracy array (:math:`(2l+1)`)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1059,26 +1340,19 @@
 <span class="sd">        The entropy of non-interacting (KS) electrons is given by:</span>
 
 <span class="sd">        .. math::</span>
-<span class="sd">            S_\mathrm{b} = -\sum_{s,l,n} (2l+1) [ f_{nls} \log(f_{nls}) \</span>
+<span class="sd">            S_\mathrm{b} = -\sum_{s,l,n} g_{ln} (2l+1) [ f_{nls} \log(f_{nls}) \</span>
 <span class="sd">                           + (1-f_{nls}) (\log(1-f_{nls}) ]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># the occupation numbers are stored as f&#39;_{nl}=f_{nl}*(2l+1)</span>
-        <span class="c1"># we first need to map them back to their &#39;pure&#39; form f_{nl}</span>
-        <span class="n">lmat_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">lmat</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
-            <span class="n">lmat_inv</span><span class="p">[:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
-
-        <span class="c1"># pure occupation numbers (with zeros replaced by finite values)</span>
-        <span class="n">occnums_pu</span> <span class="o">=</span> <span class="n">lmat_inv</span> <span class="o">*</span> <span class="n">occnums</span>
-        <span class="n">occnums_mod1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums_pu</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">occnums_pu</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
-        <span class="n">occnums_mod2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums_pu</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">occnums_pu</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="c1"># replace zeros in occupation numbers with finite numbers (for taking log)</span>
+        <span class="n">occnums_mod1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">occnums_mod2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 
         <span class="c1"># now compute the terms in the square bracket</span>
-        <span class="n">term1</span> <span class="o">=</span> <span class="n">occnums_pu</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">occnums_mod1</span><span class="p">)</span>
-        <span class="n">term2</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">occnums_pu</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">occnums_mod2</span><span class="p">)</span>
+        <span class="n">term1</span> <span class="o">=</span> <span class="n">occnums</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">occnums_mod1</span><span class="p">)</span>
+        <span class="n">term2</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">occnums</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">occnums_mod2</span><span class="p">)</span>
 
-        <span class="c1"># multiply by (2l+1) factor</span>
-        <span class="n">g_nls</span> <span class="o">=</span> <span class="n">lmat</span> <span class="o">*</span> <span class="p">(</span><span class="n">term1</span> <span class="o">+</span> <span class="n">term2</span><span class="p">)</span>
+        <span class="c1"># multiply by degeneracy (dos * (2l+1))</span>
+        <span class="n">g_nls</span> <span class="o">=</span> <span class="n">degen</span> <span class="o">*</span> <span class="p">(</span><span class="n">term1</span> <span class="o">+</span> <span class="n">term2</span><span class="p">)</span>
 
         <span class="c1"># sum over all quantum numbers to get the total entropy</span>
         <span class="n">S_orbs</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g_nls</span><span class="p">)</span>
@@ -1086,7 +1360,7 @@
         <span class="k">return</span> <span class="n">S_orbs</span></div>
 
 <div class="viewcode-block" id="Energy.calc_S_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_S_unbound</span><span class="p">(</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="n">lunbound</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_S_unbound</span><span class="p">():</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the unbound contribution to the entropy.</span>
 
@@ -1124,9 +1398,6 @@
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">S_unbound</span> <span class="o">+=</span> <span class="mf">0.0</span>
-
-        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
-            <span class="n">S_unbound</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_S_orbs</span><span class="p">(</span><span class="n">occnums_ub</span><span class="p">,</span> <span class="n">lunbound</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">S_unbound</span></div>
 
@@ -1262,7 +1533,7 @@
 <span class="sd">        Given by :math:`E=\sum_{nl\sigma} (2l+1) f_{nl}^\sigma \epsilon_{nl}^\sigma`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_eps</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums_w</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_eps</span>
 
     <span class="nd">@property</span>

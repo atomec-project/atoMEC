@@ -356,7 +356,7 @@
 
     <span class="nd">@unbound</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">unbound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unbound</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">check_unbound</span><span class="p">(</span><span class="n">unbound</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">ISModel</span><span class="o">.</span><span class="n">check_unbound</span><span class="p">(</span><span class="n">unbound</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unbound</span>
 
     <span class="nd">@property</span>
@@ -382,13 +382,18 @@
         <span class="n">grid_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">conv_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">band_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">force_bound</span><span class="o">=</span><span class="p">[],</span>
         <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">write_density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">write_potential</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">write_eigs_occs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">write_dos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">density_file</span><span class="o">=</span><span class="s2">&quot;density.csv&quot;</span><span class="p">,</span>
         <span class="n">potential_file</span><span class="o">=</span><span class="s2">&quot;potential.csv&quot;</span><span class="p">,</span>
+        <span class="n">eigs_occs_file</span><span class="o">=</span><span class="s2">&quot;eigs_occs.csv&quot;</span><span class="p">,</span>
+        <span class="n">dos_file</span><span class="o">=</span><span class="s2">&quot;dos.csv&quot;</span><span class="p">,</span>
         <span class="n">guess</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">guess_pot</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">):</span>
@@ -424,6 +429,12 @@
 <span class="sd">            `maxscf`  (``int``)   : maximum number of scf cycles,</span>
 <span class="sd">            `mixfrac` (``float``) : density mixing fraction</span>
 <span class="sd">            }</span>
+<span class="sd">        band_params : dict, optional</span>
+<span class="sd">            dictionary for band parameters as follows:</span>
+<span class="sd">            {</span>
+<span class="sd">            `nkpts`   (``int``)   : number of levels per band,</span>
+<span class="sd">            `de_min`   (``float``) : minimum energy gap to make a band</span>
+<span class="sd">            }</span>
 <span class="sd">        force_bound : list of list of ints, optional</span>
 <span class="sd">            force certain levels to be bound, for example:</span>
 <span class="sd">            `force_bound = [0, 1, 0]`</span>
@@ -449,6 +460,12 @@
 <span class="sd">        potential_file : str, optional</span>
 <span class="sd">            name of the file to write the potential to</span>
 <span class="sd">            default: `potential.csv`</span>
+<span class="sd">        eigs_occs_file : str, optional</span>
+<span class="sd">            filename for the orbital energies and occupations</span>
+<span class="sd">            default: `eigs_occs`</span>
+<span class="sd">        dos_file : str, optional</span>
+<span class="sd">            filename for the density-of-states and fd distribution</span>
+<span class="sd">            default: `dos`</span>
 <span class="sd">        guess : bool, optional</span>
 <span class="sd">            use coulomb pot (guess=False) or given pot (guess=True) as initial guess</span>
 <span class="sd">        guess_pot : numpy array, optional</span>
@@ -475,6 +492,7 @@
         <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_grid_params</span><span class="p">(</span><span class="n">grid_params</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">conv_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_conv_params</span><span class="p">(</span><span class="n">conv_params</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">scf_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_scf_params</span><span class="p">(</span><span class="n">scf_params</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">band_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_band_params</span><span class="p">(</span><span class="n">band_params</span><span class="p">)</span>
 
         <span class="c1"># experimental change</span>
         <span class="n">config</span><span class="o">.</span><span class="n">force_bound</span> <span class="o">=</span> <span class="n">force_bound</span>
@@ -490,7 +508,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">v_init</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
         <span class="n">v_s_old</span> <span class="o">=</span> <span class="n">v_init</span>  <span class="c1"># initialize the old potential</span>
-        <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_init</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_init</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># occupy orbitals</span>
         <span class="n">orbs</span><span class="o">.</span><span class="n">occupy</span><span class="p">()</span>
@@ -535,9 +553,9 @@
 
             <span class="c1"># update the orbitals with the KS potential</span>
             <span class="k">if</span> <span class="n">iscf</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_s</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_s</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_s</span><span class="p">)</span>
+                <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_s</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">)</span>
             <span class="n">orbs</span><span class="o">.</span><span class="n">occupy</span><span class="p">()</span>
 
             <span class="c1"># update old potential</span>
@@ -571,6 +589,14 @@
         <span class="c1"># write the potential to file</span>
         <span class="k">if</span> <span class="n">write_potential</span><span class="p">:</span>
             <span class="n">writeoutput</span><span class="o">.</span><span class="n">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">potential_file</span><span class="p">)</span>
+
+        <span class="c1"># write the eigs and their occs to file</span>
+        <span class="k">if</span> <span class="n">write_eigs_occs</span><span class="p">:</span>
+            <span class="n">writeoutput</span><span class="o">.</span><span class="n">eigs_occs_to_csv</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">eigs_occs_file</span><span class="p">)</span>
+
+        <span class="c1"># write the dos to file if using bands bc</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;bands&quot;</span> <span class="ow">and</span> <span class="n">write_dos</span><span class="p">:</span>
+            <span class="n">writeoutput</span><span class="o">.</span><span class="n">dos_to_csv</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">dos_file</span><span class="p">)</span>
 
         <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">energy</span><span class="p">,</span>
