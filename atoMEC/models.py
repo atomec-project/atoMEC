@@ -193,7 +193,7 @@ class ISModel:
 
     @unbound.setter
     def unbound(self, unbound):
-        self._unbound = check_inputs.ISModel.check_unbound(unbound)
+        self._unbound = check_inputs.ISModel.check_unbound(unbound, self.bc)
         config.unbound = self._unbound
 
     @property
@@ -219,13 +219,18 @@ class ISModel:
         grid_params={},
         conv_params={},
         scf_params={},
+        band_params={},
         force_bound=[],
         verbosity=0,
         write_info=True,
         write_density=True,
         write_potential=True,
+        write_eigs_occs=True,
+        write_dos=True,
         density_file="density.csv",
         potential_file="potential.csv",
+        eigs_occs_file="eigs_occs.csv",
+        dos_file="dos.csv",
         guess=False,
         guess_pot=0,
     ):
@@ -261,6 +266,12 @@ class ISModel:
             `maxscf`  (``int``)   : maximum number of scf cycles,
             `mixfrac` (``float``) : density mixing fraction
             }
+        band_params : dict, optional
+            dictionary for band parameters as follows:
+            {
+            `nkpts`   (``int``)   : number of levels per band,
+            `de_min`   (``float``) : minimum energy gap to make a band
+            }
         force_bound : list of list of ints, optional
             force certain levels to be bound, for example:
             `force_bound = [0, 1, 0]`
@@ -286,6 +297,12 @@ class ISModel:
         potential_file : str, optional
             name of the file to write the potential to
             default: `potential.csv`
+        eigs_occs_file : str, optional
+            filename for the orbital energies and occupations
+            default: `eigs_occs`
+        dos_file : str, optional
+            filename for the density-of-states and fd distribution
+            default: `dos`
         guess : bool, optional
             use coulomb pot (guess=False) or given pot (guess=True) as initial guess
         guess_pot : numpy array, optional
@@ -312,6 +329,7 @@ class ISModel:
         config.grid_params = check_inputs.EnergyCalcs.check_grid_params(grid_params)
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
+        config.band_params = check_inputs.EnergyCalcs.check_band_params(band_params)
 
         # experimental change
         config.force_bound = force_bound
@@ -327,7 +345,7 @@ class ISModel:
         else:
             v_init = staticKS.Potential.calc_v_en(xgrid)
         v_s_old = v_init  # initialize the old potential
-        orbs.compute(v_init, init=True, eig_guess=True)
+        orbs.compute(v_init, config.bc, init=True, eig_guess=True)
 
         # occupy orbitals
         orbs.occupy()
@@ -372,9 +390,9 @@ class ISModel:
 
             # update the orbitals with the KS potential
             if iscf < 3:
-                orbs.compute(v_s, eig_guess=True)
+                orbs.compute(v_s, config.bc, eig_guess=True)
             else:
-                orbs.compute(v_s)
+                orbs.compute(v_s, config.bc)
             orbs.occupy()
 
             # update old potential
@@ -408,6 +426,14 @@ class ISModel:
         # write the potential to file
         if write_potential:
             writeoutput.potential_to_csv(rgrid, pot, potential_file)
+
+        # write the eigs and their occs to file
+        if write_eigs_occs:
+            writeoutput.eigs_occs_to_csv(orbs, eigs_occs_file)
+
+        # write the dos to file if using bands bc
+        if config.bc == "bands" and write_dos:
+            writeoutput.dos_to_csv(orbs, dos_file)
 
         output_dict = {
             "energy": energy,
