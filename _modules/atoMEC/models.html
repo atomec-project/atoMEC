@@ -729,6 +729,9 @@
         <span class="n">pressureHa</span> <span class="o">=</span> <span class="o">-</span><span class="n">dFdR</span> <span class="o">*</span> <span class="n">dRdV</span>
         <span class="n">pressureGPa</span> <span class="o">=</span> <span class="n">pressureHa</span> <span class="o">*</span> <span class="n">unitconv</span><span class="o">.</span><span class="n">ha_to_gpa</span>
 
+        <span class="c1"># convert atom.radius back to its correct value</span>
+        <span class="n">atom</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">main_rad</span>
+
         <span class="n">pressurestat</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{p_ha:&lt;.6g}</span><span class="s2"> Ha / </span><span class="si">{p_gpa:&lt;.6g}</span><span class="s2"> GPa&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Electronic pressure&quot;</span><span class="p">,</span> <span class="n">p_ha</span><span class="o">=</span><span class="n">pressureHa</span><span class="p">,</span> <span class="n">p_gpa</span><span class="o">=</span><span class="n">pressureGPa</span>
         <span class="p">)</span>
