@@ -566,6 +566,9 @@ class ISModel:
         pressureHa = -dFdR * dRdV
         pressureGPa = pressureHa * unitconv.ha_to_gpa
 
+        # convert atom.radius back to its correct value
+        atom.radius = main_rad
+
         pressurestat = "{preamble:30s}: {p_ha:<.6g} Ha / {p_gpa:<.6g} GPa".format(
             preamble="Electronic pressure", p_ha=pressureHa, p_gpa=pressureGPa
         )
