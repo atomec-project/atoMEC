@@ -201,12 +201,14 @@
 
 <span class="sd">    It is typically used as a localization measure.</span>
 
-<span class="sd">    WARNING: the current definition in this version is not mathematically correct.</span>
-<span class="sd">    It does not include the proper contribution from the spherical harmonics</span>
-<span class="sd">    :math:`|Y_l^m(\theta,\phi)|^4`. This is omitted because it makes little difference</span>
-<span class="sd">    to the flavour of the results but complicates things. Currently, this function</span>
-<span class="sd">    does not correctly produce the expected limits (even if the spherical harmonic</span>
-<span class="sd">    contribution is correctly accounted for). Use at your own peril...</span>
+<span class="sd">    .. warning::</span>
+<span class="sd">       The current definition in this version is not mathematically correct.</span>
+<span class="sd">       It does not include the proper contribution from the spherical harmonics</span>
+<span class="sd">       :math:`|Y_l^m(\theta,\phi)|^4`. This is omitted because it makes little</span>
+<span class="sd">       difference to the flavour of the results but complicates things. Currently,</span>
+<span class="sd">       this function does not correctly produce the expected limits (even if the</span>
+<span class="sd">       spherical harmonic contribution is correctly accounted for). Use at your own</span>
+<span class="sd">       peril...</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># get the dimensions for the IPR matrix</span>
     <span class="n">spindims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
