@@ -38,6 +38,7 @@ from . import config
 from . import numerov
 from . import mathtools
 from . import xc
+from . import writeoutput
 
 
 # the logarithmic grid
@@ -248,6 +249,7 @@ class Orbitals:
 
         return
 
+    @writeoutput.timing
     def calc_bands(self, v, eigfuncs_l):
         """
         Compute the eigenfunctions which fill the energy bands.
@@ -274,35 +276,30 @@ class Orbitals:
         # the energy band
         e_gap_arr = self.eigvals_max - self.eigvals_min
 
-        # log grid
-        xgrid = self._xgrid
+        # make the energy array
+        e_arr = np.linspace(
+            self.eigvals_min, self.eigvals_max, config.band_params["nkpts"]
+        )
+
+        # propagate the numerov equation
+        eigfuncs = numerov.calc_wfns_e_grid(self._xgrid, v, e_arr)
+        eigvals = e_arr
 
         # assign the wavefunctions to their energy value
         for sp in range(config.spindims):
             for l in range(config.lmax):
                 for n in range(config.nmax):
 
-                    # create a temporary array for the energy band
-                    e_arr = np.linspace(
-                        self.eigvals_min[sp, l, n],
-                        self.eigvals_max[sp, l, n],
-                        config.band_params["nkpts"],
-                    )
-
                     # match the energy in the band to an energy that has been solved for
                     # first check the energy band is wide enough to solve for sub-levels
                     if e_gap_arr[sp, l, n] >= config.band_params["de_min"]:
-                        eigfuncs[:, sp, l, n] = numerov.num_propagate(
-                            xgrid, v[sp], l, e_arr
-                        )
-                        eigvals[:, sp, l, n] = e_arr
 
                         # make the integration weighting using trapezoid rule
                         # W_i = 0.5 * dE * (f_{i+1} - f_{i})
                         delta_E_plus = np.zeros((config.band_params["nkpts"]))
-                        delta_E_plus[1:] = e_arr[1:] - e_arr[:-1]
+                        delta_E_plus[1:] = e_arr[1:, sp, l, n] - e_arr[:-1, sp, l, n]
                         delta_E_minus = np.zeros((config.band_params["nkpts"]))
-                        delta_E_minus[:-1] = e_arr[1:] - e_arr[:-1]
+                        delta_E_minus[:-1] = e_arr[1:, sp, l, n] - e_arr[:-1, sp, l, n]
                         kpt_int_weight[:, sp, l, n] = 0.5 * (
                             delta_E_minus + delta_E_plus
                         )
