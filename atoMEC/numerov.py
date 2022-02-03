@@ -623,13 +623,14 @@ def calc_wfns_e_grid(xgrid, v, e_arr):
     # flatten energy array
     e_arr_flat = e_arr.flatten()
 
-    # initialize the flattened potential matrix
-    W_flat = np.zeros((N, len(e_arr_flat)))
+    # initialize the W (potential) and eigenfunction arrays
     W_arr = np.zeros((N, nkpts, spindims, lmax, nmax))
     eigfuncs_init = np.zeros_like(W_arr)
 
     # set up the flattened potential matrix
     # W = -2*exp(x)*(v - E) - (l + 1/2)**2
+    # FIXME: 4-nested loop is ugly and inefficient but
+    # this is not a very time critical part of the code
     for k in range(nkpts):
         for sp in range(spindims):
             for l in range(lmax):
@@ -640,7 +641,7 @@ def calc_wfns_e_grid(xgrid, v, e_arr):
                     )
                     eigfuncs_init[1, k, sp, l, n] = np.exp((l + 0.5) * (x0 + dx))
 
-    # flatten W_arr
+    # flatten arrays for input to
     W_flat = W_arr.reshape((N, len(e_arr_flat)))
     eigfuncs_init_flat = eigfuncs_init.reshape((N, len(e_arr_flat)))
 
@@ -662,12 +663,12 @@ def num_propagate_alt(xgrid, W, e_arr, eigfuncs_init):
     ----------
     xgrid : ndarray
         the logarithmic grid
-    v : ndarray
-        KS potential array
-    l : int
-        angular momentum value
-    e_arr : float
-        energy of the wavefunction
+    W : ndarray
+        flattened potential array (with angular momentum term)
+    e_arr : ndarray
+        flattened energy array
+    eigfuncs_init : ndarray
+        initial values for eigenfunctions
     Returns
     -------
     Psi_norm : ndarray
@@ -678,6 +679,7 @@ def num_propagate_alt(xgrid, W, e_arr, eigfuncs_init):
     h = (dx ** 2) / 12.0  # a parameter for the numerov integration
     N = np.size(xgrid)  # size of grid
 
+    # set the eigenfucntions to their initial values
     Psi = eigfuncs_init
 
     # Integration loop

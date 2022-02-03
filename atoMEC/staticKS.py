@@ -276,16 +276,18 @@ class Orbitals:
         # the energy band
         e_gap_arr = self.eigvals_max - self.eigvals_min
 
-        # make the energy array
+        # make the energy band array
         e_arr = np.linspace(
             self.eigvals_min, self.eigvals_max, config.band_params["nkpts"]
         )
 
         # propagate the numerov equation
         eigfuncs = numerov.calc_wfns_e_grid(self._xgrid, v, e_arr)
+
+        # eigenvalues by default are equal to the energy band array
         eigvals = e_arr
 
-        # assign the wavefunctions to their energy value
+        # make the delta_E array and fix eigenfunctions/values if gap too small for band
         for sp in range(config.spindims):
             for l in range(config.lmax):
                 for n in range(config.nmax):
