@@ -5,7 +5,7 @@ from scipy.signal import argrelmin, argrelmax
 from scipy import interpolate
 import numpy as np
 
-from atoMEC import staticKS, mathtools
+from atoMEC import staticKS, mathtools, config
 
 
 class ELFTools:
@@ -24,13 +24,16 @@ class ELFTools:
         the density object
     """
 
-    def __init__(self, orbitals, density):
-        self._eigfuncs = orbitals.eigfuncs
-        self._xgrid = orbitals._xgrid
+    def __init__(self, orbitals, density, method="orbitals"):
+        self._orbs = orbitals
+        self._density = density
+        self._eigfuncs = self._orbs.eigfuncs
+        self._xgrid = self._orbs._xgrid
+        self.method = method
 
         # density and occupation numbers have to include bound and free contributions
-        self._totdensity = density.bound["rho"] + density.unbound["rho"]
-        self._occnums_w = orbitals.occnums_w
+        self._totdensity = self._density.total
+        self._occnums_w = self._orbs.occnums_w
 
         # extrapolate the spin number and number of grid points
         spindims = np.shape(self._eigfuncs)[1]
@@ -49,6 +52,7 @@ class ELFTools:
                 self._occnums_w,
                 self._xgrid,
                 self._totdensity,
+                self.method,
             )
         return self._ELF
 
@@ -56,9 +60,12 @@ class ELFTools:
     def epdc(self):
         r"""ndarray: the electron pair density curvature."""
         if np.all(self._epdc == 0.0):
-            self._epdc = self.calc_epdc(
-                self._eigfuncs, self._occnums_w, self._xgrid, self._totdensity
-            )
+            if self.method == "orbitals":
+                self._epdc = self.calc_epdc(
+                    self._eigfuncs, self._occnums_w, self._xgrid, self._totdensity
+                )
+            elif self.method == "density":
+                self._epdc = self.calc_epdc_dens(self._xgrid, self._totdensity)
         return self._epdc
 
     @property
@@ -72,7 +79,7 @@ class ELFTools:
         return self._N_shell
 
     @staticmethod
-    def calc_ELF(eigfuncs, occnums, xgrid, density):
+    def calc_ELF(eigfuncs, occnums, xgrid, density, method="orbitals"):
         r"""
         Compute the ELF (see notes).
 
@@ -104,10 +111,13 @@ class ELFTools:
         electron gas (UEG) respectively.
         """
         # compute the UEG electron pair density curvature
-        D_0 = (3.0 / 5.0) * (6 * pi ** 2) ** (2.0 / 3.0) * (density) ** (5.0 / 3.0)
+        D_0 = (0.3) * (3 * pi ** 2) ** (2.0 / 3.0) * (density) ** (5.0 / 3.0)
 
         # compute the main electron pair density curvature
-        D = ELFTools.calc_epdc(eigfuncs, occnums, xgrid, density)
+        if method == "orbitals":
+            D = ELFTools.calc_epdc(eigfuncs, occnums, xgrid, density)
+        elif method == "density":
+            D = ELFTools.calc_epdc_dens(xgrid, density)
 
         # compute the ratio chi
         chi = D / D_0
@@ -154,7 +164,49 @@ class ELFTools:
         grad_dens = np.exp(-xgrid) * np.gradient(density, xgrid, axis=-1)
 
         # compute epdc
-        epdc = 2.0 * tau - 0.25 * (grad_dens) ** 2 / density
+        epdc = tau - 0.125 * (grad_dens) ** 2 / density
+
+        return epdc
+
+    @staticmethod
+    def calc_epdc_dens(xgrid, density):
+        r"""
+        Calculate the electron pair density curvature (see notes).
+
+        Parameters
+        ----------
+        xgrid : ndarray
+            the logarithmic grid
+        density : ndarray
+            the electron density
+
+        Returns
+        -------
+        epdc : ndarray
+            the electron pair density curvature
+
+        Notes
+        -----
+        The epdc is defined as
+
+        .. math::
+            D^\sigma(r) = tau^\sigma(r) - \frac{1}{8}\frac{(\grad\rho(r))^2)}{\rho(r)},
+
+        where :math:`\tau^\sigma(r)` is the local kinetic energy density.
+        """
+        # compute the density gradient using chain rule
+        grad_dens = np.exp(-xgrid) * np.gradient(density, xgrid, axis=-1)
+
+        # compute the laplacian of the density
+        lap_dens = np.exp(-3.0 * xgrid) * np.gradient(
+            np.exp(2 * xgrid) * grad_dens, xgrid, axis=-1
+        )
+
+        # compute the UEG electron pair density curvature
+        D_0 = (0.3) * (3 * pi ** 2) ** (2.0 / 3.0) * (density) ** (5.0 / 3.0)
+
+        # compute epdc
+        epdc = D_0 - (grad_dens) ** 2.0 / (9.0 * density) + lap_dens / 6.0
 
         return epdc
 
@@ -191,7 +243,6 @@ class ELFTools:
             xargs_0 = argrelmin(ELF[i])[0]
             # xargs_1 = argrelmax(ELF[i])[0]
             # xargs_0 = np.sort(np.concatenate((xargs_0, xargs_1)))
-            print(xargs_0)
             for xarg in xargs_0:
                 if ELF[i, xarg] < 1 - tol and ELF[i, xarg] > tol:
                     xargs_min[i].append(xarg)
@@ -239,6 +290,9 @@ class ELFTools:
 
                 # determine the part of the density lying between two minima
                 density_partition = density[i][xargs_min[i][j] : xargs_min[i][j + 1]]
+
+                # this will be going...
+                # ELF_partition = ELF[i][xargs_min[i][j] : xargs_min[i][j + 1]]
 
                 # integrate over the density between two minima
                 N_shell[i][j] = mathtools.int_sphere(density_partition, xgrid_partition)
@@ -363,3 +417,11 @@ def calc_IPR_mat(eigfuncs, xgrid):
                 IPR_mat[i, l, n] = mathtools.int_sphere(Psi4, xgrid)
 
     return IPR_mat
+
+
+def calc_IPR_density(xgrid, density):
+
+    numerator = mathtools.int_sphere(density ** 2, xgrid)
+    denominator = (mathtools.int_sphere(density, xgrid)) ** 2
+
+    return numerator / denominator
