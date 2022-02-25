@@ -287,31 +287,32 @@ class Orbitals:
         # eigenvalues by default are equal to the energy band array
         eigvals = e_arr
 
-        # make the delta_E array and fix eigenfunctions/values if gap too small for band
-        for sp in range(config.spindims):
-            for l in range(config.lmax):
-                for n in range(config.nmax):
+        # make the k point integral weighting
+        delta_E_plus = np.zeros_like(e_arr)
+        delta_E_plus[1:] = e_arr[1:] - e_arr[:-1]
+        delta_E_minus = np.zeros_like(e_arr)
+        delta_E_minus[:-1] = e_arr[1:] - e_arr[:-1]
+        kpt_int_weight = 0.5 * (delta_E_minus + delta_E_plus)
 
-                    # match the energy in the band to an energy that has been solved for
-                    # first check the energy band is wide enough to solve for sub-levels
-                    if e_gap_arr[sp, l, n] >= config.band_params["de_min"]:
+        # modify eigenvalues, kpt_int_weight and eigenfunctions when the gap is too
+        # small to be considered a band
+        eigvals = np.where(
+            e_gap_arr[np.newaxis, :] >= config.band_params["de_min"],
+            eigvals,
+            self.eigvals_min[np.newaxis, :],
+        )
 
-                        # make the integration weighting using trapezoid rule
-                        # W_i = 0.5 * dE * (f_{i+1} - f_{i})
-                        delta_E_plus = np.zeros((config.band_params["nkpts"]))
-                        delta_E_plus[1:] = e_arr[1:, sp, l, n] - e_arr[:-1, sp, l, n]
-                        delta_E_minus = np.zeros((config.band_params["nkpts"]))
-                        delta_E_minus[:-1] = e_arr[1:, sp, l, n] - e_arr[:-1, sp, l, n]
-                        kpt_int_weight[:, sp, l, n] = 0.5 * (
-                            delta_E_minus + delta_E_plus
-                        )
+        kpt_int_weight = np.where(
+            e_gap_arr[np.newaxis, :] >= config.band_params["de_min"],
+            kpt_int_weight,
+            1.0 / config.band_params["nkpts"],
+        )
 
-                    # when there are no distinct levels in a band
-                    # just assign lower eigenvalue and eigenfucntion
-                    else:
-                        eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
-                        eigvals[:, sp, l, n] = self.eigvals_min[sp, l, n]
-                        kpt_int_weight[:, sp, l, n] = 1.0 / config.band_params["nkpts"]
+        eigfuncs = np.where(
+            e_gap_arr[np.newaxis, :, :, :, np.newaxis] >= config.band_params["de_min"],
+            eigfuncs,
+            eigfuncs_l[np.newaxis, :],
+        )
 
         return eigvals, eigfuncs, kpt_int_weight
 
