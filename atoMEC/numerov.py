@@ -548,6 +548,7 @@ def calc_wfns_e_grid(xgrid, v, e_arr):
     This routine is used to propagate a set of orbitals defined with a fixed
     set of energies. It is used for the `bands` boundary condition in the
     `models.ISModel` class.
+
     Parameters
     ----------
     xgrid : ndarray
