@@ -249,7 +249,7 @@ class Orbitals:
 
         return
 
-    @writeoutput.timing
+    # @writeoutput.timing
     def calc_bands(self, v, eigfuncs_l):
         """
         Compute the eigenfunctions which fill the energy bands.
