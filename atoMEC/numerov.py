@@ -36,7 +36,8 @@ from joblib import Parallel, delayed, dump, load
 # internal libs
 from . import config
 from . import mathtools
-from . import writeoutput
+
+# from . import writeoutput
 
 
 def calc_eigs_min(v, xgrid, bc):
@@ -543,6 +544,7 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
 def calc_wfns_e_grid(xgrid, v, e_arr):
     """
     Compute all KS orbitals defined on the energy grid.
+
     This routine is used to propagate a set of orbitals defined with a fixed
     set of energies. It is used for the `bands` boundary condition in the
     `models.ISModel` class.

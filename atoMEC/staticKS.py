@@ -38,7 +38,8 @@ from . import config
 from . import numerov
 from . import mathtools
 from . import xc
-from . import writeoutput
+
+# from . import writeoutput
 
 
 # the logarithmic grid
