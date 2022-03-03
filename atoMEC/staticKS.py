@@ -619,6 +619,8 @@ class Density:
             "N": np.zeros((config.spindims)),
         }
 
+        self._MIS = 0.0
+
         self._orbs = orbs
 
     @property
@@ -654,6 +656,13 @@ class Density:
             if config.unbound == "ideal":
                 self._unbound = self.construct_rho_unbound()
         return self._unbound
+
+    @property
+    def MIS(self):
+        """ndarray: the mean ionization state."""
+        occs_pos = np.where(self._orbs.eigvals > 0, self._orbs.occnums_w, 0)
+        self._MIS = np.sum(occs_pos, axis=(0, 2, 3)) + self.unbound["N"]
+        return self._MIS
 
     @staticmethod
     def construct_rho_orbs(eigfuncs, occnums, xgrid):
