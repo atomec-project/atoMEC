@@ -1,11 +1,10 @@
 """Things related to electron localization."""
 
 from math import pi
-from scipy.signal import argrelmin, argrelmax
-from scipy import interpolate
+from scipy.signal import argrelmin
 import numpy as np
 
-from atoMEC import staticKS, mathtools, config
+from atoMEC import staticKS, mathtools
 
 
 class ELFTools:
