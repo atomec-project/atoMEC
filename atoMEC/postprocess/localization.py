@@ -304,70 +304,6 @@ class ELFTools:
         return N_shell
 
 
-class Projection:
-    def __init__(self, orbs, orbs_atom):
-
-        self.orbs = orbs
-        self.orbs_atom = orbs_atom
-        self.eigfuncs = orbs.eigfuncs
-        self.eigfuncs_atom = orbs_atom.eigfuncs
-        # self.eigfuncs_atom = np.ones_like(self.eigfuncs) * np.exp(orbs._xgrid / 2)
-        self.occnums = orbs.occnums_w
-        self.xgrid = orbs._xgrid
-        self.xgrid_atom = orbs_atom._xgrid
-        self._MIS = None
-        self._ovlap_mat = None
-
-    @property
-    def MIS(self):
-        self._MIS = self.calc_MIS(self.ovlap_mat, self.occnums)
-        return self._MIS
-
-    @property
-    def ovlap_mat(self):
-        self._ovlap_mat = self.overlap(
-            self.eigfuncs, self.eigfuncs_atom, self.xgrid, self.xgrid_atom
-        )
-        return self._ovlap_mat
-
-    @property
-    def ovlap_shells(self):
-        self._ovlap_shells = np.sum(self.ovlap_mat * self.occnums, axis=0)
-        return self._ovlap_shells
-
-    @staticmethod
-    def overlap(eigfuncs_a, eigfuncs_b, xgrid_a, xgrid_b):
-
-        # interpolate the reference orbs onto the smaller xgrid
-        func_interp = interpolate.interp1d(xgrid_b, eigfuncs_b, kind="cubic")
-        eigfuncs_b_new = func_interp(xgrid_a)
-
-        # renormalize the atomic orbitals
-        norm = (
-            4.0 * pi * np.trapz(np.exp(2.0 * xgrid_a) * eigfuncs_b_new ** 2, x=xgrid_a)
-        )
-        # eigfuncs_b_new = np.einsum("ijklm,ijkl->ijklm", eigfuncs_b_new, (norm) ** -0.5)
-
-        print(eigfuncs_b_new)
-        # compute the overlap integral
-        ovlap = (
-            4.0
-            * pi
-            * np.trapz(
-                np.exp(2.0 * xgrid_a) * np.abs(eigfuncs_a * eigfuncs_b_new), x=xgrid_a
-            )
-        )
-
-        return ovlap
-
-    @staticmethod
-    def calc_MIS(ovlap_mat, occnums_w):
-
-        MIS = np.sum(ovlap_mat * occnums_w)
-
-        return MIS
-
-
 def calc_IPR_mat(eigfuncs, xgrid):
     r"""
     Calculate the inverse participation ratio for all eigenfunctions (see notes).
@@ -417,11 +353,3 @@ def calc_IPR_mat(eigfuncs, xgrid):
                 IPR_mat[i, l, n] = mathtools.int_sphere(Psi4, xgrid)
 
     return IPR_mat
-
-
-def calc_IPR_density(xgrid, density):
-
-    numerator = mathtools.int_sphere(density ** 2, xgrid)
-    denominator = (mathtools.int_sphere(density, xgrid)) ** 2
-
-    return numerator / denominator
