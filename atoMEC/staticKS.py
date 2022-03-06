@@ -39,6 +39,8 @@ from . import numerov
 from . import mathtools
 from . import xc
 
+# from . import writeoutput
+
 
 # the logarithmic grid
 def log_grid(x_r):
@@ -248,6 +250,7 @@ class Orbitals:
 
         return
 
+    # @writeoutput.timing
     def calc_bands(self, v, eigfuncs_l):
         """
         Compute the eigenfunctions which fill the energy bands.
@@ -274,45 +277,43 @@ class Orbitals:
         # the energy band
         e_gap_arr = self.eigvals_max - self.eigvals_min
 
-        # log grid
-        xgrid = self._xgrid
+        # make the energy band array
+        e_arr = np.linspace(
+            self.eigvals_min, self.eigvals_max, config.band_params["nkpts"]
+        )
 
-        # assign the wavefunctions to their energy value
-        for sp in range(config.spindims):
-            for l in range(config.lmax):
-                for n in range(config.nmax):
+        # propagate the numerov equation
+        eigfuncs = numerov.calc_wfns_e_grid(self._xgrid, v, e_arr)
 
-                    # create a temporary array for the energy band
-                    e_arr = np.linspace(
-                        self.eigvals_min[sp, l, n],
-                        self.eigvals_max[sp, l, n],
-                        config.band_params["nkpts"],
-                    )
+        # eigenvalues by default are equal to the energy band array
+        eigvals = e_arr
 
-                    # match the energy in the band to an energy that has been solved for
-                    # first check the energy band is wide enough to solve for sub-levels
-                    if e_gap_arr[sp, l, n] >= config.band_params["de_min"]:
-                        eigfuncs[:, sp, l, n] = numerov.num_propagate(
-                            xgrid, v[sp], l, e_arr
-                        )
-                        eigvals[:, sp, l, n] = e_arr
+        # make the k point integral weighting
+        delta_E_plus = np.zeros_like(e_arr)
+        delta_E_plus[1:] = e_arr[1:] - e_arr[:-1]
+        delta_E_minus = np.zeros_like(e_arr)
+        delta_E_minus[:-1] = e_arr[1:] - e_arr[:-1]
+        kpt_int_weight = 0.5 * (delta_E_minus + delta_E_plus)
 
-                        # make the integration weighting using trapezoid rule
-                        # W_i = 0.5 * dE * (f_{i+1} - f_{i})
-                        delta_E_plus = np.zeros((config.band_params["nkpts"]))
-                        delta_E_plus[1:] = e_arr[1:] - e_arr[:-1]
-                        delta_E_minus = np.zeros((config.band_params["nkpts"]))
-                        delta_E_minus[:-1] = e_arr[1:] - e_arr[:-1]
-                        kpt_int_weight[:, sp, l, n] = 0.5 * (
-                            delta_E_minus + delta_E_plus
-                        )
+        # modify eigenvalues, kpt_int_weight and eigenfunctions when the gap is too
+        # small to be considered a band
+        eigvals = np.where(
+            e_gap_arr[np.newaxis, :] >= config.band_params["de_min"],
+            eigvals,
+            self.eigvals_min[np.newaxis, :],
+        )
 
-                    # when there are no distinct levels in a band
-                    # just assign lower eigenvalue and eigenfucntion
-                    else:
-                        eigfuncs[:, sp, l, n] = eigfuncs_l[sp, l, n]
-                        eigvals[:, sp, l, n] = self.eigvals_min[sp, l, n]
-                        kpt_int_weight[:, sp, l, n] = 1.0 / config.band_params["nkpts"]
+        kpt_int_weight = np.where(
+            e_gap_arr[np.newaxis, :] >= config.band_params["de_min"],
+            kpt_int_weight,
+            1.0 / config.band_params["nkpts"],
+        )
+
+        eigfuncs = np.where(
+            e_gap_arr[np.newaxis, :, :, :, np.newaxis] >= config.band_params["de_min"],
+            eigfuncs,
+            eigfuncs_l[np.newaxis, :],
+        )
 
         return eigvals, eigfuncs, kpt_int_weight
 
