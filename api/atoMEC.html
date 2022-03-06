@@ -1768,6 +1768,30 @@ The eigenvalue estimates are used in Scipy’s sparse eigenvalue solver
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.numerov.calc_wfns_e_grid">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">calc_wfns_e_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#calc_wfns_e_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.calc_wfns_e_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute all KS orbitals defined on the energy grid.</p>
+<p>This routine is used to propagate a set of orbitals defined with a fixed
+set of energies. It is used for the <cite>bands</cite> boundary condition in the
+<cite>models.ISModel</cite> class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the spatial (logarithmic) grid</p></li>
+<li><p><strong>v</strong> (<em>ndarray</em>) – the KS potential</p></li>
+<li><p><strong>e_arr</strong> (<em>ndarray</em>) – the energy grid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>eigfuncs_e</strong> – the KS orbitals with defined energies</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.diag_H">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">diag_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_guess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#diag_H"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.diag_H" title="Permalink to this definition">¶</a></dt>
 <dd><p>Diagonilize the Hamiltonian for the input potential v[p].</p>
@@ -1841,15 +1865,15 @@ Schrödinger’s equation, American Journal of Physics 80,
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.numerov.num_propagate">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">num_propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#num_propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.num_propagate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">num_propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigfuncs_init</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#num_propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.num_propagate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Propagate the wfn manually for fixed energy with numerov scheme.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
-<li><p><strong>v</strong> (<em>ndarray</em>) – KS potential array</p></li>
-<li><p><strong>l</strong> (<em>int</em>) – angular momentum value</p></li>
-<li><p><strong>e_arr</strong> (<em>float</em>) – energy of the wavefunction</p></li>
+<li><p><strong>W</strong> (<em>ndarray</em>) – flattened potential array (with angular momentum term)</p></li>
+<li><p><strong>e_arr</strong> (<em>ndarray</em>) – flattened energy array</p></li>
+<li><p><strong>eigfuncs_init</strong> (<em>ndarray</em>) – initial values for eigenfunctions</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

@@ -200,6 +200,8 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mathtools</span>
 
+<span class="c1"># from . import writeoutput</span>
+
 
 <div class="viewcode-block" id="calc_eigs_min"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.calc_eigs_min">[docs]</a><span class="k">def</span> <span class="nf">calc_eigs_min</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -701,7 +703,74 @@
     <span class="k">return</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">eigvals</span></div>
 
 
-<div class="viewcode-block" id="num_propagate"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.num_propagate">[docs]</a><span class="k">def</span> <span class="nf">num_propagate</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">e_arr</span><span class="p">):</span>
+<span class="c1"># @writeoutput.timing</span>
+<div class="viewcode-block" id="calc_wfns_e_grid"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.calc_wfns_e_grid">[docs]</a><span class="k">def</span> <span class="nf">calc_wfns_e_grid</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">e_arr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute all KS orbitals defined on the energy grid.</span>
+
+<span class="sd">    This routine is used to propagate a set of orbitals defined with a fixed</span>
+<span class="sd">    set of energies. It is used for the `bands` boundary condition in the</span>
+<span class="sd">    `models.ISModel` class.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        the spatial (logarithmic) grid</span>
+<span class="sd">    v : ndarray</span>
+<span class="sd">        the KS potential</span>
+<span class="sd">    e_arr : ndarray</span>
+<span class="sd">        the energy grid</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigfuncs_e : ndarray</span>
+<span class="sd">        the KS orbitals with defined energies</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># size of spaital grid</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># dimensions of e_arr</span>
+    <span class="n">nkpts</span><span class="p">,</span> <span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">e_arr</span><span class="p">)</span>
+
+    <span class="c1"># flatten energy array</span>
+    <span class="n">e_arr_flat</span> <span class="o">=</span> <span class="n">e_arr</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># initialize the W (potential) and eigenfunction arrays</span>
+    <span class="n">W_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">nkpts</span><span class="p">,</span> <span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+    <span class="n">eigfuncs_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">W_arr</span><span class="p">)</span>
+
+    <span class="c1"># set up the flattened potential matrix</span>
+    <span class="c1"># W = -2*exp(x)*(v - E) - (l + 1/2)^2</span>
+    <span class="c1"># first set up the v - E array (matching dimensions)</span>
+    <span class="n">v_E_arr</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">v</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> <span class="n">e_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># muptiply by -2*exp(x) term</span>
+    <span class="n">v_E_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;i,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">),</span> <span class="n">v_E_arr</span><span class="p">)</span>
+
+    <span class="c1"># add (l+1/2)^2 term and initial condition</span>
+    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">):</span>
+        <span class="n">W_arr</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_E_arr</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">eigfuncs_init</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">dx</span><span class="p">))</span>
+
+    <span class="c1"># flatten arrays for input to numerov propagation</span>
+    <span class="n">W_flat</span> <span class="o">=</span> <span class="n">W_arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_arr_flat</span><span class="p">)))</span>
+    <span class="n">eigfuncs_init_flat</span> <span class="o">=</span> <span class="n">eigfuncs_init</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_arr_flat</span><span class="p">)))</span>
+
+    <span class="c1"># solve numerov eqn for the wfns</span>
+    <span class="n">eigfuncs_flat</span> <span class="o">=</span> <span class="n">num_propagate</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">W_flat</span><span class="p">,</span> <span class="n">e_arr_flat</span><span class="p">,</span> <span class="n">eigfuncs_init_flat</span><span class="p">)</span>
+
+    <span class="c1"># reshape the eigenfucntions</span>
+    <span class="n">eigfuncs_e</span> <span class="o">=</span> <span class="n">eigfuncs_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">eigfuncs_e</span></div>
+
+
+<span class="c1"># @writeoutput.timing</span>
+<div class="viewcode-block" id="num_propagate"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.num_propagate">[docs]</a><span class="k">def</span> <span class="nf">num_propagate</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">e_arr</span><span class="p">,</span> <span class="n">eigfuncs_init</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Propagate the wfn manually for fixed energy with numerov scheme.</span>
 
@@ -709,12 +778,12 @@
 <span class="sd">    ----------</span>
 <span class="sd">    xgrid : ndarray</span>
 <span class="sd">        the logarithmic grid</span>
-<span class="sd">    v : ndarray</span>
-<span class="sd">        KS potential array</span>
-<span class="sd">    l : int</span>
-<span class="sd">        angular momentum value</span>
-<span class="sd">    e_arr : float</span>
-<span class="sd">        energy of the wavefunction</span>
+<span class="sd">    W : ndarray</span>
+<span class="sd">        flattened potential array (with angular momentum term)</span>
+<span class="sd">    e_arr : ndarray</span>
+<span class="sd">        flattened energy array</span>
+<span class="sd">    eigfuncs_init : ndarray</span>
+<span class="sd">        initial values for eigenfunctions</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    Psi_norm : ndarray</span>
@@ -722,19 +791,11 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># define some initial grid parameters</span>
     <span class="n">dx</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">x0</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">12.0</span>  <span class="c1"># a parameter for the numerov integration</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>  <span class="c1"># size of grid</span>
 
-    <span class="c1"># &#39;Potential&#39; for numerov integration</span>
-    <span class="n">W</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">-</span> <span class="n">e_arr</span><span class="p">)</span>
-        <span class="o">-</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Initial conditions</span>
-    <span class="n">Psi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">e_arr</span><span class="p">)))</span>  <span class="c1"># initialize the wfn</span>
-    <span class="n">Psi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">dx</span><span class="p">))</span>
+    <span class="c1"># set the eigenfucntions to their initial values</span>
+    <span class="n">Psi</span> <span class="o">=</span> <span class="n">eigfuncs_init</span>
 
     <span class="c1"># Integration loop</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>

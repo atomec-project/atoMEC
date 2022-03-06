@@ -202,6 +202,8 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mathtools</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">xc</span>
 
+<span class="c1"># from . import writeoutput</span>
+
 
 <span class="c1"># the logarithmic grid</span>
 <div class="viewcode-block" id="log_grid"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.log_grid">[docs]</a><span class="k">def</span> <span class="nf">log_grid</span><span class="p">(</span><span class="n">x_r</span><span class="p">):</span>
@@ -411,6 +413,7 @@
 
         <span class="k">return</span></div>
 
+    <span class="c1"># @writeoutput.timing</span>
 <div class="viewcode-block" id="Orbitals.calc_bands"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_bands">[docs]</a>    <span class="k">def</span> <span class="nf">calc_bands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the eigenfunctions which fill the energy bands.</span>
@@ -437,45 +440,43 @@
         <span class="c1"># the energy band</span>
         <span class="n">e_gap_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span>
 
-        <span class="c1"># log grid</span>
-        <span class="n">xgrid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span>
+        <span class="c1"># make the energy band array</span>
+        <span class="n">e_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_max</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
 
-        <span class="c1"># assign the wavefunctions to their energy value</span>
-        <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">):</span>
+        <span class="c1"># propagate the numerov equation</span>
+        <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_wfns_e_grid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">e_arr</span><span class="p">)</span>
 
-                    <span class="c1"># create a temporary array for the energy band</span>
-                    <span class="n">e_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">],</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_max</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">],</span>
-                        <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span>
-                    <span class="p">)</span>
+        <span class="c1"># eigenvalues by default are equal to the energy band array</span>
+        <span class="n">eigvals</span> <span class="o">=</span> <span class="n">e_arr</span>
 
-                    <span class="c1"># match the energy in the band to an energy that has been solved for</span>
-                    <span class="c1"># first check the energy band is wide enough to solve for sub-levels</span>
-                    <span class="k">if</span> <span class="n">e_gap_arr</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">]:</span>
-                        <span class="n">eigfuncs</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">num_propagate</span><span class="p">(</span>
-                            <span class="n">xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">sp</span><span class="p">],</span> <span class="n">l</span><span class="p">,</span> <span class="n">e_arr</span>
-                        <span class="p">)</span>
-                        <span class="n">eigvals</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_arr</span>
+        <span class="c1"># make the k point integral weighting</span>
+        <span class="n">delta_E_plus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">e_arr</span><span class="p">)</span>
+        <span class="n">delta_E_plus</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">e_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">e_arr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">delta_E_minus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">e_arr</span><span class="p">)</span>
+        <span class="n">delta_E_minus</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">e_arr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">kpt_int_weight</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta_E_minus</span> <span class="o">+</span> <span class="n">delta_E_plus</span><span class="p">)</span>
 
-                        <span class="c1"># make the integration weighting using trapezoid rule</span>
-                        <span class="c1"># W_i = 0.5 * dE * (f_{i+1} - f_{i})</span>
-                        <span class="n">delta_E_plus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]))</span>
-                        <span class="n">delta_E_plus</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">e_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">e_arr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="n">delta_E_minus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]))</span>
-                        <span class="n">delta_E_minus</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">e_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">e_arr</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="n">kpt_int_weight</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
-                            <span class="n">delta_E_minus</span> <span class="o">+</span> <span class="n">delta_E_plus</span>
-                        <span class="p">)</span>
+        <span class="c1"># modify eigenvalues, kpt_int_weight and eigenfunctions when the gap is too</span>
+        <span class="c1"># small to be considered a band</span>
+        <span class="n">eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">e_gap_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">],</span>
+            <span class="n">eigvals</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span>
+        <span class="p">)</span>
 
-                    <span class="c1"># when there are no distinct levels in a band</span>
-                    <span class="c1"># just assign lower eigenvalue and eigenfucntion</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">eigfuncs</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">eigfuncs_l</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span>
-                        <span class="n">eigvals</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigvals_min</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span>
-                        <span class="n">kpt_int_weight</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">]</span>
+        <span class="n">kpt_int_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">e_gap_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">],</span>
+            <span class="n">kpt_int_weight</span><span class="p">,</span>
+            <span class="mf">1.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">e_gap_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">],</span>
+            <span class="n">eigfuncs</span><span class="p">,</span>
+            <span class="n">eigfuncs_l</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">kpt_int_weight</span></div>
 
