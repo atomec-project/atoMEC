@@ -282,8 +282,7 @@ class SCF:
         output_str += self.write_final_energies(energy) + spc
 
         # write the chemical potential and mean ionization state
-        occs_pos = np.where(orbitals.eigvals > 0, orbitals.occnums_w, 0)
-        N_ub = np.sum(occs_pos, axis=(0, 2, 3)) + density.unbound["N"]
+        N_ub = density.MIS
 
         if config.spindims == 2:
             mu_str = "Chemical potential (u/d)"
