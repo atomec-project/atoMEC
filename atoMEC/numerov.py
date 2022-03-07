@@ -37,6 +37,8 @@ from joblib import Parallel, delayed, dump, load
 from . import config
 from . import mathtools
 
+# from . import writeoutput
+
 
 def calc_eigs_min(v, xgrid, bc):
     """
@@ -538,7 +540,74 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     return eigfuncs, eigvals
 
 
-def num_propagate(xgrid, v, l, e_arr):
+# @writeoutput.timing
+def calc_wfns_e_grid(xgrid, v, e_arr):
+    """
+    Compute all KS orbitals defined on the energy grid.
+
+    This routine is used to propagate a set of orbitals defined with a fixed
+    set of energies. It is used for the `bands` boundary condition in the
+    `models.ISModel` class.
+
+    Parameters
+    ----------
+    xgrid : ndarray
+        the spatial (logarithmic) grid
+    v : ndarray
+        the KS potential
+    e_arr : ndarray
+        the energy grid
+    Returns
+    -------
+    eigfuncs_e : ndarray
+        the KS orbitals with defined energies
+    """
+    # size of spaital grid
+    N = np.size(xgrid)
+
+    dx = xgrid[1] - xgrid[0]
+    x0 = xgrid[0]
+
+    # dimensions of e_arr
+    nkpts, spindims, lmax, nmax = np.shape(e_arr)
+
+    # flatten energy array
+    e_arr_flat = e_arr.flatten()
+
+    # initialize the W (potential) and eigenfunction arrays
+    W_arr = np.zeros((N, nkpts, spindims, lmax, nmax))
+    eigfuncs_init = np.zeros_like(W_arr)
+
+    # set up the flattened potential matrix
+    # W = -2*exp(x)*(v - E) - (l + 1/2)^2
+    # first set up the v - E array (matching dimensions)
+    v_E_arr = (
+        np.transpose(v)[:, np.newaxis, :, np.newaxis, np.newaxis] - e_arr[np.newaxis, :]
+    )
+
+    # muptiply by -2*exp(x) term
+    v_E_arr = np.einsum("i,ijklm->ijklm", -2.0 * np.exp(2.0 * xgrid), v_E_arr)
+
+    # add (l+1/2)^2 term and initial condition
+    for l in range(lmax):
+        W_arr[:, :, :, l] = v_E_arr[:, :, :, l] - (l + 0.5) ** 2
+        eigfuncs_init[1, :, :, l] = np.exp((l + 0.5) * (x0 + dx))
+
+    # flatten arrays for input to numerov propagation
+    W_flat = W_arr.reshape((N, len(e_arr_flat)))
+    eigfuncs_init_flat = eigfuncs_init.reshape((N, len(e_arr_flat)))
+
+    # solve numerov eqn for the wfns
+    eigfuncs_flat = num_propagate(xgrid, W_flat, e_arr_flat, eigfuncs_init_flat)
+
+    # reshape the eigenfucntions
+    eigfuncs_e = eigfuncs_flat.reshape((nkpts, spindims, lmax, nmax, N))
+
+    return eigfuncs_e
+
+
+# @writeoutput.timing
+def num_propagate(xgrid, W, e_arr, eigfuncs_init):
     """
     Propagate the wfn manually for fixed energy with numerov scheme.
 
@@ -546,12 +615,12 @@ def num_propagate(xgrid, v, l, e_arr):
     ----------
     xgrid : ndarray
         the logarithmic grid
-    v : ndarray
-        KS potential array
-    l : int
-        angular momentum value
-    e_arr : float
-        energy of the wavefunction
+    W : ndarray
+        flattened potential array (with angular momentum term)
+    e_arr : ndarray
+        flattened energy array
+    eigfuncs_init : ndarray
+        initial values for eigenfunctions
     Returns
     -------
     Psi_norm : ndarray
@@ -559,19 +628,11 @@ def num_propagate(xgrid, v, l, e_arr):
     """
     # define some initial grid parameters
     dx = xgrid[1] - xgrid[0]
-    x0 = xgrid[0]
     h = (dx ** 2) / 12.0  # a parameter for the numerov integration
     N = np.size(xgrid)  # size of grid
 
-    # 'Potential' for numerov integration
-    W = (
-        -2.0 * np.exp(2.0 * xgrid[:, np.newaxis]) * (v[:, np.newaxis] - e_arr)
-        - (l + 0.5) ** 2
-    )
-
-    # Initial conditions
-    Psi = np.zeros((N, len(e_arr)))  # initialize the wfn
-    Psi[1] = np.exp((l + 0.5) * (x0 + dx))
+    # set the eigenfucntions to their initial values
+    Psi = eigfuncs_init
 
     # Integration loop
     for i in range(2, N):
