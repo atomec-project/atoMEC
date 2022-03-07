@@ -152,7 +152,7 @@ class ELFTools:
         The epdc is defined as
 
         .. math::
-            D^\sigma(r) = \tau^\sigma(r) - \frac{1}{8}\frac{|nabla\rho(r)|^2}{\rho(r)},
+            D^\sigma(r) = \tau^\sigma(r) - \frac{1}{8}\frac{|\nabla\rho(r)|^2}{\rho(r)},
 
         where :math:`\tau^\sigma(r)` is the local kinetic energy density.
         """
