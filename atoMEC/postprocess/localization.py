@@ -19,7 +19,7 @@ class ELFTools:
     ----------
     orbitals : staticKS.Orbitals
         the orbitals object
-    density : staticKS.Denstity
+    density : staticKS.Density
         the density object
     """
 
@@ -102,7 +102,7 @@ class ELFTools:
         -----
         The ELF is defined as
 
-        .. math:: \mathrm{ELF}^\sigma(r) = \frac{1}{1 + chi^\sigma^2(r)}\,, \\
+        .. math:: \mathrm{ELF}^\sigma(r) = \frac{1}{1 + (\chi^\sigma(r))^2}\,, \\
             \chi^\sigma(r) = D^\sigma(r) / D^\sigma_0(r),
 
         where :math:`D^\sigma(r)` and :math:`D^\sigma_0(r)` are the electron
@@ -152,7 +152,7 @@ class ELFTools:
         The epdc is defined as
 
         .. math::
-            D^\sigma(r) = \tau^\sigma(r) - \frac{1}{8}\frac{(\nabla\rho(r))^2)}{\rho(r)},
+            D^\sigma(r) = \tau^\sigma(r) - \frac{1}{8}\frac{|nabla\rho(r)|^2}{\rho(r)},
 
         where :math:`\tau^\sigma(r)` is the local kinetic energy density.
         """
@@ -189,7 +189,7 @@ class ELFTools:
         The epdc is defined as
 
         .. math::
-            D^\sigma(r) = D_0^\sigma(r) - \frac{1}{9}\frac{(\nabla\rho(r))^2)}{\rho(r)}\
+            D^\sigma(r) = D_0^\sigma(r) - \frac{1}{9}\frac{|\nabla\rho(r)|^2}{\rho(r)}\
             + \frac{1}{6} \nabla^2 \rho(r),
 
         where :math:`D_0^\sigma(r)=(3/10)(3\pi^2)^{2/3} \rho^{5/3}(r)`
