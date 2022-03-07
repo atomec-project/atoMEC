@@ -1246,10 +1246,17 @@
             <span class="c1"># compute the gradient of the orbitals</span>
             <span class="n">grad_eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
+            <span class="c1"># compute the (l+1/2) component</span>
+            <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
+                <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
+            <span class="p">)</span>
+            <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span>
+
             <span class="c1"># chain rule to convert from dP_dx to dX_dr</span>
-            <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad_eigfuncs</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">eigfuncs</span><span class="p">)</span>
+            <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad_eigfuncs</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">lhalf_orbs</span><span class="p">)</span>
 
             <span class="c1"># square it</span>
+            <span class="c1"># grad_orbs_sq = np.einsum(&quot;k,ijklm-&gt;ijklm&quot;, l_arr, grad_orbs ** 2.0)</span>
             <span class="n">grad_orbs_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span> <span class="o">**</span> <span class="mf">2.0</span>
 
             <span class="c1"># multiply and sum over occupation numbers</span>

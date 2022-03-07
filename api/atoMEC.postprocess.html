@@ -1,0 +1,468 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>atoMEC.postprocess package &mdash; atoMEC  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/atoMEC_favicon.png"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="atoMEC package" href="atoMEC.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> atoMEC
+          
+
+          
+            
+            <img src="../_static/atoMEC_horizontal1.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">atoMEC</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="atoMEC.html">atoMEC package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="atoMEC.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">atoMEC.postprocess package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.check_inputs">atoMEC.check_inputs module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.config">atoMEC.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.convergence">atoMEC.convergence module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.mathtools">atoMEC.mathtools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.models">atoMEC.models module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.numerov">atoMEC.numerov module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.staticKS">atoMEC.staticKS module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.unitconv">atoMEC.unitconv module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.writeoutput">atoMEC.writeoutput module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC.xc">atoMEC.xc module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.html#module-atoMEC">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">atoMEC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">atoMEC</a> &raquo;</li>
+        
+          <li><a href="atoMEC.html">atoMEC package</a> &raquo;</li>
+        
+      <li>atoMEC.postprocess package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com//atomec-project/atoMEC/blob/develop/docs/source/api/atoMEC.postprocess.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="atomec-postprocess-package">
+<h1>atoMEC.postprocess package<a class="headerlink" href="#atomec-postprocess-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-atoMEC.postprocess.localization">
+<span id="atomec-postprocess-localization-module"></span><h2>atoMEC.postprocess.localization module<a class="headerlink" href="#module-atoMEC.postprocess.localization" title="Permalink to this headline">¶</a></h2>
+<p>Things related to electron localization.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.localization.</span></span><span class="sig-name descname"><span class="pre">ELFTools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbitals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'orbitals'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#ELFTools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>ELF is the electron localization function, a measure of electron localization.</p>
+<p>It can be used as a tool for qualitative insight as well as an additional method to
+compute the mean ionization state. This class contains routines to compute the ELF
+and other related useful properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>orbitals</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><em>staticKS.Orbitals</em></a>) – the orbitals object</p></li>
+<li><p><strong>density</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><em>staticKS.Density</em></a>) – the density object</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools.calc_ELF">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_ELF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'orbitals'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#ELFTools.calc_ELF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools.calc_ELF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the ELF (see notes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the (modified) KS eigenfunctions <span class="math notranslate nohighlight">\(P(x)=\exp(x/2)X(x)\)</span></p></li>
+<li><p><strong>occnums</strong> (<em>ndarray</em>) – the orbital occupations</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em>) – the electron density</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>ELF</strong> – the electron localization function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The ELF is defined as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathrm{ELF}^\sigma(r) = \frac{1}{1 + (\chi^\sigma(r))^2}\,, \\
+\chi^\sigma(r) = D^\sigma(r) / D^\sigma_0(r),\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(D^\sigma(r)\)</span> and <span class="math notranslate nohighlight">\(D^\sigma_0(r)\)</span> are the electron
+pair density functions for the system of interest and the uniform
+electron gas (UEG) respectively.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools.calc_N_shell">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_N_shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xargs_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELF</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#ELFTools.calc_N_shell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools.calc_N_shell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the number of electrons in each shell from the ELF.</p>
+<p>The number of electrons per shell is determined by integrating
+the electron density between successive minima of the ELF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xargs_min</strong> (<em>list</em>) – list of minima, as well as the first and last points</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em>) – the electron density</p></li>
+<li><p><strong>ELF</strong> (<em>ndarray</em>) – the electron localization function</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>N_shell</strong> – list of the number of electrons per shell</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools.calc_epdc">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_epdc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#ELFTools.calc_epdc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools.calc_epdc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the electron pair density curvature (see notes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the (modified) KS eigenfunctions <span class="math notranslate nohighlight">\(P(x)=\exp(x/2)X(x)\)</span></p></li>
+<li><p><strong>occnums</strong> (<em>ndarray</em>) – the orbital occupations</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em>) – the electron density</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>epdc</strong> – the electron pair density curvature</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The epdc is defined as</p>
+<div class="math notranslate nohighlight">
+\[D^\sigma(r) = \tau^\sigma(r) - \frac{1}{8}\frac{|\nabla\rho(r)|^2}{\rho(r)},\]</div>
+<p>where <span class="math notranslate nohighlight">\(\tau^\sigma(r)\)</span> is the local kinetic energy density.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools.calc_epdc_dens">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_epdc_dens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#ELFTools.calc_epdc_dens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools.calc_epdc_dens" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the electron pair density curvature (see notes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em>) – the electron density</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>epdc</strong> – the electron pair density curvature</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The epdc is defined as</p>
+<div class="math notranslate nohighlight">
+\[D^\sigma(r) = D_0^\sigma(r) - \frac{1}{9}\frac{|\nabla\rho(r)|^2}{\rho(r)}\
++ \frac{1}{6} \nabla^2 \rho(r),\]</div>
+<p>where <span class="math notranslate nohighlight">\(D_0^\sigma(r)=(3/10)(3\pi^2)^{2/3} \rho^{5/3}(r)\)</span>
+is the epdc for the UEG.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools.get_minima">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">get_minima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ELF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#ELFTools.get_minima"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools.get_minima" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the locations of the minima of the ELF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ELF</strong> (<em>ndarray</em>) – the electron localization function</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>xargs_min</strong> – list of locations of the minima and first and last points</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of ints</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools.ELF">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">ELF</span></span><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools.ELF" title="Permalink to this definition">¶</a></dt>
+<dd><p>the electron localization function for a given system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools.N_shell">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">N_shell</span></span><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools.N_shell" title="Permalink to this definition">¶</a></dt>
+<dd><p>the number of electrons in each ‘shell’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools.epdc">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">epdc</span></span><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools.epdc" title="Permalink to this definition">¶</a></dt>
+<dd><p>the electron pair density curvature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.calc_IPR_mat">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.localization.</span></span><span class="sig-name descname"><span class="pre">calc_IPR_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#calc_IPR_mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.calc_IPR_mat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the inverse participation ratio for all eigenfunctions (see notes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – transformed radial KS orbitals <span class="math notranslate nohighlight">\(P_{nl}(x)=\exp(x/2)X_{nl}(x)\)</span></p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>IPR_mat</strong> – the matrix of all IPR values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The inverse participation ratio for a state <cite>i</cite> is usually defined as</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{IPR}_i = \int \mathrm{d}{\mathbf{r}} |\Psi_i(\mathbf{r})|^4\]</div>
+<p>It is typically used as a localization measure.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The current definition in this version is not mathematically correct.
+It does not include the proper contribution from the spherical harmonics
+<span class="math notranslate nohighlight">\(|Y_l^m(\theta,\phi)|^4\)</span>. This is omitted as it makes little difference
+to the flavour of the results but complicates things. Currently, this function
+does not correctly produce the expected limits (even if the spherical harmonic
+contribution is correctly accounted for). Use at your own peril…</p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-atoMEC.postprocess">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-atoMEC.postprocess" title="Permalink to this headline">¶</a></h2>
+<p>Everything that depends on the output from an SCF calculation.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="atoMEC.html" class="btn btn-neutral float-left" title="atoMEC package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, CASUS.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -45,6 +45,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="atoMEC.postprocess package" href="atoMEC.postprocess.html" />
     <link rel="prev" title="atoMEC" href="modules.html" /> 
 </head>
 
@@ -97,6 +98,10 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">atoMEC</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">atoMEC package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="atoMEC.postprocess.html">atoMEC.postprocess package</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.check_inputs">atoMEC.check_inputs module</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
@@ -119,28 +124,24 @@
 <li class="toctree-l4"><a class="reference internal" href="#id5">Functions</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.postprocess">atoMEC.postprocess module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id9">Functions</a></li>
-</ul>
-</li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.staticKS">atoMEC.staticKS module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id10">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id11">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.unitconv">atoMEC.unitconv module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.writeoutput">atoMEC.writeoutput module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id20">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id21">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id19">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id20">Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.xc">atoMEC.xc module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id22">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id23">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id21">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id22">Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC">Module contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id24">Classes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id23">Classes</a></li>
 </ul>
 </li>
 </ul>
@@ -220,6 +221,19 @@
             
   <div class="section" id="atomec-package">
 <h1>atoMEC package<a class="headerlink" href="#atomec-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="atoMEC.postprocess.html">atoMEC.postprocess package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#module-atoMEC.postprocess.localization">atoMEC.postprocess.localization module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#module-atoMEC.postprocess">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -1910,59 +1924,14 @@ Schrödinger’s equation, American Journal of Physics 80,
 
 </div>
 </div>
-<div class="section" id="module-atoMEC.postprocess">
-<span id="atomec-postprocess-module"></span><h2>atoMEC.postprocess module<a class="headerlink" href="#module-atoMEC.postprocess" title="Permalink to this headline">¶</a></h2>
-<p>Module containing routines to post-process data from AA calculations.</p>
-<div class="section" id="id9">
-<h3>Functions<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">IPR</span></code> : Holds the inverse participation ratio, derived quantities and                  the routines required to compute them.</p></li>
-</ul>
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.postprocess.calc_IPR_mat">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.</span></span><span class="sig-name descname"><span class="pre">calc_IPR_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess.html#calc_IPR_mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.calc_IPR_mat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the inverse participation ratio for all eigenfunctions (see notes).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – transformed radial KS orbitals <span class="math notranslate nohighlight">\(P_{nl}(x)=\exp(x/2)X_{nl}(x)\)</span></p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>IPR_mat</strong> – the matrix of all IPR values</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>The inverse participation ratio for a state <cite>i</cite> is usually defined as</p>
-<div class="math notranslate nohighlight">
-\[\mathrm{IPR}_i = \int \mathrm{d}{\mathbf{r}} |\Psi_i(\mathbf{r})|^4\]</div>
-<p>It is typically used as a localization measure.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The current definition in this version is not mathematically correct.
-It does not include the proper contribution from the spherical harmonics
-<span class="math notranslate nohighlight">\(|Y_l^m(\theta,\phi)|^4\)</span>. This is omitted because it makes little
-difference to the flavour of the results but complicates things. Currently,
-this function does not correctly produce the expected limits (even if the
-spherical harmonic contribution is correctly accounted for). Use at your own
-peril…</p>
-</div>
-</dd></dl>
-
-</div>
-</div>
 <div class="section" id="module-atoMEC.staticKS">
 <span id="atomec-staticks-module"></span><h2>atoMEC.staticKS module<a class="headerlink" href="#module-atoMEC.staticKS" title="Permalink to this headline">¶</a></h2>
 <p>The staticKS module handles time-indepenent KS quantities such as the KS orbitals.</p>
 <p>This module is a ‘workhouse’ for much of the average-atom functionality.
 Computation of static KS quantities is designed to be quite general.
 The main assumption used everywhere is that we have a logarithmically spaced grid.</p>
-<div class="section" id="id10">
-<h3>Classes<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h3>Classes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Orbitals</span></code></a> : Holds the KS orbitals (transformed to the log grid) and related                       quantities such as eigenvalues and occupation numbers</p></li>
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><code class="xref py py-class docutils literal notranslate"><span class="pre">Density</span></code></a> : Holds the KS density (bound/unbound components) and routines                      to compute it.</p></li>
@@ -1971,8 +1940,8 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 <li><p><a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> : Holds the free energy and all internal components (KS                        quantities and entropy) and the routines required to compute                        them. N.B. the <a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> class constructs the energy                        functional in an alternative manner to the main <a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a>                        class.</p></li>
 </ul>
 </div>
-<div class="section" id="id11">
-<h3>Functions<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id10">
+<h3>Functions<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.staticKS.log_grid" title="atoMEC.staticKS.log_grid"><code class="xref py py-func docutils literal notranslate"><span class="pre">log_grid()</span></code></a> : Sets up the logarithmic (and associated real-space) grid on which                      all computations rely.</p></li>
 </ul>
@@ -2179,21 +2148,21 @@ This routine is a wrapper calling the respective functions.</p>
 </dl>
 <p class="rubric">Notes</p>
 <p>The methods ‘A’ and ‘B’ in this function are given according to the definitions
-in <a class="footnote-reference brackets" href="#id15" id="id12">3</a> and <a class="footnote-reference brackets" href="#id16" id="id13">4</a>.</p>
+in <a class="footnote-reference brackets" href="#id14" id="id11">3</a> and <a class="footnote-reference brackets" href="#id15" id="id12">4</a>.</p>
 <p>They of course (should) both integrate to the same kinetic energy. The
 definition ‘B’ is the one used in the usual definition of the electron
-localization function <a class="footnote-reference brackets" href="#id17" id="id14">5</a>.</p>
+localization function <a class="footnote-reference brackets" href="#id16" id="id13">5</a>.</p>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
-<dt class="label" id="id15"><span class="brackets"><a class="fn-backref" href="#id12">3</a></span></dt>
+<dt class="label" id="id14"><span class="brackets"><a class="fn-backref" href="#id11">3</a></span></dt>
 <dd><p>H. Jiang, The local kinetic energy density revisited,
 New J. Phys. 22 103050 (2020), <a class="reference external" href="https://doi.org/10.1088/1367-2630/abbf5d">DOI:10.1088/1367-2630/abbf5d</a>.</p>
 </dd>
-<dt class="label" id="id16"><span class="brackets"><a class="fn-backref" href="#id13">4</a></span></dt>
+<dt class="label" id="id15"><span class="brackets"><a class="fn-backref" href="#id12">4</a></span></dt>
 <dd><p>L. Cohen, Local kinetic energy in quantum mechanics,
 J. Chem. Phys. 70, 788 (1979), <a class="reference external" href="https://doi.org/10.1063/1.437511">DOI:10.1063/1.437511</a>.</p>
 </dd>
-<dt class="label" id="id17"><span class="brackets"><a class="fn-backref" href="#id14">5</a></span></dt>
+<dt class="label" id="id16"><span class="brackets"><a class="fn-backref" href="#id13">5</a></span></dt>
 <dd><p>A. Savin et al., Electron Localization in Solid-State Structures of the
 Elements: the Diamond Structure, Angew. Chem. Int. Ed. Engl. 31: 187-188
 (1992), <a class="reference external" href="https://doi.org/10.1002/anie.199201871">DOI:10.1002/anie.199201871</a>.</p>
@@ -2652,7 +2621,7 @@ the functional form of the DOS.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.make_DOS_bands">
 <em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">make_DOS_bands</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigs_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_max</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigvals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals.make_DOS_bands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals.make_DOS_bands" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the density-of-states using the method of Massacrier (see notes, <a class="footnote-reference brackets" href="#id19" id="id18">6</a>).</p>
+<dd><p>Compute the density-of-states using the method of Massacrier (see notes, <a class="footnote-reference brackets" href="#id18" id="id17">6</a>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -2677,7 +2646,7 @@ the functional form of the DOS.</p>
 <p>where <span class="math notranslate nohighlight">\(\epsilon^\pm\)</span> are the upper and lower band limits respectively.</p>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
-<dt class="label" id="id19"><span class="brackets"><a class="fn-backref" href="#id18">6</a></span></dt>
+<dt class="label" id="id18"><span class="brackets"><a class="fn-backref" href="#id17">6</a></span></dt>
 <dd><p>Massacrier, G. et al, Reconciling ionization energies and band gaps of
 warm dense matter derived with ab initio simulations and average atom models,
 Physical Review Research 3.2 (2021): 023026.
@@ -2973,14 +2942,14 @@ and exchange + correlation respectively.</p>
 <div class="section" id="module-atoMEC.writeoutput">
 <span id="atomec-writeoutput-module"></span><h2>atoMEC.writeoutput module<a class="headerlink" href="#module-atoMEC.writeoutput" title="Permalink to this headline">¶</a></h2>
 <p>Contains the routines which generate printed output (to screen and separate files).</p>
-<div class="section" id="id20">
-<h3>Classes<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id19">
+<h3>Classes<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.SCF" title="atoMEC.writeoutput.SCF"><code class="xref py py-class docutils literal notranslate"><span class="pre">SCF</span></code></a> : Write information about the self-consistent field (SCF) cycle.</p></li>
 </ul>
 </div>
-<div class="section" id="id21">
-<h3>Functions<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id20">
+<h3>Functions<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.write_atomic_data" title="atoMEC.writeoutput.write_atomic_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_atomic_data()</span></code></a> : Write information about the main Atom object.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.writeoutput.write_ISModel_data" title="atoMEC.writeoutput.write_ISModel_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_ISModel_data()</span></code></a> : Write information about the IS model.</p></li>
@@ -3216,14 +3185,14 @@ and formatted occupation numbers table occnum_tbl</p>
 <p>Mostly it sets up inputs and makes appropriate calls to the libxc package.
 It also includes a class for customized xc-functionals and checks the
 validity of inputs.</p>
-<div class="section" id="id22">
-<h3>Classes<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id21">
+<h3>Classes<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-class docutils literal notranslate"><span class="pre">XCFunc</span></code></a> : handles atoMEC-defined functionals (not part of libxc package)</p></li>
 </ul>
 </div>
-<div class="section" id="id23">
-<h3>Functions<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id22">
+<h3>Functions<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.xc.check_xc_func" title="atoMEC.xc.check_xc_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_xc_func()</span></code></a> : check the xc func input is recognised and valid for atoMEC</p></li>
 <li><p><a class="reference internal" href="#atoMEC.xc.set_xc_func" title="atoMEC.xc.set_xc_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_xc_func()</span></code></a>   : initialize the xc functional object</p></li>
@@ -3374,8 +3343,8 @@ All rights reserved.</p>
 phenomena such as in warm dense matter.
 Please see the README or the project wiki (<a class="reference external" href="https://atomec-project.github.io/atoMEC/">https://atomec-project.github.io/atoMEC/</a>)
 for more information.</p>
-<div class="section" id="id24">
-<h3>Classes<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id23">
+<h3>Classes<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> : the main object for atoMEC calculations, containing information                   about physical material properties</p></li>
 </ul>
@@ -3607,6 +3576,7 @@ where <span class="math notranslate nohighlight">\(a_i\)</span> is the average i
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="atoMEC.postprocess.html" class="btn btn-neutral float-right" title="atoMEC.postprocess package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="modules.html" class="btn btn-neutral float-left" title="atoMEC" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

@@ -1,0 +1,567 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>atoMEC.postprocess.localization &mdash; atoMEC  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/atoMEC_favicon.png"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> atoMEC
+          
+
+          
+            
+            <img src="../../../_static/atoMEC_horizontal1.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">atoMEC</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">atoMEC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../../atoMEC.html">atoMEC</a> &raquo;</li>
+        
+      <li>atoMEC.postprocess.localization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for atoMEC.postprocess.localization</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Things related to electron localization.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">argrelmin</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">atoMEC</span> <span class="kn">import</span> <span class="n">staticKS</span><span class="p">,</span> <span class="n">mathtools</span>
+
+
+<div class="viewcode-block" id="ELFTools"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools">[docs]</a><span class="k">class</span> <span class="nc">ELFTools</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ELF is the electron localization function, a measure of electron localization.</span>
+
+<span class="sd">    It can be used as a tool for qualitative insight as well as an additional method to</span>
+<span class="sd">    compute the mean ionization state. This class contains routines to compute the ELF</span>
+<span class="sd">    and other related useful properties.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    orbitals : staticKS.Orbitals</span>
+<span class="sd">        the orbitals object</span>
+<span class="sd">    density : staticKS.Density</span>
+<span class="sd">        the density object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;orbitals&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span> <span class="o">=</span> <span class="n">orbitals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_density</span> <span class="o">=</span> <span class="n">density</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigfuncs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">_xgrid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+
+        <span class="c1"># density and occupation numbers have to include bound and free contributions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="o">.</span><span class="n">total</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">occnums_w</span>
+
+        <span class="c1"># extrapolate the spin number and number of grid points</span>
+        <span class="n">spindims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">ngrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">)[</span><span class="mi">4</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ELF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">spindims</span><span class="p">,</span> <span class="n">ngrid</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">spindims</span><span class="p">,</span> <span class="n">ngrid</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_N_shell</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ELF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the electron localization function for a given system.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ELF</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ELF</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_ELF</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ELF</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">epdc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the electron pair density curvature.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;orbitals&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_epdc</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;density&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_epdc_dens</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">N_shell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the number of electrons in each &#39;shell&#39;.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_shell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xargs_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_minima</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ELF</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_N_shell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_N_shell</span><span class="p">(</span>
+                <span class="n">xargs_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ELF</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_shell</span>
+
+<div class="viewcode-block" id="ELFTools.calc_ELF"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.calc_ELF">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_ELF</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;orbitals&quot;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the ELF (see notes).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eigfuncs : ndarray</span>
+<span class="sd">            the (modified) KS eigenfunctions :math:`P(x)=\exp(x/2)X(x)`</span>
+<span class="sd">        occnums : ndarray</span>
+<span class="sd">            the orbital occupations</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            the logarithmic grid</span>
+<span class="sd">        density : ndarray</span>
+<span class="sd">            the electron density</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ELF : ndarray</span>
+<span class="sd">            the electron localization function</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The ELF is defined as</span>
+
+<span class="sd">        .. math:: \mathrm{ELF}^\sigma(r) = \frac{1}{1 + (\chi^\sigma(r))^2}\,, \\</span>
+<span class="sd">            \chi^\sigma(r) = D^\sigma(r) / D^\sigma_0(r),</span>
+
+<span class="sd">        where :math:`D^\sigma(r)` and :math:`D^\sigma_0(r)` are the electron</span>
+<span class="sd">        pair density functions for the system of interest and the uniform</span>
+<span class="sd">        electron gas (UEG) respectively.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># compute the UEG electron pair density curvature</span>
+        <span class="n">D_0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">5.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
+
+        <span class="c1"># compute the main electron pair density curvature</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;orbitals&quot;</span><span class="p">:</span>
+            <span class="n">D</span> <span class="o">=</span> <span class="n">ELFTools</span><span class="o">.</span><span class="n">calc_epdc</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;density&quot;</span><span class="p">:</span>
+            <span class="n">D</span> <span class="o">=</span> <span class="n">ELFTools</span><span class="o">.</span><span class="n">calc_epdc_dens</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">)</span>
+
+        <span class="c1"># compute the ratio chi</span>
+        <span class="n">chi</span> <span class="o">=</span> <span class="n">D</span> <span class="o">/</span> <span class="n">D_0</span>
+
+        <span class="c1"># compute the ELF</span>
+        <span class="n">ELF</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">chi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ELF</span></div>
+
+<div class="viewcode-block" id="ELFTools.calc_epdc"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.calc_epdc">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_epdc</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the electron pair density curvature (see notes).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eigfuncs : ndarray</span>
+<span class="sd">            the (modified) KS eigenfunctions :math:`P(x)=\exp(x/2)X(x)`</span>
+<span class="sd">        occnums : ndarray</span>
+<span class="sd">            the orbital occupations</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            the logarithmic grid</span>
+<span class="sd">        density : ndarray</span>
+<span class="sd">            the electron density</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        epdc : ndarray</span>
+<span class="sd">            the electron pair density curvature</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The epdc is defined as</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            D^\sigma(r) = \tau^\sigma(r) - \frac{1}{8}\frac{|\nabla\rho(r)|^2}{\rho(r)},</span>
+
+<span class="sd">        where :math:`\tau^\sigma(r)` is the local kinetic energy density.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># first compute the contribution from the KED</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">)</span>
+
+        <span class="c1"># compute the density gradient using chain rule</span>
+        <span class="n">grad_dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># compute epdc</span>
+        <span class="n">epdc</span> <span class="o">=</span> <span class="n">tau</span> <span class="o">-</span> <span class="mf">0.125</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad_dens</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">density</span>
+
+        <span class="k">return</span> <span class="n">epdc</span></div>
+
+<div class="viewcode-block" id="ELFTools.calc_epdc_dens"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.calc_epdc_dens">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_epdc_dens</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the electron pair density curvature (see notes).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            the logarithmic grid</span>
+<span class="sd">        density : ndarray</span>
+<span class="sd">            the electron density</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        epdc : ndarray</span>
+<span class="sd">            the electron pair density curvature</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The epdc is defined as</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            D^\sigma(r) = D_0^\sigma(r) - \frac{1}{9}\frac{|\nabla\rho(r)|^2}{\rho(r)}\</span>
+<span class="sd">            + \frac{1}{6} \nabla^2 \rho(r),</span>
+
+<span class="sd">        where :math:`D_0^\sigma(r)=(3/10)(3\pi^2)^{2/3} \rho^{5/3}(r)`</span>
+<span class="sd">        is the epdc for the UEG.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># compute the density gradient using chain rule</span>
+        <span class="n">grad_dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># compute the laplacian of the density</span>
+        <span class="n">lap_dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">grad_dens</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="c1"># compute the UEG electron pair density curvature</span>
+        <span class="n">D_0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">5.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
+
+        <span class="c1"># compute epdc</span>
+        <span class="n">epdc</span> <span class="o">=</span> <span class="n">D_0</span> <span class="o">-</span> <span class="p">(</span><span class="n">grad_dens</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">9.0</span> <span class="o">*</span> <span class="n">density</span><span class="p">)</span> <span class="o">+</span> <span class="n">lap_dens</span> <span class="o">/</span> <span class="mf">6.0</span>
+
+        <span class="k">return</span> <span class="n">epdc</span></div>
+
+<div class="viewcode-block" id="ELFTools.get_minima"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.get_minima">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_minima</span><span class="p">(</span><span class="n">ELF</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the locations of the minima of the ELF.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ELF : ndarray</span>
+<span class="sd">            the electron localization function</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            the logarithmic grid</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xargs_min : list of ints</span>
+<span class="sd">            list of locations of the minima and first and last points</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># tolerance for determining whether something is a &quot;true minimum&quot;</span>
+        <span class="c1"># FIXME: might be a better way of doing this</span>
+        <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-3</span>
+        <span class="n">spindims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">ELF</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># initialize list for the min args</span>
+        <span class="k">if</span> <span class="n">spindims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">xargs_min</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">xargs_min</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="c1"># search for the minimum arguments</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="n">xargs_0</span> <span class="o">=</span> <span class="n">argrelmin</span><span class="p">(</span><span class="n">ELF</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># xargs_1 = argrelmax(ELF[i])[0]</span>
+            <span class="c1"># xargs_0 = np.sort(np.concatenate((xargs_0, xargs_1)))</span>
+            <span class="k">for</span> <span class="n">xarg</span> <span class="ow">in</span> <span class="n">xargs_0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ELF</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">xarg</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">tol</span> <span class="ow">and</span> <span class="n">ELF</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">xarg</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+                    <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xarg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">spindims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">xargs_min</span></div>
+
+<div class="viewcode-block" id="ELFTools.calc_N_shell"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.calc_N_shell">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calc_N_shell</span><span class="p">(</span><span class="n">xargs_min</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">ELF</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the number of electrons in each shell from the ELF.</span>
+
+<span class="sd">        The number of electrons per shell is determined by integrating</span>
+<span class="sd">        the electron density between successive minima of the ELF.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xargs_min : list</span>
+<span class="sd">            list of minima, as well as the first and last points</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            the logarithmic grid</span>
+<span class="sd">        density : ndarray</span>
+<span class="sd">            the electron density</span>
+<span class="sd">        ELF : ndarray</span>
+<span class="sd">            the electron localization function</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        N_shell : list of floats</span>
+<span class="sd">            list of the number of electrons per shell</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spindims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xargs_min</span><span class="p">)</span>
+        <span class="n">N_shell</span> <span class="o">=</span> <span class="n">xargs_min</span>  <span class="c1"># initialize N_shell with the right shape</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+
+                <span class="c1"># determine the part of the xgrid lying between two minima</span>
+                <span class="n">xgrid_partition</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="p">:</span> <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+
+                <span class="c1"># determine the part of the density lying between two minima</span>
+                <span class="n">density_partition</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="p">:</span> <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+
+                <span class="c1"># this will be going...</span>
+                <span class="c1"># ELF_partition = ELF[i][xargs_min[i][j] : xargs_min[i][j + 1]]</span>
+
+                <span class="c1"># integrate over the density between two minima</span>
+                <span class="n">N_shell</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">density_partition</span><span class="p">,</span> <span class="n">xgrid_partition</span><span class="p">)</span>
+
+        <span class="c1"># delete the last element in N_shell (superfluous)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="n">N_shell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">N_shell</span></div></div>
+
+
+<div class="viewcode-block" id="calc_IPR_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.calc_IPR_mat">[docs]</a><span class="k">def</span> <span class="nf">calc_IPR_mat</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the inverse participation ratio for all eigenfunctions (see notes).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eigfuncs : ndarray</span>
+<span class="sd">        transformed radial KS orbitals :math:`P_{nl}(x)=\exp(x/2)X_{nl}(x)`</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        the logarithmic grid</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    IPR_mat : ndarray</span>
+<span class="sd">        the matrix of all IPR values</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The inverse participation ratio for a state `i` is usually defined as</span>
+
+<span class="sd">    .. math:: \mathrm{IPR}_i = \int \mathrm{d}{\mathbf{r}} |\Psi_i(\mathbf{r})|^4</span>
+
+<span class="sd">    It is typically used as a localization measure.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">       The current definition in this version is not mathematically correct.</span>
+<span class="sd">       It does not include the proper contribution from the spherical harmonics</span>
+<span class="sd">       :math:`|Y_l^m(\theta,\phi)|^4`. This is omitted as it makes little difference</span>
+<span class="sd">       to the flavour of the results but complicates things. Currently, this function</span>
+<span class="sd">       does not correctly produce the expected limits (even if the spherical harmonic</span>
+<span class="sd">       contribution is correctly accounted for). Use at your own peril...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get the dimensions for the IPR matrix</span>
+    <span class="n">spindims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">lmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">IPR_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+
+    <span class="c1"># compute the IPR matrix</span>
+    <span class="c1"># FIXME: add spherical harmonic term</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmax</span><span class="p">):</span>
+                <span class="c1"># compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)</span>
+                <span class="n">Psi4</span> <span class="o">=</span> <span class="n">eigfuncs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+                <span class="c1"># integrate over sphere</span>
+                <span class="n">IPR_mat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">Psi4</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">IPR_mat</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, CASUS.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,6 +1,14 @@
 atoMEC package
 ==============
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   atoMEC.postprocess
+
 Submodules
 ----------
 
@@ -48,14 +56,6 @@ atoMEC.numerov module
 ---------------------
 
 .. automodule:: atoMEC.numerov
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-atoMEC.postprocess module
--------------------------
-
-.. automodule:: atoMEC.postprocess
    :members:
    :undoc-members:
    :show-inheritance:

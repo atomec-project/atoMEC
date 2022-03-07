@@ -1,0 +1,21 @@
+atoMEC.postprocess package
+==========================
+
+Submodules
+----------
+
+atoMEC.postprocess.localization module
+--------------------------------------
+
+.. automodule:: atoMEC.postprocess.localization
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: atoMEC.postprocess
+   :members:
+   :undoc-members:
+   :show-inheritance:
