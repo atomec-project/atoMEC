@@ -1,16 +1,13 @@
 name: docs
 
 on:
-  pull_request_review:
-    types: [submitted,edited]
   pull_request:
     branches:
       - master
       - develop
-      - documentation
   push:
     branches:
-      - documentation
+      - master
       - develop
 
 jobs:
@@ -63,7 +60,7 @@ jobs:
           mv -v docs/_build/html public
 
       - name: Deploy
-        if: ${{ github.event.review.state == 'approved' || github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
