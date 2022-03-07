@@ -329,12 +329,14 @@ def calc_IPR_mat(eigfuncs, xgrid):
 
     It is typically used as a localization measure.
 
-    WARNING: the current definition in this version is not mathematically correct.
-    It does not include the proper contribution from the spherical harmonics
-    :math:`|Y_l^m(\theta,\phi)|^4`. This is omitted because it makes little difference
-    to the flavour of the results but complicates things. Currently, this function
-    does not correctly produce the expected limits (even if the spherical harmonic
-    contribution is correctly accounted for). Use at your own peril...
+    .. warning::
+       The current definition in this version is not mathematically correct.
+       It does not include the proper contribution from the spherical harmonics
+       :math:`|Y_l^m(\theta,\phi)|^4`. This is omitted because it makes little difference
+       to the flavour of the results but complicates things. Currently, this function
+       does not correctly produce the expected limits (even if the spherical harmonic
+       contribution is correctly accounted for). Use at your own peril...
+
     """
     # get the dimensions for the IPR matrix
     spindims = np.shape(eigfuncs)[0]
