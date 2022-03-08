@@ -12,7 +12,7 @@ on:
 
 jobs:
   python-style-checks:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -36,7 +36,7 @@ jobs:
 
   build-and-deploy-pages:
     needs: python-style-checks
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
