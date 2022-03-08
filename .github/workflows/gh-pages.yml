@@ -51,7 +51,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r docs/requirements.txt
+          #pip install -q -r docs/requirements.txt
+          pip install docutils myst-parser Sphinx sphinx-rtd-theme
 
       - name: Check docs for broken links
         run: |
