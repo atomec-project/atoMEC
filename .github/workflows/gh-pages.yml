@@ -66,6 +66,7 @@ jobs:
                                   fonts-freefont-otf \
                                   gsfonts \
                                   latexmk \
+                                  texlive \
                                   texlive-latex-extra
 
       - name: Generate LaTeX code to check for errors
@@ -73,8 +74,9 @@ jobs:
           cd docs
           make apidocs
           make latex
-          cd _build/latex
-          latexmk -pdf -halt-on-error
+          #cd _build/latex
+          #latexmk -pdf -halt-on-error
+          make latexpdf
 
       - name: Build API and docs
         run: |
