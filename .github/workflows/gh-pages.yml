@@ -51,12 +51,21 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -q -r docs/requirements.txt
+          pip install -r docs/requirements.txt
 
       - name: Check docs for broken links
         run: |
           cd docs
           make linkcheck
+
+      - name: Install ghostscript, its fonts and latexmk
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ghostscript \
+                                  fonts-freefont-otf \
+                                  gsfonts \
+                                  latexmk \
+                                  texlive-latex-extra
 
       - name: Generate LaTeX code to check for errors
         run: |
