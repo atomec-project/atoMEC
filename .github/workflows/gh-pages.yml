@@ -58,6 +58,14 @@ jobs:
           cd docs
           make linkcheck
 
+      - name: Generate LaTeX code to check for errors
+        run: |
+          cd docs
+          make apidocs
+          make latex
+          cd _build/latex
+          latexmk -pdf -halt-on-error
+
       - name: Build API and docs
         run: |
           sphinx-apidoc -o docs/source/api atoMEC
