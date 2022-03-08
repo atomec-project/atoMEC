@@ -53,6 +53,11 @@ jobs:
         run: |
           pip install -q -r docs/requirements.txt
 
+      - name: Check docs for broken links
+        run: |
+          cd docs
+          make linkcheck
+
       - name: Build API and docs
         run: |
           sphinx-apidoc -o docs/source/api atoMEC
