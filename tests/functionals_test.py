@@ -58,7 +58,7 @@ class Test_funcs:
         """
 
         # set up the atom
-        Be_at = Atom("Na", 0.25, radius=2.0, write_info=False)
+        Na_at = Atom("Na", 0.25, radius=2.0, write_info=False)
 
         if func == "lda":
             xfunc_id = "lda_x"
@@ -74,7 +74,7 @@ class Test_funcs:
             cfunc_id = "None"
 
         model = models.ISModel(
-            Be_at,
+            Na_at,
             unbound="quantum",
             write_info=False,
             xfunc_id=xfunc_id,
