@@ -10,12 +10,10 @@ from atoMEC import Atom, models, config
 import pytest
 import numpy as np
 
-# parallel
-config.numcores = -1
 
 # expected values and tolerance
 unbound_expected = -10.091898
-accuracy = 10 * config.conv_params["econv"]
+accuracy = 1e-3
 
 
 class Test_unbound:
@@ -26,6 +24,9 @@ class Test_unbound:
     """
 
     def test_bcs(self):
+
+        # parallel
+        config.numcores = 1
 
         assert np.isclose(self._run(), unbound_expected, atol=accuracy)
 
@@ -41,15 +42,19 @@ class Test_unbound:
         """
 
         # set up the atom and model
-        Be_at = Atom("He", 25, radius=6.0, units_temp="eV", write_info=False)
+        Be_at = Atom(
+            "He",
+            25,
+            radius=3.17506,
+            units_temp="eV",
+            units_radius="angstrom",
+            write_info=False,
+        )
         model = models.ISModel(Be_at, unbound="ideal", write_info=False)
 
         # run the SCF calculation
         output = model.CalcEnergy(
-            3,
-            3,
-            scf_params={"maxscf": 3},
-            write_info=False,
+            3, 3, scf_params={"maxscf": 3}, write_info=False, force_bound=[[0, 0, 0]]
         )
 
         # extract the total free energy
