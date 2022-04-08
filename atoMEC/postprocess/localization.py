@@ -58,13 +58,12 @@ class ELFTools:
     @property
     def epdc(self):
         r"""ndarray: the electron pair density curvature."""
-        if np.all(self._epdc == 0.0):
-            if self.method == "orbitals":
-                self._epdc = self.calc_epdc(
-                    self._eigfuncs, self._occnums_w, self._xgrid, self._totdensity
-                )
-            elif self.method == "density":
-                self._epdc = self.calc_epdc_dens(self._xgrid, self._totdensity)
+        if self.method == "orbitals":
+            self._epdc = self.calc_epdc(
+                self._eigfuncs, self._occnums_w, self._xgrid, self._totdensity
+            )
+        elif self.method == "density":
+            self._epdc = self.calc_epdc_dens(self._xgrid, self._totdensity)
         return self._epdc
 
     @property
@@ -339,20 +338,22 @@ def calc_IPR_mat(eigfuncs, xgrid):
 
     """
     # get the dimensions for the IPR matrix
-    spindims = np.shape(eigfuncs)[0]
-    lmax = np.shape(eigfuncs)[1]
-    nmax = np.shape(eigfuncs)[2]
+    nkpts = np.shape(eigfuncs)[0]
+    spindims = np.shape(eigfuncs)[1]
+    lmax = np.shape(eigfuncs)[2]
+    nmax = np.shape(eigfuncs)[3]
 
-    IPR_mat = np.zeros((spindims, lmax, nmax))
+    IPR_mat = np.zeros((nkpts, spindims, lmax, nmax))
 
     # compute the IPR matrix
     # FIXME: add spherical harmonic term
-    for i in range(spindims):
-        for l in range(lmax):
-            for n in range(nmax):
-                # compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)
-                Psi4 = eigfuncs[i, l, n, :] ** 4.0 * np.exp(-2 * xgrid)
-                # integrate over sphere
-                IPR_mat[i, l, n] = mathtools.int_sphere(Psi4, xgrid)
+    for k in range(nkpts):
+        for sp in range(spindims):
+            for l in range(lmax):
+                for n in range(nmax):
+                    # compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)
+                    Psi4 = eigfuncs[k, sp, l, n, :] ** 4.0 * np.exp(-2 * xgrid)
+                    # integrate over sphere
+                    IPR_mat[k, sp, l, n] = mathtools.int_sphere(Psi4, xgrid)
 
     return IPR_mat
