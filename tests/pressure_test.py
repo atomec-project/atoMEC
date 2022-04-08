@@ -10,8 +10,6 @@ from atoMEC import Atom, models, config
 import pytest
 import numpy as np
 
-# parallel
-config.numcores = -1
 
 # expected values and tolerance
 pressure_expected = 0.013395564
@@ -26,6 +24,9 @@ class Test_pressure:
     """
 
     def test_bcs(self):
+
+        # parallel
+        config.numcores = -1
 
         assert np.isclose(self._run(), pressure_expected, atol=accuracy)
 
@@ -42,7 +43,9 @@ class Test_pressure:
 
         # set up the atom and model
         Li_at = Atom("Li", 10, radius=2.5, units_temp="eV", write_info=False)
-        model = models.ISModel(Li_at, unbound="quantum", write_info=False)
+        model = models.ISModel(
+            Li_at, unbound="quantum", write_info=False, v_shift=False
+        )
 
         # run the SCF calculation
         output = model.CalcEnergy(
@@ -50,6 +53,7 @@ class Test_pressure:
             3,
             scf_params={"maxscf": 3},
             write_info=False,
+            verbosity=1,
         )
 
         pressure = model.CalcPressure(Li_at, output)

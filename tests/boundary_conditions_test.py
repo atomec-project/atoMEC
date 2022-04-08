@@ -10,14 +10,12 @@ from atoMEC import Atom, models, config
 import pytest
 import numpy as np
 
-# parallel
-config.numcores = -1
 
 # expected values and tolerance
 dirichlet_expected = -14.080034
 neumann_expected = -15.161942
 bands_expected = -14.731577
-accuracy = 10 * config.conv_params["econv"]
+accuracy = 1e-3
 
 
 class Test_bcs:
@@ -37,10 +35,13 @@ class Test_bcs:
     )
     def test_bcs(self, test_input, expected):
 
-        assert np.isclose(self.__run(test_input), expected, atol=accuracy)
+        # parallel
+        config.numcores = -1
+
+        assert np.isclose(self._run(test_input), expected, atol=accuracy)
 
     @staticmethod
-    def __run(bc):
+    def _run(bc):
         """
         Run an SCF calculation for a Be Atom with given boundary condition.
 

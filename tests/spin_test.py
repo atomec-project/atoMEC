@@ -10,13 +10,11 @@ from atoMEC import Atom, models, config
 import pytest
 import numpy as np
 
-# parallel
-config.numcores = -1
 
 # expected values and tolerance
 singlet_expected = -37.6906246
 triplet_expected = -37.6732473
-accuracy = 10 * config.conv_params["econv"]
+accuracy = 1e-3
 
 
 class Test_spinmag:
@@ -34,6 +32,9 @@ class Test_spinmag:
         ],
     )
     def test_bcs(self, test_input, expected):
+
+        # parallel
+        config.numcores = -1
 
         assert np.isclose(self._run(test_input), expected, atol=accuracy)
 
@@ -68,9 +69,10 @@ class Test_spinmag:
         output = model.CalcEnergy(
             4,
             5,
-            scf_params={"maxscf": 4},
+            scf_params={"maxscf": 4, "mixfrac": 0.3},
             band_params={"nkpts": 50},
             write_info=True,
+            grid_params={"ngrid": 1000},
         )
 
         # extract the total free energy

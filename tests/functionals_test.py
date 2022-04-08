@@ -10,15 +10,13 @@ from atoMEC import Atom, models, config
 import pytest
 import numpy as np
 
-# parallel
-config.numcores = -1
 
 # expected values and tolerance
 lda_expected = -159.210841
 gdsmfb_expected = -159.154166
 no_xc_expected = -145.019411
 no_hxc_expected = -249.507728
-accuracy = 10 * config.conv_params["econv"]
+accuracy = 1e-3
 
 
 class Test_funcs:
@@ -38,6 +36,9 @@ class Test_funcs:
         ],
     )
     def test_bcs(self, test_input, expected):
+
+        # parallel
+        config.numcores = -1
 
         assert np.isclose(self.__run(test_input), expected, atol=accuracy)
 
