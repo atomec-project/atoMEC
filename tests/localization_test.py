@@ -1,49 +1,44 @@
 #!/usr/bin/env python3
 """
-Boundary conditions test
+Test localization module.
 
-Runs an SCF calculation with the three possible boundary conditions,
-and checks the total free energy.
+Checks output from the ELF class and IPR funcs is as expected under various inputs.
 """
 
 from atoMEC import Atom, models, config
 from atoMEC.postprocess import localization
 import pytest
 from pytest_lazyfixture import lazy_fixture
-import functools
 import numpy as np
 
 
 # expected values and tolerance
-orbitals_expected = 1.1035
-density_expected = 2.1266
-IPR_expected = 78.2132
-epdc_orbs_expected = 0.7096
-epdc_dens_expected = 0.7096
+orbitals_expected = 1.1015
+density_expected = 2.1252
+IPR_expected = 78.2107
+epdc_orbs_expected = 8.7733
+epdc_dens_expected = 3.5307
 accuracy = 0.001
 
 
-class Test_ELF:
+class TestLocalization:
     """
-    Test class for different boundary conditions.
+    Test class for localization module.
 
-    Checks the free energy for an SCF calculation is given by the expected value.
+    First runs an SCF calculation to generate KS orbitals and density with and
+    without spin polarization. Then uses this input to check the N_shell and epdc
+    properties in the ELF class, and the IPR matrix.
     """
-
-    #    @pytest.fixture(autouse=True)
-    #    def _setup(self):
-    # parallel
-    #        config.numcores = -1
-
-    #        self.SCF_output = self._run_SCF()
 
     @pytest.fixture(autouse=True, scope="class")
     def SCF_nospin_output(self):
+        """Run a spin-unpolarized SCF calc and save the output."""
         config.numcores = -1
         return self._run_SCF(False)
 
     @pytest.fixture(autouse=True, scope="class")
     def SCF_spin_output(self):
+        """Run a spin-polarized SCF calc and save the output."""
         config.numcores = -1
         return self._run_SCF(True)
 
@@ -55,7 +50,7 @@ class Test_ELF:
         ],
     )
     def test_ELF(self, SCF_input, method, expected):
-
+        """Test the ELF through the N_shell property."""
         assert np.isclose(
             self._run_ELF(SCF_input, method),
             expected,
@@ -70,7 +65,7 @@ class Test_ELF:
         ],
     )
     def test_epdc(self, SCF_input, method, expected):
-
+        """Test the epdc function."""
         assert np.isclose(
             self._run_epdc(SCF_input, method),
             expected,
@@ -78,39 +73,52 @@ class Test_ELF:
         )
 
     def test_IPR(self, SCF_nospin_output):
-
+        """Test the IPR function."""
         assert np.isclose(self._run_IPR(SCF_nospin_output), IPR_expected, atol=accuracy)
 
     @staticmethod
     def _run_SCF(spinpol):
         """
-        Run an SCF calculation for an He Atom with unbound = "Ideal"
+        Run an SCF calculation for an He Atom with unbound = "Ideal".
 
         Returns
         -------
-        F_tot : float
-            the total free energy
+        output : dict of objects
+            the output dictionary containing density, orbitals etc
         """
+        # parallel
+        config.numcores = -1
 
         # set up the atom and model
-        Al_at = Atom("Al", 0.01, radius=10.0, units_temp="eV", write_info=False)
-        model = models.ISModel(
-            Al_at, unbound="ideal", spinpol=spinpol, write_info=False
-        )
+        Al_at = Atom("Al", 0.01, radius=5.0, units_temp="eV")
+        model = models.ISModel(Al_at, unbound="quantum", spinpol=spinpol)
 
         # run the SCF calculation
         output = model.CalcEnergy(
             3,
-            3,
-            scf_params={"maxscf": 10, "mixfrac": 0.5},
-            write_info=False,
+            2,
+            scf_params={"mixfrac": 0.3, "maxscf": 50},
+            grid_params={"ngrid": 1000},
         )
 
         return output
 
     @staticmethod
     def _run_ELF(input_SCF, method):
+        """
+        Compute the electron number in the n=1 shell.
 
+        Parameters
+        ----------
+        input_SCF : dict of objects
+            the SCF input
+        method : the method used to compute the ELF
+
+        Returns
+        -------
+        N_0 : float
+            number of electrons in the n=1 shell
+        """
         ELF = localization.ELFTools(
             input_SCF["orbitals"], input_SCF["density"], method=method
         )
@@ -121,7 +129,20 @@ class Test_ELF:
 
     @staticmethod
     def _run_epdc(input_SCF, method):
+        """
+        Compute the ELF via the epdc function.
 
+        Parameters
+        ----------
+        input_SCF : dict of objects
+            the SCF input
+        method : the method used to compute the ELF
+
+        Returns
+        -------
+        ELF_int : float
+            integral of the ELF function (spin-up channel)
+        """
         ELF = localization.ELFTools(
             input_SCF["orbitals"],
             input_SCF["density"],
@@ -136,26 +157,38 @@ class Test_ELF:
             * (input_SCF["density"].total) ** (5.0 / 3.0)
         )
 
-        n = 150
-        ELF_0 = 1 / (1 + (epdc / D_0) ** 2)[0][n]
+        ELF_func = 1 / (1 + (epdc / D_0) ** 2)
 
-        print(ELF_0)
-        return ELF_0
+        ELF_int = np.trapz(ELF_func, ELF._xgrid)[0]
+        return ELF_int
 
     @staticmethod
     def _run_IPR(input_SCF):
+        """
+        Compute the IPR matrix.
 
+        Parameters
+        ----------
+        input_SCF : dict of objects
+            the SCF input
+
+        Returns
+        -------
+        IPR_0 : float
+            the [0,0,0,0] element of the IPR matrix
+        """
         orbitals = input_SCF["orbitals"].eigfuncs
         xgrid = input_SCF["orbitals"]._xgrid
 
         IPR_mat = localization.calc_IPR_mat(orbitals, xgrid)
+        IPR_0 = IPR_mat[0, 0, 0, 0]
 
-        return IPR_mat[0, 0, 0, 0]
+        return IPR_0
 
 
 if __name__ == "__main__":
-    SCF_out = Test_ELF._run_SCF()
-    print(Test_ELF._run_ELF(SCF_out, "orbitals"))
-    print(Test_ELF._run_ELF(SCF_out, "density"))
-    print(Test_ELF._run_epdc(SCF_out))
-    print(Test_ELF._run_IPR(SCF_out))
+    SCF_out = TestLocalization._run_SCF(False)
+    print(TestLocalization._run_ELF(SCF_out, "orbitals"))
+    print(TestLocalization._run_ELF(SCF_out, "density"))
+    print(TestLocalization._run_epdc(SCF_out))
+    print(TestLocalization._run_IPR(SCF_out))
