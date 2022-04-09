@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""
-Boundary conditions test
-
-Runs an SCF calculation with the three possible boundary conditions,
-and checks the total free energy.
-"""
+"""Test the total free energy for different spinmag values."""
 
 from atoMEC import Atom, models, config
 import pytest
@@ -17,7 +12,7 @@ triplet_expected = -37.6732473
 accuracy = 1e-3
 
 
-class Test_spinmag:
+class TestSpin:
     """
     Test class for different boundary conditions.
 
@@ -31,8 +26,8 @@ class Test_spinmag:
             (2, triplet_expected),
         ],
     )
-    def test_bcs(self, test_input, expected):
-
+    def test_spinmag(self, test_input, expected):
+        """Check free energy for different spinmag values."""
         # parallel
         config.numcores = -1
 
@@ -41,27 +36,25 @@ class Test_spinmag:
     @staticmethod
     def _run(spinmag):
         """
-        Run an SCF calculation for a Be Atom with given boundary condition.
+        Run an SCF calculation for a C Atom with given spinmag.
 
         Parameters
         ----------
-        bc : str
-            the boundary condition
+        spinmag : int
+            the spin magnetization
 
         Returns
         -------
         F_tot : float
             the total free energy
         """
-
         # set up the atom and model
-        C_at = Atom("C", 5000, density=1.0, units_temp="K", write_info=True)
+        C_at = Atom("C", 5000, density=1.0, units_temp="K")
         model = models.ISModel(
             C_at,
             spinpol=True,
             spinmag=spinmag,
             unbound="quantum",
-            write_info=True,
             bc="bands",
         )
 
@@ -71,7 +64,6 @@ class Test_spinmag:
             5,
             scf_params={"maxscf": 4, "mixfrac": 0.3},
             band_params={"nkpts": 50},
-            write_info=True,
             grid_params={"ngrid": 1000},
         )
 
@@ -81,5 +73,5 @@ class Test_spinmag:
 
 
 if __name__ == "__main__":
-    print("singlet energy = ", Test_spinmag._run(0))
-    print("triplet energy = ", Test_spinmag._run(2))
+    print("singlet energy = ", TestSpin._run(0))
+    print("triplet energy = ", TestSpin._run(2))

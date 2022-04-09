@@ -1,30 +1,25 @@
 #!/usr/bin/env python3
 """
-Boundary conditions test
+Pressure test.
 
-Runs an SCF calculation with the three possible boundary conditions,
-and checks the total free energy.
+Computes the pressure with ISModel.CalcPressure function and checks it returns
+the expected value.
 """
 
 from atoMEC import Atom, models, config
-import pytest
 import numpy as np
 
 
 # expected values and tolerance
 pressure_expected = 0.013395564
-accuracy = 1e-7
+accuracy = 1e-4
 
 
-class Test_pressure:
-    """
-    Test class for different boundary conditions.
+class TestPressure:
+    """Test class for the CalcPressure function."""
 
-    Checks the free energy for an SCF calculation is given by the expected value.
-    """
-
-    def test_bcs(self):
-
+    def test_pressure(self):
+        """Check pressure is given by expected value."""
         # parallel
         config.numcores = -1
 
@@ -33,26 +28,23 @@ class Test_pressure:
     @staticmethod
     def _run():
         """
-        Run an SCF calculation for an He Atom with unbound = "Ideal"
+        Compute the pressure for an Li atom.
 
         Returns
         -------
-        F_tot : float
-            the total free energy
+        pressure : float
+            the pressure (in Hartree units)
         """
-
         # set up the atom and model
-        Li_at = Atom("Li", 10, radius=2.5, units_temp="eV", write_info=False)
-        model = models.ISModel(
-            Li_at, unbound="quantum", write_info=False, v_shift=False
-        )
+        Li_at = Atom("Li", 10, radius=2.5, units_temp="eV")
+        model = models.ISModel(Li_at, unbound="quantum", v_shift=False)
 
         # run the SCF calculation
         output = model.CalcEnergy(
             3,
             3,
             scf_params={"maxscf": 3},
-            write_info=False,
+            grid_params={"ngrid": 1000},
             verbosity=1,
         )
 
@@ -62,4 +54,4 @@ class Test_pressure:
 
 
 if __name__ == "__main__":
-    print(Test_pressure._run())
+    print(TestPressure._run())

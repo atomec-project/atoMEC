@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Boundary conditions test
+Test for the EnergyAlt class.
 
-Runs an SCF calculation with the three possible boundary conditions,
-and checks the total free energy.
+Runs a calculation with ideal and quantum unbound treatments, then constructs the
+EnergyAlt object (alternative energy constructor) and checks the total free energy.
 """
 
 from atoMEC import Atom, models, config, staticKS
@@ -19,9 +19,9 @@ accuracy = 1e-3
 
 class TestEnergyAlt:
     """
-    Test class for different boundary conditions.
+    Test class for EnergyAlt object.
 
-    Checks the free energy for an SCF calculation is given by the expected value.
+    Checks the EnergyAlt free energy is given by the expected value.
     """
 
     @pytest.mark.parametrize(
@@ -32,7 +32,7 @@ class TestEnergyAlt:
         ],
     )
     def test_energy_alt(self, test_input, expected):
-
+        """Check the EnergyAlt total free energy."""
         # parallel
         config.numcores = -1
 
@@ -45,32 +45,28 @@ class TestEnergyAlt:
 
         Parameters
         ----------
-        bc : str
-            the boundary condition
+        unbound : str
+            unbound electron treatment
 
         Returns
         -------
         F_tot : float
             the total free energy
         """
-
         # set up the atom and model
-        Mg_at = Atom("Mg", 0.3, radius=1, write_info=False, units_radius="Bohr")
+        Mg_at = Atom("Mg", 0.3, radius=1, units_radius="Bohr")
         model = models.ISModel(
             Mg_at,
             unbound=unbound,
-            write_info=False,
             bc="neumann",
         )
 
         # run the SCF calculation
         output = model.CalcEnergy(
-            10,
-            5,
-            scf_params={"maxscf": 6, "mixfrac": 0.3},
-            write_info=True,
+            10, 5, scf_params={"maxscf": 6, "mixfrac": 0.3}, grid_params={"ngrid": 1000}
         )
 
+        # construct the EnergyAlt object
         energy_alt = staticKS.EnergyAlt(
             output["orbitals"], output["density"], output["potential"]
         )

@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
-"""
-Boundary conditions test
-
-Runs an SCF calculation with the three possible boundary conditions,
-and checks the total free energy.
-"""
-
+"""Test free energy for ideal treatment of unbound electrons."""
 from atoMEC import Atom, models, config
-import pytest
 import numpy as np
 
 
@@ -16,16 +9,17 @@ unbound_expected = -10.091898
 accuracy = 1e-3
 
 
-class Test_unbound:
+class TestUnbound:
     """
-    Test class for different boundary conditions.
+    Test class for ideal treatment of unbound electrons.
 
     Checks the free energy for an SCF calculation is given by the expected value.
+    Also uses the force_bound parameter.
     """
 
-    def test_bcs(self):
-
-        # parallel
+    def test_unbound(self):
+        """Check free energy for SCF calc with unbound=ideal."""
+        # test "parallel" with 1 core
         config.numcores = 1
 
         assert np.isclose(self._run(), unbound_expected, atol=accuracy)
@@ -33,14 +27,13 @@ class Test_unbound:
     @staticmethod
     def _run():
         """
-        Run an SCF calculation for an He Atom with unbound = "Ideal"
+        Run an SCF calculation for a Be atom with unbound="ideal".
 
         Returns
         -------
         F_tot : float
             the total free energy
         """
-
         # set up the atom and model
         Be_at = Atom(
             "He",
@@ -48,13 +41,16 @@ class Test_unbound:
             radius=3.17506,
             units_temp="eV",
             units_radius="angstrom",
-            write_info=False,
         )
-        model = models.ISModel(Be_at, unbound="ideal", write_info=False)
+        model = models.ISModel(Be_at, unbound="ideal")
 
         # run the SCF calculation
         output = model.CalcEnergy(
-            3, 3, scf_params={"maxscf": 3}, write_info=False, force_bound=[[0, 0, 0]]
+            3,
+            3,
+            scf_params={"maxscf": 3},
+            grid_params={"ngrid": 1000},
+            force_bound=[[0, 0, 0]],
         )
 
         # extract the total free energy
@@ -63,4 +59,4 @@ class Test_unbound:
 
 
 if __name__ == "__main__":
-    print(Test_unbound._run())
+    print(TestUnbound._run())

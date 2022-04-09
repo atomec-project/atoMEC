@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Boundary conditions test
+Boundary conditions test.
 
 Runs an SCF calculation with the three possible boundary conditions,
 and checks the total free energy.
@@ -18,7 +18,7 @@ bands_expected = -14.731577
 accuracy = 1e-3
 
 
-class Test_bcs:
+class TestBcs:
     """
     Test class for different boundary conditions.
 
@@ -34,7 +34,7 @@ class Test_bcs:
         ],
     )
     def test_bcs(self, test_input, expected):
-
+        """Check free energy for the three boundary conditions."""
         # parallel
         config.numcores = -1
 
@@ -55,10 +55,9 @@ class Test_bcs:
         F_tot : float
             the total free energy
         """
-
         # set up the atom and model
-        Be_at = Atom("Be", 0.1, radius=3.0, write_info=False)
-        model = models.ISModel(Be_at, bc=bc, unbound="quantum", write_info=False)
+        Be_at = Atom("Be", 0.1, radius=3.0)
+        model = models.ISModel(Be_at, bc=bc, unbound="quantum")
 
         if bc == "bands":
             nkpts = 50
@@ -69,9 +68,9 @@ class Test_bcs:
         output = model.CalcEnergy(
             4,
             4,
-            scf_params={"maxscf": 5},
+            scf_params={"maxscf": 5, "mixfrac": 0.3},
+            grid_params={"ngrid": 1000},
             band_params={"nkpts": nkpts},
-            write_info=False,
         )
 
         # extract the total free energy
