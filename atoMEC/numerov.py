@@ -242,8 +242,8 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     # make temporary folder with random name to store arrays
     while True:
         try:
-            joblib_folder = "".join(
-                random.choices(string.ascii_uppercase + string.digits, k=30)
+            joblib_folder = "atoMEC_tmpdata_" + "".join(
+                random.choices(string.ascii_uppercase + string.digits, k=20)
             )
             os.mkdir(joblib_folder)
             break
