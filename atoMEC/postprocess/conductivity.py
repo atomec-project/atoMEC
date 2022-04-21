@@ -7,7 +7,7 @@ import sys
 # from functools import cache
 import functools
 
-from atoMEC import writeoutput
+from atoMEC import mathtools
 
 
 """Kubo-Greenwood conductivity etc"""
@@ -511,7 +511,9 @@ class KuboGreenwood:
         eig_diff_omega_mat = np.einsum(
             "nijkl,nijklm->nijklm", eig_diff_mat, omega_dummy_mat
         )
-        eig_diff_lorentz_mat = lorentzian(omega_arr, eig_diff_omega_mat, gamma)
+        eig_diff_lorentz_mat = mathtools.lorentzian(
+            omega_arr, eig_diff_omega_mat, gamma
+        )
 
         # put everythin together to get conductivity
         mat1 = np.einsum(
@@ -1002,19 +1004,9 @@ def calc_mel_kgm(orb_l1n1, orb_l2n2, l1, n1, l2, n2, m, xgrid):
     R1_int = calc_R1_int(orb_l1n1, orb_l2n2, xgrid)
     R2_int = calc_R2_int(orb_l1n1, orb_l2n2, xgrid)
 
-    mel_tot = 0.0
-    mel_tot += R1_int * P_int(2, l1, l2, m)
-    mel_tot += R2_int * P_int(4, l1, l2, m)
+    mel_tot = R1_int * P_int(2, l1, l2, m) + R2_int * P_int(4, l1, l2, m)
 
     return mel_tot
-
-
-def lorentzian(x, x0, gamma):
-
-    # prefac = x / (x ** 2 + gamma ** 2)
-    prefac = 1.0
-    # prefac = 1 / x
-    return (gamma / np.pi) * (prefac / (gamma ** 2 + (x - x0) ** 2))
 
 
 def prod_eigfuncs(phi0, phi1, xgrid):
