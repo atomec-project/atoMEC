@@ -108,7 +108,7 @@ class KuboGreenwood:
         V = (4.0 / 3.0) * np.pi * rmax ** 3.0
         return V
 
-    def cond_tot(self, component="tt", gamma=0.01, maxfreq=50, nfreq=200):
+    def cond_tot(self, component="tt", gamma=0.01, maxfreq=50, nfreq=500):
         """
         Calculate the chosen component of dynamical electrical conductivity sig(w).
 
@@ -376,7 +376,7 @@ class KuboGreenwood:
         The paramaters `R1_int` and `R2_int` refer to radial integral components in the
         calculation of the matrix elements. See the supplementary information of
         Ref. [8]_ for more information on thse components, and the functions
-        `calc_R1_int_mat` and `calc_R2_int_mat` for their definitions.
+        :func:`calc_R1_int_mat` and :func:`calc_R2_int_mat` for their definitions.
 
         References
         ----------
@@ -424,28 +424,88 @@ class KuboGreenwood:
         self, R1_int, R2_int, orb_subset_1, orb_subset_2, omega_max, n_freq, gamma
     ):
 
+        r"""
+        Compute the dynamical conducivity for given subsets (see notes).
+
+        Parameters
+        ----------
+        R1_int : ndarray
+            the 'R1' radial component of the integrand (see notes)
+        R2_int : ndarray
+            the 'R2' radial component of the integrand (see notes)
+        orb_subset_1 : list of tuples
+            the first subset of orbitals to sum over
+        orb_subset_2 : list of tuples
+            the second subset of orbitals to sum over
+        omega_max : float
+            maximum value of the frequency grid
+        n_freq : int
+            number of points in the frequency grid
+        gamma : float
+            smoothing factor for the Lorentzian
+
+        Returns
+        -------
+        sig_omega, nele: tuple (ndarray, float)
+            * sig_omega: 2d array containing frequency grid and conductivity
+              :math:`\sigma(\omega)`
+            * n_ele: the number of electrons from integration of :math:`\sigma(\omega)`;
+              equivalent to N_ij (for orb subsets ij) in the limit :math:`\gamma\to 0`
+
+        Notes
+        -----
+        This function returns the dynamical conductivity, :math:`\sigma(\omega)`,
+        defined as
+
+        .. math::
+            \sigma_{S_1,S2}(\omega) &= \frac{2\pi}{3V\omega}
+            \sum_{i\in S_1}\sum_{j\in S_2} (f_i - f_j)\
+            |\langle\phi_{i}|\nabla|\phi_{j}\rangle|^2\
+            \mathcal{L}(\epsilon_i, \epsilon_j, \gamma, \omega) \\
+            \mathcal{L}(\epsilon_i, \epsilon_j, \gamma, \omega)&=\
+            \frac{\gamma}{\pi}\frac{1}{\gamma^2+(\omega+[\epsilon_i-\epsilon_j)])^2}
+
+        where :math:`S_1,S_2` denote the subsets of orbitals specified in the function's
+        paramaters, e.g. the conduction-conduction orbitals.
+
+        As can be seen in the above equation, the dirac-delta function in the definition
+        of the KG conductivity (see `calc_sig` function) is represented by a Lorentzian
+        distribution :math:`\mathcal{L}` to obtain a smooth conductivity function. In
+        the limit :math:`\gamma\to 0`, the Lorentzian becomes a delta function.
+        
+        The paramaters `R1_int` and `R2_int` refer to radial integral components in the
+        calculation of the matrix elements. See the supplementary information of
+        Ref. [8]_ for more information on these components, and the functions
+        :func:`calc_R1_int_mat` and :func:`calc_R2_int_mat` for their definitions.
+        """
+
+        # get the dimensions of the array
         nbands, nspin, lmax, nmax = np.shape(self._occnums)
 
+        # compute the angular momenta integrals
         P2_int = P_mat_int(2, lmax)
         P4_int = P_mat_int(4, lmax)
 
+        # put the angular and radial integrals together
         tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
         tmp_mat_2 = np.einsum("kabcd,ace->kabcde", R2_int, P4_int)
         tmp_mat_3 = np.einsum("kcdab,cae->kabcde", R1_int, P2_int)
         tmp_mat_4 = np.einsum("kcdab,cae->kabcde", R2_int, P4_int)
-
-        occ_diff_mat = calc_occ_diff_mat(self._occnums, orb_subset_1, orb_subset_2)
-        eig_diff_mat = calc_eig_diff_mat(self._eigvals, orb_subset_1, orb_subset_2)
 
         mel_sq_mat = np.sum(
             np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
             axis=-1,
         )
 
-        # omega_arr = np.logspace(-5, np.log(omega_max), n_freq)
-        omega_0 = 1e-5
-        omega_arr = np.linspace(omega_0, np.sqrt(omega_max), n_freq) ** 2
-        # omega_arr = np.linspace(omega_0, omega_max, n_freq)
+        # compute the occupation number and eigenvalue differences
+        occ_diff_mat = calc_occ_diff_mat(self._occnums, orb_subset_1, orb_subset_2)
+        eig_diff_mat = calc_eig_diff_mat(self._eigvals, orb_subset_1, orb_subset_2)
+
+        # set up the frequency array - must start a bit above zero
+        # sqrt spacing from origin gives faster convergence wrt nfreq
+        omega_arr = np.linspace(1e-5, np.sqrt(omega_max), n_freq) ** 2
+
+        # set up lorentzian: requires dummy array to get right shape
         sig_omega = np.zeros((np.size(omega_arr), 2))
         omega_dummy_mat = np.ones((nbands, lmax, nmax, lmax, nmax, n_freq))
         eig_diff_omega_mat = np.einsum(
@@ -453,38 +513,103 @@ class KuboGreenwood:
         )
         eig_diff_lorentz_mat = lorentzian(omega_arr, eig_diff_omega_mat, gamma)
 
+        # put everythin together to get conductivity
         mat1 = np.einsum(
             "kln,klnpq->klnpq", self._DOS_w[:, 0], mel_sq_mat * occ_diff_mat
         )
         mat2 = eig_diff_lorentz_mat / eig_diff_omega_mat
 
+        # assign sig(w) and w to sig_omega array dimensions
         sig_omega[:, 1] = (
             np.einsum("nijkl,nijklm->m", mat1, mat2) * 2 * np.pi / self.sph_vol
         )
         sig_omega[:, 0] = omega_arr
 
-        N_tot = self.sig_to_N(np.trapz(sig_omega[:, 1], x=omega_arr), self.sph_vol)
+        # integrate and convert to get electron number
+        N_ele = self.sig_to_N(np.trapz(sig_omega[:, 1], x=omega_arr), self.sph_vol)
 
-        return sig_omega, N_tot
+        return sig_omega, N_ele
 
     @staticmethod
     def sig_to_N(sig, V):
-        return sig * (2 * V / np.pi)
+        """
+        Map the integrated conducivity to electron number.
+
+        Parameters
+        ----------
+        sig : float
+            integrated conducivity
+        V : float
+            volume of sphere
+
+        Returns
+        -------
+        N_ele : float
+            electron number
+        """
+        N_ele = sig * (2 * V / np.pi)
+
+        return N_ele
 
 
 def sph_ham_coeff(l, m):
-    r"""The coefficients of spherical harmonic functions"""
+    r"""
+    Compute coefficients of spherical harmonic functions.
+
+    Parameters
+    ----------
+    l : int
+       angular quantum number
+    m : int
+       magnetic quantum number
+
+    Returns
+    -------
+    c_lm : float
+        coefficient for spherical harmonic function (l,m) (see notes)
+
+    Notes
+    -----
+    The spherical harmonic functions with coefficients :math:`c_{lm}` are defined as
+
+    .. math::
+        Y_m^l(\theta,\phi) &= c_{lm} P_l^m (\cos\theta) e^{im\phi}\\
+        c_{lm} &= \sqrt{\frac{(2l+1)(l-m)!}{4\pi(l+m)!}}
+
+    """
     c_lm = np.sqrt((2 * l + 1) * factorial(l - m) / (factorial(l + m) * 4 * np.pi))
     return c_lm
 
 
 def P_mat_int(func_int, lmax):
+    """
+    Compute the matrix of P function (angular) integrals (see notes).
 
+    Parameters
+    ----------
+    func_int : int
+        the desired P integral (can be 2 or 4)
+    lmax : int
+        the maximum value of angular momentum
+
+    Returns
+    -------
+    P_mat : ndarray
+        matrix of P func integrals for chosen func_int
+
+    Notes
+    -----
+    See Refs. [7]_ and [8]_ (supplemental material) for the definitions of the
+    P2 and P4 functions, ands the :func:`P2_func`, :func:`P4_func` and
+    :func:`P_int` functions.
+    """
     P_mat = np.zeros((lmax, lmax, 2 * lmax + 1))
 
     for l1 in range(lmax):
         for l2 in range(lmax):
+            # sum rules mean all terms with l1!=l2 are zero
             if abs(l1 - l2) == 1:
+                # m cannot exceed either of l1 or l2
                 lsmall = min(l1, l2)
                 for m in range(-lsmall, lsmall + 1):
                     P_mat[l1, l2, lsmall + m] = P_int(func_int, l1, l2, m)
@@ -494,24 +619,111 @@ def P_mat_int(func_int, lmax):
 
 
 def P_int(func_int, l1, l2, m):
-    r"""The P2 integral"""
+    r"""
+    Integrate the P2 or P4 function (see notes).
 
+    Parameters
+    ----------
+    func_int : int
+        the desired P integral (can be 2 or 4)
+    l1 : int
+        1st angular quantum number
+    l2 : int
+        2nd angular quantum number
+    m : int
+        magnetic quantum number
+
+    Returns
+    -------
+    P_int_ : float
+        the integrated P2 or P4 function
+
+    Notes
+    -----
+    The integrals are defined as
+
+    .. math::
+        \bar{P}^{(n)}_{ll'm} = 2\pi c_{lm}c_{l'm}\int_{-1}^1 dx f_p^{(n)}[l_1,l_2,m](x)
+
+    With the functions :math:`f_p^{(n)}(x)` defined below (:func:`P2_func`
+    and :func:`P4_func`).
+    """
     if func_int == 2:
         integ = quad(P2_func, -1, 1, args=(l1, l2, m))[0]
     elif func_int == 4:
         integ = quad(P4_func, -1, 1, args=(l1, l2, m))[0]
+    else:
+        sys.exit("Error: func_int value not recognised, must be 2 or 4")
 
-    return 2 * np.pi * sph_ham_coeff(l1, m) * sph_ham_coeff(l2, m) * integ
+    P_int_ = 2 * np.pi * sph_ham_coeff(l1, m) * sph_ham_coeff(l2, m) * integ
+
+    return P_int_
 
 
 def P2_func(x, l1, l2, m):
-    r"""Input functional for P2_int"""
+    r"""
+    The 'P2' function (see notes).
 
-    return x * lpmv(m, l1, x) * lpmv(m, l2, x)
+    Parameters
+    ----------
+    x : float
+        input for Legendre polynomial
+    l1 : int
+        1st angular quantum number
+    l2 : int
+        2nd angular quantum number
+    m : int
+        magnetic quantum number
+
+    Returns
+    -------
+    P2_func_ : float
+        the P2 function
+
+    Notes
+    -----
+    The P2 function is defined as (see also Refs. [7]_ and [8]_)
+
+    .. math::
+        f_p^{(2)}[l_1,l_2,m](x) = x P_{l_1}^m (x) P_{l_2}^m (x)
+
+    where P_{l}^m (x) are Legendre polynomial functions.
+    """
+    P2_func_ = x * lpmv(m, l1, x) * lpmv(m, l2, x)
+
+    return P2_func_
 
 
 def P4_func(x, l1, l2, m):
-    r"""Input functional for P4_int"""
+    r"""
+    The 'P4' function (see notes).
+
+    Parameters
+    ----------
+    x : float
+        input for Legendre polynomial
+    l1 : int
+        1st angular quantum number
+    l2 : int
+        2nd angular quantum number
+    m : int
+        magnetic quantum number
+
+    Returns
+    -------
+    P4_func_ : float
+        the P4 function
+
+    Notes
+    -----
+    The P4 function is defined as (see also Refs. [7]_ and [8]_)
+
+    .. math::
+        f_p^{(4)}[l_1,l_2,m](x)&=-(1-x)^2 P^m_{l_1}(x) \frac{dP_{l_2}^m(x)}{dx}\\
+                                &= P^m_{l_1}(x) [(l_2+m)P_{l_2-1}^m(x)-xl_2 P_{l_2}^m(x)]
+   
+    where :math:`P_{l}^m(x)` are Legendre polynomial functions.
+    """
 
     if (l2 + m) != 0:
         factor = (l2 + m) * lpmv(m, l2 - 1, x) - l2 * x * lpmv(m, l2, x)
@@ -521,12 +733,38 @@ def P4_func(x, l1, l2, m):
     return lpmv(m, l1, x) * factor
 
 
-# jit
-@writeoutput.timing
-# @functools.cache
+# @writeoutput.timing
 def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
-    r"""Compute the R1 integral."""
+    r"""
+    Compute the 'R1' integral matrix (see notes).
 
+    Parameters
+    ----------
+    eigfuncs : ndarray
+        the KS eigenfunctions
+    occnums : ndarray
+        the KS occupation numbers
+    xgrid : ndarray
+        the log grid
+    orb_subset_1 : tuple
+        the first subset of orbitals (eg valence)
+    orb_subset_2 : tuple
+        the second subset of orbitals (eg conduction)
+
+    Returns
+    -------
+    R1_mat : ndarray
+        the R1 integral matrix (see notes)
+
+    Notes
+    -----
+    The definition of the R1 integral is (see Ref. [7]_ and supplementary of [8]_)
+
+    .. math::
+        R^{(1)}=4\pi\int_0^R dr r^2 X_{n_1 l_1}(r) \frac{dX_{n_2 l_2}(r)}{dr},
+
+    where :math:`X_{nl}(r)` are the radial KS functions.
+    """
     # take the derivative of orb2
     # compute the gradient of the orbitals
     deriv_orb2 = np.gradient(eigfuncs, xgrid, axis=-1, edge_order=2)
@@ -541,16 +779,15 @@ def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
     # integrate over the sphere
     for l1, n1 in orb_subset_1:
         for l2, n2 in orb_subset_2:
+            # only l1 = l2 +/- 1 terms are non-zero
             if abs(l1 - l2) != 1:
                 continue
             else:
-
                 R1_mat[:, l1, n1, l2, n2] = R1_int_term(
                     eigfuncs[:, 0, l1, n1], grad_orb2[:, 0, l2, n2], xgrid
                 )
-
+                # non-symmetric term
                 if orb_subset_1 != orb_subset_2:
-
                     R1_mat[:, l2, n2, l1, n1] = R1_int_term(
                         eigfuncs[:, 0, l2, n2], grad_orb2[:, 0, l1, n1], xgrid
                     )
@@ -559,19 +796,62 @@ def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
 
 
 def R1_int_term(eigfunc, grad_orb2, xgrid):
+    """
+    Input function to the :func:`calc_R1_int_mat` function.
 
+    Parameters
+    ----------
+    eigfunc : ndarray
+        KS orbital l1,n1
+    grad_orb2 : ndarray
+        derivative of KS orbital l2,n2
+    xgrid : ndarray
+        log grid
+
+    Returns
+    -------
+    R1_int : float
+        the matrix element for the R1_int_mat function
+    """
     func_int = eigfunc * np.exp(-xgrid / 2.0) * grad_orb2
+    R1_int = 4 * np.pi * np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
 
-    mat_ele = 4 * np.pi * np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
-
-    return mat_ele
+    return R1_int
 
 
 # jit
-@writeoutput.timing
+# @writeoutput.timing
 def calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
-    r"""Compute the R2 integral."""
+    r"""
+    Compute the 'R2' integral matrix (see notes).
 
+    Parameters
+    ----------
+    eigfuncs : ndarray
+        the KS eigenfunctions
+    occnums : ndarray
+        the KS occupation numbers
+    xgrid : ndarray
+        the log grid
+    orb_subset_1 : tuple
+        the first subset of orbitals (eg valence)
+    orb_subset_2 : tuple
+        the second subset of orbitals (eg conduction)
+
+    Returns
+    -------
+    R2_mat : ndarray
+        the R2 integral matrix (see notes)
+
+    Notes
+    -----
+    The definition of the R2 integral is (see Ref. [7]_ and supplementary of [8]_)
+
+    .. math::
+        R^{(1)}=4\pi\int_0^R dr r X_{n_1 l_1}(r) X_{n_2 l_2}(r),
+
+    where :math:`X_{nl}(r)` are the radial KS functions.
+    """
     # initiliaze the matrix
     nbands, nspin, lmax, nmax = np.shape(occnums)
     R2_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
@@ -596,51 +876,101 @@ def calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
 
 
 def R2_int_term(eigfunc_1, eigfunc_2, xgrid):
+    """
+    Input function to the :func:`calc_R2_int_mat` function.
 
-    mat_ele = 4 * np.pi * np.trapz(np.exp(xgrid) * eigfunc_1 * eigfunc_2, xgrid)
+    Parameters
+    ----------
+    eigfunc_1 : ndarray
+        KS orbital l1,n1
+    eigfunc_2 : ndarray
+        KS orbital l2,n2
+    xgrid : ndarray
+        log grid
 
-    return mat_ele
+    Returns
+    -------
+    R2_int : float
+        the matrix element for the R2_int_mat function
+    """
+    R2_int = 4 * np.pi * np.trapz(np.exp(xgrid) * eigfunc_1 * eigfunc_2, xgrid)
+
+    return R2_int
 
 
 # jit
-@writeoutput.timing
+# @writeoutput.timing
 def calc_occ_diff_mat(occnums, orb_subset_1, orb_subset_2):
+    """
+    Compute the matrix of occupation number diffs -(f_l1n1 - f_l2n2).
 
+    Parameters
+    ----------
+    occnums : ndarray
+        the (unweighted FD) KS occupation numbers
+    orb_subset_1 : tuple
+        the first subset of orbitals (eg valence)
+    orb_subset_2 : tuple
+        the second subset of orbitals (eg conduction)
+
+    Returns
+    -------
+    occ_diff_mat : ndarray
+        the occupation number difference matrix
+    """
     nbands, nspin, lmax, nmax = np.shape(occnums)
     occ_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
 
-    for k in range(nbands):
-        for l1, n1 in orb_subset_1:
-            for l2, n2 in orb_subset_2:
-                occ_diff = -(occnums[k, 0, l1, n1] - occnums[k, 0, l2, n2])
-                if abs(l1 - l2) != 1:
-                    continue
-                elif occ_diff < 0:
-                    continue
-                else:
-                    occ_diff_mat[k, l1, n1, l2, n2] = occ_diff
+    for l1, n1 in orb_subset_1:
+        for l2, n2 in orb_subset_2:
+            occ_diff = -(occnums[:, 0, l1, n1] - occnums[:, 0, l2, n2])
+            # only terms with l1 = l2 +/- 1 will contribute to final answer
+            if abs(l1 - l2) != 1:
+                continue
+            # integral is one-sided over positive energy differences
+            elif occ_diff < 0:
+                continue
+            else:
+                occ_diff_mat[:, l1, n1, l2, n2] = occ_diff
     return occ_diff_mat
 
 
 # jit
-@writeoutput.timing
+# @writeoutput.timing
 def calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2):
+    """
+    Compute the matrix of eigenvalue differences e_l1n1 - e_ln2n2
 
+    Parameters
+    ----------
+    eigvals : ndarray
+        the KS energy eigenvalues
+    orb_subset_1 : tuple
+        the first subset of orbitals (eg valence)
+    orb_subset_2 : tuple
+        the second subset of orbitals (eg conduction)
+
+    Returns
+    -------
+    occ_diff_mat : ndarray
+        the occupation number difference matrix
+    """
     nbands, nspin, lmax, nmax = np.shape(eigvals)
     eig_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
-    eig_diff_mat += 1e-6
+    eig_diff_mat += 1e-6  # slight offset from zero since we divide by it eventually
 
-    for k in range(nbands):
-        for l1, n1 in orb_subset_1:
-            for l2, n2 in orb_subset_2:
-                if abs(l1 - l2) != 1:
-                    continue
-                elif eigvals[k, 0, l1, n1] - eigvals[k, 0, l2, n2] < 0:
-                    continue
-                else:
-                    eig_diff_mat[k, l1, n1, l2, n2] = (
-                        eigvals[k, 0, l1, n1] - eigvals[k, 0, l2, n2]
-                    )
+    for l1, n1 in orb_subset_1:
+        for l2, n2 in orb_subset_2:
+            # only terms with l1 = l2 +/- 1 will contribute to final answer
+            if abs(l1 - l2) != 1:
+                continue
+            # integral is one-sided over positive energy differences
+            elif eigvals[:, 0, l1, n1] - eigvals[:, 0, l2, n2] < 0:
+                continue
+            else:
+                eig_diff_mat[:, l1, n1, l2, n2] = (
+                    eigvals[:, 0, l1, n1] - eigvals[:, 0, l2, n2]
+                )
     return eig_diff_mat
 
 
@@ -725,8 +1055,3 @@ def gs_ortho(eigfuncs, xgrid):
     eigfuncs_ortho = eigfuncs_ortho * a
 
     return eigfuncs_ortho
-
-
-"""            \sum_{(n_1,l_1,m_1) (\neq n,l,m)}\
-            \frac{|\langle{\phi_{nlm}|\nabla|\phi_{n_1,l_1,m_1}\rangle|^2}\
-            {\epsilon_{n_1,l_1,m_1}-\epsilon_{n,l,m}}"""
