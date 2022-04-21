@@ -1,24 +1,50 @@
-import numpy as np
-from math import factorial
-from scipy.special import lpmv
-from scipy.integrate import quad
-import sys
+"""
+The conductivity module handles routines used to model the electrical conducivity.
 
-# from functools import cache
+So far just the Kubo-Greenwood method is included. Separate from this class are various
+functions to compute matrix elements of radial and angular integrals, which are inputs
+to the Kubo-Greenwood functions, but may be of more general use elsewhere.
+
+Classes
+-------
+* :class:`KuboGreenwood` : Holds various routines needed to compute the Kubo-Greenwood
+                           conducivity, including its various components. Also contains
+                           various properties related to the KG conducivity.
+
+Functions
+---------
+* :func:`sph_ham_coeff`: Compute coefficients of spherical harmonic functions
+* :func:`P_mat_int`: Compute the matrix of P function (angular) integrals.
+* :func:`P_int`: Integrate the :func:`P2` or :func:`P4` function.
+* :func:`P2_func`
+* :func:`P4_func`
+* :func:`calc_R1_int_mat`
+* :func:`R1_int_term`
+* :func:`calc_R2_int_mat`
+* :func:`R2_int_term`
+* :func:`calc_occ_diff_mat`
+* :func:`calc_eig_diff_mat`
+* :func:`calc_R1_int`
+* :func:`calc_R2_int`
+"""
+
+# standard packages
+import sys
+from math import factorial
 import functools
 
+# external packages
+import numpy as np
+from scipy.special import lpmv
+from scipy.integrate import quad
+
+# internal modules
 from atoMEC import mathtools
 
 
-"""Kubo-Greenwood conductivity etc"""
-
-
-################################################################
-# functions to compute various integrals of legendre functions #
-################################################################
-
-
 class KuboGreenwood:
+    """Class for Kubo-Greenwood conductivity and MIS via TRK sum rule."""
+
     def __init__(self, orbitals, valence_orbs=[], nmax=0, lmax=0):
 
         self._orbitals = orbitals
