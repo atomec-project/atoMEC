@@ -2,6 +2,7 @@ import numpy as np
 from math import factorial
 from scipy.special import lpmv
 from scipy.integrate import quad
+import sys
 
 # from functools import cache
 import functools
@@ -60,7 +61,7 @@ class KuboGreenwood:
     def sig_tot(self):
         r"""ndarray: the integrated total conductivity."""
         self._sig_tot = self.calc_sig(
-            self._R1_int_tt, self._R2_int_tt, self.all_orbs, self.all_orbs
+            self.R1_int_tt, self.R2_int_tt, self.all_orbs, self.all_orbs
         )
         return self._sig_tot
 
@@ -68,7 +69,7 @@ class KuboGreenwood:
     def sig_cc(self):
         r"""ndarray: the integrated cc conductivity component."""
         self._sig_cc = self.calc_sig(
-            self._R1_int_cc, self._R2_int_cc, self.cond_orbs, self.cond_orbs
+            self.R1_int_cc, self.R2_int_cc, self.cond_orbs, self.cond_orbs
         )
         return self._sig_cc
 
@@ -76,7 +77,7 @@ class KuboGreenwood:
     def sig_vv(self):
         r"""ndarray: the integrated vv conductivity component."""
         self._sig_vv = self.calc_sig(
-            self._R1_int_vv, self._R2_int_vv, self.valence_orbs, self.valence_orbs
+            self.R1_int_vv, self.R2_int_vv, self.valence_orbs, self.valence_orbs
         )
         return self._sig_vv
 
@@ -84,7 +85,7 @@ class KuboGreenwood:
     def sig_cv(self):
         r"""ndarray: the integrated cv conductivity component."""
         self._sig_cv = self.calc_sig(
-            self._R1_int_cv, self._R2_int_cv, self.valence_orbs, self.cond_orbs
+            self.R1_int_cv, self.R2_int_cv, self.cond_orbs, self.valence_orbs
         )
         return self._sig_cv
 
@@ -107,12 +108,14 @@ class KuboGreenwood:
         V = (4.0 / 3.0) * np.pi * rmax ** 3.0
         return V
 
-    def cond_tot(self, gamma=0.01, maxfreq=50, nfreq=200):
+    def cond_tot(self, component="tt", gamma=0.01, maxfreq=50, nfreq=200):
         """
-        Calculate the (total) dynamical electrical conductivity sig(w).
+        Calculate the chosen component of dynamical electrical conductivity sig(w).
 
         Parameters
         ----------
+        component : str, optional
+            the desired component of the conducivity e.g. "cc", "tt" etc
         gamma : float, optional
             smoothing factor
         maxfreq : float, optional
@@ -125,24 +128,39 @@ class KuboGreenwood:
         cond_tot_ : ndarray
             dynamical electrical conductivity
         """
+
+        if component == "tt":
+            R1_int = self.R1_int_tt
+            R2_int = self.R2_int_tt
+            orb_subset_1 = self.all_orbs
+            orb_subset_2 = self.all_orbs
+        elif component == "cc":
+            R1_int = self.R1_int_cc
+            R2_int = self.R2_int_cc
+            orb_subset_1 = self.cond_orbs
+            orb_subset_2 = self.cond_orbs
+        elif component == "cv":
+            R1_int = self.R1_int_cv
+            R2_int = self.R2_int_cv
+            orb_subset_1 = self.cond_orbs
+            orb_subset_2 = self.valence_orbs
+        elif component == "vv":
+            R1_int = self.R1_int_vv
+            R2_int = self.R2_int_vv
+            orb_subset_1 = self.valence_orbs
+            orb_subset_2 = self.valence_orbs
+        else:
+            sys.exit("Component of conducivity not recognised")
+
         cond_tot_ = self.calc_sig_func(
-            self._eigfuncs,
-            self._occnums,
-            self._eigvals,
-            self._dos,
-            self._xgrid,
-            self.all_orbs,
-            self.all_orbs,
-            omega_max=maxfreq,
-            n_freq=nfreq,
-            gamma=gamma,
+            R1_int, R2_int, orb_subset_1, orb_subset_2, maxfreq, nfreq, gamma
         )
         return cond_tot_
 
     @property
-    @functools.lru_cache
+    # @functools.lru_cache
     # @writeoutput.timing
-    def _R1_int_tt(self):
+    def R1_int_tt(self):
         R1_int_tt_ = calc_R1_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -153,9 +171,9 @@ class KuboGreenwood:
         return R1_int_tt_
 
     @property
-    @functools.lru_cache
+    # @functools.lru_cache
     # @writeoutput.timing
-    def _R1_int_cc(self):
+    def R1_int_cc(self):
         R1_int_cc_ = calc_R1_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -166,22 +184,22 @@ class KuboGreenwood:
         return R1_int_cc_
 
     @property
-    @functools.lru_cache
+    # @functools.lru_cache
     # @writeoutput.timing
-    def _R1_int_cv(self):
-        self._R1_int_tt = calc_R1_int_mat(
+    def R1_int_cv(self):
+        R1_int_cv_ = calc_R1_int_mat(
             self._eigfuncs,
             self._occnums,
             self._xgrid,
-            self.valence_orbs,
             self.cond_orbs,
+            self.valence_orbs,
         )
-        return self._R1_int_cv
+        return R1_int_cv_
 
     @property
-    @functools.lru_cache
+    # @functools.lru_cache
     # @writeoutput.timing
-    def _R1_int_vv(self):
+    def R1_int_vv(self):
         R1_int_vv_ = calc_R1_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -192,9 +210,9 @@ class KuboGreenwood:
         return R1_int_vv_
 
     @property
-    @functools.lru_cache
+    # @functools.lru_cache
     # @writeoutput.timing
-    def _R2_int_tt(self):
+    def R2_int_tt(self):
         R2_int_tt_ = calc_R2_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -205,9 +223,9 @@ class KuboGreenwood:
         return R2_int_tt_
 
     @property
-    @functools.lru_cache
+    # @functools.lru_cache
     # @writeoutput.timing
-    def _R2_int_cc(self):
+    def R2_int_cc(self):
         R2_int_cc_ = calc_R2_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -218,22 +236,22 @@ class KuboGreenwood:
         return R2_int_cc_
 
     @property
-    @functools.lru_cache
+    # @functools.lru_cache
     # @writeoutput.timing
-    def _R2_int_cv(self):
+    def R2_int_cv(self):
         R2_int_cv_ = calc_R2_int_mat(
             self._eigfuncs,
             self._occnums,
             self._xgrid,
-            self.valence_orbs,
             self.cond_orbs,
+            self.valence_orbs,
         )
         return R2_int_cv_
 
     @property
-    @functools.lru_cache
+    # @functools.lru_cache
     # @writeoutput.timing
-    def _R2_int_vv(self):
+    def R2_int_vv(self):
         R2_int_vv_ = calc_R2_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -368,6 +386,44 @@ class KuboGreenwood:
            `<https://arxiv.org/abs/2203.05863>`__.
         """
 
+        # get matrix dimensions
+        nbands, nspin, lmax, nmax = np.shape(self._occnums)
+
+        # compute the angular integrals (see functions for defns)
+        P2_int = P_mat_int(2, lmax)
+        P4_int = P_mat_int(4, lmax)
+
+        # compute the products of the radial and angular integrals
+        tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
+        tmp_mat_2 = np.einsum("kabcd,ace->kabcde", R2_int, P4_int)
+        tmp_mat_3 = np.einsum("kcdab,cae->kabcde", R1_int, P2_int)
+        tmp_mat_4 = np.einsum("kcdab,cae->kabcde", R2_int, P4_int)
+
+        # compute the sum over the matrix element |< phi_nlm | nabla | phi_pqm >|^2
+        mel_sq_mat = np.sum(
+            np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
+            axis=-1,
+        )
+
+        # compute the f_nl - f_pq matrix
+        occ_diff_mat = calc_occ_diff_mat(self._occnums, orb_subset_1, orb_subset_2)
+        # compute the (e_nl - e_pq)^-1 matrix
+        eig_diff_mat = calc_eig_diff_mat(self._eigvals, orb_subset_1, orb_subset_2)
+
+        # put it all together for the integrated conducivity
+        sig_bare = np.einsum(
+            "kln,klnpq->", self._DOS_w[:, 0], mel_sq_mat * occ_diff_mat / eig_diff_mat
+        )
+
+        # multiply by prefactor 2*pi/V
+        sig = 2 * np.pi * sig_bare / self.sph_vol
+
+        return sig
+
+    def calc_sig_func(
+        self, R1_int, R2_int, orb_subset_1, orb_subset_2, omega_max, n_freq, gamma
+    ):
+
         nbands, nspin, lmax, nmax = np.shape(self._occnums)
 
         P2_int = P_mat_int(2, lmax)
@@ -375,61 +431,11 @@ class KuboGreenwood:
 
         tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
         tmp_mat_2 = np.einsum("kabcd,ace->kabcde", R2_int, P4_int)
-        tmp_mat_3 = np.einsum("kabcd,ace->kcdabe", R1_int, P2_int)
-        tmp_mat_4 = np.einsum("kabcd,ace->kcdabe", R2_int, P4_int)
-
-        mel_sq_mat = np.sum(
-            np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
-            axis=-1,
-        )
+        tmp_mat_3 = np.einsum("kcdab,cae->kabcde", R1_int, P2_int)
+        tmp_mat_4 = np.einsum("kcdab,cae->kabcde", R2_int, P4_int)
 
         occ_diff_mat = calc_occ_diff_mat(self._occnums, orb_subset_1, orb_subset_2)
         eig_diff_mat = calc_eig_diff_mat(self._eigvals, orb_subset_1, orb_subset_2)
-        dos_prod_mat = calc_dos_prod_mat(
-            self._DOS_w, self._occnums, orb_subset_1, orb_subset_2
-        )
-
-        sig_bare = np.einsum(
-            "kln,klnpq->", dos_prod_mat, mel_sq_mat * occ_diff_mat / eig_diff_mat
-        )
-
-        sig = 2 * np.pi * sig_bare / self.sph_vol
-
-        return sig
-
-    @staticmethod
-    # @writeoutput.timing
-    def calc_sig_func(
-        eigfuncs,
-        occnums,
-        eigvals,
-        dos,
-        xgrid,
-        orb_subset_1,
-        orb_subset_2,
-        omega_max=50,
-        n_freq=100,
-        gamma=0.5,
-        eig_min_diff=1e-3,
-        eig_max_diff=1e4,
-        occ_min_diff=1e-4,
-    ):
-
-        nbands, nspin, lmax, nmax = np.shape(occnums)
-
-        R1_int = calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2)
-        R2_int = calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2)
-        P2_int = P_mat_int(2, lmax)
-        P4_int = P_mat_int(4, lmax)
-
-        tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
-        tmp_mat_2 = np.einsum("kabcd,ace->kabcde", R2_int, P4_int)
-        tmp_mat_3 = np.einsum("kabcd,ace->kcdabe", R1_int, P2_int)
-        tmp_mat_4 = np.einsum("kabcd,ace->kcdabe", R2_int, P4_int)
-
-        occ_diff_mat = calc_occ_diff_mat(occnums, orb_subset_1, orb_subset_2)
-        eig_diff_mat = calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2)
-        dos_prod_mat = calc_dos_prod_mat(dos, occnums, orb_subset_1, orb_subset_2)
 
         mel_sq_mat = np.sum(
             np.abs((tmp_mat_1 + tmp_mat_2) * (tmp_mat_3 + tmp_mat_4)),
@@ -447,46 +453,23 @@ class KuboGreenwood:
         )
         eig_diff_lorentz_mat = lorentzian(omega_arr, eig_diff_omega_mat, gamma)
 
-        mat1 = np.einsum("kln,klnpq->klnpq", dos_prod_mat, mel_sq_mat * occ_diff_mat)
+        mat1 = np.einsum(
+            "kln,klnpq->klnpq", self._DOS_w[:, 0], mel_sq_mat * occ_diff_mat
+        )
         mat2 = eig_diff_lorentz_mat / eig_diff_omega_mat
 
-        rmax = np.exp(xgrid)[-1]
-        V = (4.0 / 3.0) * np.pi * rmax ** 3.0
-
-        sig_omega[:, 1] = np.einsum("nijkl,nijklm->m", mat1, mat2) * 2 * np.pi / V
+        sig_omega[:, 1] = (
+            np.einsum("nijkl,nijklm->m", mat1, mat2) * 2 * np.pi / self.sph_vol
+        )
         sig_omega[:, 0] = omega_arr
 
-        # for i, omega in enumerate(omega_arr):
-        #     sig_omega[i, 0] = omega
-        #     for l1, n1 in orb_subset_1:
-        #         for l2, n2 in orb_subset_2:
-        #             # the eigenvalue difference
-        #             eig_diff = eigvals[0, l1, n1] - eigvals[0, l2, n2]
-        #             # occupation number difference
-        #             occnum_diff = abs(occnums[0, l1, n1] - occnums[0, l2, n2])
-        #             if eig_diff < eig_min_diff:
-        #                 continue
-        #             elif eig_diff > eig_max_diff:
-        #                 continue
-        #             elif abs(l1 - l2) != 1:
-        #                 continue
-        #             elif occnum_diff < occ_min_diff:
-        #                 continue
-        #             else:
-        #                 occnum_diff = -(occnums[0, l1, n1] - occnums[0, l2, n2])
+        N_tot = self.sig_to_N(np.trapz(sig_omega[:, 1], x=omega_arr), self.sph_vol)
 
-        #                 mel_sq = mel_sq_mat[l1, n1, l2, n2]
-        #                 # compute the volume
-        #                 rmax = np.exp(xgrid)[-1]
-        #                 V = (4.0 / 3.0) * np.pi * rmax ** 3.0
+        return sig_omega, N_tot
 
-        #                 lorentz = lorentzian(omega, eig_diff, gamma)
-        #                 sig_omega[i, 1] += (
-        #                     2 * np.pi * lorentz * occnum_diff * mel_sq / (V * omega)
-        #                 )
-        sig_tot = (2 * V / np.pi) * np.trapz(sig_omega[:, 1], x=omega_arr)
-
-        return sig_omega, sig_tot
+    @staticmethod
+    def sig_to_N(sig, V):
+        return sig * (2 * V / np.pi)
 
 
 def sph_ham_coeff(l, m):
@@ -504,7 +487,7 @@ def P_mat_int(func_int, lmax):
             if abs(l1 - l2) == 1:
                 lsmall = min(l1, l2)
                 for m in range(-lsmall, lsmall + 1):
-                    P_mat[l1, l2, m] = P_int(func_int, l1, l2, m)
+                    P_mat[l1, l2, lsmall + m] = P_int(func_int, l1, l2, m)
             else:
                 continue
     return P_mat
@@ -553,27 +536,70 @@ def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
 
     # initiliaze the matrix
     nbands, nspin, lmax, nmax = np.shape(occnums)
-    R1_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
+    R1_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
 
     # integrate over the sphere
-    for k in range(nbands):
-        for l1, n1 in orb_subset_1:
-            for l2, n2 in orb_subset_2:
-                if abs(l1 - l2) != 1:
-                    continue
-                elif abs(occnums[k, 0, l2, n2] - occnums[k, 0, l1, n1]) < 0:
-                    continue
-                else:
-                    func_int = (
-                        eigfuncs[k, 0, l1, n1]
-                        * np.exp(-xgrid / 2.0)
-                        * grad_orb2[k, 0, l2, n2]
+    for l1, n1 in orb_subset_1:
+        for l2, n2 in orb_subset_2:
+            if abs(l1 - l2) != 1:
+                continue
+            else:
+
+                R1_mat[:, l1, n1, l2, n2] = R1_int_term(
+                    eigfuncs[:, 0, l1, n1], grad_orb2[:, 0, l2, n2], xgrid
+                )
+
+                if orb_subset_1 != orb_subset_2:
+
+                    R1_mat[:, l2, n2, l1, n1] = R1_int_term(
+                        eigfuncs[:, 0, l2, n2], grad_orb2[:, 0, l1, n1], xgrid
                     )
 
-                    R1_mat[k, l1, n1, l2, n2] = (
-                        4 * np.pi * np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
-                    )
     return R1_mat
+
+
+def R1_int_term(eigfunc, grad_orb2, xgrid):
+
+    func_int = eigfunc * np.exp(-xgrid / 2.0) * grad_orb2
+
+    mat_ele = 4 * np.pi * np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
+
+    return mat_ele
+
+
+# jit
+@writeoutput.timing
+def calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
+    r"""Compute the R2 integral."""
+
+    # initiliaze the matrix
+    nbands, nspin, lmax, nmax = np.shape(occnums)
+    R2_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
+
+    # integrate over the sphere
+    for l1, n1 in orb_subset_1:
+        for l2, n2 in orb_subset_2:
+            if abs(l1 - l2) != 1:
+                continue
+            else:
+                R2_mat[:, l1, n1, l2, n2] = R2_int_term(
+                    eigfuncs[:, 0, l1, n1], eigfuncs[:, 0, l2, n2], xgrid
+                )
+
+                if orb_subset_1 != orb_subset_2:
+
+                    R2_mat[:, l2, n2, l1, n1] = R2_int_term(
+                        eigfuncs[:, 0, l2, n2], eigfuncs[:, 0, l1, n1], xgrid
+                    )
+
+    return R2_mat
+
+
+def R2_int_term(eigfunc_1, eigfunc_2, xgrid):
+
+    mat_ele = 4 * np.pi * np.trapz(np.exp(xgrid) * eigfunc_1 * eigfunc_2, xgrid)
+
+    return mat_ele
 
 
 # jit
@@ -581,7 +607,7 @@ def calc_R1_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
 def calc_occ_diff_mat(occnums, orb_subset_1, orb_subset_2):
 
     nbands, nspin, lmax, nmax = np.shape(occnums)
-    occ_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
+    occ_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
 
     for k in range(nbands):
         for l1, n1 in orb_subset_1:
@@ -598,34 +624,10 @@ def calc_occ_diff_mat(occnums, orb_subset_1, orb_subset_2):
 
 # jit
 @writeoutput.timing
-def calc_dos_prod_mat(dos, occnums, orb_subset_1, orb_subset_2):
-
-    nbands, nspin, lmax, nmax = np.shape(dos)
-    dos_prod_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
-
-    for k in range(nbands):
-        for l1, n1 in orb_subset_1:
-            for l2, n2 in orb_subset_2:
-                occ_diff = -(occnums[k, 0, l1, n1] - occnums[k, 0, l2, n2])
-                if abs(l1 - l2) != 1:
-                    continue
-                elif occ_diff < 0:
-                    continue
-                else:
-                    dos_prod_mat[k, l1, n1, l2, n2] = dos[
-                        k, 0, l2, n2
-                    ]  # * dos[k, 0, l2, n2]
-
-    dos_prod_mat = dos[:, 0]
-    return dos_prod_mat
-
-
-# jit
-@writeoutput.timing
 def calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2):
 
     nbands, nspin, lmax, nmax = np.shape(eigvals)
-    eig_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
+    eig_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
     eig_diff_mat += 1e-6
 
     for k in range(nbands):
@@ -640,35 +642,6 @@ def calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2):
                         eigvals[k, 0, l1, n1] - eigvals[k, 0, l2, n2]
                     )
     return eig_diff_mat
-
-
-# jit
-@writeoutput.timing
-def calc_R2_int_mat(eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
-    r"""Compute the R2 integral."""
-
-    # initiliaze the matrix
-    nbands, nspin, lmax, nmax = np.shape(occnums)
-    R2_mat = np.zeros((nbands, lmax, nmax, lmax, nmax))
-
-    # integrate over the sphere
-    for k in range(nbands):
-        for l1, n1 in orb_subset_1:
-            for l2, n2 in orb_subset_2:
-                if abs(l1 - l2) != 1:
-                    continue
-                elif abs(occnums[k, 0, l2, n2] - occnums[k, 0, l1, n1]) < 0:
-                    continue
-                else:
-                    func_int = (
-                        eigfuncs[k, 0, l1, n1] * eigfuncs[k, 0, l2, n2] * np.exp(-xgrid)
-                    )
-
-                R2_mat[k, l1, n1, l2, n2] = (
-                    4 * np.pi * np.trapz(np.exp(2.0 * xgrid) * func_int, xgrid)
-                )
-
-    return R2_mat
 
 
 def calc_R1_int(orb1, orb2, xgrid):
@@ -694,59 +667,6 @@ def calc_R2_int(orb1, orb2, xgrid):
     return np.trapz(func_int, xgrid)
 
 
-def sig_contrib(orbitals, n1, l1, n2, l2):
-
-    # the eigenvalue difference
-    eig_diff = orbitals.eigvals[0, l1, n1] - orbitals.eigvals[0, l2, n2]
-
-    # the occupation number difference
-    # first sum bound and unbound comps
-    occnums_tot = orbitals.occnums + orbitals.occnums_ub
-
-    # convert the occupation numbers to be "pure" occnums
-    lbound = orbitals.lbound + orbitals.lunbound
-    lmax = np.shape(lbound)[1]
-    lmat_inv = np.zeros_like(lbound)
-    for l in range(lmax):
-        lmat_inv[:, l] = 0.5 / (2 * l + 1.0)
-    occnums = lmat_inv * occnums_tot
-
-    occnum_diff = -(occnums[0, l1, n1] - occnums[0, l2, n2])
-
-    # eigenfunctions
-    orb_l1n1 = np.sqrt(4 * np.pi) * orbitals.eigfuncs[0, l1, n1]
-    orb_l2n2 = np.sqrt(4 * np.pi) * orbitals.eigfuncs[0, l2, n2]
-
-    xgrid = orbitals._xgrid
-
-    # compute the matrix element
-    mel = calc_mel_kg(orb_l1n1, orb_l2n2, l1, n1, l2, n2, xgrid)
-    mel_sq = mel ** 2
-
-    # compute the volume
-    rmax = np.exp(xgrid)[-1]
-    V = (4.0 / 3.0) * np.pi * rmax ** 3.0
-
-    sig = 2 * np.pi * occnum_diff * mel_sq / (eig_diff * V)
-
-    return sig
-
-
-def calc_mel_kg(orb_l1n1, orb_l2n2, l1, n1, l2, n2, xgrid):
-
-    R1_int = calc_R1_int(orb_l1n1, orb_l2n2, xgrid)
-    R2_int = calc_R2_int(orb_l1n1, orb_l2n2, xgrid)
-
-    lsmall = min(l1, l2)
-
-    mel_tot = 0.0
-    for m in range(-lsmall, lsmall + 1):
-        mel_tot += R1_int * P_int(2, l1, l2, m)
-        mel_tot += R2_int * P_int(4, l1, l2, m)
-
-    return mel_tot
-
-
 def calc_mel_kgm(orb_l1n1, orb_l2n2, l1, n1, l2, n2, m, xgrid):
 
     R1_int = calc_R1_int(orb_l1n1, orb_l2n2, xgrid)
@@ -757,15 +677,6 @@ def calc_mel_kgm(orb_l1n1, orb_l2n2, l1, n1, l2, n2, m, xgrid):
     mel_tot += R2_int * P_int(4, l1, l2, m)
 
     return mel_tot
-
-
-def calc_mel_kgm_2(R1_int, R2_int, l1, n1, l2, n2, m):
-
-    mel = R1_int[l1, n1, l2, n2] * P_int(2, l1, l2, m) + R2_int[l1, n1, l2, n2] * P_int(
-        4, l1, l2, m
-    )
-
-    return mel
 
 
 def lorentzian(x, x0, gamma):
