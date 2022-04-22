@@ -1,5 +1,5 @@
 """
-The conductivity module handles routines used to model the electrical conducivity.
+The conductivity module handles routines used to model the electrical conductivity.
 
 So far just the Kubo-Greenwood method is implemented.
 
@@ -57,7 +57,7 @@ Please run again with spin-unpolarized input."
 
     @property
     def all_orbs(self):
-        r"""list of tuples: all the possible orbital pairings."""
+        r"""List of tuples: all the possible orbital pairings."""
         all_orbs_tmp = []
         for l in range(self._lmax):
             for n in range(self._nmax):
@@ -67,7 +67,7 @@ Please run again with spin-unpolarized input."
 
     @property
     def cond_orbs(self):
-        r"""list of tuples: all the conduction band orbital pairings."""
+        r"""List of tuples: all the conduction band orbital pairings."""
         cond_orbs_tmp = self.all_orbs
         for val_orbs in self.valence_orbs:
             cond_orbs_tmp.remove(val_orbs)
@@ -145,7 +145,6 @@ Please run again with spin-unpolarized input."
         cond_tot_ : ndarray
             dynamical electrical conductivity
         """
-
         if component == "tt":
             R1_int = self.R1_int_tt
             R2_int = self.R2_int_tt
@@ -316,7 +315,6 @@ Please run again with spin-unpolarized input."
            `DOI:doi.org/10.1016/j.cpc.2017.08.008
            <https://doi.org/10.1016/j.cpc.2017.08.008>`__.
         """
-
         # set up the orbitals to sum over
         new_orbs = self.all_orbs
         new_orbs.remove((l, n))
@@ -338,7 +336,7 @@ Please run again with spin-unpolarized input."
                     orb_l1n1 = np.sqrt(4 * np.pi) * self._eigfuncs[k, 0, l1, n1]
                     orb_ln = np.sqrt(4 * np.pi) * self._eigfuncs[k, 0, l, n]
 
-                    # compute the matrix element <\phi|\grad|\phi> and its complex conjugate
+                    # compute the matrix element <\phi|\grad|\phi> and its complex conj
                     if abs(m) > l1:
                         mel_sq = 0
                     else:
@@ -402,7 +400,6 @@ Please run again with spin-unpolarized input."
            arXiv preprint arXiv:2203.05863 (2022).
            `<https://arxiv.org/abs/2203.05863>`__.
         """
-
         # get matrix dimensions
         nbands, nspin, lmax, nmax = np.shape(self._occnums)
 
@@ -440,7 +437,6 @@ Please run again with spin-unpolarized input."
     def calc_sig_func(
         self, R1_int, R2_int, orb_subset_1, orb_subset_2, omega_max, n_freq, gamma
     ):
-
         r"""
         Compute the dynamical conducivity for given subsets (see notes).
 
@@ -489,13 +485,12 @@ Please run again with spin-unpolarized input."
         of the KG conductivity (see `calc_sig` function) is represented by a Lorentzian
         distribution :math:`\mathcal{L}` to obtain a smooth conductivity function. In
         the limit :math:`\gamma\to 0`, the Lorentzian becomes a delta function.
-        
+
         The paramaters `R1_int` and `R2_int` refer to radial integral components in the
         calculation of the matrix elements. See the supplementary information of
         Ref. [8]_ for more information on these components, and the functions
         :func:`calc_R1_int_mat` and :func:`calc_R2_int_mat` for their definitions.
         """
-
         # get the dimensions of the array
         nbands, nspin, lmax, nmax = np.shape(self._occnums)
 
@@ -587,7 +582,7 @@ Please run again with spin-unpolarized input."
     @staticmethod
     def calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2):
         """
-        Compute the matrix of eigenvalue differences e_l1n1 - e_ln2n2
+        Compute the matrix of eigenvalue differences e_l1n1 - e_ln2n2.
 
         Parameters
         ----------
@@ -666,7 +661,6 @@ Please run again with spin-unpolarized input."
 
         Parameters
         ----------
-
         sig : float
             integrated conducivity
         V : float
@@ -683,6 +677,8 @@ Please run again with spin-unpolarized input."
 
 
 class SphHamInts:
+    """Contains the functions needed to compute various spherical harmonic integrals."""
+
     @classmethod
     def P_mat_int(cls, func_int, lmax):
         """
@@ -746,7 +742,8 @@ class SphHamInts:
         The integrals are defined as
 
         .. math::
-            \bar{P}^{(n)}_{ll'm} = 2\pi c_{lm}c_{l'm}\int_{-1}^1 dx f_p^{(n)}[l_1,l_2,m](x)
+            \bar{P}^{(n)}_{ll'm} = 2\pi c_{lm}c_{l'm}\int_{-1}^1 dx \
+                                   f_p^{(n)}[l_1,l_2,m](x)
 
         With the functions :math:`f_p^{(n)}(x)` defined below (:func:`P2_func`
         and :func:`P4_func`).
@@ -765,7 +762,7 @@ class SphHamInts:
     @staticmethod
     def P2_func(x, l1, l2, m):
         r"""
-        The 'P2' function (see notes).
+        Calculate the 'P2' function (see notes).
 
         Parameters
         ----------
@@ -799,7 +796,7 @@ class SphHamInts:
     @staticmethod
     def P4_func(x, l1, l2, m):
         r"""
-        The 'P4' function (see notes).
+        Calculate the 'P4' function (see notes).
 
         Parameters
         ----------
@@ -823,11 +820,11 @@ class SphHamInts:
 
         .. math::
             f_p^{(4)}[l_1,l_2,m](x)&=-(1-x)^2 P^m_{l_1}(x) \frac{dP_{l_2}^m(x)}{dx}\\
-                                    &= P^m_{l_1}(x) [(l_2+m)P_{l_2-1}^m(x)-xl_2 P_{l_2}^m(x)]
+                                    &= P^m_{l_1}(x) [(l_2+m)P_{l_2-1}^m(x)-xl_2\
+                                       P_{l_2}^m(x)]
 
         where :math:`P_{l}^m(x)` are Legendre polynomial functions.
         """
-
         if (l2 + m) != 0:
             factor = (l2 + m) * lpmv(m, l2 - 1, x) - l2 * x * lpmv(m, l2, x)
         else:
@@ -866,6 +863,8 @@ class SphHamInts:
 
 
 class RadialInts:
+    """Contains functions required to compute various integrals of the radial KS fns."""
+
     @classmethod
     def calc_R1_int_mat(cls, eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
         r"""
