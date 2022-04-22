@@ -569,11 +569,10 @@ Please run again with spin-unpolarized input."
         for l1, n1 in orb_subset_1:
             for l2, n2 in orb_subset_2:
                 occ_diff = -(occnums[:, 0, l1, n1] - occnums[:, 0, l2, n2])
+                # integral is one-sided wrt energy differences
+                occ_diff = np.where(occ_diff > 0.0, occ_diff, 0.0)
                 # only terms with l1 = l2 +/- 1 will contribute to final answer
                 if abs(l1 - l2) != 1:
-                    continue
-                # integral is one-sided over positive energy differences
-                elif occ_diff < 0:
                     continue
                 else:
                     occ_diff_mat[:, l1, n1, l2, n2] = occ_diff
@@ -600,20 +599,17 @@ Please run again with spin-unpolarized input."
         """
         nbands, nspin, lmax, nmax = np.shape(eigvals)
         eig_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
-        eig_diff_mat += 1e-6  # slight offset from zero since we divide by it eventually
 
         for l1, n1 in orb_subset_1:
             for l2, n2 in orb_subset_2:
+                eig_diff = eigvals[:, 0, l1, n1] - eigvals[:, 0, l2, n2]
+                # integral is one-sided wrt energy differences
+                eig_diff = np.where(eig_diff > 0, eig_diff, 1e-6)
                 # only terms with l1 = l2 +/- 1 will contribute to final answer
                 if abs(l1 - l2) != 1:
                     continue
-                # integral is one-sided over positive energy differences
-                elif eigvals[:, 0, l1, n1] - eigvals[:, 0, l2, n2] < 0:
-                    continue
                 else:
-                    eig_diff_mat[:, l1, n1, l2, n2] = (
-                        eigvals[:, 0, l1, n1] - eigvals[:, 0, l2, n2]
-                    )
+                    eig_diff_mat[:, l1, n1, l2, n2] = eig_diff
         return eig_diff_mat
 
     @staticmethod
