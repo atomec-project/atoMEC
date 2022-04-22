@@ -1,18 +1,16 @@
 """
 The conductivity module handles routines used to model the electrical conducivity.
 
-So far just the Kubo-Greenwood method is included. Separate from this class are various
-functions to compute matrix elements of radial and angular integrals, which are inputs
-to the Kubo-Greenwood functions, but may be of more general use elsewhere.
+So far just the Kubo-Greenwood method is implemented.
 
 Classes
 -------
-* :class:`KuboGreenwood` : Holds various routines needed to compute the Kubo-Greenwood
-                           conducivity, including its various components. Also contains
+* :class:`KuboGreenwood` : Holds various routines needed to compute the Kubo-Greenwood \
+                           conducivity, including its various components. Also contains\
                            various properties related to the KG conducivity.
-* :class:`SphHamInts`: Holds the routines to construct angular integrals from the
+* :class:`SphHamInts`: Holds the routines to construct angular integrals from the \
                        spherical harmonic functions
-* :class:`RadialInts`: Holds the routines to construct radial integrals from the radial
+* :class:`RadialInts`: Holds the routines to construct radial integrals from the radial\
                        KS orbitals
 """
 
@@ -175,6 +173,7 @@ class KuboGreenwood:
     # @functools.lru_cache
     # @writeoutput.timing
     def R1_int_tt(self):
+        """Total-total component of the R1 radial integral."""
         R1_int_tt_ = RadialInts.calc_R1_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -188,6 +187,7 @@ class KuboGreenwood:
     # @functools.lru_cache
     # @writeoutput.timing
     def R1_int_cc(self):
+        """Conducting-conducting component of the R1 radial integral."""
         R1_int_cc_ = RadialInts.calc_R1_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -201,6 +201,7 @@ class KuboGreenwood:
     # @functools.lru_cache
     # @writeoutput.timing
     def R1_int_cv(self):
+        """Conducting-valence component of the R1 radial integral."""
         R1_int_cv_ = RadialInts.calc_R1_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -214,6 +215,7 @@ class KuboGreenwood:
     # @functools.lru_cache
     # @writeoutput.timing
     def R1_int_vv(self):
+        """Valence-valence component of the R1 radial integral."""
         R1_int_vv_ = RadialInts.calc_R1_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -227,6 +229,7 @@ class KuboGreenwood:
     # @functools.lru_cache
     # @writeoutput.timing
     def R2_int_tt(self):
+        """Total-total component of the R2 radial integral."""
         R2_int_tt_ = RadialInts.calc_R2_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -240,6 +243,7 @@ class KuboGreenwood:
     # @functools.lru_cache
     # @writeoutput.timing
     def R2_int_cc(self):
+        """Conducting-conducting component of the R2 radial integral."""
         R2_int_cc_ = RadialInts.calc_R2_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -253,6 +257,7 @@ class KuboGreenwood:
     # @functools.lru_cache
     # @writeoutput.timing
     def R2_int_cv(self):
+        """Conducting-valence component of the R2 radial integral."""
         R2_int_cv_ = RadialInts.calc_R2_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -266,6 +271,7 @@ class KuboGreenwood:
     # @functools.lru_cache
     # @writeoutput.timing
     def R2_int_vv(self):
+        """Valence-valence component of the R2 radial integral."""
         R2_int_vv_ = RadialInts.calc_R2_int_mat(
             self._eigfuncs,
             self._occnums,
@@ -339,10 +345,10 @@ class KuboGreenwood:
                     if abs(m) > l1:
                         mel_sq = 0
                     else:
-                        mel = self.calc_mel_kgm(
+                        mel = self.calc_mel_grad_int(
                             orb_ln, orb_l1n1, l, n, l1, n1, m, self._xgrid
                         )
-                        mel_cc = self.calc_mel_kgm(
+                        mel_cc = self.calc_mel_grad_int(
                             orb_l1n1, orb_ln, l1, n1, l, n, m, self._xgrid
                         )
                         mel_sq = np.abs(mel_cc * mel)
@@ -404,8 +410,8 @@ class KuboGreenwood:
         nbands, nspin, lmax, nmax = np.shape(self._occnums)
 
         # compute the angular integrals (see functions for defns)
-        P2_int = SphHamInts().P_mat_int(2, lmax)
-        P4_int = SphHamInts().P_mat_int(4, lmax)
+        P2_int = SphHamInts.P_mat_int(2, lmax)
+        P4_int = SphHamInts.P_mat_int(4, lmax)
 
         # compute the products of the radial and angular integrals
         tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
@@ -497,8 +503,8 @@ class KuboGreenwood:
         nbands, nspin, lmax, nmax = np.shape(self._occnums)
 
         # compute the angular momenta integrals
-        P2_int = SphHamInts().P_mat_int(2, lmax)
-        P4_int = SphHamInts().P_mat_int(4, lmax)
+        P2_int = SphHamInts.P_mat_int(2, lmax)
+        P4_int = SphHamInts.P_mat_int(4, lmax)
 
         # put the angular and radial integrals together
         tmp_mat_1 = np.einsum("kabcd,ace->kabcde", R1_int, P2_int)
@@ -623,16 +629,42 @@ class KuboGreenwood:
         return eig_diff_mat
 
     @staticmethod
-    def calc_mel_kgm(orb_l1n1, orb_l2n2, l1, n1, l2, n2, m, xgrid):
+    def calc_mel_grad_int(orb_l1n1, orb_l2n2, l1, n1, l2, n2, m, xgrid):
+        r"""
+        Calculate the matrix element :math:`|<\phi_{n1l1}|\nabla|\phi_{n1l2}>|^2`.
 
+        Parameters
+        ----------
+        orb_l1n1 : ndarray
+            l1,n1 radial KS orbital
+        orb_l2n2 : ndarray
+            l2,n2 radial KS orbital
+        l1 : int
+            1st angular momentum quantum number
+        n1 : int
+            1st principal quantum number
+        l2 : int
+            2nd angular momentum quantum number
+        n2 : int
+            2nd principal quantum number
+        m : int
+            magnetic quantum number
+        xgrid : ndarray
+            log grid
+
+        Returns
+        -------
+        mel_grad_int : float
+            the matrix element :math:`|<\phi_{n1l1}|\nabla|\phi_{n1l2}>|^2`.
+        """
         R1_int = RadialInts.calc_R1_int(orb_l1n1, orb_l2n2, xgrid)
         R2_int = RadialInts.calc_R2_int(orb_l1n1, orb_l2n2, xgrid)
 
-        mel_tot = R1_int * SphHamInts.P_int(2, l1, l2, m) + R2_int * SphHamInts.P_int(
-            4, l1, l2, m
-        )
+        mel_grad_int = R1_int * SphHamInts.P_int(
+            2, l1, l2, m
+        ) + R2_int * SphHamInts.P_int(4, l1, l2, m)
 
-        return mel_tot
+        return mel_grad_int
 
     @staticmethod
     def sig_to_N(sig, V):
@@ -707,26 +739,6 @@ class SphHamInts:
         l1 : int
             1st angular quantum number
         l2 : int
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             2nd angular quantum number
         m : int
             magnetic quantum number
@@ -1029,8 +1041,25 @@ class RadialInts:
 
     @staticmethod
     def calc_R1_int(orb1, orb2, xgrid):
-        r"""Compute the R1 integral."""
+        r"""
+        Compute the R1 integral between two orbitals orb1 and orb2 (see notes).
 
+        Parameters
+        ----------
+        orb1 : ndarray
+            the first radial orbital
+        orb2 : ndarray
+            the second radial orbital
+
+        Returns
+        -------
+        R1_int : ndarray
+            the R1 integral
+
+        Notes
+        -----
+        See :func:`calc_R1_int_mat` for definition of the integral
+        """
         # take the derivative of orb2
         # compute the gradient of the orbitals
         deriv_orb2 = np.gradient(orb2, xgrid, axis=-1, edge_order=2)
@@ -1040,12 +1069,32 @@ class RadialInts:
 
         # integrate over the sphere
         func_int = orb1 * np.exp(-xgrid / 2.0) * grad_orb2
-        return np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
+        R1_int = np.trapz(np.exp(3.0 * xgrid) * func_int, xgrid)
+
+        return R1_int
 
     @staticmethod
     def calc_R2_int(orb1, orb2, xgrid):
-        r"""Compute the R2 integral."""
+        r"""
+        Compute the R2 integral between two orbitals orb1 and orb2 (see notes).
 
+        Parameters
+        ----------
+        orb1 : ndarray
+            the first radial orbital
+        orb2 : ndarray
+            the second radial orbital
+
+        Returns
+        -------
+        R2_int : ndarray
+            the R2 integral
+
+        Notes
+        -----
+        See :func:`calc_R2_int_mat` for definition of the integral
+        """
         func_int = np.exp(xgrid) * orb1 * orb2
+        R2_int = np.trapz(func_int, xgrid)
 
-        return np.trapz(func_int, xgrid)
+        return R2_int
