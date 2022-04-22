@@ -1,11 +1,24 @@
+"""
+The localization module handles routines designed to measure electron localization.
+
+Classes
+-------
+* :class:`ELFTools` : Holds functions to compute the electron localization function\
+                      (ELF) and related quantities e.g. number of electrons per shell.
+
+Functions
+---------
+* :func:`calc_IPR_mat`: Computes the inverse participation ratio (IPR) for the orbitals.
+"""
+
+# standard packages
 from math import pi
+
+# external packages
 from scipy.signal import argrelmin
 import numpy as np
 
-from math import sqrt, factorial
-from scipy.special import lpmv
-from scipy.integrate import quad
-
+# internal modules
 from atoMEC import staticKS, mathtools
 
 
