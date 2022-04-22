@@ -175,8 +175,7 @@ Please run again with spin-unpolarized input."
         return cond_tot_
 
     @property
-    # @functools.lru_cache
-    # @writeoutput.timing
+    @functools.lru_cache
     def R1_int_tt(self):
         """Total-total component of the R1 radial integral."""
         R1_int_tt_ = RadialInts.calc_R1_int_mat(
@@ -189,8 +188,7 @@ Please run again with spin-unpolarized input."
         return R1_int_tt_
 
     @property
-    # @functools.lru_cache
-    # @writeoutput.timing
+    @functools.lru_cache
     def R1_int_cc(self):
         """Conducting-conducting component of the R1 radial integral."""
         R1_int_cc_ = RadialInts.calc_R1_int_mat(
@@ -203,8 +201,7 @@ Please run again with spin-unpolarized input."
         return R1_int_cc_
 
     @property
-    # @functools.lru_cache
-    # @writeoutput.timing
+    @functools.lru_cache
     def R1_int_cv(self):
         """Conducting-valence component of the R1 radial integral."""
         R1_int_cv_ = RadialInts.calc_R1_int_mat(
@@ -217,8 +214,7 @@ Please run again with spin-unpolarized input."
         return R1_int_cv_
 
     @property
-    # @functools.lru_cache
-    # @writeoutput.timing
+    @functools.lru_cache
     def R1_int_vv(self):
         """Valence-valence component of the R1 radial integral."""
         R1_int_vv_ = RadialInts.calc_R1_int_mat(
@@ -231,8 +227,7 @@ Please run again with spin-unpolarized input."
         return R1_int_vv_
 
     @property
-    # @functools.lru_cache
-    # @writeoutput.timing
+    @functools.lru_cache
     def R2_int_tt(self):
         """Total-total component of the R2 radial integral."""
         R2_int_tt_ = RadialInts.calc_R2_int_mat(
@@ -245,8 +240,7 @@ Please run again with spin-unpolarized input."
         return R2_int_tt_
 
     @property
-    # @functools.lru_cache
-    # @writeoutput.timing
+    @functools.lru_cache
     def R2_int_cc(self):
         """Conducting-conducting component of the R2 radial integral."""
         R2_int_cc_ = RadialInts.calc_R2_int_mat(
@@ -259,8 +253,7 @@ Please run again with spin-unpolarized input."
         return R2_int_cc_
 
     @property
-    # @functools.lru_cache
-    # @writeoutput.timing
+    @functools.lru_cache
     def R2_int_cv(self):
         """Conducting-valence component of the R2 radial integral."""
         R2_int_cv_ = RadialInts.calc_R2_int_mat(
@@ -273,8 +266,7 @@ Please run again with spin-unpolarized input."
         return R2_int_cv_
 
     @property
-    # @functools.lru_cache
-    # @writeoutput.timing
+    @functools.lru_cache
     def R2_int_vv(self):
         """Valence-valence component of the R2 radial integral."""
         R2_int_vv_ = RadialInts.calc_R2_int_mat(
@@ -557,8 +549,6 @@ Please run again with spin-unpolarized input."
 
         return sig_omega, N_ele
 
-    # jit
-    # @writeoutput.timing
     @staticmethod
     def calc_occ_diff_mat(occnums, orb_subset_1, orb_subset_2):
         """
@@ -594,8 +584,6 @@ Please run again with spin-unpolarized input."
                     occ_diff_mat[:, l1, n1, l2, n2] = occ_diff
         return occ_diff_mat
 
-    # jit
-    # @writeoutput.timing
     @staticmethod
     def calc_eig_diff_mat(eigvals, orb_subset_1, orb_subset_2):
         """
@@ -878,8 +866,6 @@ class SphHamInts:
 
 
 class RadialInts:
-
-    # @writeoutput.timing
     @classmethod
     def calc_R1_int_mat(cls, eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
         r"""
@@ -965,8 +951,6 @@ class RadialInts:
 
         return R1_int
 
-    # jit
-    # @writeoutput.timing
     @classmethod
     def calc_R2_int_mat(cls, eigfuncs, occnums, xgrid, orb_subset_1, orb_subset_2):
         r"""
