@@ -1514,7 +1514,7 @@ class EnergyAlt:
 
 
 class GramSchmidt:
-    """Class holding Gram-Schmidt orthoganalization process"""
+    """Class holding Gram-Schmidt orthoganalization process."""
 
     def __init__(self, eigfuncs, xgrid):
         self._eigfuncs = eigfuncs
@@ -1533,7 +1533,6 @@ class GramSchmidt:
         eigfuncs_ortho : ndarray
             orthonormal eigenfunctions
         """
-
         # initialize dimensions etc
         nbands, nspin, lmax, nmax, ngrid = np.shape(self.eigfuncs)
         eigfuncs_ortho = np.zeros_like(self.eigfuncs)
