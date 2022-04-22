@@ -40,6 +40,11 @@ class KuboGreenwood:
         self._occnums = orbitals.occnums
         self._DOS_w = orbitals.DOS * orbitals.kpt_int_weight
         nbands, self._spindims, lmax_default, nmax_default = np.shape(self._eigvals)
+        if self._spindims == 2:
+            sys.exit(
+                "Kubo-Greenwood is not yet set-up for spin-polarized calculations. \
+Please run again with spin-unpolarized input."
+            )
         if nmax == 0:
             self._nmax = nmax_default
         else:
