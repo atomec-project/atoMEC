@@ -599,6 +599,7 @@ Please run again with spin-unpolarized input."
         """
         nbands, nspin, lmax, nmax = np.shape(eigvals)
         eig_diff_mat = np.zeros((nbands, lmax, nmax, lmax, nmax), dtype=np.float32)
+        eig_diff_mat += 1e-6
 
         for l1, n1 in orb_subset_1:
             for l2, n2 in orb_subset_2:
