@@ -227,7 +227,15 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="atoMEC.postprocess.html">atoMEC.postprocess package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#module-atoMEC.postprocess.localization">atoMEC.postprocess.localization module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#module-atoMEC.postprocess.conductivity">atoMEC.postprocess.conductivity module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.postprocess.html#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#module-atoMEC.postprocess.localization">atoMEC.postprocess.localization module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.postprocess.html#id16">Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.postprocess.html#functions">Functions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#module-atoMEC.postprocess">Module contents</a></li>
 </ul>
 </li>
@@ -1130,6 +1138,12 @@ be added in future.</p>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.fd_int_complete" title="atoMEC.mathtools.fd_int_complete"><code class="xref py py-func docutils literal notranslate"><span class="pre">fd_int_complete()</span></code></a>: compute the complete Fermi-Dirac integral for given order <cite>n</cite></p></li>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.chem_pot" title="atoMEC.mathtools.chem_pot"><code class="xref py py-func docutils literal notranslate"><span class="pre">chem_pot()</span></code></a>: compute the chemical potential by enforcing charge neutrality</p></li>
 <li><p><a class="reference internal" href="#atoMEC.mathtools.f_root_id" title="atoMEC.mathtools.f_root_id"><code class="xref py py-func docutils literal notranslate"><span class="pre">f_root_id()</span></code></a>: make root input fn for chem_pot with ideal apprx for free electrons</p></li>
+<li><dl class="field-list simple">
+<dt class="field-odd">func</dt>
+<dd class="field-odd"><p><cite>lorentzian</cite>: Lorentzian function</p>
+</dd>
+</dl>
+</li>
 </ul>
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.mathtools.chem_pot">
@@ -1370,6 +1384,31 @@ default : -1</p></li>
 <dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.mathtools.lorentzian">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">lorentzian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#lorentzian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.lorentzian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Lorentzian function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>array_like</em>) – the “x” variable</p></li>
+<li><p><strong>x0</strong> (<em>array_like</em>) – the position of the peak</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – half the peak width / smoothing factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>lorentzian_</strong> – the lorentzian function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The Lorentzian function is defined as</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L}(x, x_0, \gamma)=\frac{\gamma}{\pi}\frac{1}{\gamma^2+(x-x_0)^2}\]</div>
 </dd></dl>
 
 <dl class="py function">
@@ -1955,6 +1994,7 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a> : Holds the KS potential (split into individual components) and                        the routines to compute them.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a> : Holds the free energy and all internal components (KS quantities                     and entropy) and the routines required to compute them.</p></li>
 <li><p><a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> : Holds the free energy and all internal components (KS                        quantities and entropy) and the routines required to compute                        them. N.B. the <a class="reference internal" href="#atoMEC.staticKS.EnergyAlt" title="atoMEC.staticKS.EnergyAlt"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnergyAlt</span></code></a> class constructs the energy                        functional in an alternative manner to the main <a class="reference internal" href="#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Energy</span></code></a>                        class.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.staticKS.GramSchmidt" title="atoMEC.staticKS.GramSchmidt"><code class="xref py py-class docutils literal notranslate"><span class="pre">GramSchmidt</span></code></a> : Holds the Gram-Schmidt orthoganalization procedure</p></li>
 </ul>
 </div>
 <div class="section" id="id10">
@@ -2536,6 +2576,72 @@ total entropy. <span class="math notranslate nohighlight">\(F = E - TS\)</span><
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> of <code class="xref py py-obj docutils literal notranslate"><span class="pre">floats</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="atoMEC.staticKS.GramSchmidt">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.staticKS.</span></span><span class="sig-name descname"><span class="pre">GramSchmidt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#GramSchmidt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.GramSchmidt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class holding Gram-Schmidt orthoganalization process.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.staticKS.GramSchmidt.make_ortho">
+<span class="sig-name descname"><span class="pre">make_ortho</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#GramSchmidt.make_ortho"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.GramSchmidt.make_ortho" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make eigenfunctions orthonormal using Gram-Schmidt orthoganalization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>eigfuncs_ortho</strong> – orthonormal eigenfunctions</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.staticKS.GramSchmidt.prod_eigfuncs">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">prod_eigfuncs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#GramSchmidt.prod_eigfuncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.GramSchmidt.prod_eigfuncs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the product of two KS eigenfunctions and integrate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi_0</strong> (<em>ndarray</em>) – first orbital</p></li>
+<li><p><strong>phi_1</strong> (<em>ndarray</em>) – second orbital</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – log grid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>prod_eigfuncs_</strong> – integrated product of phi_0 and phi_1</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.staticKS.GramSchmidt.proj_eigfuncs">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">proj_eigfuncs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#GramSchmidt.proj_eigfuncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.GramSchmidt.proj_eigfuncs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the projection of one eigenfunction onto another.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi_0</strong> (<em>ndarray</em>) – first orbital</p></li>
+<li><p><strong>phi_1</strong> (<em>ndarray</em>) – second orbital</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – log grid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>proj_eigfuncs_</strong> – projection of phi_0 onto phi_1</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
 </dd>
 </dl>
 </dd></dl>

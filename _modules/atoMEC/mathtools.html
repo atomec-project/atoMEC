@@ -175,6 +175,7 @@
 <span class="sd">* :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`</span>
 <span class="sd">* :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality</span>
 <span class="sd">* :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons</span>
+<span class="sd">* :func: `lorentzian`: Lorentzian function</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># standard libraries</span>
@@ -604,6 +605,35 @@
     <span class="n">f_root</span> <span class="o">=</span> <span class="n">occnums</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">nele</span>
 
     <span class="k">return</span> <span class="n">f_root</span></div>
+
+
+<div class="viewcode-block" id="lorentzian"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.lorentzian">[docs]</a><span class="k">def</span> <span class="nf">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the Lorentzian function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : array_like</span>
+<span class="sd">        the &quot;x&quot; variable</span>
+<span class="sd">    x0 : array_like</span>
+<span class="sd">        the position of the peak</span>
+<span class="sd">    gamma : float</span>
+<span class="sd">        half the peak width / smoothing factor</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lorentzian_ : array_like</span>
+<span class="sd">        the lorentzian function</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Lorentzian function is defined as</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \mathcal{L}(x, x_0, \gamma)=\frac{\gamma}{\pi}\frac{1}{\gamma^2+(x-x_0)^2}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lorentzian_</span> <span class="o">=</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">lorentzian_</span></div>
 </pre></div>
 
            </div>

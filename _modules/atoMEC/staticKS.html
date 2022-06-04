@@ -183,6 +183,7 @@
 <span class="sd">                       them. N.B. the :class:`EnergyAlt` class constructs the energy \</span>
 <span class="sd">                       functional in an alternative manner to the main :class:`Energy` \</span>
 <span class="sd">                       class.</span>
+<span class="sd">* :class:`GramSchmidt` : Holds the Gram-Schmidt orthoganalization procedure</span>
 
 <span class="sd">Functions</span>
 <span class="sd">---------</span>
@@ -1676,6 +1677,106 @@
         <span class="n">S</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">S</span></div></div>
+
+
+<div class="viewcode-block" id="GramSchmidt"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt">[docs]</a><span class="k">class</span> <span class="nc">GramSchmidt</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class holding Gram-Schmidt orthoganalization process.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="n">eigfuncs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">xgrid</span>
+
+<div class="viewcode-block" id="GramSchmidt.make_ortho"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.make_ortho">[docs]</a>    <span class="k">def</span> <span class="nf">make_ortho</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make eigenfunctions orthonormal using Gram-Schmidt orthoganalization.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        eigfuncs_ortho : ndarray</span>
+<span class="sd">            orthonormal eigenfunctions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># initialize dimensions etc</span>
+        <span class="n">nbands</span><span class="p">,</span> <span class="n">nspin</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">ngrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
+        <span class="n">eigfuncs_ortho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
+
+        <span class="c1"># FIXME: make nested loop cleaner / more efficient</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbands</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nspin</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">n1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmax</span><span class="p">):</span>
+                        <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span>
+                        <span class="k">for</span> <span class="n">n2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+                            <span class="c1"># orthogonalize over the n dimension</span>
+                            <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj_eigfuncs</span><span class="p">(</span>
+                                <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n2</span><span class="p">],</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">],</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">xgrid</span><span class="p">,</span>
+                            <span class="p">)</span>
+                        <span class="c1"># compute |phi|^2</span>
+                        <span class="n">norm</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod_eigfuncs</span><span class="p">(</span>
+                            <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">],</span>
+                            <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">xgrid</span><span class="p">,</span>
+                        <span class="p">)</span>
+
+        <span class="c1"># normalize</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">norm</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">eigfuncs_ortho</span> <span class="o">=</span> <span class="n">eigfuncs_ortho</span> <span class="o">*</span> <span class="n">a</span>
+
+        <span class="k">return</span> <span class="n">eigfuncs_ortho</span></div>
+
+<div class="viewcode-block" id="GramSchmidt.prod_eigfuncs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.prod_eigfuncs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">prod_eigfuncs</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">phi1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the product of two KS eigenfunctions and integrate.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        phi_0 : ndarray</span>
+<span class="sd">            first orbital</span>
+<span class="sd">        phi_1 : ndarray</span>
+<span class="sd">            second orbital</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            log grid</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        prod_eigfuncs_ : ndarray</span>
+<span class="sd">            integrated product of phi_0 and phi_1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">prod_eigfuncs_</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">phi0</span> <span class="o">*</span> <span class="n">phi1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prod_eigfuncs_</span></div>
+
+<div class="viewcode-block" id="GramSchmidt.proj_eigfuncs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.proj_eigfuncs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">proj_eigfuncs</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">phi1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the projection of one eigenfunction onto another.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        phi_0 : ndarray</span>
+<span class="sd">            first orbital</span>
+<span class="sd">        phi_1 : ndarray</span>
+<span class="sd">            second orbital</span>
+<span class="sd">        xgrid : ndarray</span>
+<span class="sd">            log grid</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        proj_eigfuncs_ : ndarray</span>
+<span class="sd">            projection of phi_0 onto phi_1</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">proj_eigfuncs_</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">GramSchmidt</span><span class="o">.</span><span class="n">prod_eigfuncs</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">phi1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+            <span class="o">/</span> <span class="n">GramSchmidt</span><span class="o">.</span><span class="n">prod_eigfuncs</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">phi0</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">phi0</span>
+
+        <span class="k">return</span> <span class="n">proj_eigfuncs_</span></div></div>
 </pre></div>
 
            </div>

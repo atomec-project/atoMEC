@@ -161,12 +161,27 @@
            <div itemprop="articleBody">
             
   <h1>Source code for atoMEC.postprocess.localization</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Things related to electron localization.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The localization module handles routines designed to measure electron localization.</span>
 
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">* :class:`ELFTools` : Holds functions to compute the electron localization function\</span>
+<span class="sd">                      (ELF) and related quantities e.g. number of electrons per shell.</span>
+
+<span class="sd">Functions</span>
+<span class="sd">---------</span>
+<span class="sd">* :func:`calc_IPR_mat`: Computes the inverse participation ratio (IPR) for the orbitals.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># standard packages</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span>
+
+<span class="c1"># external packages</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">argrelmin</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+<span class="c1"># internal modules</span>
 <span class="kn">from</span> <span class="nn">atoMEC</span> <span class="kn">import</span> <span class="n">staticKS</span><span class="p">,</span> <span class="n">mathtools</span>
 
 

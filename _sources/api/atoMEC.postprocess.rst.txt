@@ -4,6 +4,14 @@ atoMEC.postprocess package
 Submodules
 ----------
 
+atoMEC.postprocess.conductivity module
+--------------------------------------
+
+.. automodule:: atoMEC.postprocess.conductivity
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 atoMEC.postprocess.localization module
 --------------------------------------
 
