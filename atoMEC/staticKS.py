@@ -403,7 +403,7 @@ class Orbitals:
                 sp = levels[0]
                 l = levels[1]
                 n = levels[2]
-                ldegen_mat[sp, l, n] = (2.0 / config.spindims) * (2 * l + 1.0)
+                ldegen_mat[:, sp, l, n] = (2.0 / config.spindims) * (2 * l + 1.0)
 
         return ldegen_mat
 
@@ -1393,8 +1393,8 @@ class EnergyAlt:
     @property
     def E_unbound(self):
         r"""float: The energy of the unbound part of the electron density."""
-        if self._E_unbound == 0.0:
-            self._E_unbound = Energy.calc_E_kin_unbound(self._orbs, self._xgrid)
+        if self._E_unbound == 0.0 and config.unbound == "ideal":
+            self._E_unbound = Energy.calc_E_kin_unbound()
         return self._E_unbound
 
     @property
@@ -1501,10 +1501,13 @@ class EnergyAlt:
         S = {}
 
         # bound part
-        S["bound"] = Energy.calc_S_bound(orbs)
+        S["bound"] = Energy.calc_S_orbs(orbs.occnums, orbs.occ_weight)
 
         # unbound part
-        S["unbound"] = Energy.calc_S_unbound(orbs)
+        if config.unbound == "ideal":
+            S["unbound"] = Energy.calc_S_unbound()
+        else:
+            S["unbound"] = 0.0
 
         # total
         S["tot"] = S["bound"] + S["unbound"]
