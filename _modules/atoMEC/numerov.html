@@ -307,8 +307,8 @@
     <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">))</span>
 
     <span class="c1"># see referenced paper for definitions of A and B matrices</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">((</span><span class="n">I_minus</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">I_zero</span> <span class="o">+</span> <span class="n">I_plus</span><span class="p">)</span> <span class="o">/</span> <span class="n">dx</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">((</span><span class="n">I_minus</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">I_zero</span> <span class="o">+</span> <span class="n">I_plus</span><span class="p">)</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">I_minus</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">I_zero</span> <span class="o">+</span> <span class="n">I_plus</span><span class="p">)</span> <span class="o">/</span> <span class="n">dx</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">I_minus</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">I_zero</span> <span class="o">+</span> <span class="n">I_plus</span><span class="p">)</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
 
     <span class="c1"># von neumann boundary conditions</span>
     <span class="k">if</span> <span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;neumann&quot;</span><span class="p">:</span>
@@ -318,7 +318,7 @@
         <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">dx</span> <span class="o">/</span> <span class="mf">12.0</span>
 
     <span class="c1"># construct kinetic energy matrix</span>
-    <span class="n">T</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">A</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">p</span> <span class="o">@</span> <span class="n">A</span>
 
     <span class="c1"># solve in serial or parallel - serial mostly useful for debugging</span>
     <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">numcores</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -515,7 +515,7 @@
             <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">V_mat</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">))</span>
 
             <span class="c1"># construct Hamiltonians</span>
-            <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">V_mat</span>
+            <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">@</span> <span class="n">V_mat</span>
 
             <span class="c1"># if dirichlet solve on (N-1) x (N-1) grid</span>
             <span class="k">if</span> <span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;dirichlet&quot;</span><span class="p">:</span>
@@ -609,7 +609,7 @@
     <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">V_mat</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">p</span><span class="p">])</span>
 
     <span class="c1"># construct Hamiltonians</span>
-    <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">*</span> <span class="n">V_mat</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">T</span> <span class="o">+</span> <span class="n">B</span> <span class="o">@</span> <span class="n">V_mat</span>
 
     <span class="c1"># if dirichlet solve on (N-1) x (N-1) grid</span>
     <span class="k">if</span> <span class="n">bc</span> <span class="o">==</span> <span class="s2">&quot;dirichlet&quot;</span><span class="p">:</span>
