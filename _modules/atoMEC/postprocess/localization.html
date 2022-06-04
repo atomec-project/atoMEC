@@ -221,13 +221,12 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">epdc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the electron pair density curvature.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;orbitals&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_epdc</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span>
-                <span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;density&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_epdc_dens</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;orbitals&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_epdc</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;density&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_epdc_dens</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span>
 
     <span class="nd">@property</span>
@@ -502,21 +501,23 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># get the dimensions for the IPR matrix</span>
-    <span class="n">spindims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">lmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">nkpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">spindims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">lmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span>
 
-    <span class="n">IPR_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+    <span class="n">IPR_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
 
     <span class="c1"># compute the IPR matrix</span>
     <span class="c1"># FIXME: add spherical harmonic term</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmax</span><span class="p">):</span>
-                <span class="c1"># compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)</span>
-                <span class="n">Psi4</span> <span class="o">=</span> <span class="n">eigfuncs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
-                <span class="c1"># integrate over sphere</span>
-                <span class="n">IPR_mat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">Psi4</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nkpts</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmax</span><span class="p">):</span>
+                    <span class="c1"># compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)</span>
+                    <span class="n">Psi4</span> <span class="o">=</span> <span class="n">eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+                    <span class="c1"># integrate over sphere</span>
+                    <span class="n">IPR_mat</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">Psi4</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">IPR_mat</span></div>
 </pre></div>

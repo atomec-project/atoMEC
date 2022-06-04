@@ -566,7 +566,7 @@
                 <span class="n">sp</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">l</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-                <span class="n">ldegen_mat</span><span class="p">[</span><span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+                <span class="n">ldegen_mat</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ldegen_mat</span></div>
 
@@ -1556,8 +1556,8 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">E_unbound</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: The energy of the unbound part of the electron density.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_unbound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_unbound</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_unbound</span>
 
     <span class="nd">@property</span>
@@ -1664,10 +1664,13 @@
         <span class="n">S</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># bound part</span>
-        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_S_bound</span><span class="p">(</span><span class="n">orbs</span><span class="p">)</span>
+        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_S_orbs</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">occnums</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occ_weight</span><span class="p">)</span>
 
         <span class="c1"># unbound part</span>
-        <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_S_unbound</span><span class="p">(</span><span class="n">orbs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
+            <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_S_unbound</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="c1"># total</span>
         <span class="n">S</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span>
