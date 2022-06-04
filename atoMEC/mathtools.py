@@ -12,6 +12,7 @@ Functions
 * :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`
 * :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
 * :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons
+* :func: `lorentzian`: Lorentzian function
 """
 
 # standard libraries
@@ -441,3 +442,32 @@ def f_root_qu(mu, eigvals, occ_weight, nele):
     f_root = occnums.sum() - nele
 
     return f_root
+
+
+def lorentzian(x, x0, gamma):
+    r"""
+    Compute the Lorentzian function.
+
+    Parameters
+    ----------
+    x : array_like
+        the "x" variable
+    x0 : array_like
+        the position of the peak
+    gamma : float
+        half the peak width / smoothing factor
+
+    Returns
+    -------
+    lorentzian_ : array_like
+        the lorentzian function
+
+    Notes
+    -----
+    The Lorentzian function is defined as
+
+    .. math::
+        \mathcal{L}(x, x_0, \gamma)=\frac{\gamma}{\pi}\frac{1}{\gamma^2+(x-x_0)^2}
+    """
+    lorentzian_ = (gamma / np.pi) * (1.0 / (gamma ** 2 + (x - x0) ** 2))
+    return lorentzian_
