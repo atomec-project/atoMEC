@@ -144,8 +144,8 @@ def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
     np.fill_diagonal(p, np.exp(-2 * xgrid))
 
     # see referenced paper for definitions of A and B matrices
-    A = np.matrix((I_minus - 2 * I_zero + I_plus) / dx ** 2)
-    B = np.matrix((I_minus + 10 * I_zero + I_plus) / 12)
+    A = np.array((I_minus - 2 * I_zero + I_plus) / dx ** 2)
+    B = np.array((I_minus + 10 * I_zero + I_plus) / 12)
 
     # von neumann boundary conditions
     if bc == "neumann":
@@ -155,7 +155,7 @@ def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
         B[N - 1, N - 1] = B[N - 1, N - 1] - dx / 12.0
 
     # construct kinetic energy matrix
-    T = -0.5 * p * A
+    T = -0.5 * p @ A
 
     # solve in serial or parallel - serial mostly useful for debugging
     if config.numcores == 0:
@@ -242,8 +242,8 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     # make temporary folder with random name to store arrays
     while True:
         try:
-            joblib_folder = "".join(
-                random.choices(string.ascii_uppercase + string.digits, k=30)
+            joblib_folder = "atoMEC_tmpdata_" + "".join(
+                random.choices(string.ascii_uppercase + string.digits, k=20)
             )
             os.mkdir(joblib_folder)
             break
@@ -352,7 +352,7 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
             np.fill_diagonal(V_mat, v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
 
             # construct Hamiltonians
-            H = T + B * V_mat
+            H = T + B @ V_mat
 
             # if dirichlet solve on (N-1) x (N-1) grid
             if bc == "dirichlet":
@@ -446,7 +446,7 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
     np.fill_diagonal(V_mat, v[p])
 
     # construct Hamiltonians
-    H = T + B * V_mat
+    H = T + B @ V_mat
 
     # if dirichlet solve on (N-1) x (N-1) grid
     if bc == "dirichlet":

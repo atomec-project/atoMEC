@@ -468,18 +468,19 @@ class ISModel:
         # list all possible treatments for unbound electrons
         unbound_permitted = ["ideal", "quantum"]
 
-        # convert unbound to all lowercase
-        unbound.lower()
-
         if not isinstance(unbound, str):
             raise InputError.unbound_error(
                 "Unbound electron description is not a string"
             )
         else:
+            # convert unbound to all lowercase
+            unbound.lower()
+
             if unbound not in unbound_permitted:
                 err_msg = (
                     "Treatment of unbound electrons not recognised. \n                "
-                    " Allowed treatments are: " + [ub for ub in unbound_permitted]
+                    " Allowed treatments are: "
+                    + ", ".join([ub for ub in unbound_permitted])
                 )
                 raise InputError.unbound_error(err_msg)
             elif bc == "bands" and unbound == "ideal":
@@ -512,16 +513,16 @@ electrons. Only quantum treatment is permitted."
         # list permitted boundary conditions
         bcs_permitted = ["dirichlet", "neumann", "bands"]
 
-        # convert to lowercase
-        bc.lower()
-
-        if not isinstance("bc", str):
+        if not isinstance(bc, str):
             raise InputError.bc_error("Boundary condition is not a string")
         else:
+            # convert to lowercase
+            bc.lower()
+
             if bc not in bcs_permitted:
                 err_msg = (
                     "Boundary condition is not recognised. \n                 Allowed"
-                    " boundary conditions are: " + [b for b in bcs_permitted]
+                    " boundary conditions are: " + ", ".join([b for b in bcs_permitted])
                 )
                 raise InputError.bc_error(err_msg)
 
@@ -1100,6 +1101,22 @@ class InputError(Exception):
         None
         """
         print("Error in scf_params input: " + err_msg)
+        sys.exit("Exiting atoMEC")
+
+    def v_shift_error(err_msg):
+        """
+        Raise exception if error in SCF inputs.
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Returns
+        -------
+        None
+        """
+        print("Error in v_shift input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
 

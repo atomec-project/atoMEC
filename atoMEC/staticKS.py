@@ -20,6 +20,7 @@ Classes
                        them. N.B. the :class:`EnergyAlt` class constructs the energy \
                        functional in an alternative manner to the main :class:`Energy` \
                        class.
+* :class:`GramSchmidt` : Holds the Gram-Schmidt orthoganalization procedure
 
 Functions
 ---------
@@ -403,7 +404,7 @@ class Orbitals:
                 sp = levels[0]
                 l = levels[1]
                 n = levels[2]
-                ldegen_mat[sp, l, n] = (2.0 / config.spindims) * (2 * l + 1.0)
+                ldegen_mat[:, sp, l, n] = (2.0 / config.spindims) * (2 * l + 1.0)
 
         return ldegen_mat
 
@@ -1393,8 +1394,8 @@ class EnergyAlt:
     @property
     def E_unbound(self):
         r"""float: The energy of the unbound part of the electron density."""
-        if self._E_unbound == 0.0:
-            self._E_unbound = Energy.calc_E_kin_unbound(self._orbs, self._xgrid)
+        if self._E_unbound == 0.0 and config.unbound == "ideal":
+            self._E_unbound = Energy.calc_E_kin_unbound()
         return self._E_unbound
 
     @property
@@ -1501,12 +1502,115 @@ class EnergyAlt:
         S = {}
 
         # bound part
-        S["bound"] = Energy.calc_S_bound(orbs)
+        S["bound"] = Energy.calc_S_orbs(orbs.occnums, orbs.occ_weight)
 
         # unbound part
-        S["unbound"] = Energy.calc_S_unbound(orbs)
+        if config.unbound == "ideal":
+            S["unbound"] = Energy.calc_S_unbound()
+        else:
+            S["unbound"] = 0.0
 
         # total
         S["tot"] = S["bound"] + S["unbound"]
 
         return S
+
+
+class GramSchmidt:
+    """Class holding Gram-Schmidt orthoganalization process."""
+
+    def __init__(self, eigfuncs, xgrid):
+        self._eigfuncs = eigfuncs
+        self._xgrid = xgrid
+
+    def make_ortho(self):
+        """
+        Make eigenfunctions orthonormal using Gram-Schmidt orthoganalization.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        eigfuncs_ortho : ndarray
+            orthonormal eigenfunctions
+        """
+        # initialize dimensions etc
+        nbands, nspin, lmax, nmax, ngrid = np.shape(self.eigfuncs)
+        eigfuncs_ortho = np.zeros_like(self.eigfuncs)
+        norm = np.zeros_like(self.eigfuncs)
+
+        # FIXME: make nested loop cleaner / more efficient
+        for k in range(nbands):
+            for sp in range(nspin):
+                for l in range(lmax):
+                    for n1 in range(nmax):
+                        eigfuncs_ortho[k, sp, l, n1] = self.eigfuncs[k, sp, l, n1]
+                        for n2 in range(n1):
+                            # orthogonalize over the n dimension
+                            eigfuncs_ortho[k, sp, l, n1] -= self.proj_eigfuncs(
+                                eigfuncs_ortho[k, sp, l, n2],
+                                self.eigfuncs[k, sp, l, n1],
+                                self.xgrid,
+                            )
+                        # compute |phi|^2
+                        norm[k, sp, l, n1] = self.prod_eigfuncs(
+                            eigfuncs_ortho[k, sp, l, n1],
+                            eigfuncs_ortho[k, sp, l, n1],
+                            self.xgrid,
+                        )
+
+        # normalize
+        a = norm ** (-0.5)
+        eigfuncs_ortho = eigfuncs_ortho * a
+
+        return eigfuncs_ortho
+
+    @staticmethod
+    def prod_eigfuncs(phi0, phi1, xgrid):
+        """
+        Compute the product of two KS eigenfunctions and integrate.
+
+        Parameters
+        ----------
+        phi_0 : ndarray
+            first orbital
+        phi_1 : ndarray
+            second orbital
+        xgrid : ndarray
+            log grid
+
+        Returns
+        -------
+        prod_eigfuncs_ : ndarray
+            integrated product of phi_0 and phi_1
+        """
+        prod_eigfuncs_ = 4 * np.pi * np.trapz(np.exp(2.0 * xgrid) * phi0 * phi1, xgrid)
+        return prod_eigfuncs_
+
+    @staticmethod
+    def proj_eigfuncs(phi0, phi1, xgrid):
+        """
+        Compute the projection of one eigenfunction onto another.
+
+        Parameters
+        ----------
+        phi_0 : ndarray
+            first orbital
+        phi_1 : ndarray
+            second orbital
+        xgrid : ndarray
+            log grid
+
+        Returns
+        -------
+        proj_eigfuncs_ : ndarray
+            projection of phi_0 onto phi_1
+        """
+        proj_eigfuncs_ = (
+            GramSchmidt.prod_eigfuncs(phi0, phi1, xgrid)
+            / GramSchmidt.prod_eigfuncs(phi0, phi0, xgrid)
+        ) * phi0
+
+        return proj_eigfuncs_
