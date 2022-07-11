@@ -305,13 +305,25 @@ def calc_xc(density, xgrid, xcfunc, xctype):
         # gga
         if xcfunc._family == 2:
             rho_libxc = np.zeros((config.grid_params["ngrid"],config.spindims))
-            sigma_libxc = np.zeros((config.grid_params["ngrid"],config.spindims))
+            sigma_libxc = np.zeros((config.grid_params["ngrid"],3))
 
             for i in range(config.spindims):
                 rho_libxc[:,i]=density[i,:]
-                sigma_libxc[:,i]=mathtools.grad_den(density[i,:],np.exp(xgrid),xgrid)
+            if config.spindims==2:
+                grad_up=mathtools.grad_den(density[0,:],np.exp(xgrid),xgrid)
+                grad_dw=mathtools.grad_den(density[1,:],np.exp(xgrid),xgrid)
+                sigma_libxc[:,0]=grad_up**2
+                sigma_libxc[:,1]=grad_up*grad_dw
+                sigma_libxc[:,2]=grad_dw**2
+            else:
+                grad=mathtools.grad_den(density[0,:],np.exp(xgrid),xgrid)
+                sigma_libxc[:,0]=grad**2
+                sigma_libxc[:,1]=grad**2
+                sigma_libxc[:,2]=grad**2
+
 
             inp={"rho":rho_libxc, "sigma":sigma_libxc}
+            
             out = xcfunc.compute(inp)
             # extract the energy density
             if xctype == "e_xc":
