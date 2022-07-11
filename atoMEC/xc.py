@@ -302,5 +302,20 @@ def calc_xc(density, xgrid, xcfunc, xctype):
                 xc_arr = out["zk"].transpose()[0]
             elif xctype == "v_xc":
                 xc_arr = out["vrho"].transpose()
+        # gga
+        if xcfunc._family == 2:
+            rho_libxc = np.zeros((config.grid_params["ngrid"],config.spindims))
+            sigma_libxc = np.zeros((config.grid_params["ngrid"],config.spindims))
 
+            for i in range(config.spindims):
+                rho_libxc[:,i]=density[i,:]
+                sigma_libxc[:,i]=mathtools.grad_den(density[i,:],np.exp(xgrid),xgrid)
+
+            inp={"rho":rho_libxc, "sigma":sigma_libxc}
+            out = xcfunc.compute(inp)
+            # extract the energy density
+            if xctype == "e_xc":
+                xc_arr = out["zk"].transpose()[0]
+            elif xctype == "v_xc":
+                xc_arr = out["vrho"].transpose()
     return xc_arr

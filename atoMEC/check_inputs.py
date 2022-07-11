@@ -416,9 +416,9 @@ class ISModel:
             by the current version of atoMEC
         """
         # supported families of libxc functional by name
-        names_supp = ["lda"]
+        names_supp = ["lda","gga"]
         # supported families of libxc functional by id
-        id_supp = [1]
+        id_supp = [1,2]
 
         # check both the exchange and correlation functionals are valid
         xc_func, err_xc = xc.check_xc_func(xc_func, id_supp)
