@@ -187,7 +187,9 @@ def v_xc(density, xgrid, xfunc, cfunc):
 
     # compute the exchange potential
     _v_xc["x"] = calc_xc(density, xgrid, xfunc, "v_xc")
-
+    #ZZZZZZZ
+    #print('in clac_xc, shape of output:')
+    #print(np.shape(_v_xc["x"]))
     # compute the correlation potential
     _v_xc["c"] = calc_xc(density, xgrid, cfunc, "v_xc")
 
@@ -292,6 +294,8 @@ def calc_xc(density, xgrid, xcfunc, xctype):
             # lda just needs density as input
             # messy transformation for libxc - why isn't tranpose working??
             rho_libxc = np.zeros((config.grid_params["ngrid"], config.spindims))
+            print('rho_libxc-before')
+            print(np.shape(rho_libxc))
             for i in range(config.spindims):
                 rho_libxc[:, i] = density[i, :]
             inp = {"rho": rho_libxc}
@@ -302,24 +306,30 @@ def calc_xc(density, xgrid, xcfunc, xctype):
                 xc_arr = out["zk"].transpose()[0]
             elif xctype == "v_xc":
                 xc_arr = out["vrho"].transpose()
+                print('xc_arr')
+                print(np.shape(xc_arr))
+                print('rho_libxc-after')
+                print(np.shape(rho_libxc))
         # gga
         if xcfunc._family == 2:
             rho_libxc = np.zeros((config.grid_params["ngrid"],config.spindims))
-            sigma_libxc = np.zeros((config.grid_params["ngrid"],3))
-
+            #sigma_libxc = np.zeros((config.grid_params["ngrid"],3))
+            #print('rho_libxc-before')
+            #print(np.shape(rho_libxc))
+            
             for i in range(config.spindims):
                 rho_libxc[:,i]=density[i,:]
             if config.spindims==2:
-                grad_up=mathtools.grad_den(density[0,:],np.exp(xgrid),xgrid)
-                grad_dw=mathtools.grad_den(density[1,:],np.exp(xgrid),xgrid)
-                sigma_libxc[:,0]=grad_up**2
-                sigma_libxc[:,1]=grad_up*grad_dw
-                sigma_libxc[:,2]=grad_dw**2
+                sigma_libxc = np.zeros((config.grid_params["ngrid"],3))
+                grad_0=mathtools.grad_den(density[0,:],np.exp(xgrid),xgrid)
+                grad_1=mathtools.grad_den(density[1,:],np.exp(xgrid),xgrid)
+                sigma_libxc[:,0]=grad_0**2
+                sigma_libxc[:,1]=grad_0*grad_1
+                sigma_libxc[:,2]=grad_1**2
             else:
+                sigma_libxc = np.zeros((config.grid_params["ngrid"],1))
                 grad=mathtools.grad_den(density[0,:],np.exp(xgrid),xgrid)
                 sigma_libxc[:,0]=grad**2
-                sigma_libxc[:,1]=grad**2
-                sigma_libxc[:,2]=grad**2
 
 
             inp={"rho":rho_libxc, "sigma":sigma_libxc}
@@ -329,5 +339,36 @@ def calc_xc(density, xgrid, xcfunc, xctype):
             if xctype == "e_xc":
                 xc_arr = out["zk"].transpose()[0]
             elif xctype == "v_xc":
-                xc_arr = out["vrho"].transpose()
+                if config.spindims==2:
+                    #xc_arr=[out["vrho"].transpose()[0]-eta(out,grad_0,grad_1,0,xgrid),out["vrho"].transpose()[1]-eta(out,grad_0,grad_1,1,xgrid)]
+                    xc_arr =out["vrho"].transpose()-eta(out,grad_0,grad_1,1,xgrid)
+                else:
+                    xc_arr=np.zeros((config.grid_params["ngrid"],config.spindims))
+                    for i in range(config.spindims):
+                        xc_arr[:,i]=out["vrho"].transpose()-2.*mathtools.grad_den((2.*grad*out["vsigma"].transpose()[0]),np.exp(xgrid),xgrid) 
+                    #print('vrho')
+                    #print(np.shape(out["vrho"].transpose()))
+                    #print('rho_libxc-after')
+                    #print(np.shape(rho_libxc))
+                    #print('xc_arr')
+                    #print(np.shape(xc_arr))
+                #xc_arr = out["vrho"].transpose()
+                    xc_arr=xc_arr.transpose()
     return xc_arr
+
+def eta(out,grad_0,grad_1,spin,xgrid):
+    """
+    calculates the change in the output of the libxc GGA calculation.
+
+
+    """
+    if spin==0:
+        place1=2.*grad_0*out["vsigma"].transpose()[0]
+        inner=np.array((place1,place1))
+    elif spin==1:
+        place1=grad_0*out["vsigma"].transpose()[0]+grad_1*out["vsigma"].transpose()[1]
+        place2=grad_1*out["vsigma"].transpose()[2]+grad_0*out["vsigma"].transpose()[1]
+        inner=np.array((place1,place2))
+    print(np.shape(inner))
+    outer=2.*np.array((mathtools.grad_den(inner[0],np.exp(xgrid),xgrid),mathtools.grad_den(inner[1],np.exp(xgrid),xgrid)))
+    return outer
