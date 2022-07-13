@@ -304,10 +304,10 @@ def calc_xc(density, xgrid, xcfunc, xctype):
         # gga
         if xcfunc._family == 2:
             rho_libxc = np.zeros((config.grid_params["ngrid"], config.spindims))
-            
+
             for i in range(config.spindims):
                 rho_libxc[:, i] = density[i, :]
-            #preparing the sigma array needed for libxc gga calculation
+            # preparing the sigma array needed for libxc gga calculation
             if config.spindims == 2:
                 sigma_libxc = np.zeros((config.grid_params["ngrid"], 3))
                 grad_0 = mathtools.grad_den(density[0, :], np.exp(xgrid), xgrid)
@@ -327,7 +327,7 @@ def calc_xc(density, xgrid, xcfunc, xctype):
             # extract the energy density
             if xctype == "e_xc":
                 xc_arr = out["zk"].transpose()[0]
-            #extract xc potential
+            # extract xc potential
             elif xctype == "v_xc":
                 if config.spindims == 2:
                     xc_arr = out["vrho"].transpose() - eta(out, grad_0, grad_1, xgrid)
@@ -352,8 +352,8 @@ def calc_xc(density, xgrid, xcfunc, xctype):
 
 def eta(out, grad_0, grad_1, xgrid):
     """
-    Calculates a component for the spin-polarized gga xc potential.
-    
+    Calculate a component for the spin-polarized gga xc potential.
+
     Parameters
     ----------
     out: The output of the libxc calculation
