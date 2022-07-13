@@ -378,14 +378,14 @@ def gga_pot_chainrule(out, grad_0, grad_1, xgrid):
     Calculates the second component of the chain rule expansion for the gga
     xc pot calculation for a spin polarized calculation:
     .. math::
-        v_{xc}^{\sigma}(r)=\frac{\del e_xc[\rho_0,\rho_1]}{\del \rho_{\sigma}}-
-                2\nabla[\nabla \rho_{\sigma}(r)*v_{2}^{\sigma,\sigma}(r)+
+        v_{xc}^{\sigma}(r)=\frac{\partial e_{xc}[\rho_0,\rho_1]}{\partial \rho_{\sigma}}-
+                2\nabla[\nabla \rho_{\sigma}(r)v_{2}^{\sigma,\sigma}(r)+
                 \nabla \rho_{\sigma'}(r)v_{2}^{\sigma,\sigma'}(r)]
-    where:
+    where
     .. math::
         v_{2}^{\sigma,\sigma'}=
-        \frac{\del e_xc[\rho_0,\rho_1]}
-        {\del (\nable \rho_{\sigma} \nable \rho_{\sigma'})}
+        \frac{\partial e_xc[\rho_0,\rho_1]}
+        {\partial (\nable \rho_{\sigma} \nable \rho_{\sigma'})}
     The output of the function is the second line of the above.
     """
     # 1st term of the expression in [] brackets:
