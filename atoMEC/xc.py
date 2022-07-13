@@ -377,16 +377,24 @@ def gga_pot_chainrule(out, grad_0, grad_1, xgrid):
     -----
     Calculates the second component of the chain rule expansion for the gga
     xc pot calculation for a spin polarized calculation:
+
     .. math::
-        v_{xc}^{\sigma}(r)=\frac{\partial e_{xc}[\rho_0,\rho_1]}{\partial \rho_{\sigma}}-
+
+        v_{xc}^{\sigma}(r)=\frac{\partial e_{xc}[\rho_0,\rho_1]}
+        {\partial\rho_{\sigma}}-
                 2\nabla[\nabla \rho_{\sigma}(r)v_{2}^{\sigma,\sigma}(r)+
                 \nabla \rho_{\sigma'}(r)v_{2}^{\sigma,\sigma'}(r)]
+    
     where
+    
     .. math::
+
         v_{2}^{\sigma,\sigma'}=
-        \frac{\partial e_xc[\rho_0,\rho_1]}
-        {\partial (\nable \rho_{\sigma} \nable \rho_{\sigma'})}
-    The output of the function is the second line of the above.
+        \frac{\partial e_{xc}[\rho_0,\rho_1]}
+        {\partial (\nabla \rho_{\sigma} \nabla \rho_{\sigma'})}
+    
+    The output of the function is the [] brackets after being acted upon with
+    the divergence.
     """
     # 1st term of the expression in [] brackets:
     place1 = (
