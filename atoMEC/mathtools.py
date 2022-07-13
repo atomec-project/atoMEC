@@ -479,13 +479,17 @@ def grad_den(den, rgrid, xgrid):
 
     Parameters
     -----------
-    den : density array
-    rgrid : radial grid array
-    xgrid : exponential grid array
+    den : ndarray
+        density array or any other function that is integrated
+    rgrid : ndarray
+        radial grid array
+    xgrid : ndarray
+        exponential grid array
 
     Returns
     -------
-    grad : The gradient of the density w.r.t. the radial grid.
+    grad : ndarray
+        The gradient of the density w.r.t. the radial grid.
     """
     grad = (rgrid ** (-1)) * np.gradient(den, xgrid)
     return grad

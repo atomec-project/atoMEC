@@ -226,7 +226,6 @@ def E_xc(density, xgrid, xfunc, cfunc):
     # compute the exchange energy
     ex_libxc = calc_xc(density, xgrid, xfunc, "e_xc")
     _E_xc["x"] = mathtools.int_sphere(ex_libxc * dens_tot, xgrid)
-    
 
     # compute the correlation energy
     ec_libxc = calc_xc(density, xgrid, cfunc, "e_xc")
@@ -304,46 +303,85 @@ def calc_xc(density, xgrid, xcfunc, xctype):
                 xc_arr = out["vrho"].transpose()
         # gga
         if xcfunc._family == 2:
-            rho_libxc = np.zeros((config.grid_params["ngrid"],config.spindims))
+            rho_libxc = np.zeros((config.grid_params["ngrid"], config.spindims))
             
             for i in range(config.spindims):
-                rho_libxc[:,i]=density[i,:]
-            if config.spindims==2:
-                sigma_libxc = np.zeros((config.grid_params["ngrid"],3))
-                grad_0=mathtools.grad_den(density[0,:],np.exp(xgrid),xgrid)
-                grad_1=mathtools.grad_den(density[1,:],np.exp(xgrid),xgrid)
-                sigma_libxc[:,0]=grad_0**2
-                sigma_libxc[:,1]=grad_0*grad_1
-                sigma_libxc[:,2]=grad_1**2
+                rho_libxc[:, i] = density[i, :]
+            #preparing the sigma array needed for libxc gga calculation
+            if config.spindims == 2:
+                sigma_libxc = np.zeros((config.grid_params["ngrid"], 3))
+                grad_0 = mathtools.grad_den(density[0, :], np.exp(xgrid), xgrid)
+                grad_1 = mathtools.grad_den(density[1, :], np.exp(xgrid), xgrid)
+                sigma_libxc[:, 0] = grad_0 ** 2
+                sigma_libxc[:, 1] = grad_0 * grad_1
+                sigma_libxc[:, 2] = grad_1 ** 2
             else:
-                sigma_libxc = np.zeros((config.grid_params["ngrid"],1))
-                grad=mathtools.grad_den(density[0,:],np.exp(xgrid),xgrid)
-                sigma_libxc[:,0]=grad**2
+                sigma_libxc = np.zeros((config.grid_params["ngrid"], 1))
+                grad = mathtools.grad_den(density[0, :], np.exp(xgrid), xgrid)
+                sigma_libxc[:, 0] = grad ** 2
 
+            inp = {"rho": rho_libxc, "sigma": sigma_libxc}
 
-            inp={"rho":rho_libxc, "sigma":sigma_libxc}
-            
+            # compute the xc potential and energy density
             out = xcfunc.compute(inp)
             # extract the energy density
             if xctype == "e_xc":
                 xc_arr = out["zk"].transpose()[0]
+            #extract xc potential
             elif xctype == "v_xc":
-                if config.spindims==2:
-                    xc_arr =out["vrho"].transpose()-eta(out,grad_0,grad_1,xgrid)
+                if config.spindims == 2:
+                    xc_arr = out["vrho"].transpose() - eta(out, grad_0, grad_1, xgrid)
                 else:
-                    xc_arr=np.zeros((config.grid_params["ngrid"],config.spindims))
+                    xc_arr = np.zeros((config.grid_params["ngrid"], config.spindims))
                     for i in range(config.spindims):
-                        xc_arr[:,i]=out["vrho"].transpose()-2.*np.exp(-2.*xgrid)*mathtools.grad_den((2.*np.exp(2.*xgrid)*grad*out["vsigma"].transpose()[0]),np.exp(xgrid),xgrid) 
-                    xc_arr=xc_arr.transpose()
+                        xc_arr[:, i] = out["vrho"].transpose() - 2.0 * np.exp(
+                            -2.0 * xgrid
+                        ) * mathtools.grad_den(
+                            (
+                                2.0
+                                * np.exp(2.0 * xgrid)
+                                * grad
+                                * out["vsigma"].transpose()[0]
+                            ),
+                            np.exp(xgrid),
+                            xgrid,
+                        )
+                    xc_arr = xc_arr.transpose()
     return xc_arr
 
-def eta(out,grad_0,grad_1,xgrid):
-    """
-    calculates the change in the output for the libxc GGA calculation.
 
+def eta(out, grad_0, grad_1, xgrid):
+    """
+    Calculates a component for the spin-polarized gga xc potential.
+    
+    Parameters
+    ----------
+    out: The output of the libxc calculation
+    grad_0: ndarray
+        The gradient of the density of the 0 spin channel.
+    grad_1: ndarray
+        The gradient of the density of the 1 spin channel.
+    xgrid: ndarray
+        the equispace grid.
+
+    Returns
+    -------
+    eta: nd array
+        The addition to obtain the spin polarized gga xc potential
 
     """
-    place1=grad_0*out["vsigma"].transpose()[0]+grad_1*out["vsigma"].transpose()[1]
-    place2=grad_1*out["vsigma"].transpose()[2]+grad_0*out["vsigma"].transpose()[1]
-    outer=2.*np.array((np.exp(-2.*xgrid)*mathtools.grad_den(np.exp(2.*xgrid)*place1,np.exp(xgrid),xgrid),np.exp(-2.*xgrid)*mathtools.grad_den(np.exp(2.*xgrid)*place2,np.exp(xgrid),xgrid)))
+    place1 = (
+        grad_0 * out["vsigma"].transpose()[0] + grad_1 * out["vsigma"].transpose()[1]
+    )
+    place2 = (
+        grad_1 * out["vsigma"].transpose()[2] + grad_0 * out["vsigma"].transpose()[1]
+    )
+    outer = 2.0 * np.array(
+        (
+            np.exp(-2.0 * xgrid)
+            * mathtools.grad_den(np.exp(2.0 * xgrid) * place1, np.exp(xgrid), xgrid),
+            np.exp(-2.0 * xgrid)
+            * mathtools.grad_den(np.exp(2.0 * xgrid) * place2, np.exp(xgrid), xgrid),
+        )
+    )
     return outer
