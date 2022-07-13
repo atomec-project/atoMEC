@@ -310,14 +310,14 @@ def calc_xc(density, xgrid, xcfunc, xctype):
             # preparing the sigma array needed for libxc gga calculation
             if config.spindims == 2:
                 sigma_libxc = np.zeros((config.grid_params["ngrid"], 3))
-                grad_0 = mathtools.grad_den(density[0, :], np.exp(xgrid), xgrid)
-                grad_1 = mathtools.grad_den(density[1, :], np.exp(xgrid), xgrid)
+                grad_0 = mathtools.grad_func(density[0, :], xgrid)
+                grad_1 = mathtools.grad_func(density[1, :], xgrid)
                 sigma_libxc[:, 0] = grad_0 ** 2
                 sigma_libxc[:, 1] = grad_0 * grad_1
                 sigma_libxc[:, 2] = grad_1 ** 2
             else:
                 sigma_libxc = np.zeros((config.grid_params["ngrid"], 1))
-                grad = mathtools.grad_den(density[0, :], np.exp(xgrid), xgrid)
+                grad = mathtools.grad_func(density[0, :], xgrid)
                 sigma_libxc[:, 0] = grad ** 2
 
             inp = {"rho": rho_libxc, "sigma": sigma_libxc}
@@ -330,58 +330,79 @@ def calc_xc(density, xgrid, xcfunc, xctype):
             # extract xc potential
             elif xctype == "v_xc":
                 if config.spindims == 2:
-                    xc_arr = out["vrho"].transpose() - eta(out, grad_0, grad_1, xgrid)
+                    xc_arr = out["vrho"].transpose() - gga_pot_chainrule(
+                        out, grad_0, grad_1, xgrid
+                    )
                 else:
                     xc_arr = np.zeros((config.grid_params["ngrid"], config.spindims))
+                    # Using the chain rule to obtain the gga xc pot
+                    # from the libxc calculation:
                     for i in range(config.spindims):
                         xc_arr[:, i] = out["vrho"].transpose() - 2.0 * np.exp(
                             -2.0 * xgrid
-                        ) * mathtools.grad_den(
+                        ) * mathtools.grad_func(
                             (
                                 2.0
                                 * np.exp(2.0 * xgrid)
                                 * grad
                                 * out["vsigma"].transpose()[0]
                             ),
-                            np.exp(xgrid),
                             xgrid,
                         )
                     xc_arr = xc_arr.transpose()
     return xc_arr
 
 
-def eta(out, grad_0, grad_1, xgrid):
-    """
+def gga_pot_chainrule(out, grad_0, grad_1, xgrid):
+    r"""
     Calculate a component for the spin-polarized gga xc potential.
 
     Parameters
     ----------
-    out: The output of the libxc calculation
+    out: dict of libxc objects
+        The output of the libxc calculation
     grad_0: ndarray
         The gradient of the density of the 0 spin channel.
     grad_1: ndarray
         The gradient of the density of the 1 spin channel.
     xgrid: ndarray
-        the equispace grid.
+        the logarithmic (equispaced) grid.
 
     Returns
     -------
     eta: nd array
         The addition to obtain the spin polarized gga xc potential
 
+    Notes
+    -----
+    Calculates the second component of the chain rule expansion for the gga
+    xc pot calculation for a spin polarized calculation:
+    .. math::
+        v_{xc}^{\sigma}(r)=\frac{\del e_xc[\rho_0,\rho_1]}{\del \rho_{\sigma}}-
+                2\nabla[\nabla \rho_{\sigma}(r)*v_{2}^{\sigma,\sigma}(r)+
+                \nabla \rho_{\sigma'}(r)v_{2}^{\sigma,\sigma'}(r)]
+    where:
+    .. math::
+        v_{2}^{\sigma,\sigma'}=
+        \frac{\del e_xc[\rho_0,\rho_1]}
+        {\del (\nable \rho_{\sigma} \nable \rho_{\sigma'})}
+    The output of the function is the second line of the above.
     """
+    # 1st term of the expression in [] brackets:
     place1 = (
         grad_0 * out["vsigma"].transpose()[0] + grad_1 * out["vsigma"].transpose()[1]
     )
+    # 2nd term of the expression in [] brackets:
     place2 = (
         grad_1 * out["vsigma"].transpose()[2] + grad_0 * out["vsigma"].transpose()[1]
     )
-    outer = 2.0 * np.array(
+    # combining the 2 and taking the divergence (in spherical coordinates)
+    eta = 2.0 * np.array(
         (
             np.exp(-2.0 * xgrid)
-            * mathtools.grad_den(np.exp(2.0 * xgrid) * place1, np.exp(xgrid), xgrid),
+            * mathtools.grad_func(np.exp(2.0 * xgrid) * place1, xgrid),
             np.exp(-2.0 * xgrid)
-            * mathtools.grad_den(np.exp(2.0 * xgrid) * place2, np.exp(xgrid), xgrid),
+            * mathtools.grad_func(np.exp(2.0 * xgrid) * place2, xgrid),
         )
     )
-    return outer
+    return eta
