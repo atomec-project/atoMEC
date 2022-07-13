@@ -384,15 +384,15 @@ def gga_pot_chainrule(out, grad_0, grad_1, xgrid):
         {\partial\rho_{\sigma}}-
                 2\nabla[\nabla \rho_{\sigma}(r)v_{2}^{\sigma,\sigma}(r)+
                 \nabla \rho_{\sigma'}(r)v_{2}^{\sigma,\sigma'}(r)]
-    
+
     where
-    
+
     .. math::
 
         v_{2}^{\sigma,\sigma'}=
         \frac{\partial e_{xc}[\rho_0,\rho_1]}
         {\partial (\nabla \rho_{\sigma} \nabla \rho_{\sigma'})}
-    
+
     The output of the function is the [] brackets after being acted upon with
     the divergence.
     """
