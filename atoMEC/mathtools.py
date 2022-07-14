@@ -471,3 +471,25 @@ def lorentzian(x, x0, gamma):
     """
     lorentzian_ = (gamma / np.pi) * (1.0 / (gamma ** 2 + (x - x0) ** 2))
     return lorentzian_
+
+
+def grad_func(den, xgrid):
+    """
+    Compute the gradient of a function on the logarithmic grid.
+
+    Parameters
+    ----------
+    den : ndarray
+        density array or any other function that is integrated
+    rgrid : ndarray
+        radial grid array
+    xgrid : ndarray
+        exponential grid array
+
+    Returns
+    -------
+    grad : ndarray
+        The gradient of the density w.r.t. the radial grid.
+    """
+    grad = (np.exp(-xgrid)) * np.gradient(den, xgrid)
+    return grad
