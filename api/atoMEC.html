@@ -1282,6 +1282,27 @@ N_{ub}(\beta,\mu) - N_e\]</div>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.mathtools.grad_func">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">grad_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">den</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#grad_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.grad_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the gradient of a function on the logarithmic grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>den</strong> (<em>ndarray</em>) – density array or any other function that is integrated</p></li>
+<li><p><strong>rgrid</strong> (<em>ndarray</em>) – radial grid array</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – exponential grid array</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>grad</strong> – The gradient of the density w.r.t. the radial grid.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.mathtools.ideal_entropy">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">ideal_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#ideal_entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.ideal_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define the integrand to be used in <a class="reference internal" href="#atoMEC.mathtools.ideal_entropy_int" title="atoMEC.mathtools.ideal_entropy_int"><code class="xref py py-func docutils literal notranslate"><span class="pre">ideal_entropy_int()</span></code></a> (see notes).</p>
@@ -3413,6 +3434,44 @@ and exchange + correlation respectively</p>
 <dd class="field-odd"><p>str or None</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.xc.gga_pot_chainrule">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">gga_pot_chainrule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">libxc_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spindims</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#gga_pot_chainrule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.gga_pot_chainrule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a component for the spin-polarized gga xc potential.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>libxc_output</strong> (<em>dict of libxc objects</em>) – The output of the libxc calculation</p></li>
+<li><p><strong>grad_0</strong> (<em>ndarray</em>) – The gradient of the density of the 0 spin channel.</p></li>
+<li><p><strong>grad_1</strong> (<em>ndarray</em>) – The gradient of the density of the 1 spin channel.</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic (equispaced) grid.</p></li>
+<li><p><strong>spindim</strong> (<em>int</em>) – the number of spin dimentions in the calculation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>gga_addition2</strong> – The addition to obtain the spin polarized gga xc potential</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nd array</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Calculates the second component of the chain rule expansion for the gga
+xc pot calculation for a spin polarized calculation:</p>
+<div class="math notranslate nohighlight">
+\[v_{xc}^{\sigma}(r)=\frac{\partial e_{xc}[\rho_0,\rho_1]}
+{\partial\rho_{\sigma}}-
+        2\nabla[\nabla \rho_{\sigma}(r)v_{2}^{\sigma,\sigma}(r)+
+        \nabla \rho_{\sigma'}(r)v_{2}^{\sigma,\sigma'}(r)]\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[v_{2}^{\sigma,\sigma'}=
+\frac{\partial e_{xc}[\rho_0,\rho_1]}
+{\partial (\nabla \rho_{\sigma} \nabla \rho_{\sigma'})}\]</div>
+<p>The output of the function is the square brackets after being acted upon with
+the divergence.</p>
 </dd></dl>
 
 <dl class="py function">

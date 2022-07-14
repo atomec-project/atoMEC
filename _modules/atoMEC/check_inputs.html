@@ -579,9 +579,9 @@
 <span class="sd">            by the current version of atoMEC</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># supported families of libxc functional by name</span>
-        <span class="n">names_supp</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lda&quot;</span><span class="p">]</span>
+        <span class="n">names_supp</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lda&quot;</span><span class="p">,</span> <span class="s2">&quot;gga&quot;</span><span class="p">]</span>
         <span class="c1"># supported families of libxc functional by id</span>
-        <span class="n">id_supp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">id_supp</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
 
         <span class="c1"># check both the exchange and correlation functionals are valid</span>
         <span class="n">xc_func</span><span class="p">,</span> <span class="n">err_xc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">check_xc_func</span><span class="p">(</span><span class="n">xc_func</span><span class="p">,</span> <span class="n">id_supp</span><span class="p">)</span>

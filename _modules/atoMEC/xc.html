@@ -350,7 +350,6 @@
 
     <span class="c1"># compute the exchange potential</span>
     <span class="n">_v_xc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">)</span>
-
     <span class="c1"># compute the correlation potential</span>
     <span class="n">_v_xc</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">,</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">)</span>
 
@@ -465,8 +464,131 @@
                 <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;zk&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">:</span>
                 <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;vrho&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="c1"># gga</span>
+        <span class="k">if</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">_family</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">rho_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+                <span class="n">rho_libxc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="c1"># preparing the sigma array needed for libxc gga calculation</span>
+            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">sigma_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="n">grad_0</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
+                <span class="n">grad_1</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
+                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_0</span> <span class="o">**</span> <span class="mi">2</span>
+                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_0</span> <span class="o">*</span> <span class="n">grad_1</span>
+                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_1</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sigma_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">grad</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
+                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad</span> <span class="o">**</span> <span class="mi">2</span>
+
+            <span class="n">inp</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="n">rho_libxc</span><span class="p">,</span> <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">sigma_libxc</span><span class="p">}</span>
+
+            <span class="c1"># compute the xc potential and energy density</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+            <span class="c1"># extract the energy density</span>
+            <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">:</span>
+                <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;zk&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># extract xc potential</span>
+            <span class="k">elif</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;vrho&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="n">gga_pot_chainrule</span><span class="p">(</span>
+                        <span class="n">out</span><span class="p">,</span> <span class="n">grad_0</span><span class="p">,</span> <span class="n">grad_1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="mi">2</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
+                    <span class="c1"># Using the chain rule to obtain the gga xc pot</span>
+                    <span class="c1"># from the libxc calculation:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
+                        <span class="n">xc_arr</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;vrho&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="o">-</span> <span class="n">gga_pot_chainrule</span><span class="p">(</span>
+                            <span class="n">out</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span>
+                        <span class="p">)</span>
+                        <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">xc_arr</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">xc_arr</span></div>
+
+
+<div class="viewcode-block" id="gga_pot_chainrule"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.gga_pot_chainrule">[docs]</a><span class="k">def</span> <span class="nf">gga_pot_chainrule</span><span class="p">(</span><span class="n">libxc_output</span><span class="p">,</span> <span class="n">grad_0</span><span class="p">,</span> <span class="n">grad_1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">spindims</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate a component for the spin-polarized gga xc potential.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    libxc_output: dict of libxc objects</span>
+<span class="sd">        The output of the libxc calculation</span>
+<span class="sd">    grad_0: ndarray</span>
+<span class="sd">        The gradient of the density of the 0 spin channel.</span>
+<span class="sd">    grad_1: ndarray</span>
+<span class="sd">        The gradient of the density of the 1 spin channel.</span>
+<span class="sd">    xgrid: ndarray</span>
+<span class="sd">        the logarithmic (equispaced) grid.</span>
+<span class="sd">    spindim: int</span>
+<span class="sd">        the number of spin dimentions in the calculation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gga_addition2: nd array</span>
+<span class="sd">        The addition to obtain the spin polarized gga xc potential</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Calculates the second component of the chain rule expansion for the gga</span>
+<span class="sd">    xc pot calculation for a spin polarized calculation:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        v_{xc}^{\sigma}(r)=\frac{\partial e_{xc}[\rho_0,\rho_1]}</span>
+<span class="sd">        {\partial\rho_{\sigma}}-</span>
+<span class="sd">                2\nabla[\nabla \rho_{\sigma}(r)v_{2}^{\sigma,\sigma}(r)+</span>
+<span class="sd">                \nabla \rho_{\sigma&#39;}(r)v_{2}^{\sigma,\sigma&#39;}(r)]</span>
+
+<span class="sd">    where</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        v_{2}^{\sigma,\sigma&#39;}=</span>
+<span class="sd">        \frac{\partial e_{xc}[\rho_0,\rho_1]}</span>
+<span class="sd">        {\partial (\nabla \rho_{\sigma} \nabla \rho_{\sigma&#39;})}</span>
+
+<span class="sd">    The output of the function is the square brackets after being acted upon with</span>
+<span class="sd">    the divergence.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># 1st term of the expression in square brackets:</span>
+        <span class="n">term1</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">grad_0</span> <span class="o">*</span> <span class="n">libxc_output</span><span class="p">[</span><span class="s2">&quot;vsigma&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">grad_1</span> <span class="o">*</span> <span class="n">libxc_output</span><span class="p">[</span><span class="s2">&quot;vsigma&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># 2nd term of the expression in square brackets:</span>
+        <span class="n">term2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">grad_1</span> <span class="o">*</span> <span class="n">libxc_output</span><span class="p">[</span><span class="s2">&quot;vsigma&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">grad_0</span> <span class="o">*</span> <span class="n">libxc_output</span><span class="p">[</span><span class="s2">&quot;vsigma&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># combining the 2 and taking the divergence (in spherical coordinates)</span>
+        <span class="n">gga_addition2</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+                <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">term1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+                <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">term2</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gga_addition2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mf">2.0</span>
+            <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+            <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="mf">2.0</span>
+                    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="n">grad_0</span>
+                    <span class="o">*</span> <span class="n">libxc_output</span><span class="p">[</span><span class="s2">&quot;vsigma&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">),</span>
+                <span class="n">xgrid</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">gga_addition2</span></div>
 </pre></div>
 
            </div>
