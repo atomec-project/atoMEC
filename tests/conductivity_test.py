@@ -21,6 +21,9 @@ N_cc_expected=4.59790383269
 N_tt_expected=4.59790383269
 N_vv_expected=0.0
 N_cv_expected=0.0
+expected_integral_4=1.341640786499
+expected_integral_2=0.447213595499
+expected_sum_rule=0.2940819621
 accuracy = 0.001
 
 
@@ -49,15 +52,36 @@ class TestConductivity:
         ],
     )
     def test_cond_tot(self, SCF_input, method, expected):
-        """Test the ELF through the N_shell property."""
+        """Run the cond_tot function (under Kubo-Greenwood class)."""
         assert np.isclose(
             self._run_cond_tot(SCF_input, method),
             expected,
             atol=accuracy,
         )
     
+
+    @pytest.mark.parametrize(
+        "order,expected",
+        [
+            (2,expected_integral_2),
+            (4,expected_integral_4),
+        ],
+    )
+    def test_integrals(self,order,expected):
+        """ Test the spherical harmonic integrals. """
+        assert np.isclose(self._run_int_calc(order),expected,atol=accuracy)
+
+    @pytest.mark.parametrize(
+        "SCF_input,expected",
+        [
+            (lazy_fixture("SCF_output"),expected_sum_rule),
+        ],
+    )
+    
+    def test_sum_rule(self,SCF_input,expected):
+        assert np.isclose(self._run_sum_rule(SCF_input),expected,atol=accuracy)
+    
     @staticmethod
-    #ZZZZZZZZZZZZZZZZZZZZZZZ
     def _run_SCF(spinpol):
         """
         Run an SCF calculation for a Fluorine atom
@@ -101,6 +125,21 @@ class TestConductivity:
         N=cond.cond_tot(component=which)[1]
         return N
 
+    @staticmethod
+    def _run_int_calc(order):
+        """
+        """
+        spherical_har=conductivity.SphHamInts()
+        integ=spherical_har.P_int(order,1,2,1)
+        return integ
+
+    @staticmethod
+    def _run_sum_rule(input_SCF): 
+        """
+        """
+        cond=conductivity.KuboGreenwood(input_SCF["orbitals"])
+        sum_rule=cond.check_sum_rule(2,2,0)[0]
+        return sum_rule
 
 if __name__ == "__main__":
     SCF_out = TestConduction._run_SCF(False)
