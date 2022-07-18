@@ -318,7 +318,6 @@ def chem_pot(orbs):
     """
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
-
     # so far only the ideal treatment for unbound electrons is implemented
     if config.unbound == "ideal":
         for i in range(config.spindims):
@@ -339,23 +338,38 @@ def chem_pot(orbs):
     if config.unbound == "quantum":
         for i in range(config.spindims):
             if config.nele[i] != 0:
-                soln = optimize.root_scalar(
-                    f_root_qu,
-                    x0=mu0[i],
-                    args=(
-                        orbs.eigvals[:, i],
-                        orbs.occ_weight[:, i],
-                        config.nele[i],
-                    ),
-                    method="brentq",
-                    bracket=[-100, 100],
+                if config.mu==0:
+                    soln = optimize.root_scalar(
+                        f_root_qu,
+                        x0=mu0[i],
+                        args=(
+                            orbs.eigvals[:, i],
+                            orbs.occ_weight[:, i],
+                            config.nele[i],
+                        ),
+                        method="brentq",
+                        bracket=[-5000, 5000],
+                    options={"maxiter": 1000},
+                    )
+                    mu[i] = soln.root
+                else:
+                    soln = optimize.root_scalar(
+                        f_root_qu,
+                        x0=mu0[i],
+                        args=(
+                            orbs.eigvals[:, i],
+                            orbs.occ_weight[:, i],
+                            config.nele[i],
+                        ),
+                        method="brentq",
+                        bracket=[config.mu-50., config.mu+50.],
                     options={"maxiter": 100},
-                )
-                mu[i] = soln.root
+                    )
+                    mu[i] = soln.root
+
             # in case there are no electrons in one spin channel
             else:
                 mu[i] = -np.inf
-
     return mu
 
 
