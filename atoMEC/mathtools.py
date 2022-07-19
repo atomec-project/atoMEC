@@ -338,7 +338,7 @@ def chem_pot(orbs):
     if config.unbound == "quantum":
         for i in range(config.spindims):
             if config.nele[i] != 0:
-                if config.mu==0:
+                if config.mu == 0:
                     soln = optimize.root_scalar(
                         f_root_qu,
                         x0=mu0[i],
@@ -349,7 +349,7 @@ def chem_pot(orbs):
                         ),
                         method="brentq",
                         bracket=[-5000, 5000],
-                    options={"maxiter": 1000},
+                        options={"maxiter": 1000},
                     )
                     mu[i] = soln.root
                 else:
@@ -362,8 +362,8 @@ def chem_pot(orbs):
                             config.nele[i],
                         ),
                         method="brentq",
-                        bracket=[config.mu-50., config.mu+50.],
-                    options={"maxiter": 100},
+                        bracket=[config.mu - 50.0, config.mu + 50.0],
+                        options={"maxiter": 100},
                     )
                     mu[i] = soln.root
 
