@@ -322,67 +322,33 @@ def chem_pot(orbs):
     for i in range(config.spindims):
         x0 = mu0[i]
         args = (orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i])
+
         if config.mu[i] == 0:
             bracket = [-5000, 5000]
             maxiter = 1000
         else:
-            bracket = [config.mu[i] - 50.0, config.mu + 50.0]
+            bracket = [config.mu[i] - 100.0, config.mu + 100.0]
             maxiter = 100
 
         if config.unbound == "ideal":
-            # For first calculaton of the chemical potential:
-            if config.nele[i] != 0 and config.mu[i] == 0.0:
-                soln = optimize.root_scalar(
-                    f_root_id,
-                    x0=x0,
-                    args=args,
-                    method="brentq",
-                    bracket=bracket,
-                    options={"maxiter": maxiter},
-                )
-                mu[i] = soln.root
-            # For later calculations of chemical potential. After having an estimate:
-            elif config.nele[i] != 0 and config.mu[i] != 0.0:
-                soln = optimize.root_scalar(
-                    f_root_id,
-                    x0=x0,
-                    args=args,
-                    method="brentq",
-                    bracket=bracket,
-                    options={"maxiter": maxiter},
-                )
-                mu[i] = soln.root
-            # in case there are no electrons in one spin channel
-            else:
-                mu[i] = -np.inf
+            f_root = f_root_id
+        elif config.unbound == "quantum":
+            f_root = f_root_qu
 
-        if config.unbound == "quantum":
-            # For first calculaton of the chemical potential:
-            if config.nele[i] != 0 and config.mu[i] == 0.0:
-                soln = optimize.root_scalar(
-                    f_root_qu,
-                    x0=x0,
-                    args=args,
-                    method="brentq",
-                    bracket=bracket,
-                    options={"maxiter": maxiter},
-                )
-                mu[i] = soln.root
-            # For later calculations of chemical potential. After having an estimate:
-            elif config.nele[i] != 0 and config.mu[i] != 0.0:
-                soln = optimize.root_scalar(
-                    f_root_qu,
-                    x0=x0,
-                    args=args,
-                    method="brentq",
-                    bracket=bracket,
-                    options={"maxiter": maxiter},
-                )
-                mu[i] = soln.root
+        if config.nele[i] != 0:
+            soln = optimize.root_scalar(
+                f_root,
+                x0=x0,
+                args=args,
+                method="brentq",
+                bracket=bracket,
+                options={"maxiter": maxiter},
+            )
+            mu[i] = soln.root
 
             # in case there are no electrons in one spin channel
-            else:
-                mu[i] = -np.inf
+        else:
+            mu[i] = -np.inf
     return mu
 
 
