@@ -20,6 +20,10 @@ N_cv_expected_3_1 = 0.006759
 expected_integral_4 = 1.341640786499
 expected_integral_2 = 0.447213595499
 expected_sum_rule = 0.2940819621
+expected_prop_sig_vv=0.0
+expected_prop_sig_cv=0.0013982278
+expected_prop_N_tot=6.09241213503
+expected_prop_N_free=4.5709301608
 accuracy = 0.001
 
 
@@ -56,6 +60,23 @@ class TestConductivity:
             self._run_cond_tot(SCF_input, method,val_orb),
             expected,
             atol=accuracy,
+        )
+
+    @pytest.mark.parametrize(
+        "SCF_input,method,expected",
+        [
+            (lazy_fixture("SCF_output"),"sig_vv",expected_prop_sig_vv),
+            (lazy_fixture("SCF_output"),"sig_cv",expected_prop_sig_cv),
+            (lazy_fixture("SCF_output"),"N_tot",expected_prop_N_tot),
+            (lazy_fixture("SCF_output"),"N_free",expected_prop_N_free),
+        ],
+    )
+    def test_prop(self,SCF_input,method,expected):
+        """Run the prop_check function to check some properties of the Kubo-Greenwood class"""
+        assert np.isclose(
+                self._run_prop(SCF_input, method),
+                expected,
+                atol=accuracy,
         )
 
     @pytest.mark.parametrize(
@@ -132,7 +153,34 @@ class TestConductivity:
 
         N = cond.cond_tot(component=which)[1]
         return N
+    
+    @staticmethod
+    def _run_prop(input_SCF,which):
+        """
+        Returns properties from the Kubo-Greenwood class
+        
+        Parameters
+        ----------
+        input_SCF : dict of objects
+            the SCF input
+        which : the property to be calculated
 
+        Returns
+        -------
+        prop: float
+            The property's value
+        """
+        cond = conductivity.KuboGreenwood(input_SCF["orbitals"],valence_orbs=[(2,0)])
+        if which=='sig_vv':
+            prop=cond.sig_vv
+        elif which=='sig_cv':
+            prop=cond.sig_cv
+        elif which=='N_tot':
+            prop=cond.N_tot
+        else:
+            prop=cond.N_free
+        return prop
+    
     @staticmethod
     def _run_int_calc(order):
         """
