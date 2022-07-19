@@ -319,64 +319,64 @@ def chem_pot(orbs):
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
     # so far only the ideal treatment for unbound electrons is implemented
-    if config.unbound == "ideal":
-        for i in range(config.spindims):
+    for i in range(config.spindims):
+        x0 = mu0[i]
+        args = (orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i])
+        if config.mu[i] == 0:
+            bracket = [-5000, 5000]
+            maxiter = 1000
+        else:
+            bracket = [config.mu[i] - 50.0, config.mu + 50.0]
+            maxiter = 100
+
+        if config.unbound == "ideal":
             # For first calculaton of the chemical potential:
             if config.nele[i] != 0 and config.mu[i] == 0.0:
                 soln = optimize.root_scalar(
                     f_root_id,
-                    x0=mu0[i],
-                    args=(orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i]),
+                    x0=x0,
+                    args=args,
                     method="brentq",
-                    bracket=[-5000, 5000],
-                    options={"maxiter": 1000},
+                    bracket=bracket,
+                    options={"maxiter": maxiter},
                 )
                 mu[i] = soln.root
             # For later calculations of chemical potential. After having an estimate:
             elif config.nele[i] != 0 and config.mu[i] != 0.0:
                 soln = optimize.root_scalar(
                     f_root_id,
-                    x0=mu0[i],
-                    args=(orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i]),
+                    x0=x0,
+                    args=args,
                     method="brentq",
-                    bracket=[config.mu[i] - 50.0, config.mu[i] + 50.0],
-                    options={"maxiter": 100},
+                    bracket=bracket,
+                    options={"maxiter": maxiter},
                 )
                 mu[i] = soln.root
             # in case there are no electrons in one spin channel
             else:
                 mu[i] = -np.inf
 
-    if config.unbound == "quantum":
-        for i in range(config.spindims):
+        if config.unbound == "quantum":
             # For first calculaton of the chemical potential:
             if config.nele[i] != 0 and config.mu[i] == 0.0:
                 soln = optimize.root_scalar(
                     f_root_qu,
-                    x0=mu0[i],
-                    args=(
-                        orbs.eigvals[:, i],
-                        orbs.occ_weight[:, i],
-                        config.nele[i],
-                    ),
+                    x0=x0,
+                    args=args,
                     method="brentq",
-                    bracket=[-5000, 5000],
-                    options={"maxiter": 1000},
+                    bracket=bracket,
+                    options={"maxiter": maxiter},
                 )
                 mu[i] = soln.root
             # For later calculations of chemical potential. After having an estimate:
             elif config.nele[i] != 0 and config.mu[i] != 0.0:
                 soln = optimize.root_scalar(
                     f_root_qu,
-                    x0=mu0[i],
-                    args=(
-                        orbs.eigvals[:, i],
-                        orbs.occ_weight[:, i],
-                        config.nele[i],
-                    ),
+                    x0=x0,
+                    args=args,
                     method="brentq",
-                    bracket=[config.mu[i] - 50.0, config.mu[i] + 50.0],
-                    options={"maxiter": 100},
+                    bracket=bracket,
+                    options={"maxiter": maxiter},
                 )
                 mu[i] = soln.root
 
