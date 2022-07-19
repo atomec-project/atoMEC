@@ -9,10 +9,14 @@ import numpy as np
 
 
 # expected values and tolerance
-N_cc_expected = 4.59790383269
-N_tt_expected = 4.59790383269
-N_vv_expected = 0.0
-N_cv_expected = 0.0
+N_cc_expected_1_0 = 1.742515706139
+N_cc_expected_3_1 = 4.492209106738
+N_tt_expected_1_0 = 4.59790383269
+N_tt_expected_3_1 = 4.59790383269
+N_vv_expected_1_0 = 0.0
+N_vv_expected_3_1 = 0.0
+N_cv_expected_1_0 = 2.60323659985
+N_cv_expected_3_1 = 0.006759
 expected_integral_4 = 1.341640786499
 expected_integral_2 = 0.447213595499
 expected_sum_rule = 0.2940819621
@@ -34,18 +38,22 @@ class TestConductivity:
         return self._run_SCF(False)
 
     @pytest.mark.parametrize(
-        "SCF_input,method,expected",
+        "SCF_input,method,val_orb,expected",
         [
-            (lazy_fixture("SCF_output"), "cc", N_cc_expected),
-            (lazy_fixture("SCF_output"), "tt", N_tt_expected),
-            (lazy_fixture("SCF_output"), "vv", N_vv_expected),
-            (lazy_fixture("SCF_output"), "cv", N_cv_expected),
+            (lazy_fixture("SCF_output"), "cc", (1,0), N_cc_expected_1_0),
+            (lazy_fixture("SCF_output"), "tt", (1,0), N_tt_expected_1_0),
+            (lazy_fixture("SCF_output"), "vv", (1,0), N_vv_expected_1_0),
+            (lazy_fixture("SCF_output"), "cv", (1,0), N_cv_expected_1_0),
+            (lazy_fixture("SCF_output"), "cc", (3,1), N_cc_expected_3_1),
+            (lazy_fixture("SCF_output"), "tt", (3,1), N_tt_expected_3_1),
+            (lazy_fixture("SCF_output"), "vv", (3,1), N_vv_expected_3_1),
+            (lazy_fixture("SCF_output"), "cv", (3,1), N_cv_expected_3_1),
         ],
     )
-    def test_cond_tot(self, SCF_input, method, expected):
+    def test_cond_tot(self, SCF_input, method, val_orb, expected):
         """Run the cond_tot function (under Kubo-Greenwood class)."""
         assert np.isclose(
-            self._run_cond_tot(SCF_input, method),
+            self._run_cond_tot(SCF_input, method,val_orb),
             expected,
             atol=accuracy,
         )
@@ -102,7 +110,7 @@ class TestConductivity:
         return output
 
     @staticmethod
-    def _run_cond_tot(input_SCF, which):
+    def _run_cond_tot(input_SCF, which,val_orb):
         """
         Compute the number of conducting electrons via the cond_tot function.
 
@@ -111,6 +119,8 @@ class TestConductivity:
         input_SCF : dict of objects
             the SCF input
         which : the componenet for which the number of electrons is computed.
+        val_orb : tuple of ints
+            defines the valance orbital
 
         Returns
         -------
@@ -118,7 +128,7 @@ class TestConductivity:
             number of conductiong electrons in the component.
 
         """
-        cond = conductivity.KuboGreenwood(input_SCF["orbitals"])
+        cond = conductivity.KuboGreenwood(input_SCF["orbitals"],valence_orbs=[val_orb])
 
         N = cond.cond_tot(component=which)[1]
         return N
@@ -165,10 +175,10 @@ class TestConductivity:
         return sum_rule
 
 
-if __name__ == "__main__":
-    SCF_out = TestConductivity._run_SCF(False)
-    print(TestConductivity._run_cond_tot(SCF_out, "cc"))
-    print(TestConductivity._run_cond_tot(SCF_out, "tt"))
-    print(TestConductivity._run_cond_tot(SCF_out, "cv"))
-    print(TestConductivity._run_cond_tot(SCF_out, "vv"))
-    print(TestConductivity._run_sum_rule(SCF_out))
+#if __name__ == "__main__":
+#    SCF_out = TestConductivity._run_SCF(False)
+#    print(TestConductivity._run_cond_tot(SCF_out, "cc"))
+#    print(TestConductivity._run_cond_tot(SCF_out, "tt"))
+#    print(TestConductivity._run_cond_tot(SCF_out, "cv"))
+#    print(TestConductivity._run_cond_tot(SCF_out, "vv"))
+#    print(TestConductivity._run_sum_rule(SCF_out))
