@@ -321,8 +321,8 @@ def chem_pot(orbs):
     # so far only the ideal treatment for unbound electrons is implemented
     if config.unbound == "ideal":
         for i in range(config.spindims):
-            #For first calculaton of the chemical potential:
-            if config.nele[i] != 0 and config.mu[i]== 0.:
+            # For first calculaton of the chemical potential:
+            if config.nele[i] != 0 and config.mu[i] == 0.0:
                 soln = optimize.root_scalar(
                     f_root_id,
                     x0=mu0[i],
@@ -332,14 +332,14 @@ def chem_pot(orbs):
                     options={"maxiter": 1000},
                 )
                 mu[i] = soln.root
-            #For later calculations of chemical potential. After having an estimate:
-            elif config.nele[i] != 0 and config.mu[i] != 0.:
+            # For later calculations of chemical potential. After having an estimate:
+            elif config.nele[i] != 0 and config.mu[i] != 0.0:
                 soln = optimize.root_scalar(
                     f_root_id,
                     x0=mu0[i],
                     args=(orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i]),
                     method="brentq",
-                    bracket=[config.mu[i]-50., config.mu[i]+50.],
+                    bracket=[config.mu[i] - 50.0, config.mu[i] + 50.0],
                     options={"maxiter": 100},
                 )
                 mu[i] = soln.root
@@ -349,8 +349,8 @@ def chem_pot(orbs):
 
     if config.unbound == "quantum":
         for i in range(config.spindims):
-            #For first calculaton of the chemical potential:
-            if config.nele[i] != 0 and config.mu[i]==0.:
+            # For first calculaton of the chemical potential:
+            if config.nele[i] != 0 and config.mu[i] == 0.0:
                 soln = optimize.root_scalar(
                     f_root_qu,
                     x0=mu0[i],
@@ -364,8 +364,8 @@ def chem_pot(orbs):
                     options={"maxiter": 1000},
                 )
                 mu[i] = soln.root
-            #For later calculations of chemical potential. After having an estimate:
-            elif config.nele[i] !=0 and config.mu[i] !=0.:
+            # For later calculations of chemical potential. After having an estimate:
+            elif config.nele[i] != 0 and config.mu[i] != 0.0:
                 soln = optimize.root_scalar(
                     f_root_qu,
                     x0=mu0[i],
@@ -375,7 +375,7 @@ def chem_pot(orbs):
                         config.nele[i],
                     ),
                     method="brentq",
-                    bracket=[config.mu[i] - 50., config.mu[i] + 50.],
+                    bracket=[config.mu[i] - 50.0, config.mu[i] + 50.0],
                     options={"maxiter": 100},
                 )
                 mu[i] = soln.root
