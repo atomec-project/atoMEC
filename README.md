@@ -26,6 +26,7 @@ This repository is structured as follows:
 
 
 ## Installation
+
 First, clone the atoMEC repository and ``cd`` into the main directory.
 
 * Recommended : using [pipenv](https://pypi.org/project/pipenv/)
@@ -38,6 +39,8 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   4. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
 
 * Try running the examples in `examples/` and report any problems
+
+**Please note**: atoMEC does not yet support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support.
 
 ## Running
 You can familiarize yourself with the usage of this package by running the example scripts in `examples/`.
@@ -77,8 +80,7 @@ $ pip install -r docs/requirements.txt
 - Ekaterina Tsvetoslavova Stankulova ([Center for Advanced Systems Understanding](https://www.casus.science/))
 
 ## Citing atoMEC
-If you use code from this repository in a published work, please cite the DOI corresponding to the specific version of atoMEC that you used (DOIs are listed at [Zenodo.org](https://doi.org/10.5281/zenodo.5205718)).
+If you use code from this repository in a published work, please cite
 
-If appropriate, you might also consider citing the following preprint in publications which use atoMEC:
-
-T. J. Callow, E. Kraisler, S. B. Hansen, and A. Cangi, (2021). First-principles derivation and properties of density-functional average-atom models. arXiv preprint [arXiv:2103.09928](https://arxiv.org/abs/2103.09928).
+1. T. J. Callow, D. Kotik, E. Kraisler, and A. Cangi, "atoMEC: An open-source average-atom Python code", _Proceedings of the 21st Python in Science Conference_, edited by Meghann Agarwal, Chris Calloway, Dillon Niederhut, and David Shupe (2022), pp. 31 – 39
+2. The DOI corresponding to the specific version of atoMEC that you used (DOIs are listed at [Zenodo.org](https://doi.org/10.5281/zenodo.5205718))
