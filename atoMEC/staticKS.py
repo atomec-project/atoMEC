@@ -248,7 +248,6 @@ class Orbitals:
         # guess the chemical potential if initializing
         if init:
             config.mu = np.zeros((config.spindims))
-
         return
 
     # @writeoutput.timing
@@ -1537,28 +1536,28 @@ class GramSchmidt:
             orthonormal eigenfunctions
         """
         # initialize dimensions etc
-        nbands, nspin, lmax, nmax, ngrid = np.shape(self.eigfuncs)
-        eigfuncs_ortho = np.zeros_like(self.eigfuncs)
-        norm = np.zeros_like(self.eigfuncs)
+        nbands, nspin, lmax, nmax, ngrid = np.shape(self._eigfuncs)
+        eigfuncs_ortho = np.zeros_like(self._eigfuncs)
+        norm = np.zeros_like(self._eigfuncs)
 
         # FIXME: make nested loop cleaner / more efficient
         for k in range(nbands):
             for sp in range(nspin):
                 for l in range(lmax):
                     for n1 in range(nmax):
-                        eigfuncs_ortho[k, sp, l, n1] = self.eigfuncs[k, sp, l, n1]
+                        eigfuncs_ortho[k, sp, l, n1] = self._eigfuncs[k, sp, l, n1]
                         for n2 in range(n1):
                             # orthogonalize over the n dimension
                             eigfuncs_ortho[k, sp, l, n1] -= self.proj_eigfuncs(
                                 eigfuncs_ortho[k, sp, l, n2],
-                                self.eigfuncs[k, sp, l, n1],
-                                self.xgrid,
+                                self._eigfuncs[k, sp, l, n1],
+                                self._xgrid,
                             )
                         # compute |phi|^2
                         norm[k, sp, l, n1] = self.prod_eigfuncs(
                             eigfuncs_ortho[k, sp, l, n1],
                             eigfuncs_ortho[k, sp, l, n1],
-                            self.xgrid,
+                            self._xgrid,
                         )
 
         # normalize

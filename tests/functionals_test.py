@@ -16,6 +16,7 @@ lda_expected = -159.210841
 gdsmfb_expected = -159.154166
 no_xc_expected = -145.019411
 no_hxc_expected = -249.507728
+gga_expected = -159.92294751868772
 accuracy = 1e-3
 
 
@@ -33,6 +34,7 @@ class TestFuncs:
             ("gdsmfb", gdsmfb_expected),
             ("no_xc", no_xc_expected),
             ("no_hxc", no_hxc_expected),
+            ("gga", gga_expected),
         ],
     )
     def test_funcs(self, test_input, expected):
@@ -72,6 +74,9 @@ class TestFuncs:
         elif func == "no_hxc":
             xfunc_id = "hartree"
             cfunc_id = "None"
+        elif func == "gga":
+            xfunc_id = "gga_x_pbe"
+            cfunc_id = "gga_c_pbe"
 
         model = models.ISModel(
             Na_at,

@@ -7,9 +7,9 @@ import numpy as np
 
 
 # expected values and tolerance
-singlet_expected = -37.6906246
-triplet_expected = -37.6732473
-accuracy = 1e-3
+singlet_expected = -38.0024097674
+triplet_expected = -37.987537447
+accuracy = 1e-4
 
 
 class TestSpin:
@@ -56,6 +56,8 @@ class TestSpin:
             spinmag=spinmag,
             unbound="quantum",
             bc="bands",
+            xfunc_id="gga_x_pbe",
+            cfunc_id="gga_c_pbe"
         )
 
         # run the SCF calculation
