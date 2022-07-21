@@ -411,7 +411,6 @@
         <span class="c1"># guess the chemical potential if initializing</span>
         <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
             <span class="n">config</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
-
         <span class="k">return</span></div>
 
     <span class="c1"># @writeoutput.timing</span>
@@ -1700,28 +1699,28 @@
 <span class="sd">            orthonormal eigenfunctions</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># initialize dimensions etc</span>
-        <span class="n">nbands</span><span class="p">,</span> <span class="n">nspin</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">ngrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
-        <span class="n">eigfuncs_ortho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
-        <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
+        <span class="n">nbands</span><span class="p">,</span> <span class="n">nspin</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">ngrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">)</span>
+        <span class="n">eigfuncs_ortho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">)</span>
 
         <span class="c1"># FIXME: make nested loop cleaner / more efficient</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbands</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nspin</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">):</span>
                     <span class="k">for</span> <span class="n">n1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmax</span><span class="p">):</span>
-                        <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span>
+                        <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span>
                         <span class="k">for</span> <span class="n">n2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
                             <span class="c1"># orthogonalize over the n dimension</span>
                             <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj_eigfuncs</span><span class="p">(</span>
                                 <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n2</span><span class="p">],</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">],</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">xgrid</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">],</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
                             <span class="p">)</span>
                         <span class="c1"># compute |phi|^2</span>
                         <span class="n">norm</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prod_eigfuncs</span><span class="p">(</span>
                             <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">],</span>
                             <span class="n">eigfuncs_ortho</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n1</span><span class="p">],</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">xgrid</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
                         <span class="p">)</span>
 
         <span class="c1"># normalize</span>
