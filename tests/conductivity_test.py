@@ -39,7 +39,7 @@ class TestConductivity:
     def SCF_output(self):
         """Run a spin-unpolarized SCF calc and save the output."""
         config.numcores = -1
-        return self._run_SCF(False)
+        return self._run_SCF()
 
     @pytest.mark.parametrize(
         "SCF_input,method,val_orb,expected",
@@ -101,7 +101,7 @@ class TestConductivity:
         assert np.isclose(self._run_sum_rule(SCF_input), expected, atol=accuracy)
 
     @staticmethod
-    def _run_SCF(spinpol):
+    def _run_SCF():
         r"""
         Run an SCF calculation for a Fluorine atom.
 
@@ -223,10 +223,21 @@ class TestConductivity:
         return sum_rule
 
 
-# if __name__ == "__main__":
-#    SCF_out = TestConductivity._run_SCF(False)
-#    print(TestConductivity._run_cond_tot(SCF_out, "cc"))
-#    print(TestConductivity._run_cond_tot(SCF_out, "tt"))
-#    print(TestConductivity._run_cond_tot(SCF_out, "cv"))
-#    print(TestConductivity._run_cond_tot(SCF_out, "vv"))
-#    print(TestConductivity._run_sum_rule(SCF_out))
+if __name__ == "__main__":
+    SCF_out = TestConductivity._run_SCF()
+    print(TestConductivity._run_cond_tot(SCF_out, "cc", (1, 0)))
+    print(TestConductivity._run_cond_tot(SCF_out, "tt", (1, 0)))
+    print(TestConductivity._run_cond_tot(SCF_out, "cv", (1, 0)))
+    print(TestConductivity._run_cond_tot(SCF_out, "vv", (1, 0)))
+    print(TestConductivity._run_cond_tot(SCF_out, "cc", (3, 1)))
+    print(TestConductivity._run_cond_tot(SCF_out, "tt", (3, 1)))
+    print(TestConductivity._run_cond_tot(SCF_out, "cv", (3, 1)))
+    print(TestConductivity._run_cond_tot(SCF_out, "vv", (3, 1)))
+    print(TestConductivity._run_sum_rule(SCF_out))
+    print(TestConductivity._run_prop(SCF_out, "sig_vv"))
+    print(TestConductivity._run_prop(SCF_out, "sig_cv"))
+    print(TestConductivity._run_prop(SCF_out, "N_tot"))
+    print(TestConductivity._run_prop(SCF_out, "N_free"))
+    print(TestConductivity._run_int_calc(2))
+    print(TestConductivity._run_int_calc(4))
+    print(TestConductivity._run_sum_rule(SCF_out))
