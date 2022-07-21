@@ -26,6 +26,7 @@ This repository is structured as follows:
 
 
 ## Installation
+
 First, clone the atoMEC repository and ``cd`` into the main directory.
 
 * Recommended : using [pipenv](https://pypi.org/project/pipenv/)
@@ -38,6 +39,8 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   4. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
 
 * Try running the examples in `examples/` and report any problems
+
+N.B.: atoMEC currently does not support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support.
 
 ## Running
 You can familiarize yourself with the usage of this package by running the example scripts in `examples/`.
