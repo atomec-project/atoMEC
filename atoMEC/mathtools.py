@@ -316,7 +316,6 @@ def chem_pot(orbs):
 
     The number of unbound electrons :math:`N_{ub}` depends on the implementation choice.
     """
-
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
     # so far only the ideal treatment for unbound electrons is implemented
