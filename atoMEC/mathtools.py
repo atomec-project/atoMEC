@@ -316,6 +316,7 @@ def chem_pot(orbs):
 
     The number of unbound electrons :math:`N_{ub}` depends on the implementation choice.
     """
+
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
     # so far only the ideal treatment for unbound electrons is implemented
@@ -327,7 +328,7 @@ def chem_pot(orbs):
             bracket = [-5000, 5000]
             maxiter = 1000
         else:
-            bracket = [config.mu[i] - 100.0, config.mu + 100.0]
+            bracket = [config.mu[i] - 100.0, config.mu[i] + 100.0]
             maxiter = 100
 
         if config.unbound == "ideal":
