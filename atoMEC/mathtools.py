@@ -25,6 +25,7 @@ from scipy import optimize, integrate
 
 # internal libraries
 from . import config
+from . import writeoutput
 
 
 def normalize_orbs(eigfuncs_x, xgrid):
@@ -291,6 +292,7 @@ def ideal_entropy_int(mu, beta, n):
     return I_n
 
 
+@writeoutput.timing
 def chem_pot(orbs):
     r"""
     Determine the chemical potential by enforcing charge neutrality (see notes).
@@ -322,13 +324,9 @@ def chem_pot(orbs):
     for i in range(config.spindims):
         x0 = mu0[i]
         args = (orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i])
-
-        if config.mu[i] == 0 or config.nmax > 20:
-            bracket = [-5000, 5000]
-        else:
-            bracket = [config.mu[i] - 100.0, config.mu[i] + 100.0]
-
+        bracket = [-20000, 20000]
         maxiter = 100
+
         if config.unbound == "ideal":
             f_root = f_root_id
         elif config.unbound == "quantum":
