@@ -322,8 +322,8 @@ def chem_pot(orbs):
     for i in range(config.spindims):
         x0 = mu0[i]
         args = (orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i])
-        bracket = [-20000, 20000]
-        maxiter = 100
+        bracket = [-1e6, 1e6]
+        maxiter = 1000
 
         if config.unbound == "ideal":
             f_root = f_root_id
