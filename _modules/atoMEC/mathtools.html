@@ -485,13 +485,8 @@
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
         <span class="n">x0</span> <span class="o">=</span> <span class="n">mu0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occ_weight</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">bracket</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">]</span>
-            <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">1000</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">bracket</span> <span class="o">=</span> <span class="p">[</span><span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mf">100.0</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span> <span class="o">+</span> <span class="mf">100.0</span><span class="p">]</span>
-            <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="n">bracket</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">]</span>
+        <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">1000</span>
 
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
             <span class="n">f_root</span> <span class="o">=</span> <span class="n">f_root_id</span>
