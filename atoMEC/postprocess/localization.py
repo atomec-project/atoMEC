@@ -319,6 +319,35 @@ class ELFTools:
         return N_shell
 
 
+def MIS_count(model, orbitals, core_orbs):
+    r"""
+    Calculate the MIS using the "counting" method.
+
+    Parameters
+    ----------
+    model : models.ISModel
+        the ISModel object
+    orbitals : staticKS.orbitals
+        the KS orbitals object
+    core_orbs : list of tuples
+        the core orbitals
+
+    Returns
+    --------
+    MIS : np.ndarray
+        the mean ionization state
+    """
+
+    MIS = model.nele.astype(np.float64)
+
+    # loop over the core orbitals and subtract their occupation numbers
+    for core_orb in core_orbs:
+        l, n = core_orb
+        MIS -= np.sum(orbitals.occnums_w[:, :, l, n], axis=0)
+
+    return MIS
+
+
 def calc_IPR_mat(eigfuncs, xgrid):
     r"""
     Calculate the inverse participation ratio for all eigenfunctions (see notes).
