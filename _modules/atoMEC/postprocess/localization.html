@@ -426,10 +426,10 @@
                     <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xarg</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">spindims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">xargs_min</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">xargs_min</span></div>
 
@@ -464,10 +464,12 @@
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
 
                 <span class="c1"># determine the part of the xgrid lying between two minima</span>
-                <span class="n">xgrid_partition</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="p">:</span> <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+                <span class="n">xgrid_partition</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="p">:</span> <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
                 <span class="c1"># determine the part of the density lying between two minima</span>
-                <span class="n">density_partition</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="p">:</span> <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+                <span class="n">density_partition</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="n">i</span><span class="p">][</span>
+                    <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="p">:</span> <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">]</span>
 
                 <span class="c1"># this will be going...</span>
                 <span class="c1"># ELF_partition = ELF[i][xargs_min[i][j] : xargs_min[i][j + 1]]</span>
