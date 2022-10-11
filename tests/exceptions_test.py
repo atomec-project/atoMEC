@@ -87,7 +87,7 @@ class TestModel:
         [
             (5.0),
             ("lca"),
-            ("gga_x_pbe"),
+            ("gga_z_pbc")
         ],
     )
     def test_xc(self, xc_input):

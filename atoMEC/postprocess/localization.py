@@ -263,10 +263,10 @@ class ELFTools:
                     xargs_min[i].append(xarg)
 
         if spindims == 1:
-            xargs_min[0].append(-1)
+            xargs_min[0].append(len(xgrid) - 1)
         elif spindims == 2:
-            xargs_min[0].append(-1)
-            xargs_min[1].append(-1)
+            xargs_min[0].append(len(xgrid) - 1)
+            xargs_min[1].append(len(xgrid) - 1)
 
         return xargs_min
 
@@ -301,10 +301,12 @@ class ELFTools:
             for j in range(len(xargs_min[i]) - 1):
 
                 # determine the part of the xgrid lying between two minima
-                xgrid_partition = xgrid[xargs_min[i][j] : xargs_min[i][j + 1]]
+                xgrid_partition = xgrid[xargs_min[i][j] : xargs_min[i][j + 1] + 1]
 
                 # determine the part of the density lying between two minima
-                density_partition = density[i][xargs_min[i][j] : xargs_min[i][j + 1]]
+                density_partition = density[i][
+                    xargs_min[i][j] : xargs_min[i][j + 1] + 1
+                ]
 
                 # this will be going...
                 # ELF_partition = ELF[i][xargs_min[i][j] : xargs_min[i][j + 1]]

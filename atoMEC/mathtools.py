@@ -318,44 +318,32 @@ def chem_pot(orbs):
     """
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
-
     # so far only the ideal treatment for unbound electrons is implemented
-    if config.unbound == "ideal":
-        for i in range(config.spindims):
-            if config.nele[i] != 0:
-                soln = optimize.root_scalar(
-                    f_root_id,
-                    x0=mu0[i],
-                    args=(orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i]),
-                    method="brentq",
-                    bracket=[-100, 100],
-                    options={"maxiter": 100},
-                )
-                mu[i] = soln.root
-            # in case there are no electrons in one spin channel
-            else:
-                mu[i] = -np.inf
+    for i in range(config.spindims):
+        x0 = mu0[i]
+        args = (orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i])
+        bracket = [-1e6, 1e6]
+        maxiter = 1000
 
-    if config.unbound == "quantum":
-        for i in range(config.spindims):
-            if config.nele[i] != 0:
-                soln = optimize.root_scalar(
-                    f_root_qu,
-                    x0=mu0[i],
-                    args=(
-                        orbs.eigvals[:, i],
-                        orbs.occ_weight[:, i],
-                        config.nele[i],
-                    ),
-                    method="brentq",
-                    bracket=[-100, 100],
-                    options={"maxiter": 100},
-                )
-                mu[i] = soln.root
-            # in case there are no electrons in one spin channel
-            else:
-                mu[i] = -np.inf
+        if config.unbound == "ideal":
+            f_root = f_root_id
+        elif config.unbound == "quantum":
+            f_root = f_root_qu
 
+        if config.nele[i] != 0:
+            soln = optimize.root_scalar(
+                f_root,
+                x0=x0,
+                args=args,
+                method="brentq",
+                bracket=bracket,
+                options={"maxiter": maxiter},
+            )
+            mu[i] = soln.root
+
+            # in case there are no electrons in one spin channel
+        else:
+            mu[i] = -np.inf
     return mu
 
 
@@ -471,3 +459,25 @@ def lorentzian(x, x0, gamma):
     """
     lorentzian_ = (gamma / np.pi) * (1.0 / (gamma ** 2 + (x - x0) ** 2))
     return lorentzian_
+
+
+def grad_func(den, xgrid):
+    """
+    Compute the gradient of a function on the logarithmic grid.
+
+    Parameters
+    ----------
+    den : ndarray
+        density array or any other function that is integrated
+    rgrid : ndarray
+        radial grid array
+    xgrid : ndarray
+        exponential grid array
+
+    Returns
+    -------
+    grad : ndarray
+        The gradient of the density w.r.t. the radial grid.
+    """
+    grad = (np.exp(-xgrid)) * np.gradient(den, xgrid)
+    return grad
