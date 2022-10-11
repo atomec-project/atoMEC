@@ -23,13 +23,13 @@ def stress_tensor(orbs, pot):
     grad_orbs = np.exp(-1.5 * xgrid) * (deriv_orbs - 0.5 * orbs.eigfuncs)
 
     # compute the "gradient" term
-    grad_sq = grad_orbs ** 2
+    grad_sq = grad_orbs**2
 
     # compute the l*(l+1) array
     l_arr = np.fromiter((l * (l + 1.0) for l in range(lmax)), float, lmax)
 
     # get the X(R)^2 term
-    orb_sq = orbs.eigfuncs ** 2 * np.exp(-xgrid)
+    orb_sq = orbs.eigfuncs**2 * np.exp(-xgrid)
 
     # compute the l(l+1)/r^2 X(R)^2 term
     lsq_term = np.exp(-2 * xgrid) * np.einsum("k,ijklm->ijklm", l_arr, orb_sq)
@@ -55,64 +55,10 @@ def stress_tensor(orbs, pot):
     return P[-1]  # * np.exp(2 * xgrid)
 
 
-def rgrid_int(f_r, rgrid):
-
-    func_int = 4 * np.pi * rgrid ** 2 * f_r
-
-    I_sph = np.trapz(func_int, rgrid)
-
-    return I_sph
-
-
-def stress_tensor_rr(orbs, pot):
-
-    r"""Calculate the pressure with the stress tensor approach."""
-
-    nkpts, spindims, lmax, nmax = np.shape(orbs.eigvals)
-
-    # set the xgrid and value of r at sphere edge
-    xgrid = orbs._xgrid
-    rmax = np.exp(xgrid[-1])
-
-    # first compute the gradient of the orbitals
-
-    # take the derivative of orb2
-    # compute the gradient of the orbitals
-    deriv_orbs = np.gradient(orbs.eigfuncs, xgrid, axis=-1, edge_order=2)
-
-    # chain rule to convert from dP_dx to dX_dr
-    grad_orbs = np.exp(-1.5 * xgrid) * (deriv_orbs - 0.5 * orbs.eigfuncs)
-
-    # compute the "gradient" term
-    grad_sq_term = (grad_orbs ** 2)[:, :, :, :, -1]
-
-    # compute the l*(l+1) array
-    l_arr = -np.fromiter((l * (l + 1) for l in range(lmax)), float, lmax)
-
-    # get the X(R)^2 term
-    orb_sq = (orbs.eigfuncs ** 2 * np.exp(-xgrid))[:, :, :, :, -1]
-
-    # get the X(R) * dX/dr(R) term
-    X_dX_term = (2 * orbs.eigfuncs * grad_orbs * np.exp(-xgrid / 2))[:, :, :, :, -1]
-
-    # compute the l(l+1)/r^2 X(R)^2 term
-    lsq_term = rmax ** (-2) * np.einsum("k,ijkl->ijkl", l_arr, orb_sq)
-
-    # the eps term
-    eps_term = 2 * orbs.eigvals * orb_sq
-
-    sum_terms = grad_sq_term + X_dX_term + lsq_term + eps_term
-
-    # put everything together
-    P = 0.5 * np.sum(orbs.occnums_w * sum_terms)
-
-    return P
-
-
 def virial(atom, model, energy, density):
 
     # compute the sphere volume
-    sph_vol = (4.0 * np.pi / 3.0) * atom.radius ** 3
+    sph_vol = (4.0 * np.pi / 3.0) * atom.radius**3
 
     # compute the derivative term of the W_xc component
     Wd_x = calc_Wd_xc(model.xfunc_id, density)
@@ -155,7 +101,7 @@ def calc_Wd_xc(xc_func_id, density):
 def ions_ideal(atom):
 
     # compute the volume
-    V = (4.0 * np.pi / 3.0) * atom.radius ** 3
+    V = (4.0 * np.pi / 3.0) * atom.radius**3
 
     # compute pressure with ideal gas law
     P_ion = atom.temp / V
