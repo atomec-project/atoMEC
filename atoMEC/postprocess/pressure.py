@@ -3,6 +3,7 @@ The pressure module contains functions to compute the pressure with various appr
 
 Functions
 ---------
+* :func: `finite_diff` : Calculate electronic pressure with finite-difference method.
 * :func: `stress_tensor` : Calculate electronic pressure with stress-tensor method.
 * :func: `virial` : Calculate electronic pressure with virial method.
 * :func: `calc_Wd_xc` : Calculate the derivative contribution to virial pressure.
@@ -13,8 +14,139 @@ Functions
 import numpy as np
 
 # internal libs
-from atoMEC import mathtools, xc
+from atoMEC import mathtools, xc, config
 from atoMEC.check_inputs import InputError
+
+
+def finite_diff(
+    atom,
+    model,
+    energy_output,
+    conv_params={},
+    scf_params={},
+    band_params={},
+    force_bound=[],
+    write_info=False,
+    verbosity=0,
+    dR=0.01,
+):
+    r"""
+    Calculate the electronic pressure using the finite differences method.
+
+    Parameters
+    ----------
+    atom : atoMEC.Atom
+        The main atom object
+    model : models.ISModel
+        The ISModel object
+    energy_output : dict
+        output parameters of the function CalcEnergy
+    conv_params : dict, optional
+        dictionary of convergence parameters as follows:
+        {
+        `econv` (``float``)  : convergence for total energy,
+        `nconv` (``float``)  : convergence for density,
+        `vconv` (``float``)  : convergence for electron number,
+        `eigtol` (``float``) : tolerance for eigenvalues
+        }
+    scf_params : dict, optional
+       dictionary for scf cycle parameters as follows:
+       {
+       `maxscf`  (``int``)   : maximum number of scf cycles,
+       `mixfrac` (``float``) : density mixing fraction
+       }
+    force_bound : list of list of ints, optional
+        force certain levels to be bound, for example:
+        `force_bound = [0, 1, 0]`
+        forces the orbital quith quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be
+        always bound even if it has positive energy. This prevents convergence
+        issues.
+    verbosity : int, optional
+        how much information is printed at each SCF cycle.
+        `verbosity=0` prints the total energy and convergence values (default)
+        `verbosity=1` prints the above and the KS eigenvalues and occupations.
+    write_info : bool, optional
+        prints the scf cycle and final parameters
+        defaults to False
+    dR : float, optional
+        radius difference for finite difference calculation
+        defaults to 0.01
+
+    Returns
+    -------
+    pressure : float
+        electronic pressure in Ha
+    """
+    # set up grid and band dictionaries
+    grid_params = {}
+    band_params = {}
+
+    # if inheriting params from CalcEnergy original function
+    eigfuncs = energy_output["orbitals"].eigfuncs
+    (
+        band_params["nkpts"],
+        config.spindims,
+        lmax,
+        nmax,
+        grid_params["ngrid"],
+    ) = np.shape(eigfuncs)
+    grid_params["x0"] = energy_output["orbitals"]._xgrid[0]
+
+    # initialize the main radius we are interested in
+    main_rad = atom.radius
+
+    # change main radius by +dR
+    atom.radius = main_rad + dR
+
+    # calculate free energy for new radius and store it
+    output1 = model.CalcEnergy(
+        nmax,
+        lmax,
+        grid_params=grid_params,
+        band_params=band_params,
+        scf_params=scf_params,
+        conv_params=conv_params,
+        force_bound=force_bound,
+        verbosity=verbosity,
+        write_info=write_info,
+        guess=True,
+        guess_pot=energy_output["potential"].v_s,
+        write_density=False,
+        write_potential=False,
+    )
+    F1 = output1["energy"].F_tot
+
+    # change main radius by -dR
+    atom.radius = main_rad - dR
+
+    # calculate free energy for new radius and store it
+    output2 = model.CalcEnergy(
+        nmax,
+        lmax,
+        grid_params=grid_params,
+        band_params=band_params,
+        scf_params=scf_params,
+        conv_params=conv_params,
+        force_bound=force_bound,
+        verbosity=verbosity,
+        write_info=write_info,
+        guess=True,
+        guess_pot=energy_output["potential"].v_s,
+        write_density=False,
+        write_potential=False,
+    )
+    F2 = output2["energy"].F_tot
+
+    dFdR = (F1 - F2) / (2 * dR)  # finite differences
+    dRdV = 1 / (4 * np.pi * main_rad**2)  # V = sphere of radius R (main_rad) volume
+
+    # calculate pressure by thermodynamic definition p = -dFdV and chain rule
+    pressure = -dFdR * dRdV
+
+    # convert atom.radius back to its correct value
+    atom.radius = main_rad
+
+    return pressure
 
 
 def stress_tensor(orbs, pot):
