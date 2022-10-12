@@ -3,11 +3,11 @@ The pressure module contains functions to compute the pressure with various appr
 
 Functions
 ---------
-* :func: `finite_diff` : Calculate electronic pressure with finite-difference method.
-* :func: `stress_tensor` : Calculate electronic pressure with stress-tensor method.
-* :func: `virial` : Calculate electronic pressure with virial method.
-* :func: `calc_Wd_xc` : Calculate the derivative contribution to virial pressure.
-* :func: `ions_ideal` : Calculate ionic pressure with ideal gas law.
+* :func:`finite_diff` : Calculate electronic pressure with finite-difference method.
+* :func:`stress_tensor` : Calculate electronic pressure with stress-tensor method.
+* :func:`virial` : Calculate electronic pressure with virial method.
+* :func:`calc_Wd_xc` : Calculate the derivative contribution to virial pressure.
+* :func:`ions_ideal` : Calculate ionic pressure with ideal gas law.
 """
 
 # external libs
@@ -76,7 +76,7 @@ def finite_diff(
 
     Returns
     -------
-    pressure : float
+    P_e : float
         electronic pressure in Ha
     """
     # set up grid and band dictionaries
@@ -143,12 +143,12 @@ def finite_diff(
     dRdV = 1 / (4 * np.pi * main_rad**2)  # V = sphere of radius R (main_rad) volume
 
     # calculate pressure by thermodynamic definition p = -dFdV and chain rule
-    pressure = -dFdR * dRdV
+    P_e = -dFdR * dRdV
 
     # convert atom.radius back to its correct value
     atom.radius = main_rad
 
-    return pressure
+    return P_e
 
 
 def stress_tensor(Atom, model, orbs, pot):
@@ -163,7 +163,7 @@ def stress_tensor(Atom, model, orbs, pot):
 
     Returns
     -------
-    P : float
+    P_e : float
         the electronic pressure
 
     References
@@ -207,10 +207,12 @@ def stress_tensor(Atom, model, orbs, pot):
     sum_terms = grad_sq + lsq_term + eps_term
 
     # put everything together
-    P = np.einsum("ijkl,ijklm->m", orbs.occnums_w, sum_terms) / 6
+    P_arr = np.einsum("ijkl,ijklm->m", orbs.occnums_w, sum_terms) / 6
 
     # return the value of P at the sphere edge
-    return P[-1]
+    P_e = P_arr[-1]
+
+    return P_e
 
 
 def virial(atom, model, energy, density):
@@ -229,16 +231,17 @@ def virial(atom, model, energy, density):
 
     Returns
     -------
-    pressure : float
+    P_e : float
         the electronic pressure
 
     Notes
     -----
     The virial pressure is given by the formula [10]_
+
     .. math::
 
-        P = \frac{2T + E_\mathrm{en} + E_\mathrm{Ha} + W_\mathrm{xc}}{3V}\ , \\
-        W_\mathrm{xc} = 3 (E_\mathrm{xc} + W^\mathrm{d}_\mathrm{xc}
+        P &= \frac{2T + E_\mathrm{en} + E_\mathrm{Ha} + W_\mathrm{xc}}{3V}\ , \\
+        W_\mathrm{xc} &= 3 (W^\mathrm{d}_\mathrm{xc} - E_\mathrm{xc})
 
     References
     ----------
@@ -261,9 +264,9 @@ def virial(atom, model, energy, density):
     E_V = 2 * energy.E_kin["tot"] + energy.E_en + energy.E_ha + W_xc
 
     # compute the virial pressure
-    pressure = E_V / (3 * sph_vol)
+    P_e = E_V / (3 * sph_vol)
 
-    return pressure
+    return P_e
 
 
 def calc_Wd_xc(xc_func_id, density):
@@ -287,7 +290,7 @@ def calc_Wd_xc(xc_func_id, density):
 
     .. math::
 
-        W^\mathrm{d}_\mathrm{xc} \int \mathrm{d}r v_\mathrm{xc}(r) n(r)
+        W^\mathrm{d}_\mathrm{xc} =  \int \mathrm{d}r v_\mathrm{xc}(r) n(r)
 
     GGA implementation is still to come.
     """

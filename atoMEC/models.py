@@ -13,7 +13,7 @@ Classes
 # import standard packages
 
 # import external packages
-from math import log, pi
+from math import log
 
 # import internal packages
 from . import check_inputs
@@ -22,7 +22,6 @@ from . import staticKS
 from . import convergence
 from . import writeoutput
 from . import xc
-from . import unitconv
 from postprocess import pressure
 
 
@@ -460,7 +459,7 @@ class ISModel:
         Calculate the electronic pressure using the finite differences method.
 
         N.B.: This is just a wrapper for the postprocess.pressure.finite_diff function.
-        It is maintained to support backwards compatibility until the next major release.
+        It is maintained to support backwards compatibility until next major release.
 
         Parameters
         ----------
