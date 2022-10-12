@@ -21,7 +21,8 @@ from atoMEC.check_inputs import InputError
 def finite_diff(
     atom,
     model,
-    energy_output,
+    orbs,
+    pot,
     conv_params={},
     scf_params={},
     force_bound=[],
@@ -38,8 +39,10 @@ def finite_diff(
         The main atom object
     model : models.ISModel
         The ISModel object
-    energy_output : dict
-        output parameters of the function CalcEnergy
+    orbs : staticKS.Orbitals
+        the orbitals object
+    pot : staticKS.Potential
+        the potential object
     conv_params : dict, optional
         dictionary of convergence parameters as follows:
         {
@@ -81,7 +84,7 @@ def finite_diff(
     band_params = {}
 
     # if inheriting params from CalcEnergy original function
-    eigfuncs = energy_output["orbitals"].eigfuncs
+    eigfuncs = orbs.eigfuncs
     (
         band_params["nkpts"],
         config.spindims,
@@ -89,7 +92,7 @@ def finite_diff(
         nmax,
         grid_params["ngrid"],
     ) = np.shape(eigfuncs)
-    grid_params["x0"] = energy_output["orbitals"]._xgrid[0]
+    grid_params["x0"] = orbs._xgrid[0]
 
     # initialize the main radius we are interested in
     main_rad = atom.radius
@@ -109,7 +112,7 @@ def finite_diff(
         verbosity=verbosity,
         write_info=write_info,
         guess=True,
-        guess_pot=energy_output["potential"].v_s,
+        guess_pot=pot.v_s,
         write_density=False,
         write_potential=False,
     )
@@ -130,7 +133,7 @@ def finite_diff(
         verbosity=verbosity,
         write_info=write_info,
         guess=True,
-        guess_pot=energy_output["potential"].v_s,
+        guess_pot=pot.v_s,
         write_density=False,
         write_potential=False,
     )
@@ -148,7 +151,7 @@ def finite_diff(
     return pressure
 
 
-def stress_tensor(orbs, pot):
+def stress_tensor(Atom, model, orbs, pot):
     r"""Calculate the pressure with the stress tensor approach [9]_.
 
     Parameters
