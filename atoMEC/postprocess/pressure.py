@@ -24,7 +24,6 @@ def finite_diff(
     energy_output,
     conv_params={},
     scf_params={},
-    band_params={},
     force_bound=[],
     write_info=False,
     verbosity=0,
