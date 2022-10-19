@@ -1093,6 +1093,27 @@ is the epdc for the UEG.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.postprocess.localization.MIS_count">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.localization.</span></span><span class="sig-name descname"><span class="pre">MIS_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orbitals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_orbs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#MIS_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.MIS_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the MIS using the “counting” method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.models.ISModel" title="atoMEC.models.ISModel"><em>models.ISModel</em></a>) – the ISModel object</p></li>
+<li><p><strong>orbitals</strong> (<em>staticKS.orbitals</em>) – the KS orbitals object</p></li>
+<li><p><strong>core_orbs</strong> (<em>list of tuples</em>) – the core orbitals</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>MIS</strong> – the mean ionization state</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.postprocess.localization.calc_IPR_mat">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.localization.</span></span><span class="sig-name descname"><span class="pre">calc_IPR_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#calc_IPR_mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.calc_IPR_mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the inverse participation ratio for all eigenfunctions (see notes).</p>

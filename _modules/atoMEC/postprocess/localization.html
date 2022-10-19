@@ -287,7 +287,7 @@
 <span class="sd">        electron gas (UEG) respectively.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># compute the UEG electron pair density curvature</span>
-        <span class="n">D_0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">5.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
+        <span class="n">D_0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">5.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
 
         <span class="c1"># compute the main electron pair density curvature</span>
         <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;orbitals&quot;</span><span class="p">:</span>
@@ -299,7 +299,7 @@
         <span class="n">chi</span> <span class="o">=</span> <span class="n">D</span> <span class="o">/</span> <span class="n">D_0</span>
 
         <span class="c1"># compute the ELF</span>
-        <span class="n">ELF</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">chi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">ELF</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">chi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">ELF</span></div>
 
@@ -381,7 +381,7 @@
         <span class="p">)</span>
 
         <span class="c1"># compute the UEG electron pair density curvature</span>
-        <span class="n">D_0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">5.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
+        <span class="n">D_0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">density</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">5.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
 
         <span class="c1"># compute epdc</span>
         <span class="n">epdc</span> <span class="o">=</span> <span class="n">D_0</span> <span class="o">-</span> <span class="p">(</span><span class="n">grad_dens</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">9.0</span> <span class="o">*</span> <span class="n">density</span><span class="p">)</span> <span class="o">+</span> <span class="n">lap_dens</span> <span class="o">/</span> <span class="mf">6.0</span>
@@ -482,6 +482,35 @@
             <span class="n">N_shell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">N_shell</span></div></div>
+
+
+<div class="viewcode-block" id="MIS_count"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.MIS_count">[docs]</a><span class="k">def</span> <span class="nf">MIS_count</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">core_orbs</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the MIS using the &quot;counting&quot; method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : models.ISModel</span>
+<span class="sd">        the ISModel object</span>
+<span class="sd">    orbitals : staticKS.orbitals</span>
+<span class="sd">        the KS orbitals object</span>
+<span class="sd">    core_orbs : list of tuples</span>
+<span class="sd">        the core orbitals</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    MIS : np.ndarray</span>
+<span class="sd">        the mean ionization state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># start by retrieving the total electron number</span>
+    <span class="n">MIS</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">nele</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="c1"># loop over the core orbitals and subtract their occupation numbers</span>
+    <span class="k">for</span> <span class="n">core_orb</span> <span class="ow">in</span> <span class="n">core_orbs</span><span class="p">:</span>
+        <span class="n">l</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">core_orb</span>
+        <span class="n">MIS</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">orbitals</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">MIS</span></div>
 
 
 <div class="viewcode-block" id="calc_IPR_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.calc_IPR_mat">[docs]</a><span class="k">def</span> <span class="nf">calc_IPR_mat</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
