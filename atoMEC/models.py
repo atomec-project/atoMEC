@@ -22,7 +22,7 @@ from . import staticKS
 from . import convergence
 from . import writeoutput
 from . import xc
-from postprocess import pressure
+from atoMEC.postprocess import pressure
 
 
 class ISModel:
