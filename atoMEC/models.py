@@ -13,7 +13,7 @@ Classes
 # import standard packages
 
 # import external packages
-from math import log, pi
+from math import log
 
 # import internal packages
 from . import check_inputs
@@ -22,7 +22,7 @@ from . import staticKS
 from . import convergence
 from . import writeoutput
 from . import xc
-from . import unitconv
+from atoMEC.postprocess import pressure
 
 
 class ISModel:
@@ -448,11 +448,9 @@ class ISModel:
         self,
         atom,
         energy_output,
-        nmax=None,
-        lmax=None,
-        grid_params={},
         conv_params={},
         scf_params={},
+        band_params={},
         force_bound=[],
         write_info=False,
         verbosity=0,
@@ -461,25 +459,15 @@ class ISModel:
         r"""
         Calculate the electronic pressure using the finite differences method.
 
+        N.B.: This is just a wrapper for the postprocess.pressure.finite_diff function.
+        It is maintained to support backwards compatibility until next major release.
+
         Parameters
         ----------
         atom : atoMEC.Atom
             The main atom object
         energy_output : dict
             output parameters of the function CalcEnergy
-        nmax : int
-            maximum no. eigenvalues to compute for each value of angular momentum
-        lmax : int
-            maximum no. angular momentum eigenfucntions to consider
-        grid_params : dict, optional
-            dictionary of grid parameters as follows:
-            {
-            `ngrid` (``int``)        : number of grid points,
-            `x0`    (``float``)      : LHS grid point takes form
-            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified,
-            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation
-            of eigenvalues with full diagonalization
-            }
         conv_params : dict, optional
             dictionary of convergence parameters as follows:
             {
@@ -513,66 +501,20 @@ class ISModel:
 
         Returns
         -------
-        pressureHa : float
+        P_e : float
             electronic pressure in Ha
         """
-        print("Pressure is being calculated. Please be patient!" + "\n")
-
-        # set nmax and lmax to default config values if they aren't specified
-        if nmax is None:
-            nmax = config.nmax
-        if lmax is None:
-            lmax = config.lmax
-
-        # initialize the main radius we are interested in
-        main_rad = atom.radius
-
-        # change main radius by +dR
-        atom.radius = main_rad + dR
-
-        # calculate free energy for new radius and store it
-        output1 = self.CalcEnergy(
-            nmax,
-            lmax,
-            grid_params=grid_params,
-            write_info=write_info,
-            guess=True,
-            guess_pot=energy_output["potential"].v_s,
-            write_density=False,
-            write_potential=False,
+        # call the finite diff function
+        P_e = pressure.finite_diff(
+            atom,
+            self,
+            energy_output,
+            conv_params,
+            scf_params,
+            force_bound,
+            write_info,
+            verbosity,
+            dR,
         )
-        F1 = output1["energy"].F_tot
 
-        # change main radius by -dR
-        atom.radius = main_rad - dR
-
-        # calculate free energy for new radius and store it
-        output2 = self.CalcEnergy(
-            nmax,
-            lmax,
-            grid_params=grid_params,
-            write_info=write_info,
-            guess=True,
-            guess_pot=energy_output["potential"].v_s,
-            write_density=False,
-            write_potential=False,
-        )
-        F2 = output2["energy"].F_tot
-
-        dFdR = (F1 - F2) / (2 * dR)  # finite differences
-        dRdV = 1 / (4 * pi * main_rad ** 2)  # V = sphere of radius R (main_rad) volume
-
-        # calculate pressure by thermodynamic definition p = -dFdV and chain rule
-        pressureHa = -dFdR * dRdV
-        pressureGPa = pressureHa * unitconv.ha_to_gpa
-
-        # convert atom.radius back to its correct value
-        atom.radius = main_rad
-
-        pressurestat = "{preamble:30s}: {p_ha:<.6g} Ha / {p_gpa:<.6g} GPa".format(
-            preamble="Electronic pressure", p_ha=pressureHa, p_gpa=pressureGPa
-        )
-        spc = "\n"
-        print(pressurestat + spc)
-
-        return pressureHa
+        return P_e
