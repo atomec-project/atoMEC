@@ -176,7 +176,7 @@
 <span class="c1"># import standard packages</span>
 
 <span class="c1"># import external packages</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span>
 
 <span class="c1"># import internal packages</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">check_inputs</span>
@@ -185,7 +185,7 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">convergence</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">writeoutput</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">xc</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">unitconv</span>
+<span class="kn">from</span> <span class="nn">atoMEC.postprocess</span> <span class="kn">import</span> <span class="n">pressure</span>
 
 
 <div class="viewcode-block" id="ISModel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.models.ISModel">[docs]</a><span class="k">class</span> <span class="nc">ISModel</span><span class="p">:</span>
@@ -611,11 +611,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">atom</span><span class="p">,</span>
         <span class="n">energy_output</span><span class="p">,</span>
-        <span class="n">nmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">lmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">grid_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">conv_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">band_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">force_bound</span><span class="o">=</span><span class="p">[],</span>
         <span class="n">write_info</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -624,25 +622,15 @@
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the electronic pressure using the finite differences method.</span>
 
+<span class="sd">        N.B.: This is just a wrapper for the postprocess.pressure.finite_diff function.</span>
+<span class="sd">        It is maintained to support backwards compatibility until next major release.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        atom : atoMEC.Atom</span>
 <span class="sd">            The main atom object</span>
 <span class="sd">        energy_output : dict</span>
 <span class="sd">            output parameters of the function CalcEnergy</span>
-<span class="sd">        nmax : int</span>
-<span class="sd">            maximum no. eigenvalues to compute for each value of angular momentum</span>
-<span class="sd">        lmax : int</span>
-<span class="sd">            maximum no. angular momentum eigenfucntions to consider</span>
-<span class="sd">        grid_params : dict, optional</span>
-<span class="sd">            dictionary of grid parameters as follows:</span>
-<span class="sd">            {</span>
-<span class="sd">            `ngrid` (``int``)        : number of grid points,</span>
-<span class="sd">            `x0`    (``float``)      : LHS grid point takes form</span>
-<span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified,</span>
-<span class="sd">            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation</span>
-<span class="sd">            of eigenvalues with full diagonalization</span>
-<span class="sd">            }</span>
 <span class="sd">        conv_params : dict, optional</span>
 <span class="sd">            dictionary of convergence parameters as follows:</span>
 <span class="sd">            {</span>
@@ -676,69 +664,23 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        pressureHa : float</span>
+<span class="sd">        P_e : float</span>
 <span class="sd">            electronic pressure in Ha</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pressure is being calculated. Please be patient!&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="c1"># set nmax and lmax to default config values if they aren&#39;t specified</span>
-        <span class="k">if</span> <span class="n">nmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">nmax</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">nmax</span>
-        <span class="k">if</span> <span class="n">lmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">lmax</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
-
-        <span class="c1"># initialize the main radius we are interested in</span>
-        <span class="n">main_rad</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">radius</span>
-
-        <span class="c1"># change main radius by +dR</span>
-        <span class="n">atom</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">main_rad</span> <span class="o">+</span> <span class="n">dR</span>
-
-        <span class="c1"># calculate free energy for new radius and store it</span>
-        <span class="n">output1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CalcEnergy</span><span class="p">(</span>
-            <span class="n">nmax</span><span class="p">,</span>
-            <span class="n">lmax</span><span class="p">,</span>
-            <span class="n">grid_params</span><span class="o">=</span><span class="n">grid_params</span><span class="p">,</span>
-            <span class="n">write_info</span><span class="o">=</span><span class="n">write_info</span><span class="p">,</span>
-            <span class="n">guess</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">guess_pot</span><span class="o">=</span><span class="n">energy_output</span><span class="p">[</span><span class="s2">&quot;potential&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">v_s</span><span class="p">,</span>
-            <span class="n">write_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">write_potential</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="c1"># call the finite diff function</span>
+        <span class="n">P_e</span> <span class="o">=</span> <span class="n">pressure</span><span class="o">.</span><span class="n">finite_diff</span><span class="p">(</span>
+            <span class="n">atom</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">energy_output</span><span class="p">,</span>
+            <span class="n">conv_params</span><span class="p">,</span>
+            <span class="n">scf_params</span><span class="p">,</span>
+            <span class="n">force_bound</span><span class="p">,</span>
+            <span class="n">write_info</span><span class="p">,</span>
+            <span class="n">verbosity</span><span class="p">,</span>
+            <span class="n">dR</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">F1</span> <span class="o">=</span> <span class="n">output1</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">F_tot</span>
 
-        <span class="c1"># change main radius by -dR</span>
-        <span class="n">atom</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">main_rad</span> <span class="o">-</span> <span class="n">dR</span>
-
-        <span class="c1"># calculate free energy for new radius and store it</span>
-        <span class="n">output2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CalcEnergy</span><span class="p">(</span>
-            <span class="n">nmax</span><span class="p">,</span>
-            <span class="n">lmax</span><span class="p">,</span>
-            <span class="n">grid_params</span><span class="o">=</span><span class="n">grid_params</span><span class="p">,</span>
-            <span class="n">write_info</span><span class="o">=</span><span class="n">write_info</span><span class="p">,</span>
-            <span class="n">guess</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">guess_pot</span><span class="o">=</span><span class="n">energy_output</span><span class="p">[</span><span class="s2">&quot;potential&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">v_s</span><span class="p">,</span>
-            <span class="n">write_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">write_potential</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">F2</span> <span class="o">=</span> <span class="n">output2</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">F_tot</span>
-
-        <span class="n">dFdR</span> <span class="o">=</span> <span class="p">(</span><span class="n">F1</span> <span class="o">-</span> <span class="n">F2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dR</span><span class="p">)</span>  <span class="c1"># finite differences</span>
-        <span class="n">dRdV</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">main_rad</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># V = sphere of radius R (main_rad) volume</span>
-
-        <span class="c1"># calculate pressure by thermodynamic definition p = -dFdV and chain rule</span>
-        <span class="n">pressureHa</span> <span class="o">=</span> <span class="o">-</span><span class="n">dFdR</span> <span class="o">*</span> <span class="n">dRdV</span>
-        <span class="n">pressureGPa</span> <span class="o">=</span> <span class="n">pressureHa</span> <span class="o">*</span> <span class="n">unitconv</span><span class="o">.</span><span class="n">ha_to_gpa</span>
-
-        <span class="c1"># convert atom.radius back to its correct value</span>
-        <span class="n">atom</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">main_rad</span>
-
-        <span class="n">pressurestat</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{preamble:30s}</span><span class="s2">: </span><span class="si">{p_ha:&lt;.6g}</span><span class="s2"> Ha / </span><span class="si">{p_gpa:&lt;.6g}</span><span class="s2"> GPa&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;Electronic pressure&quot;</span><span class="p">,</span> <span class="n">p_ha</span><span class="o">=</span><span class="n">pressureHa</span><span class="p">,</span> <span class="n">p_gpa</span><span class="o">=</span><span class="n">pressureGPa</span>
-        <span class="p">)</span>
-        <span class="n">spc</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">pressurestat</span> <span class="o">+</span> <span class="n">spc</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">pressureHa</span></div></div>
+        <span class="k">return</span> <span class="n">P_e</span></div></div>
 </pre></div>
 
            </div>

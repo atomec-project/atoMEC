@@ -1149,6 +1149,172 @@ contribution is correctly accounted for). Use at your own peril…</p>
 
 </div>
 </div>
+<div class="section" id="module-atoMEC.postprocess.pressure">
+<span id="atomec-postprocess-pressure-module"></span><h2>atoMEC.postprocess.pressure module<a class="headerlink" href="#module-atoMEC.postprocess.pressure" title="Permalink to this headline">¶</a></h2>
+<p>The pressure module contains functions to compute the pressure with various approaches.</p>
+<div class="section" id="id17">
+<h3>Functions<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="#atoMEC.postprocess.pressure.finite_diff" title="atoMEC.postprocess.pressure.finite_diff"><code class="xref py py-func docutils literal notranslate"><span class="pre">finite_diff()</span></code></a> : Calculate electronic pressure with finite-difference method.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.postprocess.pressure.stress_tensor" title="atoMEC.postprocess.pressure.stress_tensor"><code class="xref py py-func docutils literal notranslate"><span class="pre">stress_tensor()</span></code></a> : Calculate electronic pressure with stress-tensor method.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.postprocess.pressure.virial" title="atoMEC.postprocess.pressure.virial"><code class="xref py py-func docutils literal notranslate"><span class="pre">virial()</span></code></a> : Calculate electronic pressure with virial method.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.postprocess.pressure.calc_Wd_xc" title="atoMEC.postprocess.pressure.calc_Wd_xc"><code class="xref py py-func docutils literal notranslate"><span class="pre">calc_Wd_xc()</span></code></a> : Calculate the derivative contribution to virial pressure.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.postprocess.pressure.ions_ideal" title="atoMEC.postprocess.pressure.ions_ideal"><code class="xref py py-func docutils literal notranslate"><span class="pre">ions_ideal()</span></code></a> : Calculate ionic pressure with ideal gas law.</p></li>
+</ul>
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.postprocess.pressure.calc_Wd_xc">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.pressure.</span></span><span class="sig-name descname"><span class="pre">calc_Wd_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xc_func_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/pressure.html#calc_Wd_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.pressure.calc_Wd_xc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the ‘derivative’ component of the xc term in virial formula (see notes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xc_func_id</strong> (<em>str</em>) – the exchange or correlation functional id</p></li>
+<li><p><strong>density</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><em>staticKS.Density</em></a>) – the density object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>Wd_xc</strong> – the derivative component of the xc term in the virial formula.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>In the LDA, Wd_xc is given by <a class="footnote-reference brackets" href="#id22" id="id18">10</a></p>
+<div class="math notranslate nohighlight">
+\[W^\mathrm{d}_\mathrm{xc} =  \int \mathrm{d}r v_\mathrm{xc}(r) n(r)\]</div>
+<p>GGA implementation is still to come.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.postprocess.pressure.finite_diff">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.pressure.</span></span><span class="sig-name descname"><span class="pre">finite_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/pressure.html#finite_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.pressure.finite_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the electronic pressure using the finite differences method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atom</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.Atom" title="atoMEC.Atom"><em>atoMEC.Atom</em></a>) – The main atom object</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.models.ISModel" title="atoMEC.models.ISModel"><em>models.ISModel</em></a>) – The ISModel object</p></li>
+<li><p><strong>orbs</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><em>staticKS.Orbitals</em></a>) – the orbitals object</p></li>
+<li><p><strong>pot</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><em>staticKS.Potential</em></a>) – the potential object</p></li>
+<li><p><strong>conv_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary of convergence parameters as follows:
+{
+<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for total energy,
+<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for density,
+<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for electron number,
+<cite>eigtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : tolerance for eigenvalues
+}</p></li>
+<li><p><strong>scf_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary for scf cycle parameters as follows:
+{
+<cite>maxscf</cite>  (<code class="docutils literal notranslate"><span class="pre">int</span></code>)   : maximum number of scf cycles,
+<cite>mixfrac</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : density mixing fraction
+}</p></li>
+<li><p><strong>force_bound</strong> (<em>list of list of ints</em><em>, </em><em>optional</em>) – force certain levels to be bound, for example:
+<cite>force_bound = [0, 1, 0]</cite>
+forces the orbital quith quantum numbers <span class="math notranslate nohighlight">\(\sigma=0,\ l=1,\ n=0\)</span> to be
+always bound even if it has positive energy. This prevents convergence
+issues.</p></li>
+<li><p><strong>verbosity</strong> (<em>int</em><em>, </em><em>optional</em>) – how much information is printed at each SCF cycle.
+<cite>verbosity=0</cite> prints the total energy and convergence values (default)
+<cite>verbosity=1</cite> prints the above and the KS eigenvalues and occupations.</p></li>
+<li><p><strong>write_info</strong> (<em>bool</em><em>, </em><em>optional</em>) – prints the scf cycle and final parameters
+defaults to False</p></li>
+<li><p><strong>dR</strong> (<em>float</em><em>, </em><em>optional</em>) – radius difference for finite difference calculation
+defaults to 0.01</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>P_e</strong> – electronic pressure in Ha</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.postprocess.pressure.ions_ideal">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.pressure.</span></span><span class="sig-name descname"><span class="pre">ions_ideal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/pressure.html#ions_ideal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.pressure.ions_ideal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the the ideal gas pressure for the ions.</p>
+<p>In atomic units, the ideal gas pressure is simply P = T/V.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>atom</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.Atom" title="atoMEC.Atom"><em>atoMEC.Atom</em></a>) – the Atom object</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>P_ion</strong> – the ionic pressure</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.postprocess.pressure.stress_tensor">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.pressure.</span></span><span class="sig-name descname"><span class="pre">stress_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orbs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/pressure.html#stress_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.pressure.stress_tensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the pressure with the stress tensor approach <a class="footnote-reference brackets" href="#id20" id="id19">9</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>orbs</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><em>staticKS.Orbitals</em></a>) – the orbitals object</p></li>
+<li><p><strong>pot</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><em>staticKS.Potential</em></a>) – the potential object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>P_e</strong> – the electronic pressure</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id20"><span class="brackets"><a class="fn-backref" href="#id19">9</a></span></dt>
+<dd><p>G. Faussurier and C. Blancard, Pressure in warm and hot dense matter
+using the average-atom model, Phys. Rev. E 99, 053201 (2019)
+<a class="reference external" href="https://doi.org/10.1103/PhysRevE.99.053201">DOI:10.1103/PhysRevE.99.053201</a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.postprocess.pressure.virial">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.pressure.</span></span><span class="sig-name descname"><span class="pre">virial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/pressure.html#virial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.pressure.virial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the pressure using the virial theorem (see notes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atom</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.Atom" title="atoMEC.Atom"><em>atoMEC.Atom</em></a>) – the Atom object</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.models.ISModel" title="atoMEC.models.ISModel"><em>models.ISModel</em></a>) – the ISModel object</p></li>
+<li><p><strong>energy</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Energy" title="atoMEC.staticKS.Energy"><em>staticKS.Energy</em></a>) – the Energy object</p></li>
+<li><p><strong>density</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><em>staticKS.Density</em></a>) – the density object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>P_e</strong> – the electronic pressure</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The virial pressure is given by the formula <a class="footnote-reference brackets" href="#id22" id="id21">10</a></p>
+<div class="math notranslate nohighlight">
+\[\begin{split}P &amp;= \frac{2T + E_\mathrm{en} + E_\mathrm{Ha} + W_\mathrm{xc}}{3V}\ , \\
+W_\mathrm{xc} &amp;= 3 (W^\mathrm{d}_\mathrm{xc} - E_\mathrm{xc})\end{split}\]</div>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id22"><span class="brackets">10</span><span class="fn-backref">(<a href="#id18">1</a>,<a href="#id21">2</a>)</span></dt>
+<dd><p>P. Legrand and F. Perrot, Virial theorem and pressure calculations in the
+GGA, J. Phys.: Condens. Matter 13 (2001) 287–301
+<a class="reference external" href="https://doi.org/10.1088/0953-8984/13/2/306">DOI:10.1088/0953-8984/13/2/306</a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="module-atoMEC.postprocess">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-atoMEC.postprocess" title="Permalink to this headline">¶</a></h2>
 <p>Everything that depends on the output from an SCF calculation.</p>

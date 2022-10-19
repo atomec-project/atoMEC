@@ -236,6 +236,10 @@
 <li class="toctree-l3"><a class="reference internal" href="atoMEC.postprocess.html#functions">Functions</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#module-atoMEC.postprocess.pressure">atoMEC.postprocess.pressure module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atoMEC.postprocess.html#id17">Functions</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="atoMEC.postprocess.html#module-atoMEC.postprocess">Module contents</a></li>
 </ul>
 </li>
@@ -1605,23 +1609,15 @@ default: <cite>dos</cite></p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.models.ISModel.CalcPressure">
-<span class="sig-name descname"><span class="pre">CalcPressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel.CalcPressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel.CalcPressure" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">CalcPressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel.CalcPressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel.CalcPressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the electronic pressure using the finite differences method.</p>
+<p>N.B.: This is just a wrapper for the postprocess.pressure.finite_diff function.
+It is maintained to support backwards compatibility until next major release.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atom</strong> (<a class="reference internal" href="#atoMEC.Atom" title="atoMEC.Atom"><em>atoMEC.Atom</em></a>) – The main atom object</p></li>
 <li><p><strong>energy_output</strong> (<em>dict</em>) – output parameters of the function CalcEnergy</p></li>
-<li><p><strong>nmax</strong> (<em>int</em>) – maximum no. eigenvalues to compute for each value of angular momentum</p></li>
-<li><p><strong>lmax</strong> (<em>int</em>) – maximum no. angular momentum eigenfucntions to consider</p></li>
-<li><p><strong>grid_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary of grid parameters as follows:
-{
-<cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)        : number of grid points,
-<cite>x0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>)      : LHS grid point takes form
-<span class="math notranslate nohighlight">\(r_0=\exp(x_0)\)</span>; <span class="math notranslate nohighlight">\(x_0\)</span> can be specified,
-<cite>ngrid_coarse</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) : (smaller) number of grid points for estimation
-of eigenvalues with full diagonalization
-}</p></li>
 <li><p><strong>conv_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary of convergence parameters as follows:
 {
 <cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for total energy,
@@ -1649,7 +1645,7 @@ defaults to 0.01</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>pressureHa</strong> – electronic pressure in Ha</p>
+<dd class="field-even"><p><strong>P_e</strong> – electronic pressure in Ha</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
