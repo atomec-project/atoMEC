@@ -124,7 +124,7 @@ class ELFTools:
         electron gas (UEG) respectively.
         """
         # compute the UEG electron pair density curvature
-        D_0 = (0.3) * (3 * pi ** 2) ** (2.0 / 3.0) * (density) ** (5.0 / 3.0)
+        D_0 = (0.3) * (3 * pi**2) ** (2.0 / 3.0) * (density) ** (5.0 / 3.0)
 
         # compute the main electron pair density curvature
         if method == "orbitals":
@@ -136,7 +136,7 @@ class ELFTools:
         chi = D / D_0
 
         # compute the ELF
-        ELF = 1.0 / (1.0 + chi ** 2)
+        ELF = 1.0 / (1.0 + chi**2)
 
         return ELF
 
@@ -218,7 +218,7 @@ class ELFTools:
         )
 
         # compute the UEG electron pair density curvature
-        D_0 = (0.3) * (3 * pi ** 2) ** (2.0 / 3.0) * (density) ** (5.0 / 3.0)
+        D_0 = (0.3) * (3 * pi**2) ** (2.0 / 3.0) * (density) ** (5.0 / 3.0)
 
         # compute epdc
         epdc = D_0 - (grad_dens) ** 2.0 / (9.0 * density) + lap_dens / 6.0
@@ -319,6 +319,35 @@ class ELFTools:
             N_shell[i].pop()
 
         return N_shell
+
+
+def MIS_count(model, orbitals, core_orbs):
+    r"""
+    Calculate the MIS using the "counting" method.
+
+    Parameters
+    ----------
+    model : models.ISModel
+        the ISModel object
+    orbitals : staticKS.orbitals
+        the KS orbitals object
+    core_orbs : list of tuples
+        the core orbitals
+
+    Returns
+    -------
+    MIS : np.ndarray
+        the mean ionization state
+    """
+    # start by retrieving the total electron number
+    MIS = model.nele.astype(np.float64)
+
+    # loop over the core orbitals and subtract their occupation numbers
+    for core_orb in core_orbs:
+        l, n = core_orb
+        MIS -= np.sum(orbitals.occnums_w[:, :, l, n], axis=0)
+
+    return MIS
 
 
 def calc_IPR_mat(eigfuncs, xgrid):
