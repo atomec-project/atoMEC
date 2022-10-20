@@ -20,5 +20,8 @@ scf_params = {"maxscf": 50, "mixfrac": 0.3}
 # band parameters for massacrier band model
 band_params = {"nkpts": 50, "de_min": 1e-3}
 
+# forced bound energy levels (default none)
+force_bound = []
+
 # parallelization
 numcores = 0  # defaults to serial
