@@ -173,9 +173,15 @@ def stress_tensor(Atom, model, orbs, pot):
        `DOI:10.1103/PhysRevE.99.053201 <https://doi.org/10.1103/PhysRevE.99.053201>`__.
     """
     # retrive the dimensions of the eigenvalues
-    config.band_params["nkpts"], config.spindims, config.lmax, config.nmax, config.grid_params["ngrid"] = np.shape(orbs.eigfuncs)
-    lmax, nmax = config.lmax, config.nmax
-    
+    (
+        config.band_params["nkpts"],
+        config.spindims,
+        config.lmax,
+        config.nmax,
+        config.grid_params["ngrid"],
+    ) = np.shape(orbs.eigfuncs)
+    lmax = config.lmax
+
     # set the xgrid
     xgrid = orbs._xgrid
 
@@ -186,13 +192,13 @@ def stress_tensor(Atom, model, orbs, pot):
     grad_orbs = np.exp(-1.5 * xgrid) * (deriv_orbs - 0.5 * orbs.eigfuncs)
 
     # compute the "gradient" term
-    grad_sq = grad_orbs ** 2
+    grad_sq = grad_orbs**2
 
     # compute the l*(l+1) array
     l_arr = np.fromiter((l * (l + 1.0) for l in range(lmax)), float, lmax)
 
     # get the X(R)^2 term
-    orb_sq = orbs.eigfuncs ** 2 * np.exp(-xgrid)
+    orb_sq = orbs.eigfuncs**2 * np.exp(-xgrid)
 
     # compute the l(l+1)/r^2 X(R)^2 term
     lsq_term = np.exp(-2 * xgrid) * np.einsum("k,ijklm->ijklm", l_arr, orb_sq)
