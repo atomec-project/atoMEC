@@ -561,7 +561,7 @@
 
         <span class="c1"># force bound levels if there are convergence issues</span>
 
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">force_bound</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">force_bound</span> <span class="o">!=</span> <span class="p">[]</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">levels</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">force_bound</span><span class="p">:</span>
                 <span class="n">sp</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">l</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
