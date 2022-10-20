@@ -336,7 +336,14 @@
 <span class="sd">       `DOI:10.1103/PhysRevE.99.053201 &lt;https://doi.org/10.1103/PhysRevE.99.053201&gt;`__.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># retrive the dimensions of the eigenvalues</span>
-    <span class="n">nkpts</span><span class="p">,</span> <span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">)</span>
+    <span class="p">(</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;nkpts&quot;</span><span class="p">],</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">nmax</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
+    <span class="n">lmax</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
 
     <span class="c1"># set the xgrid</span>
     <span class="n">xgrid</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span>
@@ -348,13 +355,13 @@
     <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">deriv_orbs</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
 
     <span class="c1"># compute the &quot;gradient&quot; term</span>
-    <span class="n">grad_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">grad_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span><span class="o">**</span><span class="mi">2</span>
 
     <span class="c1"># compute the l*(l+1) array</span>
     <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">((</span><span class="n">l</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lmax</span><span class="p">)</span>
 
     <span class="c1"># get the X(R)^2 term</span>
-    <span class="n">orb_sq</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
+    <span class="n">orb_sq</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
 
     <span class="c1"># compute the l(l+1)/r^2 X(R)^2 term</span>
     <span class="n">lsq_term</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">orb_sq</span><span class="p">)</span>
