@@ -173,8 +173,9 @@ def stress_tensor(Atom, model, orbs, pot):
        `DOI:10.1103/PhysRevE.99.053201 <https://doi.org/10.1103/PhysRevE.99.053201>`__.
     """
     # retrive the dimensions of the eigenvalues
-    nkpts, spindims, lmax, nmax = np.shape(orbs.eigvals)
-
+    config.band_params["nkpts"], config.spindims, config.lmax, config.nmax, config.grid_params["ngrid"] = np.shape(orbs.eigfuncs)
+    lmax, nmax = config.lmax, config.nmax
+    
     # set the xgrid
     xgrid = orbs._xgrid
 
