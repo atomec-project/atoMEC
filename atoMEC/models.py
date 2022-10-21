@@ -448,6 +448,8 @@ class ISModel:
         self,
         atom,
         energy_output,
+        nmax=None,
+        lmax=None,
         conv_params={},
         scf_params={},
         band_params={},
@@ -504,11 +506,16 @@ class ISModel:
         P_e : float
             electronic pressure in Ha
         """
+        # for backwards compatibility: nmax and lmax will be removed in 2.x
+        if nmax is not None or lmax is not None:
+            sys.exit("nmax and lmax must inherit from CalcEnergy output")
+
         # call the finite diff function
         P_e = pressure.finite_diff(
             atom,
             self,
-            energy_output,
+            energy_output["orbitals"],
+            energy_output["potential"],
             conv_params,
             scf_params,
             force_bound,
