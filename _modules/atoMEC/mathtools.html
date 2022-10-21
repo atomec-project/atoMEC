@@ -481,32 +481,41 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mu</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">mu</span>
     <span class="n">mu0</span> <span class="o">=</span> <span class="n">mu</span>  <span class="c1"># set initial guess to existing value of chem pot</span>
+
     <span class="c1"># so far only the ideal treatment for unbound electrons is implemented</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="n">mu0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occ_weight</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-        <span class="n">bracket</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1e6</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">]</span>
-        <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">1000</span>
+        <span class="c1"># increase the bracket size until a solution is found</span>
+        <span class="n">bracket</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="n">mu0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigvals</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occ_weight</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">1000</span>
 
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
-            <span class="n">f_root</span> <span class="o">=</span> <span class="n">f_root_id</span>
-        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
-            <span class="n">f_root</span> <span class="o">=</span> <span class="n">f_root_qu</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
+                    <span class="n">f_root</span> <span class="o">=</span> <span class="n">f_root_id</span>
+                <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;quantum&quot;</span><span class="p">:</span>
+                    <span class="n">f_root</span> <span class="o">=</span> <span class="n">f_root_qu</span>
 
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">soln</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">root_scalar</span><span class="p">(</span>
-                <span class="n">f_root</span><span class="p">,</span>
-                <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span>
-                <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
-                <span class="n">method</span><span class="o">=</span><span class="s2">&quot;brentq&quot;</span><span class="p">,</span>
-                <span class="n">bracket</span><span class="o">=</span><span class="n">bracket</span><span class="p">,</span>
-                <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="n">maxiter</span><span class="p">},</span>
-            <span class="p">)</span>
-            <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">root</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">soln</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">root_scalar</span><span class="p">(</span>
+                        <span class="n">f_root</span><span class="p">,</span>
+                        <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span>
+                        <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;brentq&quot;</span><span class="p">,</span>
+                        <span class="n">bracket</span><span class="o">=</span><span class="n">bracket</span><span class="p">,</span>
+                        <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="n">maxiter</span><span class="p">},</span>
+                    <span class="p">)</span>
+                    <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">root</span>
 
-            <span class="c1"># in case there are no electrons in one spin channel</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                    <span class="c1"># in case there are no electrons in one spin channel</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+                <span class="k">break</span>
+
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">bracket</span> <span class="o">*=</span> <span class="mi">10</span>
     <span class="k">return</span> <span class="n">mu</span></div>
 
 
@@ -547,7 +556,7 @@
     <span class="c1"># now compute the contribution from the unbound electrons</span>
     <span class="c1"># this function uses the ideal approximation</span>
 
-    <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">contrib_unbound</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">fd_int_complete</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
 
     <span class="c1"># return the function whose roots are to be found</span>
@@ -620,7 +629,7 @@
 <span class="sd">    .. math::</span>
 <span class="sd">        \mathcal{L}(x, x_0, \gamma)=\frac{\gamma}{\pi}\frac{1}{\gamma^2+(x-x_0)^2}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">lorentzian_</span> <span class="o">=</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">lorentzian_</span> <span class="o">=</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">gamma</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">lorentzian_</span></div>
 
 
