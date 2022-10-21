@@ -318,32 +318,41 @@ def chem_pot(orbs):
     """
     mu = config.mu
     mu0 = mu  # set initial guess to existing value of chem pot
+
     # so far only the ideal treatment for unbound electrons is implemented
     for i in range(config.spindims):
-        x0 = mu0[i]
-        args = (orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i])
-        bracket = [-1e6, 1e6]
-        maxiter = 1000
+        # increase the bracket size until a solution is found
+        bracket = np.array([-10, 10])
+        while True:
+            try:
+                x0 = mu0[i]
+                args = (orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i])
+                maxiter = 1000
 
-        if config.unbound == "ideal":
-            f_root = f_root_id
-        elif config.unbound == "quantum":
-            f_root = f_root_qu
+                if config.unbound == "ideal":
+                    f_root = f_root_id
+                elif config.unbound == "quantum":
+                    f_root = f_root_qu
 
-        if config.nele[i] != 0:
-            soln = optimize.root_scalar(
-                f_root,
-                x0=x0,
-                args=args,
-                method="brentq",
-                bracket=bracket,
-                options={"maxiter": maxiter},
-            )
-            mu[i] = soln.root
+                if config.nele[i] != 0:
+                    soln = optimize.root_scalar(
+                        f_root,
+                        x0=x0,
+                        args=args,
+                        method="brentq",
+                        bracket=bracket,
+                        options={"maxiter": maxiter},
+                    )
+                    mu[i] = soln.root
 
-            # in case there are no electrons in one spin channel
-        else:
-            mu[i] = -np.inf
+                    # in case there are no electrons in one spin channel
+                else:
+                    mu[i] = -np.inf
+
+                break
+
+            except ValueError:
+                bracket *= 10
     return mu
 
 
@@ -384,7 +393,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation
 
-    prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
+    prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi**2)
     contrib_unbound = prefac * fd_int_complete(mu, config.beta, 1.0)
 
     # return the function whose roots are to be found
@@ -457,7 +466,7 @@ def lorentzian(x, x0, gamma):
     .. math::
         \mathcal{L}(x, x_0, \gamma)=\frac{\gamma}{\pi}\frac{1}{\gamma^2+(x-x_0)^2}
     """
-    lorentzian_ = (gamma / np.pi) * (1.0 / (gamma ** 2 + (x - x0) ** 2))
+    lorentzian_ = (gamma / np.pi) * (1.0 / (gamma**2 + (x - x0) ** 2))
     return lorentzian_
 
 
