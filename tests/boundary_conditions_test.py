@@ -12,8 +12,7 @@ import numpy as np
 
 
 # expected values and tolerance
-# dirichlet_expected = -14.080034
-dirichlet_expected = 0
+dirichlet_expected = -14.080034
 neumann_expected = -15.161942
 bands_expected = -14.731577
 accuracy = 1e-3
