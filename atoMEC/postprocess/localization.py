@@ -38,7 +38,7 @@ class ELFTools:
         the density object
     """
 
-    def __init__(self, orbitals, density, method="orbitals"):
+    def __init__(self, Atom, model, orbitals, density, method="orbitals"):
         self._orbs = orbitals
         self._density = density
         self._eigfuncs = self._orbs.eigfuncs
