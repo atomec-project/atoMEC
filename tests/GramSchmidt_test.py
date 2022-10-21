@@ -84,13 +84,14 @@ class TestGS:
             the value of the overlap integral
 
         """
-        xgrid = np.linspace(-12, 1.6094379124, 1000)
+        xgrid = input_SCF["orbitals"]._xgrid
         GS = staticKS.GramSchmidt(input_SCF["orbitals"].eigfuncs, xgrid)
         ortho = GS.make_ortho()
         if case == "self":
             norm = GS.prod_eigfuncs(ortho[0, 0, 0, 1], ortho[0, 0, 0, 1], xgrid)
         else:
-            norm = GS.prod_eigfuncs(ortho[0, 0, 0, 1], ortho[0, 0, 1, 2], xgrid)
+            norm = np.abs(GS.prod_eigfuncs(ortho[0, 0, 0, 1], ortho[0, 0, 1, 2], xgrid))
+
         return norm
 
 

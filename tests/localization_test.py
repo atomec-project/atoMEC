@@ -13,11 +13,11 @@ import numpy as np
 
 
 # expected values and tolerance
-orbitals_expected = 1.1015
-density_expected = 2.1252
+orbitals_expected = 1.1143
+density_expected = 2.1496
 IPR_expected = 78.2107
 epdc_orbs_expected = 8.7733
-epdc_dens_expected = 3.5307
+epdc_dens_expected = 3.5304
 accuracy = 0.001
 
 
@@ -43,31 +43,31 @@ class TestLocalization:
         return self._run_SCF(True)
 
     @pytest.mark.parametrize(
-        "SCF_input,method,expected",
+        "SCF_input,method,spinpol,expected",
         [
-            (lazy_fixture("SCF_spin_output"), "orbitals", orbitals_expected),
-            (lazy_fixture("SCF_nospin_output"), "density", density_expected),
+            (lazy_fixture("SCF_spin_output"), "orbitals", True, orbitals_expected),
+            (lazy_fixture("SCF_nospin_output"), "density", False, density_expected),
         ],
     )
-    def test_ELF(self, SCF_input, method, expected):
+    def test_ELF(self, SCF_input, method, spinpol, expected):
         """Test the ELF through the N_shell property."""
         assert np.isclose(
-            self._run_ELF(SCF_input, method),
+            self._run_ELF(SCF_input, method, spinpol),
             expected,
             atol=accuracy,
         )
 
     @pytest.mark.parametrize(
-        "SCF_input,method,expected",
+        "SCF_input,method,spinpol,expected",
         [
-            (lazy_fixture("SCF_spin_output"), "orbitals", epdc_orbs_expected),
-            (lazy_fixture("SCF_spin_output"), "density", epdc_dens_expected),
+            (lazy_fixture("SCF_spin_output"), "orbitals", True, epdc_orbs_expected),
+            (lazy_fixture("SCF_spin_output"), "density", True, epdc_dens_expected),
         ],
     )
-    def test_epdc(self, SCF_input, method, expected):
+    def test_epdc(self, SCF_input, method, spinpol, expected):
         """Test the epdc function."""
         assert np.isclose(
-            self._run_epdc(SCF_input, method),
+            self._run_epdc(SCF_input, method, spinpol),
             expected,
             atol=accuracy,
         )
@@ -104,7 +104,7 @@ class TestLocalization:
         return output
 
     @staticmethod
-    def _run_ELF(input_SCF, method):
+    def _run_ELF(input_SCF, method, spinpol):
         """
         Compute the electron number in the n=1 shell.
 
@@ -119,16 +119,21 @@ class TestLocalization:
         N_0 : float
             number of electrons in the n=1 shell
         """
+        # set up the atom and model
+        Al_at = Atom("Al", 0.01, radius=5.0, units_temp="eV")
+        model = models.ISModel(Al_at, unbound="quantum", spinpol=spinpol)
+
         ELF = localization.ELFTools(
-            input_SCF["orbitals"], input_SCF["density"], method=method
+            Al_at, model, input_SCF["orbitals"], input_SCF["density"], method=method
         )
 
         N_0 = ELF.N_shell[0][0]
+        print("N_0 = ", N_0)
 
         return N_0
 
     @staticmethod
-    def _run_epdc(input_SCF, method):
+    def _run_epdc(input_SCF, method, spinpol):
         """
         Compute the ELF via the epdc function.
 
@@ -143,7 +148,13 @@ class TestLocalization:
         ELF_int : float
             integral of the ELF function (spin-up channel)
         """
+        # set up the atom and model
+        Al_at = Atom("Al", 0.01, radius=5.0, units_temp="eV")
+        model = models.ISModel(Al_at, unbound="quantum", spinpol=spinpol)
+
         ELF = localization.ELFTools(
+            Al_at,
+            model,
             input_SCF["orbitals"],
             input_SCF["density"],
             method=method,
@@ -153,13 +164,14 @@ class TestLocalization:
 
         D_0 = (
             (0.3)
-            * (3 * np.pi ** 2) ** (2.0 / 3.0)
+            * (3 * np.pi**2) ** (2.0 / 3.0)
             * (input_SCF["density"].total) ** (5.0 / 3.0)
         )
 
         ELF_func = 1 / (1 + (epdc / D_0) ** 2)
 
         ELF_int = np.trapz(ELF_func, ELF._xgrid)[0]
+        print("ELF INTEGRAL = ", ELF_int)
         return ELF_int
 
     @staticmethod
@@ -187,8 +199,10 @@ class TestLocalization:
 
 
 if __name__ == "__main__":
-    SCF_out = TestLocalization._run_SCF(False)
-    print(TestLocalization._run_ELF(SCF_out, "orbitals"))
-    print(TestLocalization._run_ELF(SCF_out, "density"))
-    print(TestLocalization._run_epdc(SCF_out))
-    print(TestLocalization._run_IPR(SCF_out))
+    SCF_spin_out = TestLocalization._run_SCF(True)
+    SCF_no_spin_out = TestLocalization._run_SCF(False)
+    print(TestLocalization._run_epdc(SCF_spin_out, "density", True))
+    print(TestLocalization._run_epdc(SCF_spin_out, "orbitals", True))
+    print(TestLocalization._run_ELF(SCF_no_spin_out, "density", False))
+    print(TestLocalization._run_ELF(SCF_spin_out, "orbitals", True))
+    print(TestLocalization._run_IPR(SCF_no_spin_out))
