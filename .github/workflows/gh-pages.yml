@@ -95,7 +95,7 @@ jobs:
         run: pipenv install --deploy --dev
      
       - name: Install atoMEC
-        run: pipenv run python -m install -e .
+        run: pipenv run python -m pip install -e .
         
       - name: Run test suite
         run: pipenv run pytest --cov=atoMEC --random-order tests/
