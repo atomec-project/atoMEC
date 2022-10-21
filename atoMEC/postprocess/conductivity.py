@@ -31,7 +31,7 @@ from atoMEC import mathtools
 class KuboGreenwood:
     """Class for Kubo-Greenwood conductivity and MIS via TRK sum rule."""
 
-    def __init__(self, orbitals, valence_orbs=[], nmax=0, lmax=0):
+    def __init__(self, Atom, model, orbitals, valence_orbs=[], nmax=0, lmax=0):
 
         self._orbitals = orbitals
         self._xgrid = orbitals._xgrid
@@ -122,7 +122,7 @@ Please run again with spin-unpolarized input."
     def sph_vol(self):
         r"""float: the volume of the sphere."""
         rmax = np.exp(self._xgrid)[-1]
-        V = (4.0 / 3.0) * np.pi * rmax ** 3.0
+        V = (4.0 / 3.0) * np.pi * rmax**3.0
         return V
 
     def cond_tot(self, component="tt", gamma=0.01, maxfreq=50, nfreq=500):
