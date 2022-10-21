@@ -174,6 +174,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># import standard packages</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="c1"># import external packages</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span>
@@ -611,6 +612,8 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">atom</span><span class="p">,</span>
         <span class="n">energy_output</span><span class="p">,</span>
+        <span class="n">nmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">lmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">conv_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">band_params</span><span class="o">=</span><span class="p">{},</span>
@@ -667,11 +670,16 @@
 <span class="sd">        P_e : float</span>
 <span class="sd">            electronic pressure in Ha</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># for backwards compatibility: nmax and lmax will be removed in 2.x</span>
+        <span class="k">if</span> <span class="n">nmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">lmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;nmax and lmax must inherit from CalcEnergy output&quot;</span><span class="p">)</span>
+
         <span class="c1"># call the finite diff function</span>
         <span class="n">P_e</span> <span class="o">=</span> <span class="n">pressure</span><span class="o">.</span><span class="n">finite_diff</span><span class="p">(</span>
             <span class="n">atom</span><span class="p">,</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">energy_output</span><span class="p">,</span>
+            <span class="n">energy_output</span><span class="p">[</span><span class="s2">&quot;orbitals&quot;</span><span class="p">],</span>
+            <span class="n">energy_output</span><span class="p">[</span><span class="s2">&quot;potential&quot;</span><span class="p">],</span>
             <span class="n">conv_params</span><span class="p">,</span>
             <span class="n">scf_params</span><span class="p">,</span>
             <span class="n">force_bound</span><span class="p">,</span>
