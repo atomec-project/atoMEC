@@ -13,3 +13,9 @@ joblib = ">=1.0.1"
 
 [requires]
 python_version = "3"
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pytest-random-order = "*"
+pytest-lazy-fixture = "*"
