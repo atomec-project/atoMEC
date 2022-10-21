@@ -195,13 +195,19 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
+<span class="sd">    Atom : atoMEC.Atom</span>
+<span class="sd">        the Atom object</span>
+<span class="sd">    model : models.ISModel</span>
+<span class="sd">        the model object</span>
 <span class="sd">    orbitals : staticKS.Orbitals</span>
 <span class="sd">        the orbitals object</span>
 <span class="sd">    density : staticKS.Density</span>
 <span class="sd">        the density object</span>
+<span class="sd">    method : str, optional</span>
+<span class="sd">        the method used for the ELF, &quot;orbitals&quot; or &quot;density&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;orbitals&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;orbitals&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span> <span class="o">=</span> <span class="n">orbitals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_density</span> <span class="o">=</span> <span class="n">density</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigfuncs</span>

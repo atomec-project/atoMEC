@@ -915,7 +915,7 @@ c_{lm} &amp;= \sqrt{\frac{(2l+1)(l-m)!}{4\pi(l+m)!}}\end{split}\]</div>
 </ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.postprocess.localization.ELFTools">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.localization.</span></span><span class="sig-name descname"><span class="pre">ELFTools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orbitals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'orbitals'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#ELFTools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.postprocess.localization.</span></span><span class="sig-name descname"><span class="pre">ELFTools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orbitals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'orbitals'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/postprocess/localization.html#ELFTools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.postprocess.localization.ELFTools" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>ELF is the electron localization function, a measure of electron localization.</p>
 <p>It can be used as a tool for qualitative insight as well as an additional method to
@@ -924,8 +924,11 @@ and other related useful properties.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>Atom</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.Atom" title="atoMEC.Atom"><em>atoMEC.Atom</em></a>) – the Atom object</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.models.ISModel" title="atoMEC.models.ISModel"><em>models.ISModel</em></a>) – the model object</p></li>
 <li><p><strong>orbitals</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><em>staticKS.Orbitals</em></a>) – the orbitals object</p></li>
 <li><p><strong>density</strong> (<a class="reference internal" href="atoMEC.html#atoMEC.staticKS.Density" title="atoMEC.staticKS.Density"><em>staticKS.Density</em></a>) – the density object</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – the method used for the ELF, “orbitals” or “density”</p></li>
 </ul>
 </dd>
 </dl>
