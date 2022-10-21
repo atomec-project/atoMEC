@@ -149,7 +149,13 @@ class TestConductivity:
             number of conductiong electrons in the component.
 
         """
-        cond = conductivity.KuboGreenwood(input_SCF["orbitals"], valence_orbs=[val_orb])
+        # set up the atom and model
+        F_at = Atom("F", 0.4, radius=5.0)
+        model = models.ISModel(F_at, unbound="quantum", bc="dirichlet")
+
+        cond = conductivity.KuboGreenwood(
+            F_at, model, input_SCF["orbitals"], valence_orbs=[val_orb]
+        )
 
         N = cond.cond_tot(component=which)[1]
         return N
@@ -170,7 +176,13 @@ class TestConductivity:
         prop: float
             The property's value
         """
-        cond = conductivity.KuboGreenwood(input_SCF["orbitals"], valence_orbs=[(2, 0)])
+        # set up the atom and model
+        F_at = Atom("F", 0.4, radius=5.0)
+        model = models.ISModel(F_at, unbound="quantum", bc="dirichlet")
+
+        cond = conductivity.KuboGreenwood(
+            F_at, model, input_SCF["orbitals"], valence_orbs=[(2, 0)]
+        )
         if which == "sig_vv":
             prop = cond.sig_vv
         elif which == "sig_cv":
@@ -218,7 +230,11 @@ class TestConductivity:
             arbitrary inconverged orbital.
 
         """
-        cond = conductivity.KuboGreenwood(input_SCF["orbitals"])
+        # set up the atom and model
+        F_at = Atom("F", 0.4, radius=5.0)
+        model = models.ISModel(F_at, unbound="quantum", bc="dirichlet")
+
+        cond = conductivity.KuboGreenwood(F_at, model, input_SCF["orbitals"])
         sum_rule = cond.check_sum_rule(2, 2, 0)[0]
         return sum_rule
 
