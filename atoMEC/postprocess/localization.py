@@ -32,13 +32,19 @@ class ELFTools:
 
     Parameters
     ----------
+    Atom : atoMEC.Atom
+        the Atom object
+    model : models.ISModel
+        the model object
     orbitals : staticKS.Orbitals
         the orbitals object
     density : staticKS.Density
         the density object
+    method : str, optional
+        the method used for the ELF, "orbitals" or "density"
     """
 
-    def __init__(self, orbitals, density, method="orbitals"):
+    def __init__(self, Atom, model, orbitals, density, method="orbitals"):
         self._orbs = orbitals
         self._density = density
         self._eigfuncs = self._orbs.eigfuncs
