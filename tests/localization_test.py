@@ -83,8 +83,8 @@ class TestLocalization:
 
         Returns
         -------
-        output : dict of objects
-            the output dictionary containing density, orbitals etc
+        output_dict : dictionary
+            the output dictionary containing Atom, model and SCF output
         """
         # parallel
         config.numcores = -1
@@ -101,7 +101,9 @@ class TestLocalization:
             grid_params={"ngrid": 1000},
         )
 
-        return output
+        output_dict = {"Atom": Al_at, "model": model, "SCF_out": output}
+
+        return output_dict
 
     @staticmethod
     def _run_ELF(input_SCF, method, spinpol):
@@ -110,8 +112,8 @@ class TestLocalization:
 
         Parameters
         ----------
-        input_SCF : dict of objects
-            the SCF input
+        input_SCF : dict
+            dictionary with Atom, model and SCF output
         method : the method used to compute the ELF
 
         Returns
@@ -119,16 +121,14 @@ class TestLocalization:
         N_0 : float
             number of electrons in the n=1 shell
         """
-        # set up the atom and model
-        Al_at = Atom("Al", 0.01, radius=5.0, units_temp="eV")
-        model = models.ISModel(Al_at, unbound="quantum", spinpol=spinpol)
+        orbs = input_SCF["SCF_out"]["orbitals"]
+        density = input_SCF["SCF_out"]["density"]
 
         ELF = localization.ELFTools(
-            Al_at, model, input_SCF["orbitals"], input_SCF["density"], method=method
+            input_SCF["Atom"], input_SCF["model"], orbs, density, method=method
         )
 
         N_0 = ELF.N_shell[0][0]
-        print("N_0 = ", N_0)
 
         return N_0
 
@@ -139,8 +139,8 @@ class TestLocalization:
 
         Parameters
         ----------
-        input_SCF : dict of objects
-            the SCF input
+        input_SCF : dict
+            dictionary with Atom, model and SCF output
         method : the method used to compute the ELF
 
         Returns
@@ -148,30 +148,21 @@ class TestLocalization:
         ELF_int : float
             integral of the ELF function (spin-up channel)
         """
-        # set up the atom and model
-        Al_at = Atom("Al", 0.01, radius=5.0, units_temp="eV")
-        model = models.ISModel(Al_at, unbound="quantum", spinpol=spinpol)
+        orbs = input_SCF["SCF_out"]["orbitals"]
+        density = input_SCF["SCF_out"]["density"]
 
         ELF = localization.ELFTools(
-            Al_at,
-            model,
-            input_SCF["orbitals"],
-            input_SCF["density"],
-            method=method,
+            input_SCF["Atom"], input_SCF["model"], orbs, density, method=method
         )
 
         epdc = ELF.epdc
 
-        D_0 = (
-            (0.3)
-            * (3 * np.pi**2) ** (2.0 / 3.0)
-            * (input_SCF["density"].total) ** (5.0 / 3.0)
-        )
+        D_0 = (0.3) * (3 * np.pi**2) ** (2.0 / 3.0) * (density.total) ** (5.0 / 3.0)
 
         ELF_func = 1 / (1 + (epdc / D_0) ** 2)
 
         ELF_int = np.trapz(ELF_func, ELF._xgrid)[0]
-        print("ELF INTEGRAL = ", ELF_int)
+
         return ELF_int
 
     @staticmethod
@@ -181,18 +172,18 @@ class TestLocalization:
 
         Parameters
         ----------
-        input_SCF : dict of objects
-            the SCF input
+        input_SCF : dict
+            dictionary with Atom, model and SCF output
 
         Returns
         -------
         IPR_0 : float
             the [0,0,0,0] element of the IPR matrix
         """
-        orbitals = input_SCF["orbitals"].eigfuncs
-        xgrid = input_SCF["orbitals"]._xgrid
+        eigfuncs = input_SCF["SCF_out"]["orbitals"].eigfuncs
+        xgrid = input_SCF["SCF_out"]["orbitals"]._xgrid
 
-        IPR_mat = localization.calc_IPR_mat(orbitals, xgrid)
+        IPR_mat = localization.calc_IPR_mat(eigfuncs, xgrid)
         IPR_0 = IPR_mat[0, 0, 0, 0]
 
         return IPR_0
