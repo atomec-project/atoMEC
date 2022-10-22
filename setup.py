@@ -10,6 +10,7 @@ with open("LICENSE") as f:
 extras = {
     'dev': ['bump2version'],
     'docs': open('docs/requirements.txt').read().splitlines(),
+    'tests': open('tests/requirements.txt').read().splitlines(),
 }
 
 setup(
