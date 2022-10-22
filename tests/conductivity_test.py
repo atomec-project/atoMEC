@@ -112,8 +112,8 @@ class TestConductivity:
 
         Returns
         -------
-        output : dict of objects
-            the output dictionary containing density, orbitals etc.
+        output_dict : dictionary
+            the Atom, model and SCF output in a dictionary
 
         """
         # parallel
@@ -128,7 +128,9 @@ class TestConductivity:
             4, 4, scf_params={"mixfrac": 0.3, "maxscf": 6}, grid_params={"ngrid": 1200}
         )
 
-        return output
+        output_dict = {"Atom": F_at, "model": model, "SCF_out": output}
+
+        return output_dict
 
     @staticmethod
     def _run_cond_tot(input_SCF, which, val_orb):
@@ -137,8 +139,8 @@ class TestConductivity:
 
         Parameters
         ----------
-        input_SCF : dict of objects
-            the SCF input
+        input_SCF : dictionary
+            dictionary of Atom, model and SCF output
         which : the componenet for which the number of electrons is computed.
         val_orb : tuple of ints
             defines the valance orbital
@@ -149,12 +151,10 @@ class TestConductivity:
             number of conductiong electrons in the component.
 
         """
-        # set up the atom and model
-        F_at = Atom("F", 0.4, radius=5.0)
-        model = models.ISModel(F_at, unbound="quantum", bc="dirichlet")
+        orbs = input_SCF["SCF_out"]["orbitals"]
 
         cond = conductivity.KuboGreenwood(
-            F_at, model, input_SCF["orbitals"], valence_orbs=[val_orb]
+            input_SCF["Atom"], input_SCF["model"], orbs, valence_orbs=[val_orb]
         )
 
         N = cond.cond_tot(component=which)[1]
@@ -167,8 +167,8 @@ class TestConductivity:
 
         Parameters
         ----------
-        input_SCF : dict of objects
-            the SCF input
+        input_SCF : dictionary
+            dictionary of Atom, model and SCF output
         which : the property to be calculated
 
         Returns
@@ -176,13 +176,12 @@ class TestConductivity:
         prop: float
             The property's value
         """
-        # set up the atom and model
-        F_at = Atom("F", 0.4, radius=5.0)
-        model = models.ISModel(F_at, unbound="quantum", bc="dirichlet")
+        orbs = input_SCF["SCF_out"]["orbitals"]
 
         cond = conductivity.KuboGreenwood(
-            F_at, model, input_SCF["orbitals"], valence_orbs=[(2, 0)]
+            input_SCF["Atom"], input_SCF["model"], orbs, valence_orbs=[(2, 0)]
         )
+
         if which == "sig_vv":
             prop = cond.sig_vv
         elif which == "sig_cv":
@@ -220,8 +219,8 @@ class TestConductivity:
 
         Parameters
         ----------
-        input_SCF : dict of objects
-            the SCF input
+        input_SCF : dictionary
+            dictionary of Atom, model and SCF output
 
         Returns
         -------
@@ -230,11 +229,8 @@ class TestConductivity:
             arbitrary inconverged orbital.
 
         """
-        # set up the atom and model
-        F_at = Atom("F", 0.4, radius=5.0)
-        model = models.ISModel(F_at, unbound="quantum", bc="dirichlet")
-
-        cond = conductivity.KuboGreenwood(F_at, model, input_SCF["orbitals"])
+        orbs = input_SCF["SCF_out"]["orbitals"]
+        cond = conductivity.KuboGreenwood(input_SCF["Atom"], input_SCF["model"], orbs)
         sum_rule = cond.check_sum_rule(2, 2, 0)[0]
         return sum_rule
 
