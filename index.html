@@ -194,12 +194,12 @@ to solve the electronic structure problem for single-element materials at finite
 <p>This route is recommended because <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> automatically creates a virtual environment and manages dependencies.</p>
 <ol class="simple">
 <li><p>First, install <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> if it is not already installed, for example via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pipenv</span></code> (or see <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a> for    installation instructions)</p></li>
-<li><p>Next, install <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code>’s dependencies with <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">install</span></code></p></li>
+<li><p>Next, install <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code>’s dependencies with <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">install</span></code> (use <code class="docutils literal notranslate"><span class="pre">--dev</span></code> option to install the test dependencies in the same environment)</p></li>
 <li><p>Use <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">shell</span></code> to activate the virtual environment and install atoMEC with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">atoMEC</span></code> (for developers: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>)</p></li>
 <li><p>Now run scripts from inside the <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code> virtual environment, e.g. <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">examples/simple.py</span></code></p></li>
 </ol>
 </li>
-<li><p>Try running the examples in <code class="docutils literal notranslate"><span class="pre">examples/</span></code> and report any problems</p></li>
+<li><p>Run the tests (see Testing section below) and report any failures (for example by raising an issue)</p></li>
 </ul>
 <p><strong>Please note</strong>: atoMEC does not yet support Windows installation. This is due to the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code> which currently lacks Windows support.</p>
 </div>
@@ -217,6 +217,28 @@ to solve the electronic structure problem for single-element materials at finite
 <li><p>Merges from <code class="docutils literal notranslate"><span class="pre">develop</span></code> to <code class="docutils literal notranslate"><span class="pre">master</span></code> are only done for code releases. This way we always have a clean <code class="docutils literal notranslate"><span class="pre">master</span></code> that reflects the current release</p></li>
 <li><p>Code should be formatted using <a class="reference external" href="https://pypi.org/project/black/">black</a> style</p></li>
 </ul>
+</div>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>First, install the test requirements (if not already installed in the virtual env with <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">install</span> <span class="pre">--dev</span></code>):</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># activate environment first (optional)</span>
+$ pipenv shell
+
+<span class="c1"># install atoMEC as editable project in current directory (for developers)</span>
+$ pip install -e .<span class="o">[</span>tests<span class="o">]</span>
+
+<span class="c1"># alternatively install package from PyPI with test dependencies</span>
+$ pip install atoMEC<span class="o">[</span>tests<span class="o">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>To run the tests:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ pytest --cov<span class="o">=</span>atoMEC --random-order tests/
+</pre></div>
+</div>
 <div class="section" id="build-documentation-locally-for-developers">
 <h3>Build documentation locally (for developers)<a class="headerlink" href="#build-documentation-locally-for-developers" title="Permalink to this headline">¶</a></h3>
 <p>Install the prerequisites:</p>
