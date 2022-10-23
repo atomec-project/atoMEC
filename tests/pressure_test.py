@@ -17,7 +17,8 @@ finite_diff_expected = 0.0133944
 stress_tensor_expected = 0.0044425
 virial_expected = 0.013604
 ion_expected = 0.0056149
-accuracy = 1e-4
+accuracy_1 = 5e-4
+accuracy_2 = 1e-4
 
 
 class TestPressure:
@@ -33,23 +34,25 @@ class TestPressure:
         """Run the finite difference pressure method."""
         config.numcores = -1
         assert np.isclose(
-            self._run_finite_diff(SCF_output), finite_diff_expected, atol=accuracy
+            self._run_finite_diff(SCF_output), finite_diff_expected, atol=accuracy_1
         )
 
     def test_stress_tensor(self, SCF_output):
         """Run the stress tensor pressure method."""
         assert np.isclose(
-            self._run_stress_tensor(SCF_output), stress_tensor_expected, atol=accuracy
+            self._run_stress_tensor(SCF_output), stress_tensor_expected, atol=accuracy_2
         )
 
     def test_virial(self, SCF_output):
         """Run the virial pressure method."""
-        assert np.isclose(self._run_virial(SCF_output), virial_expected, atol=accuracy)
+        assert np.isclose(
+            self._run_virial(SCF_output), virial_expected, atol=accuracy_1
+        )
 
     def test_ion(self, SCF_output):
         """Run the ideal ionic pressure method."""
         assert np.isclose(
-            self._run_ion(SCF_output["Atom"]), ion_expected, atol=accuracy
+            self._run_ion(SCF_output["Atom"]), ion_expected, atol=accuracy_2
         )
 
     @staticmethod
