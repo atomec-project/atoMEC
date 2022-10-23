@@ -11,7 +11,7 @@ on:
       - develop
       
 jobs:
-  run-test-suite
+  run-test-suite:
     runs-on: ubuntu-18.04
     timeout-minutes: 15
     steps:
