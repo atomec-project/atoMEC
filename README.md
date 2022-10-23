@@ -34,11 +34,11 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies.
 
   1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for    installation instructions)
-  2. Next, install `atoMEC`'s dependencies with `pipenv install`
+  2. Next, install `atoMEC`'s dependencies with `pipenv install` (use `--dev` option to install the test dependencies in the same environment)
   3. Use `pipenv shell` to activate the virtual environment and install atoMEC with `pip install atoMEC` (for developers: `pip install -e .`)
   4. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
 
-* Try running the examples in `examples/` and report any problems
+* Run the tests (see Testing section below) and report any failures (for example by raising an issue)
 
 **Please note**: atoMEC does not yet support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support.
 
@@ -52,6 +52,24 @@ We welcome your contributions, please adhere to the following guidelines when co
 * Merges from `develop` to `master` will be done after prior consultation of the core development team
 * Merges from `develop` to `master` are only done for code releases. This way we always have a clean `master` that reflects the current release
 * Code should be formatted using [black](https://pypi.org/project/black/) style
+
+## Testing
+* First, install the test requirements (if not already installed in the virtual env with `pipenv install --dev`):
+```sh
+# activate environment first (optional)
+$ pipenv shell
+
+# install atoMEC as editable project in current directory (for developers)
+$ pip install -e .[tests]
+
+# alternatively install package from PyPI with test dependencies
+$ pip install atoMEC[tests]
+```
+
+* To run the tests:
+```sh
+$ pytest --cov=atoMEC --random-order tests/
+```
 
 ### Build documentation locally (for developers)
 
