@@ -56,7 +56,14 @@ We welcome your contributions, please adhere to the following guidelines when co
 ## Testing
 * First, install the test requirements (if not already installed in the virtual env with `pipenv install --dev`):
 ```sh
-$ pip install -r tests/requirements.txt
+# activate environment first (optional)
+$ pipenv shell
+
+# install atoMEC as editable project in current directory (for developers)
+$ pip install -e .[tests]
+
+# alternatively install package from PyPI with test dependencies
+$ pip install atoMEC[tests]
 ```
 
 * To run the tests:
