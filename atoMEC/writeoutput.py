@@ -282,8 +282,7 @@ class SCF:
         output_str += self.write_final_energies(energy) + spc
 
         # write the chemical potential and mean ionization state
-
-        N_ub = density.unbound["N"]
+        N_ub = density.MIS
 
         if config.spindims == 2:
             mu_str = "Chemical potential (u/d)"
@@ -303,8 +302,18 @@ class SCF:
         output_str += spc.join([chem_pot_str, MIS_str])
 
         eigvals, occnums = self.write_orb_info(orbitals)
-        output_str += dblspc + "Orbital eigenvalues (Ha) :" + dblspc + eigvals
-        output_str += spc + "Orbital occupations (2l+1) * f_{nl} :" + dblspc + occnums
+        if config.bc == "bands":
+            output_str += (
+                dblspc + "Orbital eigenvalues (band limits) (Ha) :" + dblspc + eigvals
+            )
+            output_str += (
+                spc + "Weighted band occupations (sum over k pts) :" + dblspc + occnums
+            )
+        else:
+            output_str += dblspc + "Orbital eigenvalues (Ha) :" + dblspc + eigvals
+            output_str += (
+                spc + "Orbital occupations (2l+1) * f_{nl} :" + dblspc + occnums
+            )
 
         return output_str
 
@@ -335,12 +344,14 @@ class SCF:
         )
         KE_str += (
             4 * " "
-            + "{KE:26s} : {KE_x:10.4f}".format(KE="bound", KE_x=E_kin["bound"])
+            + "{KE:26s} : {KE_x:10.4f}".format(KE="orbitals", KE_x=E_kin["bound"])
             + spc
         )
         KE_str += (
             4 * " "
-            + "{KE:26s} : {KE_x:10.4f}".format(KE="unbound", KE_x=E_kin["unbound"])
+            + "{KE:26s} : {KE_x:10.4f}".format(
+                KE="unbound ideal approx.", KE_x=E_kin["unbound"]
+            )
             + spc
         )
 
@@ -396,11 +407,15 @@ class SCF:
         ent = energy.entropy
         ent_str = "{S:30s} : {S_x:10.4f}".format(S="Entropy", S_x=ent["tot"]) + spc
         ent_str += (
-            4 * " " + "{S:26s} : {S_x:10.4f}".format(S="bound", S_x=ent["bound"]) + spc
+            4 * " "
+            + "{S:26s} : {S_x:10.4f}".format(S="orbitals", S_x=ent["bound"])
+            + spc
         )
         ent_str += (
             4 * " "
-            + "{S:26s} : {S_x:10.4f}".format(S="unbound", S_x=ent["unbound"])
+            + "{S:26s} : {S_x:10.4f}".format(
+                S="unbound ideal approx.", S_x=ent["unbound"]
+            )
             + spc
         )
 
@@ -439,23 +454,13 @@ class SCF:
         # loop over the spin dimensions
         eigval_tbl = ""
         occnum_tbl = ""
+
         for i in range(config.spindims):
 
-            occnums_tot = orbitals.occnums + orbitals.occnums_ub
+            # truncate the table otherwise it becomes too large
 
-            # truncate the table to include only one unbound state in each direction
-            try:
-                lmax_new = min(
-                    np.amax(np.where(occnums_tot[i] > 1e-5)[0]) + 1,
-                    config.lmax,
-                )
-                nmax_new = min(
-                    np.amax(np.where(occnums_tot[i] > 1e-5)[1]) + 1,
-                    config.nmax,
-                )
-            except ValueError:
-                lmax_new = 2
-                nmax_new = 2
+            lmax_new = min(config.lmax, 8)
+            nmax_new = min(config.nmax, 5)
 
             # define row and column headers
             headers = [n + 1 for n in range(nmax_new)]
@@ -463,21 +468,30 @@ class SCF:
             RowIDs = [*range(lmax_new)]
             RowIDs[0] = "l=0"
 
-            eigvals_new = orbitals.eigvals[i, :lmax_new, :nmax_new]
-            occnums_new = occnums_tot[i, :lmax_new, :nmax_new]
+            if config.bc == "bands":
+                eigvals_list = [orbitals.eigvals_min, orbitals.eigvals_max]
+            else:
+                eigvals_list = [orbitals.eigvals[0]]
 
-            # the eigenvalue table
-            eigval_tbl += (
-                tabulate.tabulate(
-                    eigvals_new,
-                    headers,
-                    tablefmt="presto",
-                    showindex=RowIDs,
-                    floatfmt="7.3f",
-                    stralign="right",
+            for eigvals in eigvals_list:
+                eigvals_new = eigvals[i, :lmax_new, :nmax_new]
+
+                # the eigenvalue table
+                eigval_tbl += (
+                    tabulate.tabulate(
+                        eigvals_new,
+                        headers,
+                        tablefmt="presto",
+                        showindex=RowIDs,
+                        floatfmt="7.3f",
+                        stralign="right",
+                    )
+                    + dblspc
                 )
-                + dblspc
-            )
+
+            # sum up the occupation numbers over each band
+            occnums_band = np.sum(orbitals.occnums_w, axis=0)
+            occnums_new = occnums_band[i, :lmax_new, :nmax_new]
 
             # the occnums table
             occnum_tbl += (
@@ -509,17 +523,16 @@ def density_to_csv(rgrid, density, filename):
         name of the file to write to
     """
     if config.spindims == 2:
-        headstr = (
-            "r"
-            + 7 * " "
-            + "n^up_b"
-            + 4 * " "
-            + "n^up_ub"
-            + 3 * " "
-            + "n^dw_b"
-            + 4 * " "
-            + "n^dw_ub"
-            + 3 * " "
+        # right-justifing column heads with fixed width of 12 characters
+        headstr = " ".join(
+            s.rjust(12)
+            for s in [
+                "r (a_0)",
+                "n^u (orbs)",
+                "n^u (ideal)",
+                "n^d (orbs)",
+                "n^d (ideal)",
+            ]
         )
         data = np.column_stack(
             [
@@ -531,12 +544,13 @@ def density_to_csv(rgrid, density, filename):
             ]
         )
     else:
-        headstr = "r" + 8 * " " + "n_b" + 6 * " " + "n^_ub" + 3 * " "
+        # right-justifing column heads with fixed width of 12 characters
+        headstr = " ".join(s.rjust(12) for s in ["r (a_0)", "n (orbs)", "n (ideal)"])
         data = np.column_stack(
             [rgrid, density.bound["rho"][0], density.unbound["rho"][0]]
         )
 
-    np.savetxt(filename, data, fmt="%8.3e", header=headstr)
+    np.savetxt(filename, data, fmt="%11.6e", header=headstr, comments="")
 
     return
 
@@ -555,17 +569,9 @@ def potential_to_csv(rgrid, potential, filename):
         name of the file to write to
     """
     if config.spindims == 2:
-        headstr = (
-            "r"
-            + 7 * " "
-            + "v_en"
-            + 4 * " "
-            + "v_ha"
-            + 3 * " "
-            + "v^up_xc"
-            + 4 * " "
-            + "v^dw_xc"
-            + 3 * " "
+        # right-justifing column heads with fixed width of 12 characters
+        headstr = " ".join(
+            s.rjust(12) for s in ["r (a_0)", "v_en", "v_ha", "v^u_xc", "v^d_xc"]
         )
         data = np.column_stack(
             [
@@ -577,12 +583,97 @@ def potential_to_csv(rgrid, potential, filename):
             ]
         )
     else:
-        headstr = "r" + 8 * " " + "v_en" + 6 * " " + "v_ha" + 3 * " "
+        # right-justifing column heads with fixed width of 12 characters
+        headstr = " ".join(s.rjust(12) for s in ["r (a_0)", "v_en", "v_ha", "v_xc"])
         data = np.column_stack(
             [rgrid, potential.v_en, potential.v_ha, potential.v_xc["xc"][0]]
         )
 
-    np.savetxt(filename, data, fmt="%8.3e", header=headstr)
+    np.savetxt(filename, data, fmt="% 10.5e", header=headstr, comments="")
+
+    return
+
+
+def eigs_occs_to_csv(orbitals, filename):
+    """
+    Write all the orbital energies and their occupations to file.
+
+    Parameters
+    ----------
+    orbitals: staticKS.Orbitals
+        the orbitals object
+    filename : str
+        name of the file to write to
+
+    Returns
+    -------
+    None
+    """
+    data_tot = np.array([])
+    for sp in range(config.spindims):
+        # flatten out the relevant matrices
+        # and sort by energy eigenvalue
+        eigs_sp = orbitals.eigvals[:, sp].flatten()
+        idr = np.argsort(eigs_sp)
+        eigs_sp = eigs_sp[idr]
+        occs_sp = orbitals.occnums[:, sp].flatten()[idr]
+        dos_sp = orbitals.DOS[:, sp].flatten()[idr]
+        ldegen_sp = orbitals.ldegen[:, sp].flatten()[idr]
+        band_weight_sp = orbitals.kpt_int_weight[:, sp].flatten()[idr]
+
+        data = np.column_stack([eigs_sp, occs_sp, dos_sp, ldegen_sp, band_weight_sp])
+        try:
+            data_tot = np.concatenate((data_tot, data), axis=-1)
+        except ValueError:
+            data_tot = data
+
+    # right-justifing column heads with fixed width of 12 characters
+    headstr = config.spindims * (
+        " ".join(s.rjust(12) for s in ["eigs", "occs", "dos", "l_degen", "k_int_wt"])
+        + " "
+    )
+
+    np.savetxt(filename, data_tot, fmt="% 10.5e", header=headstr, comments="")
+
+    return
+
+
+def dos_to_csv(orbitals, filename):
+    """
+    Write the energy eigenvalues, Fermi-Dirac occupations and DOS to file.
+
+    Parameters
+    ----------
+    orbitals: staticKS.Orbitals
+        the orbitals object
+    filename : str
+        name of the file to write to
+
+    Returns
+    -------
+    None
+    """
+    data_tot = np.array([])
+    for sp in range(config.spindims):
+
+        # compute the dos (*(2l+1)) and FD dist in amenable format
+        e_arr, fd_arr, DOS_arr = orbitals.calc_DOS_sum(
+            orbitals.eigvals_min, orbitals.eigvals_max, orbitals.ldegen
+        )
+
+        data = np.column_stack([e_arr[:, sp], fd_arr[:, sp], DOS_arr[:, sp]])
+
+        try:
+            data_tot = np.concatenate((data_tot, data), axis=-1)
+        except ValueError:
+            data_tot = data
+
+    # right-justifing column heads with fixed width of 12 characters
+    headstr = config.spindims * (
+        " ".join(s.rjust(12) for s in ["energy", " fd occ", "dos"]) + " "
+    )
+
+    np.savetxt(filename, data_tot, fmt="% 10.5e", header=headstr, comments="")
 
     return
 

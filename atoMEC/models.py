@@ -11,9 +11,10 @@ Classes
 """
 
 # import standard packages
+import sys
 
 # import external packages
-from math import log, pi
+from math import log
 
 # import internal packages
 from . import check_inputs
@@ -22,7 +23,7 @@ from . import staticKS
 from . import convergence
 from . import writeoutput
 from . import xc
-from . import unitconv
+from atoMEC.postprocess import pressure
 
 
 class ISModel:
@@ -193,7 +194,7 @@ class ISModel:
 
     @unbound.setter
     def unbound(self, unbound):
-        self._unbound = check_inputs.ISModel.check_unbound(unbound)
+        self._unbound = check_inputs.ISModel.check_unbound(unbound, self.bc)
         config.unbound = self._unbound
 
     @property
@@ -219,13 +220,18 @@ class ISModel:
         grid_params={},
         conv_params={},
         scf_params={},
+        band_params={},
         force_bound=[],
         verbosity=0,
         write_info=True,
         write_density=True,
         write_potential=True,
+        write_eigs_occs=True,
+        write_dos=True,
         density_file="density.csv",
         potential_file="potential.csv",
+        eigs_occs_file="eigs_occs.csv",
+        dos_file="dos.csv",
         guess=False,
         guess_pot=0,
     ):
@@ -261,6 +267,12 @@ class ISModel:
             `maxscf`  (``int``)   : maximum number of scf cycles,
             `mixfrac` (``float``) : density mixing fraction
             }
+        band_params : dict, optional
+            dictionary for band parameters as follows:
+            {
+            `nkpts`   (``int``)   : number of levels per band,
+            `de_min`   (``float``) : minimum energy gap to make a band
+            }
         force_bound : list of list of ints, optional
             force certain levels to be bound, for example:
             `force_bound = [0, 1, 0]`
@@ -286,6 +298,12 @@ class ISModel:
         potential_file : str, optional
             name of the file to write the potential to
             default: `potential.csv`
+        eigs_occs_file : str, optional
+            filename for the orbital energies and occupations
+            default: `eigs_occs`
+        dos_file : str, optional
+            filename for the density-of-states and fd distribution
+            default: `dos`
         guess : bool, optional
             use coulomb pot (guess=False) or given pot (guess=True) as initial guess
         guess_pot : numpy array, optional
@@ -312,6 +330,7 @@ class ISModel:
         config.grid_params = check_inputs.EnergyCalcs.check_grid_params(grid_params)
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
+        config.band_params = check_inputs.EnergyCalcs.check_band_params(band_params)
 
         # experimental change
         config.force_bound = force_bound
@@ -327,7 +346,7 @@ class ISModel:
         else:
             v_init = staticKS.Potential.calc_v_en(xgrid)
         v_s_old = v_init  # initialize the old potential
-        orbs.compute(v_init, init=True, eig_guess=True)
+        orbs.compute(v_init, config.bc, init=True, eig_guess=True)
 
         # occupy orbitals
         orbs.occupy()
@@ -372,9 +391,9 @@ class ISModel:
 
             # update the orbitals with the KS potential
             if iscf < 3:
-                orbs.compute(v_s, eig_guess=True)
+                orbs.compute(v_s, config.bc, eig_guess=True)
             else:
-                orbs.compute(v_s)
+                orbs.compute(v_s, config.bc)
             orbs.occupy()
 
             # update old potential
@@ -409,6 +428,14 @@ class ISModel:
         if write_potential:
             writeoutput.potential_to_csv(rgrid, pot, potential_file)
 
+        # write the eigs and their occs to file
+        if write_eigs_occs:
+            writeoutput.eigs_occs_to_csv(orbs, eigs_occs_file)
+
+        # write the dos to file if using bands bc
+        if config.bc == "bands" and write_dos:
+            writeoutput.dos_to_csv(orbs, dos_file)
+
         output_dict = {
             "energy": energy,
             "density": rho,
@@ -424,9 +451,9 @@ class ISModel:
         energy_output,
         nmax=None,
         lmax=None,
-        grid_params={},
         conv_params={},
         scf_params={},
+        band_params={},
         force_bound=[],
         write_info=False,
         verbosity=0,
@@ -435,25 +462,15 @@ class ISModel:
         r"""
         Calculate the electronic pressure using the finite differences method.
 
+        N.B.: This is just a wrapper for the postprocess.pressure.finite_diff function.
+        It is maintained to support backwards compatibility until next major release.
+
         Parameters
         ----------
         atom : atoMEC.Atom
             The main atom object
         energy_output : dict
             output parameters of the function CalcEnergy
-        nmax : int
-            maximum no. eigenvalues to compute for each value of angular momentum
-        lmax : int
-            maximum no. angular momentum eigenfucntions to consider
-        grid_params : dict, optional
-            dictionary of grid parameters as follows:
-            {
-            `ngrid` (``int``)        : number of grid points,
-            `x0`    (``float``)      : LHS grid point takes form
-            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified,
-            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation
-            of eigenvalues with full diagonalization
-            }
         conv_params : dict, optional
             dictionary of convergence parameters as follows:
             {
@@ -487,63 +504,25 @@ class ISModel:
 
         Returns
         -------
-        pressureHa : float
+        P_e : float
             electronic pressure in Ha
         """
-        print("Pressure is being calculated. Please be patient!" + "\n")
+        # for backwards compatibility: nmax and lmax will be removed in 2.x
+        if nmax is not None or lmax is not None:
+            sys.exit("nmax and lmax must inherit from CalcEnergy output")
 
-        # set nmax and lmax to default config values if they aren't specified
-        if nmax is None:
-            nmax = config.nmax
-        if lmax is None:
-            lmax = config.lmax
-
-        # initialize the main radius we are interested in
-        main_rad = atom.radius
-
-        # change main radius by +dR
-        atom.radius = main_rad + dR
-
-        # calculate free energy for new radius and store it
-        output1 = self.CalcEnergy(
-            nmax,
-            lmax,
-            grid_params=grid_params,
-            write_info=write_info,
-            guess=True,
-            guess_pot=energy_output["potential"].v_s,
-            write_density=False,
-            write_potential=False,
+        # call the finite diff function
+        P_e = pressure.finite_diff(
+            atom,
+            self,
+            energy_output["orbitals"],
+            energy_output["potential"],
+            conv_params,
+            scf_params,
+            force_bound,
+            write_info,
+            verbosity,
+            dR,
         )
-        F1 = output1["energy"].F_tot
 
-        # change main radius by -dR
-        atom.radius = main_rad - dR
-
-        # calculate free energy for new radius and store it
-        output2 = self.CalcEnergy(
-            nmax,
-            lmax,
-            grid_params=grid_params,
-            write_info=write_info,
-            guess=True,
-            guess_pot=energy_output["potential"].v_s,
-            write_density=False,
-            write_potential=False,
-        )
-        F2 = output2["energy"].F_tot
-
-        dFdR = (F1 - F2) / (2 * dR)  # finite differences
-        dRdV = 1 / (4 * pi * main_rad ** 2)  # V = sphere of radius R (main_rad) volume
-
-        # calculate pressure by thermodynamic definition p = -dFdV and chain rule
-        pressureHa = -dFdR * dRdV
-        pressureGPa = pressureHa * unitconv.ha_to_gpa
-
-        pressurestat = "{preamble:30s}: {p_ha:<.6g} Ha / {p_gpa:<.6g} GPa".format(
-            preamble="Electronic pressure", p_ha=pressureHa, p_gpa=pressureGPa
-        )
-        spc = "\n"
-        print(pressurestat + spc)
-
-        return pressureHa
+        return P_e

@@ -12,6 +12,7 @@ Functions
 * :func:`fd_int_complete`: compute the complete Fermi-Dirac integral for given order `n`
 * :func:`chem_pot`: compute the chemical potential by enforcing charge neutrality
 * :func:`f_root_id`: make root input fn for chem_pot with ideal apprx for free electrons
+* :func: `lorentzian`: Lorentzian function
 """
 
 # standard libraries
@@ -319,43 +320,39 @@ def chem_pot(orbs):
     mu0 = mu  # set initial guess to existing value of chem pot
 
     # so far only the ideal treatment for unbound electrons is implemented
-    if config.unbound == "ideal":
-        for i in range(config.spindims):
-            if config.nele[i] != 0:
-                soln = optimize.root_scalar(
-                    f_root_id,
-                    x0=mu0[i],
-                    args=(orbs.eigvals[i], orbs.lbound[i], config.nele[i]),
-                    method="brentq",
-                    bracket=[-100, 100],
-                    options={"maxiter": 100},
-                )
-                mu[i] = soln.root
-            # in case there are no electrons in one spin channel
-            else:
-                mu[i] = -np.inf
+    for i in range(config.spindims):
+        # increase the bracket size until a solution is found
+        bracket = np.array([-10, 10])
+        while True:
+            try:
+                x0 = mu0[i]
+                args = (orbs.eigvals[:, i], orbs.occ_weight[:, i], config.nele[i])
+                maxiter = 1000
 
-    if config.unbound == "quantum":
-        for i in range(config.spindims):
-            if config.nele[i] != 0:
-                soln = optimize.root_scalar(
-                    f_root_qu,
-                    x0=mu0[i],
-                    args=(
-                        orbs.eigvals[i],
-                        orbs.lbound[i],
-                        orbs.lunbound[i],
-                        config.nele[i],
-                    ),
-                    method="brentq",
-                    bracket=[-100, 100],
-                    options={"maxiter": 100},
-                )
-                mu[i] = soln.root
-            # in case there are no electrons in one spin channel
-            else:
-                mu[i] = -np.inf
+                if config.unbound == "ideal":
+                    f_root = f_root_id
+                elif config.unbound == "quantum":
+                    f_root = f_root_qu
 
+                if config.nele[i] != 0:
+                    soln = optimize.root_scalar(
+                        f_root,
+                        x0=x0,
+                        args=args,
+                        method="brentq",
+                        bracket=bracket,
+                        options={"maxiter": maxiter},
+                    )
+                    mu[i] = soln.root
+
+                    # in case there are no electrons in one spin channel
+                else:
+                    mu[i] = -np.inf
+
+                break
+
+            except ValueError:
+                bracket *= 10
     return mu
 
 
@@ -396,7 +393,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     # now compute the contribution from the unbound electrons
     # this function uses the ideal approximation
 
-    prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
+    prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi**2)
     contrib_unbound = prefac * fd_int_complete(mu, config.beta, 1.0)
 
     # return the function whose roots are to be found
@@ -405,7 +402,7 @@ def f_root_id(mu, eigvals, lbound, nele):
     return f_root
 
 
-def f_root_qu(mu, eigvals, lbound, lunbound, nele):
+def f_root_qu(mu, eigvals, occ_weight, nele):
     r"""
     Functional input for the chemical potential root finding function (ideal approx).
 
@@ -436,16 +433,60 @@ def f_root_qu(mu, eigvals, lbound, lunbound, nele):
         N_{ub}(\beta,\mu) - N_e
     """
     # caluclate the contribution from the bound electrons
-    occnums = lbound * fermi_dirac(eigvals, mu, config.beta)
-    contrib_bound = occnums.sum()
-
-    # now compute the contribution from the unbound electrons
-    # this function uses the ideal approximation
-
-    occnums_ub = lunbound * fermi_dirac(eigvals, mu, config.beta)
-    contrib_unbound = occnums_ub.sum()
+    occnums = occ_weight * fermi_dirac(eigvals, mu, config.beta)
 
     # return the function whose roots are to be found
-    f_root = contrib_bound + contrib_unbound - nele
+    f_root = occnums.sum() - nele
 
     return f_root
+
+
+def lorentzian(x, x0, gamma):
+    r"""
+    Compute the Lorentzian function.
+
+    Parameters
+    ----------
+    x : array_like
+        the "x" variable
+    x0 : array_like
+        the position of the peak
+    gamma : float
+        half the peak width / smoothing factor
+
+    Returns
+    -------
+    lorentzian_ : array_like
+        the lorentzian function
+
+    Notes
+    -----
+    The Lorentzian function is defined as
+
+    .. math::
+        \mathcal{L}(x, x_0, \gamma)=\frac{\gamma}{\pi}\frac{1}{\gamma^2+(x-x_0)^2}
+    """
+    lorentzian_ = (gamma / np.pi) * (1.0 / (gamma**2 + (x - x0) ** 2))
+    return lorentzian_
+
+
+def grad_func(den, xgrid):
+    """
+    Compute the gradient of a function on the logarithmic grid.
+
+    Parameters
+    ----------
+    den : ndarray
+        density array or any other function that is integrated
+    rgrid : ndarray
+        radial grid array
+    xgrid : ndarray
+        exponential grid array
+
+    Returns
+    -------
+    grad : ndarray
+        The gradient of the density w.r.t. the radial grid.
+    """
+    grad = (np.exp(-xgrid)) * np.gradient(den, xgrid)
+    return grad
