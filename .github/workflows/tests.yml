@@ -44,3 +44,6 @@ jobs:
         
       - name: Run test suite
         run: pipenv run pytest --cov=atoMEC --random-order tests/
+        
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
