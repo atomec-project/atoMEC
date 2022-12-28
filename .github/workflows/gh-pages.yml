@@ -10,9 +10,10 @@ on:
       - master
       - develop
 
+
 jobs:
   python-style-checks:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -36,7 +37,7 @@ jobs:
 
   build-and-deploy-pages:
     needs: python-style-checks
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -51,7 +52,33 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -q -r docs/requirements.txt
+          #pip install -q -r docs/requirements.txt
+          pip install docutils myst-parser Sphinx sphinx-rtd-theme
+
+      - name: Check docs for broken links
+        run: |
+          cd docs
+          make linkcheck
+
+      - name: Install ghostscript, its fonts and latexmk
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ghostscript \
+                                  fonts-freefont-otf \
+                                  gsfonts \
+                                  latexmk \
+                                  texlive \
+                                  texlive-latex-extra \
+                                  imagemagick
+
+      - name: Generate LaTeX code to check for errors
+        run: |
+          cd docs
+          make apidocs
+          make latex
+          #cd _build/latex
+          #latexmk -pdf -halt-on-error
+          make latexpdf
 
       - name: Build API and docs
         run: |
