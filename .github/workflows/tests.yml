@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache-pipenv.outputs.cache-hit != 'true'
-        run: pipenv install --dev
+        run: pipenv --python 3.8 install --dev
 
       - name: Install atoMEC
         run: pipenv run python3 -m pip install -e .
