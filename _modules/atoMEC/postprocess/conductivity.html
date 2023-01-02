@@ -192,7 +192,7 @@
 
 
 <div class="viewcode-block" id="KuboGreenwood"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood">[docs]</a><span class="k">class</span> <span class="nc">KuboGreenwood</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Class for Kubo-Greenwood conductivity and MIS via TRK sum rule.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for Kubo-Greenwood conductivity and MIS via TRK sum rule.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">valence_orbs</span><span class="o">=</span><span class="p">[],</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 
@@ -220,7 +220,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">all_orbs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;List of tuples: all the possible orbital pairings.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List of tuples: all the possible orbital pairings.&quot;&quot;&quot;</span>
         <span class="n">all_orbs_tmp</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lmax</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nmax</span><span class="p">):</span>
@@ -230,7 +230,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">cond_orbs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;List of tuples: all the conduction band orbital pairings.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List of tuples: all the conduction band orbital pairings.&quot;&quot;&quot;</span>
         <span class="n">cond_orbs_tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_orbs</span>
         <span class="k">for</span> <span class="n">val_orbs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valence_orbs</span><span class="p">:</span>
             <span class="n">cond_orbs_tmp</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">val_orbs</span><span class="p">)</span>
@@ -239,7 +239,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sig_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the integrated total conductivity.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the integrated total conductivity.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sig_tot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_sig</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">R1_int_tt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">R2_int_tt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_orbs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_orbs</span>
         <span class="p">)</span>
@@ -247,7 +247,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sig_cc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the integrated cc conductivity component.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the integrated cc conductivity component.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sig_cc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_sig</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">R1_int_cc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">R2_int_cc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cond_orbs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cond_orbs</span>
         <span class="p">)</span>
@@ -255,7 +255,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sig_vv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the integrated vv conductivity component.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the integrated vv conductivity component.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sig_vv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_sig</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">R1_int_vv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">R2_int_vv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">valence_orbs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">valence_orbs</span>
         <span class="p">)</span>
@@ -263,7 +263,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sig_cv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the integrated cv conductivity component.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the integrated cv conductivity component.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sig_cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_sig</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">R1_int_cv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">R2_int_cv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cond_orbs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">valence_orbs</span>
         <span class="p">)</span>
@@ -271,25 +271,25 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">N_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the total electron number from TRK sum-rule.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the total electron number from TRK sum-rule.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_N_tot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig_tot</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_tot</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">N_free</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the free electron number from TRK sum-rule.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the free electron number from TRK sum-rule.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_N_free</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig_cc</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_free</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sph_vol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the volume of the sphere.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the volume of the sphere.&quot;&quot;&quot;</span>
         <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">V</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">rmax</span><span class="o">**</span><span class="mf">3.0</span>
         <span class="k">return</span> <span class="n">V</span>
 
 <div class="viewcode-block" id="KuboGreenwood.cond_tot"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood.cond_tot">[docs]</a>    <span class="k">def</span> <span class="nf">cond_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s2">&quot;tt&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">maxfreq</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">nfreq</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the chosen component of dynamical electrical conductivity sig(w).</span>
 
 <span class="sd">        Parameters</span>
@@ -339,7 +339,7 @@
     <span class="nd">@property</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
     <span class="k">def</span> <span class="nf">R1_int_tt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Total-total component of the R1 radial integral.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total-total component of the R1 radial integral.&quot;&quot;&quot;</span>
         <span class="n">R1_int_tt_</span> <span class="o">=</span> <span class="n">RadialInts</span><span class="o">.</span><span class="n">calc_R1_int_mat</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span><span class="p">,</span>
@@ -352,7 +352,7 @@
     <span class="nd">@property</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
     <span class="k">def</span> <span class="nf">R1_int_cc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Conducting-conducting component of the R1 radial integral.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Conducting-conducting component of the R1 radial integral.&quot;&quot;&quot;</span>
         <span class="n">R1_int_cc_</span> <span class="o">=</span> <span class="n">RadialInts</span><span class="o">.</span><span class="n">calc_R1_int_mat</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span><span class="p">,</span>
@@ -365,7 +365,7 @@
     <span class="nd">@property</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
     <span class="k">def</span> <span class="nf">R1_int_cv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Conducting-valence component of the R1 radial integral.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Conducting-valence component of the R1 radial integral.&quot;&quot;&quot;</span>
         <span class="n">R1_int_cv_</span> <span class="o">=</span> <span class="n">RadialInts</span><span class="o">.</span><span class="n">calc_R1_int_mat</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span><span class="p">,</span>
@@ -378,7 +378,7 @@
     <span class="nd">@property</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
     <span class="k">def</span> <span class="nf">R1_int_vv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Valence-valence component of the R1 radial integral.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Valence-valence component of the R1 radial integral.&quot;&quot;&quot;</span>
         <span class="n">R1_int_vv_</span> <span class="o">=</span> <span class="n">RadialInts</span><span class="o">.</span><span class="n">calc_R1_int_mat</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span><span class="p">,</span>
@@ -391,7 +391,7 @@
     <span class="nd">@property</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
     <span class="k">def</span> <span class="nf">R2_int_tt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Total-total component of the R2 radial integral.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total-total component of the R2 radial integral.&quot;&quot;&quot;</span>
         <span class="n">R2_int_tt_</span> <span class="o">=</span> <span class="n">RadialInts</span><span class="o">.</span><span class="n">calc_R2_int_mat</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span><span class="p">,</span>
@@ -404,7 +404,7 @@
     <span class="nd">@property</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
     <span class="k">def</span> <span class="nf">R2_int_cc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Conducting-conducting component of the R2 radial integral.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Conducting-conducting component of the R2 radial integral.&quot;&quot;&quot;</span>
         <span class="n">R2_int_cc_</span> <span class="o">=</span> <span class="n">RadialInts</span><span class="o">.</span><span class="n">calc_R2_int_mat</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span><span class="p">,</span>
@@ -417,7 +417,7 @@
     <span class="nd">@property</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
     <span class="k">def</span> <span class="nf">R2_int_cv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Conducting-valence component of the R2 radial integral.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Conducting-valence component of the R2 radial integral.&quot;&quot;&quot;</span>
         <span class="n">R2_int_cv_</span> <span class="o">=</span> <span class="n">RadialInts</span><span class="o">.</span><span class="n">calc_R2_int_mat</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span><span class="p">,</span>
@@ -430,7 +430,7 @@
     <span class="nd">@property</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
     <span class="k">def</span> <span class="nf">R2_int_vv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Valence-valence component of the R2 radial integral.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Valence-valence component of the R2 radial integral.&quot;&quot;&quot;</span>
         <span class="n">R2_int_vv_</span> <span class="o">=</span> <span class="n">RadialInts</span><span class="o">.</span><span class="n">calc_R2_int_mat</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums</span><span class="p">,</span>
@@ -441,7 +441,7 @@
         <span class="k">return</span> <span class="n">R2_int_vv_</span>
 
 <div class="viewcode-block" id="KuboGreenwood.check_sum_rule"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood.check_sum_rule">[docs]</a>    <span class="k">def</span> <span class="nf">check_sum_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check the sum rule (see notes) for an orbital :math:`\phi_{nlm}` is satisfied.</span>
 
 <span class="sd">        Parameters</span>
@@ -515,7 +515,7 @@
         <span class="k">return</span> <span class="n">sum_mom</span></div>
 
 <div class="viewcode-block" id="KuboGreenwood.calc_sig"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood.calc_sig">[docs]</a>    <span class="k">def</span> <span class="nf">calc_sig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R1_int</span><span class="p">,</span> <span class="n">R2_int</span><span class="p">,</span> <span class="n">orb_subset_1</span><span class="p">,</span> <span class="n">orb_subset_2</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the *integrated* dynamical conducivity for given subsets (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -600,7 +600,7 @@
 <div class="viewcode-block" id="KuboGreenwood.calc_sig_func"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood.calc_sig_func">[docs]</a>    <span class="k">def</span> <span class="nf">calc_sig_func</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">R1_int</span><span class="p">,</span> <span class="n">R2_int</span><span class="p">,</span> <span class="n">orb_subset_1</span><span class="p">,</span> <span class="n">orb_subset_2</span><span class="p">,</span> <span class="n">omega_max</span><span class="p">,</span> <span class="n">n_freq</span><span class="p">,</span> <span class="n">gamma</span>
     <span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the dynamical conducivity for given subsets (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -709,7 +709,7 @@
 
 <div class="viewcode-block" id="KuboGreenwood.calc_occ_diff_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood.calc_occ_diff_mat">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_occ_diff_mat</span><span class="p">(</span><span class="n">occnums</span><span class="p">,</span> <span class="n">orb_subset_1</span><span class="p">,</span> <span class="n">orb_subset_2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the matrix of occupation number diffs -(f_l1n1 - f_l2n2).</span>
 
 <span class="sd">        Parameters</span>
@@ -743,7 +743,7 @@
 
 <div class="viewcode-block" id="KuboGreenwood.calc_eig_diff_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood.calc_eig_diff_mat">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_eig_diff_mat</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">orb_subset_1</span><span class="p">,</span> <span class="n">orb_subset_2</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the matrix of eigenvalue differences e_l1n1 - e_ln2n2.</span>
 
 <span class="sd">        Parameters</span>
@@ -778,7 +778,7 @@
 
 <div class="viewcode-block" id="KuboGreenwood.calc_mel_grad_int"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood.calc_mel_grad_int">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_mel_grad_int</span><span class="p">(</span><span class="n">orb_l1n1</span><span class="p">,</span> <span class="n">orb_l2n2</span><span class="p">,</span> <span class="n">l1</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the matrix element :math:`|&lt;\phi_{n1l1}|\nabla|\phi_{n1l2}&gt;|^2`.</span>
 
 <span class="sd">        Parameters</span>
@@ -816,7 +816,7 @@
 
 <div class="viewcode-block" id="KuboGreenwood.sig_to_N"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.KuboGreenwood.sig_to_N">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sig_to_N</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">V</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Map the integrated conducivity to electron number.</span>
 
 <span class="sd">        Parameters</span>
@@ -837,11 +837,11 @@
 
 
 <div class="viewcode-block" id="SphHamInts"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.SphHamInts">[docs]</a><span class="k">class</span> <span class="nc">SphHamInts</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Contains the functions needed to compute various spherical harmonic integrals.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains the functions needed to compute various spherical harmonic integrals.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SphHamInts.P_mat_int"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.SphHamInts.P_mat_int">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">P_mat_int</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func_int</span><span class="p">,</span> <span class="n">lmax</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the matrix of P function (angular) integrals (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -878,7 +878,7 @@
 
 <div class="viewcode-block" id="SphHamInts.P_int"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.SphHamInts.P_int">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">P_int</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func_int</span><span class="p">,</span> <span class="n">l1</span><span class="p">,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Integrate the P2 or P4 function (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -921,7 +921,7 @@
 
 <div class="viewcode-block" id="SphHamInts.P2_func"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.SphHamInts.P2_func">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">P2_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">l1</span><span class="p">,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the &#39;P2&#39; function (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -955,7 +955,7 @@
 
 <div class="viewcode-block" id="SphHamInts.P4_func"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.SphHamInts.P4_func">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">P4_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">l1</span><span class="p">,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the &#39;P4&#39; function (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -994,7 +994,7 @@
 
 <div class="viewcode-block" id="SphHamInts.sph_ham_coeff"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.SphHamInts.sph_ham_coeff">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sph_ham_coeff</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute coefficients of spherical harmonic functions.</span>
 
 <span class="sd">        Parameters</span>
@@ -1023,11 +1023,11 @@
 
 
 <div class="viewcode-block" id="RadialInts"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.RadialInts">[docs]</a><span class="k">class</span> <span class="nc">RadialInts</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Contains functions required to compute various integrals of the radial KS fns.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contains functions required to compute various integrals of the radial KS fns.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="RadialInts.calc_R1_int_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.RadialInts.calc_R1_int_mat">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">calc_R1_int_mat</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">orb_subset_1</span><span class="p">,</span> <span class="n">orb_subset_2</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the &#39;R1&#39; integral matrix (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -1088,7 +1088,7 @@
 
 <div class="viewcode-block" id="RadialInts.R1_int_term"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.RadialInts.R1_int_term">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">R1_int_term</span><span class="p">(</span><span class="n">eigfunc</span><span class="p">,</span> <span class="n">grad_orb2</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Input function to the :func:`calc_R1_int_mat` function.</span>
 
 <span class="sd">        Parameters</span>
@@ -1112,7 +1112,7 @@
 
 <div class="viewcode-block" id="RadialInts.calc_R2_int_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.RadialInts.calc_R2_int_mat">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">calc_R2_int_mat</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">orb_subset_1</span><span class="p">,</span> <span class="n">orb_subset_2</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the &#39;R2&#39; integral matrix (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -1166,7 +1166,7 @@
 
 <div class="viewcode-block" id="RadialInts.R2_int_term"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.RadialInts.R2_int_term">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">R2_int_term</span><span class="p">(</span><span class="n">eigfunc_1</span><span class="p">,</span> <span class="n">eigfunc_2</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Input function to the :func:`calc_R2_int_mat` function.</span>
 
 <span class="sd">        Parameters</span>
@@ -1189,7 +1189,7 @@
 
 <div class="viewcode-block" id="RadialInts.calc_R1_int"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.RadialInts.calc_R1_int">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_R1_int</span><span class="p">(</span><span class="n">orb1</span><span class="p">,</span> <span class="n">orb2</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the R1 integral between two orbitals orb1 and orb2 (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -1223,7 +1223,7 @@
 
 <div class="viewcode-block" id="RadialInts.calc_R2_int"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.conductivity.RadialInts.calc_R2_int">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_R2_int</span><span class="p">(</span><span class="n">orb1</span><span class="p">,</span> <span class="n">orb2</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the R2 integral between two orbitals orb1 and orb2 (see notes).</span>
 
 <span class="sd">        Parameters</span>

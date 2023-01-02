@@ -204,7 +204,7 @@
 
 
 <div class="viewcode-block" id="calc_eigs_min"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.calc_eigs_min">[docs]</a><span class="k">def</span> <span class="nf">calc_eigs_min</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute an estimate for the minimum values of the KS eigenvalues.</span>
 
 <span class="sd">    This estimate uses full diagonalization of the Hamiltonian on a coarse grid.</span>
@@ -239,7 +239,7 @@
 
 <span class="c1"># @writeoutput.timing</span>
 <div class="viewcode-block" id="matrix_solve"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.matrix_solve">[docs]</a><span class="k">def</span> <span class="nf">matrix_solve</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">solve_type</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve the radial KS equation via matrix diagonalization of Numerov&#39;s method.</span>
 
 <span class="sd">    See notes for details of the implementation.</span>
@@ -335,7 +335,7 @@
 
 
 <div class="viewcode-block" id="KS_matsolve_parallel"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_parallel">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_parallel</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve the KS matrix diagonalization by parallelizing over config.numcores.</span>
 
 <span class="sd">    Parameters</span>
@@ -467,7 +467,7 @@
 
 
 <div class="viewcode-block" id="KS_matsolve_serial"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.KS_matsolve_serial">[docs]</a><span class="k">def</span> <span class="nf">KS_matsolve_serial</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">,</span> <span class="n">eigs_min_guess</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve the KS equations via matrix diagonalization in serial.</span>
 
 <span class="sd">    Parameters</span>
@@ -568,7 +568,7 @@
 
 
 <div class="viewcode-block" id="diag_H"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.diag_H">[docs]</a><span class="k">def</span> <span class="nf">diag_H</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">nmax</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">eigs_guess</span><span class="p">,</span> <span class="n">solve_type</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Diagonilize the Hamiltonian for the input potential v[p].</span>
 
 <span class="sd">    Uses Scipy&#39;s sparse matrix solver scipy.sparse.linalg.eigs. This</span>
@@ -656,7 +656,7 @@
 
 
 <div class="viewcode-block" id="update_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.update_orbs">[docs]</a><span class="k">def</span> <span class="nf">update_orbs</span><span class="p">(</span><span class="n">l_eigfuncs</span><span class="p">,</span> <span class="n">l_eigvals</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sort the eigenvalues and functions by ascending energies and normalize orbs.</span>
 
 <span class="sd">    Parameters</span>
@@ -705,7 +705,7 @@
 
 <span class="c1"># @writeoutput.timing</span>
 <div class="viewcode-block" id="calc_wfns_e_grid"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.calc_wfns_e_grid">[docs]</a><span class="k">def</span> <span class="nf">calc_wfns_e_grid</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">e_arr</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute all KS orbitals defined on the energy grid.</span>
 
 <span class="sd">    This routine is used to propagate a set of orbitals defined with a fixed</span>
@@ -771,7 +771,7 @@
 
 <span class="c1"># @writeoutput.timing</span>
 <div class="viewcode-block" id="num_propagate"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.numerov.num_propagate">[docs]</a><span class="k">def</span> <span class="nf">num_propagate</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">e_arr</span><span class="p">,</span> <span class="n">eigfuncs_init</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Propagate the wfn manually for fixed energy with numerov scheme.</span>
 
 <span class="sd">    Parameters</span>

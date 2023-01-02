@@ -186,7 +186,7 @@
 
 
 <div class="viewcode-block" id="ELFTools"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools">[docs]</a><span class="k">class</span> <span class="nc">ELFTools</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ELF is the electron localization function, a measure of electron localization.</span>
 
 <span class="sd">    It can be used as a tool for qualitative insight as well as an additional method to</span>
@@ -228,7 +228,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">ELF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the electron localization function for a given system.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the electron localization function for a given system.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ELF</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ELF</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_ELF</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span>
@@ -241,7 +241,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">epdc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the electron pair density curvature.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the electron pair density curvature.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;orbitals&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_epdc</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span>
@@ -252,7 +252,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">N_shell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the number of electrons in each &#39;shell&#39;.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: the number of electrons in each &#39;shell&#39;.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_shell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">xargs_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_minima</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ELF</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_N_shell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_N_shell</span><span class="p">(</span>
@@ -262,7 +262,7 @@
 
 <div class="viewcode-block" id="ELFTools.calc_ELF"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.calc_ELF">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_ELF</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;orbitals&quot;</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the ELF (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -311,7 +311,7 @@
 
 <div class="viewcode-block" id="ELFTools.calc_epdc"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.calc_epdc">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_epdc</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the electron pair density curvature (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -352,7 +352,7 @@
 
 <div class="viewcode-block" id="ELFTools.calc_epdc_dens"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.calc_epdc_dens">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_epdc_dens</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the electron pair density curvature (see notes).</span>
 
 <span class="sd">        Parameters</span>
@@ -396,7 +396,7 @@
 
 <div class="viewcode-block" id="ELFTools.get_minima"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.get_minima">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_minima</span><span class="p">(</span><span class="n">ELF</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the locations of the minima of the ELF.</span>
 
 <span class="sd">        Parameters</span>
@@ -441,7 +441,7 @@
 
 <div class="viewcode-block" id="ELFTools.calc_N_shell"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools.calc_N_shell">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_N_shell</span><span class="p">(</span><span class="n">xargs_min</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">ELF</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the number of electrons in each shell from the ELF.</span>
 
 <span class="sd">        The number of electrons per shell is determined by integrating</span>
@@ -491,7 +491,7 @@
 
 
 <div class="viewcode-block" id="MIS_count"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.MIS_count">[docs]</a><span class="k">def</span> <span class="nf">MIS_count</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">core_orbs</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the MIS using the &quot;counting&quot; method.</span>
 
 <span class="sd">    Parameters</span>
@@ -520,7 +520,7 @@
 
 
 <div class="viewcode-block" id="calc_IPR_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.calc_IPR_mat">[docs]</a><span class="k">def</span> <span class="nf">calc_IPR_mat</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the inverse participation ratio for all eigenfunctions (see notes).</span>
 
 <span class="sd">    Parameters</span>

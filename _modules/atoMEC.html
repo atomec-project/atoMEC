@@ -188,7 +188,7 @@
 
 
 <div class="viewcode-block" id="Atom"><a class="viewcode-back" href="../api/atoMEC.html#atoMEC.Atom">[docs]</a><span class="k">class</span> <span class="nc">Atom</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The principal object in atoMEC calculations which defines the material properties.</span>
 
 <span class="sd">    The `Atom` contains key information about the physical properties of the material</span>
@@ -262,7 +262,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;str: the chemical symbol for the atomic species.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;str: the chemical symbol for the atomic species.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_species</span>
 
     <span class="nd">@species</span><span class="o">.</span><span class="n">setter</span>
@@ -271,24 +271,24 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">at_chrg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;int: the atomic charge Z.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;int: the atomic charge Z.&quot;&quot;&quot;</span>
         <span class="n">chrg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="o">.</span><span class="n">atomic_number</span>
         <span class="n">config</span><span class="o">.</span><span class="n">Z</span> <span class="o">=</span> <span class="n">chrg</span>
         <span class="k">return</span> <span class="n">chrg</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">at_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;float: the atomic mass (in a.u.).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: the atomic mass (in a.u.).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="o">.</span><span class="n">atomic_weight</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nvalence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;int: the number of valence electrons.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;int: the number of valence electrons.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span><span class="o">.</span><span class="n">nvalence</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">units_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;str: the units of temperature.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;str: the units of temperature.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_units_temp</span>
 
     <span class="nd">@units_temp</span><span class="o">.</span><span class="n">setter</span>
@@ -297,7 +297,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">temp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;float: the electronic temperature in Hartree.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: the electronic temperature in Hartree.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temp</span>
 
     <span class="nd">@temp</span><span class="o">.</span><span class="n">setter</span>
@@ -308,7 +308,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">charge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;int: the net charge of the atom.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;int: the net charge of the atom.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_charge</span>
 
     <span class="nd">@charge</span><span class="o">.</span><span class="n">setter</span>
@@ -317,7 +317,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nele</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;int: the number of electrons in the atom.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;int: the number of electrons in the atom.</span>
 
 <span class="sd">        The total electron number is given by the sum of :obj:`at_chrg`</span>
 <span class="sd">        and :obj:`charge`.</span>
@@ -326,7 +326,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">units_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;str: the units of the atomic radius.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;str: the units of the atomic radius.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_units_radius</span>
 
     <span class="nd">@units_radius</span><span class="o">.</span><span class="n">setter</span>
@@ -335,7 +335,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">units_density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;str: the units of the atomic density.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;str: the units of the atomic density.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_units_density</span>
 
     <span class="nd">@units_density</span><span class="o">.</span><span class="n">setter</span>
@@ -344,7 +344,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: radius of the Voronoi sphere.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: radius of the Voronoi sphere.</span>
 
 <span class="sd">        The radius is defined as :math:`a_i /2`,</span>
 <span class="sd">        where :math:`a_i` is the average inter-atomic distance.</span>
@@ -360,7 +360,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">density</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the mass density of the material in :math:`\mathrm{g\ cm}^{-3}`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the mass density of the material in :math:`\mathrm{g\ cm}^{-3}`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_density</span>
 
     <span class="nd">@density</span><span class="o">.</span><span class="n">setter</span>
@@ -372,7 +372,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">WS_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the Wigner-Seitz radius, or the electron coupling parameter.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the Wigner-Seitz radius, or the electron coupling parameter.</span>
 
 <span class="sd">        The Wigner-Seitz radius differs from the Voronoi radius because it depends on</span>
 <span class="sd">        the free electron density, defined in atoMEC as the valence electron density.</span>
@@ -381,22 +381,22 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">E_Fermi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the Fermi energy.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the Fermi energy.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">9.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">WS_radius</span> <span class="o">**</span> <span class="o">-</span><span class="mf">2.0</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">gamma_ion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the ionic coupling parameter.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the ionic coupling parameter.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_chrg</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_e</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the electron degeneracy parameter.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: the electron degeneracy parameter.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">E_Fermi</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;str: formatted information about the :obj:`Atom`&#39;s attributes.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;str: formatted information about the :obj:`Atom`&#39;s attributes.&quot;&quot;&quot;</span>
         <span class="c1"># write output info</span>
         <span class="k">return</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">write_atomic_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 </pre></div>

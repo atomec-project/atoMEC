@@ -226,25 +226,25 @@ to solve the electronic structure problem for single-element materials at finite
 <li><p>First, install the test requirements (if not already installed in the virtual env with <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">install</span> <span class="pre">--dev</span></code>):</p></li>
 </ul>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># activate environment first (optional)</span>
-$ pipenv shell
+$<span class="w"> </span>pipenv<span class="w"> </span>shell
 
 <span class="c1"># install atoMEC as editable project in current directory (for developers)</span>
-$ pip install -e .<span class="o">[</span>tests<span class="o">]</span>
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="o">[</span>tests<span class="o">]</span>
 
 <span class="c1"># alternatively install package from PyPI with test dependencies</span>
-$ pip install atoMEC<span class="o">[</span>tests<span class="o">]</span>
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>atoMEC<span class="o">[</span>tests<span class="o">]</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>To run the tests:</p></li>
 </ul>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ pytest --cov<span class="o">=</span>atoMEC --random-order tests/
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pytest<span class="w"> </span>--cov<span class="o">=</span>atoMEC<span class="w"> </span>--random-order<span class="w"> </span>tests/
 </pre></div>
 </div>
 <div class="section" id="build-documentation-locally-for-developers">
 <h3>Build documentation locally (for developers)<a class="headerlink" href="#build-documentation-locally-for-developers" title="Permalink to this headline">¶</a></h3>
 <p>Install the prerequisites:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ pip install -r docs/requirements.txt
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>docs/requirements.txt
 </pre></div>
 </div>
 <ol class="simple">
