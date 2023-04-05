@@ -1085,19 +1085,24 @@ class Energy:
 
             # compute the (l+1/2) component
             l_arr = np.fromiter(
-                ((2 * l + 1.0) for l in range(config.lmax)), float, config.lmax
+                (l * (l + 1.0) for l in range(config.lmax)), float, config.lmax
             )
-            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigfuncs)
+            eigs_mod = eigfuncs * np.exp(-xgrid / 2)
+            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigs_mod**2) / (
+                1 * np.exp(2 * xgrid)
+            )
 
             # chain rule to convert from dP_dx to dX_dr
-            grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * lhalf_orbs)
+            grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * eigfuncs)
 
             # square it
             # grad_orbs_sq = np.einsum("k,ijklm->ijklm", l_arr, grad_orbs ** 2.0)
             grad_orbs_sq = grad_orbs**2.0
 
             # multiply and sum over occupation numbers
-            e_kin_dens = 0.5 * np.einsum("ijkl,ijklm->jm", occnums, grad_orbs_sq)
+            e_kin_dens = 0.5 * np.einsum(
+                "ijkl,ijklm->jm", occnums, grad_orbs_sq + lhalf_orbs
+            )
 
         return e_kin_dens
 
