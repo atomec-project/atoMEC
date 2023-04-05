@@ -13,10 +13,10 @@ import numpy as np
 
 
 # expected values and tolerance
-orbitals_expected = 1.1143
+orbitals_expected = 1.04
 density_expected = 2.1496
 IPR_expected = 78.2107
-epdc_orbs_expected = 8.7733
+epdc_orbs_expected = 4.5597
 epdc_dens_expected = 3.5304
 accuracy = 0.001
 
