@@ -1044,9 +1044,10 @@ class Energy:
         The methods 'A' and 'B' in this function are given according to the definitions
         in [3]_ and [4]_.
 
-        They of course (should) both integrate to the same kinetic energy. The
-        definition 'B' is the one used in the usual definition of the electron
-        localization function [5]_.
+        Both methods should integrate to the same kinetic energy, in the case of Neumann
+        or Diriclet boundary conditions; for the bands condition they will be different.
+        The definition 'B' is the one used in the usual definition of the electron
+        localization function [5]_. It is given by formula (B.8) in [11]_.
 
         References
         ----------
@@ -1060,6 +1061,9 @@ class Energy:
            Elements: the Diamond Structure, Angew. Chem. Int. Ed. Engl. 31: 187-188
            (1992), `DOI:10.1002/anie.199201871
            <https://doi.org/10.1002/anie.199201871>`__.
+        .. [11] J. Pain, A model of dense-plasma atomic structure for equation-of-state
+           calculations. J. Phys. B, 40(8):1553 (2007), `DOI:10.1088/0953-4075/40/8/008
+           <https://dx.doi.org/10.1088/0953-4075/40/8/008>`__.
         """
         if method == "A":
             # compute the grad^2 component
@@ -1088,15 +1092,14 @@ class Energy:
                 (l * (l + 1.0) for l in range(config.lmax)), float, config.lmax
             )
             eigs_mod = eigfuncs * np.exp(-xgrid / 2)
-            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigs_mod**2) / (
-                1 * np.exp(2 * xgrid)
+            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigs_mod**2) / np.exp(
+                2 * xgrid
             )
 
             # chain rule to convert from dP_dx to dX_dr
             grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * eigfuncs)
 
             # square it
-            # grad_orbs_sq = np.einsum("k,ijklm->ijklm", l_arr, grad_orbs ** 2.0)
             grad_orbs_sq = grad_orbs**2.0
 
             # multiply and sum over occupation numbers
