@@ -627,7 +627,7 @@
         <span class="c1"># compute the pre-factor when the energy gap is large enough for a band</span>
         <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
             <span class="n">eig_diff</span> <span class="o">&gt;</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">],</span>
-            <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delta</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">),</span>
+            <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delta</span><span class="o">**</span><span class="mf">2.0</span><span class="p">),</span>
             <span class="mf">1.0</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -690,7 +690,7 @@
                 <span class="c1"># compute the pre-factor when the energy gap is large enough for a band</span>
                 <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
                     <span class="n">e_gap_arr</span> <span class="o">&gt;</span> <span class="n">config</span><span class="o">.</span><span class="n">band_params</span><span class="p">[</span><span class="s2">&quot;de_min&quot;</span><span class="p">],</span>
-                    <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delta</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">),</span>
+                    <span class="mf">2.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delta</span><span class="o">**</span><span class="mf">2.0</span><span class="p">),</span>
                     <span class="mf">0.0</span><span class="p">,</span>
                 <span class="p">)</span>
 
@@ -856,7 +856,7 @@
 
         <span class="c1"># R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs</span>
         <span class="n">orbs_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
-        <span class="n">orbs_R_sq</span> <span class="o">=</span> <span class="n">orbs_R</span> <span class="o">**</span> <span class="mf">2.0</span>
+        <span class="n">orbs_R_sq</span> <span class="o">=</span> <span class="n">orbs_R</span><span class="o">**</span><span class="mf">2.0</span>
 
         <span class="c1"># sum over the (l,n) dimensions of the orbitals to get the density</span>
         <span class="n">dens</span><span class="p">[</span><span class="s2">&quot;rho&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,ijklm-&gt;jm&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">orbs_R_sq</span><span class="p">)</span>
@@ -892,7 +892,7 @@
 
             <span class="c1"># unbound density is constant</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
-                <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">n_ub</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">fd_int_complete</span><span class="p">(</span>
                     <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="mf">1.0</span>
                 <span class="p">)</span>
@@ -1257,7 +1257,7 @@
 
             <span class="c1"># square it</span>
             <span class="c1"># grad_orbs_sq = np.einsum(&quot;k,ijklm-&gt;ijklm&quot;, l_arr, grad_orbs ** 2.0)</span>
-            <span class="n">grad_orbs_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span> <span class="o">**</span> <span class="mf">2.0</span>
+            <span class="n">grad_orbs_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span><span class="o">**</span><span class="mf">2.0</span>
 
             <span class="c1"># multiply and sum over occupation numbers</span>
             <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,ijklm-&gt;jm&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">grad_orbs_sq</span><span class="p">)</span>
@@ -1295,7 +1295,7 @@
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
             <span class="n">E_kin_unbound</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># initialize</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
-                <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">E_kin_unbound</span> <span class="o">+=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">fd_int_complete</span><span class="p">(</span>
                     <span class="n">config</span><span class="o">.</span><span class="n">mu</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="mf">3.0</span>
                 <span class="p">)</span>
@@ -1361,8 +1361,8 @@
 <span class="sd">                           + (1-f_{nls}) (\log(1-f_{nls}) ]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># replace zeros in occupation numbers with finite numbers (for taking log)</span>
-        <span class="n">occnums_mod1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
-        <span class="n">occnums_mod2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">occnums_mod1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums</span> <span class="o">&gt;</span> <span class="mf">1e-20</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">occnums_mod2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">occnums</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-20</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># now compute the terms in the square bracket</span>
         <span class="n">term1</span> <span class="o">=</span> <span class="n">occnums</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">occnums_mod1</span><span class="p">)</span>
@@ -1407,7 +1407,7 @@
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">nele</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">:</span>
                     <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+                        <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="n">config</span><span class="o">.</span><span class="n">sph_vol</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
                     <span class="p">)</span>
 
                     <span class="n">S_unbound</span> <span class="o">-=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">ideal_entropy_int</span><span class="p">(</span>
