@@ -464,7 +464,7 @@ class Orbitals:
         # compute the pre-factor when the energy gap is large enough for a band
         prefac = np.where(
             eig_diff > config.band_params["de_min"],
-            2.0 / (pi * delta ** 2.0),
+            2.0 / (pi * delta**2.0),
             1.0,
         )
 
@@ -527,7 +527,7 @@ class Orbitals:
                 # compute the pre-factor when the energy gap is large enough for a band
                 prefac = np.where(
                     e_gap_arr > config.band_params["de_min"],
-                    2.0 / (pi * delta ** 2.0),
+                    2.0 / (pi * delta**2.0),
                     0.0,
                 )
 
@@ -693,7 +693,7 @@ class Density:
 
         # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
         orbs_R = np.exp(-xgrid / 2.0) * eigfuncs
-        orbs_R_sq = orbs_R ** 2.0
+        orbs_R_sq = orbs_R**2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
         dens["rho"] = np.einsum("ijkl,ijklm->jm", occnums, orbs_R_sq)
@@ -729,7 +729,7 @@ class Density:
 
             # unbound density is constant
             for i in range(config.spindims):
-                prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi ** 2)
+                prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi**2)
                 n_ub = prefac * mathtools.fd_int_complete(
                     config.mu[i], config.beta, 1.0
                 )
@@ -1094,7 +1094,7 @@ class Energy:
 
             # square it
             # grad_orbs_sq = np.einsum("k,ijklm->ijklm", l_arr, grad_orbs ** 2.0)
-            grad_orbs_sq = grad_orbs ** 2.0
+            grad_orbs_sq = grad_orbs**2.0
 
             # multiply and sum over occupation numbers
             e_kin_dens = 0.5 * np.einsum("ijkl,ijklm->jm", occnums, grad_orbs_sq)
@@ -1132,7 +1132,7 @@ class Energy:
         if config.unbound == "ideal":
             E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
-                prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
+                prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi**2)
                 E_kin_unbound += prefac * mathtools.fd_int_complete(
                     config.mu[i], config.beta, 3.0
                 )
@@ -1198,8 +1198,8 @@ class Energy:
                            + (1-f_{nls}) (\log(1-f_{nls}) ]
         """
         # replace zeros in occupation numbers with finite numbers (for taking log)
-        occnums_mod1 = np.where(occnums > 1e-5, occnums, 0.5)
-        occnums_mod2 = np.where(occnums < 1.0 - 1e-5, occnums, 0.5)
+        occnums_mod1 = np.where(occnums > 1e-20, occnums, 1)
+        occnums_mod2 = np.where(occnums < 1.0 - 1e-20, occnums, 0)
 
         # now compute the terms in the square bracket
         term1 = occnums * np.log(occnums_mod1)
@@ -1244,7 +1244,7 @@ class Energy:
             for i in range(config.spindims):
                 if config.nele[i] > 1e-5:
                     prefac = (
-                        (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
+                        (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi**2)
                     )
 
                     S_unbound -= prefac * mathtools.ideal_entropy_int(
