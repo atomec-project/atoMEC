@@ -1355,8 +1355,10 @@ class EnergyAlt:
         # initialize attributes
         self._F_tot = 0.0
         self._E_tot = 0.0
+        self._E_kin = {"tot": 0.0, "bound": 0.0, "unbound": 0.0}
         self._entropy = {"tot": 0.0, "bound": 0.0, "unbound": 0.0}
         self._E_eps = 0.0
+        self._E_en = 0.0
         self._E_unbound = 0.0
         self._E_v_hxc = 0.0
         self._E_ha = 0.0
@@ -1397,6 +1399,19 @@ class EnergyAlt:
         if self._E_eps == 0.0:
             self._E_eps = np.sum(self._orbs.occnums_w * self._orbs.eigvals)
         return self._E_eps
+
+    @property
+    def E_en(self):
+        if self._E_en == 0.0:
+            self._E_en = Energy.calc_E_en(self._dens, self._xgrid)
+        return self._E_en
+
+    @property
+    def E_kin(self):
+        if self._E_kin["tot"] == 0.0:
+            self._E_kin["bound"] = self.E_eps - self.E_v_hxc - self.E_en
+            self._E_kin["tot"] = self._E_kin["bound"] + self._E_kin["unbound"]
+        return self._E_kin
 
     @property
     def E_unbound(self):
