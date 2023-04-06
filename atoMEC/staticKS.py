@@ -1402,12 +1402,14 @@ class EnergyAlt:
 
     @property
     def E_en(self):
+        r"""float: Electron-nuclear attraction energy."""
         if self._E_en == 0.0:
             self._E_en = Energy.calc_E_en(self._dens, self._xgrid)
         return self._E_en
 
     @property
     def E_kin(self):
+        r"""Dict of floats: Kinetic energy components."""
         if self._E_kin["tot"] == 0.0:
             self._E_kin["bound"] = self.E_eps - self.E_v_hxc - self.E_en
             self._E_kin["tot"] = self._E_kin["bound"] + self._E_kin["unbound"]
