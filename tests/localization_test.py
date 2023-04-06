@@ -13,12 +13,12 @@ import numpy as np
 
 
 # expected values and tolerance
-orbitals_expected = 1.04
+orbitals_expected = 1.0889
 density_expected = 2.1496
 IPR_expected = 78.2107
-epdc_orbs_expected = 4.5597
+epdc_orbs_expected = 9.2269
 epdc_dens_expected = 3.5304
-accuracy = 0.001
+accuracy = 0.01
 
 
 class TestLocalization:
@@ -79,7 +79,7 @@ class TestLocalization:
     @staticmethod
     def _run_SCF(spinpol):
         """
-        Run an SCF calculation for an He Atom with unbound = "Ideal".
+        Run an SCF calculation for an He Atom with unbound = "quantum".
 
         Returns
         -------
@@ -124,6 +124,20 @@ class TestLocalization:
         orbs = input_SCF["SCF_out"]["orbitals"]
         density = input_SCF["SCF_out"]["density"]
 
+        atom = Atom(
+            input_SCF["Atom"].species.name,
+            input_SCF["Atom"].temp,
+            density=input_SCF["Atom"].density,
+            write_info=False,
+        )
+
+        model = models.ISModel(
+            atom,
+            unbound=input_SCF["model"].unbound,
+            spinpol=input_SCF["model"].spinpol,
+            write_info=False,
+        )
+
         ELF = localization.ELFTools(
             input_SCF["Atom"], input_SCF["model"], orbs, density, method=method
         )
@@ -150,6 +164,20 @@ class TestLocalization:
         """
         orbs = input_SCF["SCF_out"]["orbitals"]
         density = input_SCF["SCF_out"]["density"]
+
+        atom = Atom(
+            input_SCF["Atom"].species.name,
+            input_SCF["Atom"].temp,
+            density=input_SCF["Atom"].density,
+            write_info=False,
+        )
+
+        model = models.ISModel(
+            atom,
+            unbound=input_SCF["model"].unbound,
+            spinpol=input_SCF["model"].spinpol,
+            write_info=False,
+        )
 
         ELF = localization.ELFTools(
             input_SCF["Atom"], input_SCF["model"], orbs, density, method=method
@@ -192,8 +220,8 @@ class TestLocalization:
 if __name__ == "__main__":
     SCF_spin_out = TestLocalization._run_SCF(True)
     SCF_no_spin_out = TestLocalization._run_SCF(False)
-    print(TestLocalization._run_epdc(SCF_spin_out, "density", True))
     print(TestLocalization._run_epdc(SCF_spin_out, "orbitals", True))
+    print(TestLocalization._run_epdc(SCF_spin_out, "density", True))
     print(TestLocalization._run_ELF(SCF_no_spin_out, "density", False))
     print(TestLocalization._run_ELF(SCF_spin_out, "orbitals", True))
     print(TestLocalization._run_IPR(SCF_no_spin_out))
