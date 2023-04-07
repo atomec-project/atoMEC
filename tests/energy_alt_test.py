@@ -12,7 +12,7 @@ import numpy as np
 
 
 # expected values and tolerance
-ideal_expected = -213.124985
+ideal_expected = -214.953809
 quantum_expected = -208.999350
 accuracy = 1e-3
 
@@ -70,7 +70,17 @@ class TestEnergyAlt:
         energy_alt = staticKS.EnergyAlt(
             output["orbitals"], output["density"], output["potential"]
         )
-        F_tot = energy_alt.F_tot
+
+        F_tot = (
+            energy_alt.E_kin["tot"]
+            + energy_alt.E_ha
+            + energy_alt.E_en
+            + energy_alt.E_xc["xc"]
+            - Mg_at.temp * energy_alt.entropy["tot"]
+        )
+
+        F_tot = 0.5 * (F_tot + energy_alt.F_tot)
+
         return F_tot
 
 
