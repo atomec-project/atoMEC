@@ -167,7 +167,7 @@ def finite_diff(
     return P_e
 
 
-def stress_tensor(Atom, model, orbs, pot):
+def stress_tensor(Atom, model, orbs, pot, density, only_rr=False):
     r"""Calculate the pressure with the stress tensor approach [9]_.
 
     Parameters
@@ -176,6 +176,9 @@ def stress_tensor(Atom, model, orbs, pot):
         the orbitals object
     pot : staticKS.Potential
         the potential object
+    only_rr : bool, optional
+        whether to use just the radial component of the stress tensor (True)
+        or the full trace (False). See [9]_ for definitions.
 
     Returns
     -------
@@ -210,6 +213,10 @@ def stress_tensor(Atom, model, orbs, pot):
     # compute the "gradient" term
     grad_sq = grad_orbs**2
 
+    # add a correction if only rr used
+    if only_rr:
+        grad_sq += 2 * np.exp(-1.5 * xgrid) * orbs.eigfuncs * grad_orbs
+
     # compute the l*(l+1) array
     l_arr = np.fromiter((l * (l + 1.0) for l in range(lmax)), float, lmax)
 
@@ -227,10 +234,13 @@ def stress_tensor(Atom, model, orbs, pot):
     eps_term = 2 * v_E_arr * orb_sq
 
     # sum the orbital based terms
-    sum_terms = grad_sq + lsq_term + eps_term
+    if only_rr:
+        sum_terms = (grad_sq - lsq_term + eps_term) / 2
+    else:
+        sum_terms = (grad_sq + lsq_term + eps_term) / 6
 
     # put everything together
-    P_arr = np.einsum("ijkl,ijklm->m", orbs.occnums_w, sum_terms) / 6
+    P_arr = np.einsum("ijkl,ijklm->m", orbs.occnums_w, sum_terms)
 
     # return the value of P at the sphere edge
     P_e = P_arr[-1]
