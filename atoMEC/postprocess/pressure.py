@@ -70,14 +70,11 @@ def finite_diff(
         `verbosity=1` prints the above and the KS eigenvalues and occupations.
     write_info : bool, optional
         prints the scf cycle and final parameters
-        defaults to False
     dR : float, optional
         radius difference for finite difference calculation
-        defaults to 0.01
     method : str, optional
         method for computing the free energy: can either use normal construction ("A")
         or with the EnergyAlt class ("B")
-        defaults to "A"
 
     Returns
     -------
@@ -167,7 +164,7 @@ def finite_diff(
     return P_e
 
 
-def stress_tensor(Atom, model, orbs, pot, density, only_rr=False):
+def stress_tensor(Atom, model, orbs, pot, only_rr=False):
     r"""Calculate the pressure with the stress tensor approach [9]_.
 
     Parameters
@@ -248,7 +245,7 @@ def stress_tensor(Atom, model, orbs, pot, density, only_rr=False):
     return P_e
 
 
-def virial(atom, model, energy, density):
+def virial(atom, model, energy, density, orbs, use_correction=False):
     r"""Compute the pressure using the virial theorem (see notes).
 
     Parameters
@@ -261,6 +258,8 @@ def virial(atom, model, energy, density):
         the Energy object
     density : staticKS.Density
         the density object
+    use_correction: bool, optional
+        whether to use boundary condition correction described in [10]_
 
     Returns
     -------
@@ -269,12 +268,18 @@ def virial(atom, model, energy, density):
 
     Notes
     -----
-    The virial pressure is given by the formula [10]_
+    The virial pressure is given by the formula [10]_ [12]_
 
     .. math::
 
-        P &= \frac{2T + E_\mathrm{en} + E_\mathrm{Ha} + W_\mathrm{xc}}{3V}\ , \\
+        P &= \frac{K1 + K2 + E_\mathrm{en} + E_\mathrm{Ha} + W_\mathrm{xc}}{3V}\ , \\
         W_\mathrm{xc} &= 3 (W^\mathrm{d}_\mathrm{xc} - E_\mathrm{xc})
+
+    If `use_correction==True`, :math:`K1` and :math:`K2` are, respectively, the integrated
+    kinetic energy densities "B" and "A" described in :func:`staticKS.Energy.calc_E_kin_dens`. 
+
+    If `use_correction==False`, both terms :math:`K1` and :math:`K2` are the same and both
+    given by method "A" in :func:`staticKS.Energy.calc_E_kin_dens`.
 
     References
     ----------
@@ -282,6 +287,10 @@ def virial(atom, model, energy, density):
         GGA, J. Phys.: Condens. Matter 13 (2001) 287–301
         `DOI:10.1088/0953-8984/13/2/306
         <https://doi.org/10.1088/0953-8984/13/2/306>`__.
+    .. [12] J. C. Pain, A model of dense-plasma atomic structure for equation-of-state
+        calculations, J. Phys. B: At. Mol. Opt. Phys. 40 (2007) 1553-1573
+        `DOI:10.1088/0953-4075/40/8/008
+        <https://doi.org/10.1088/0953-4075/40/8/008>`__.
     """
     # compute the sphere volume
     sph_vol = (4.0 * np.pi / 3.0) * atom.radius**3
@@ -293,8 +302,19 @@ def virial(atom, model, energy, density):
     # compute total W_xc component
     W_xc = -3 * energy.E_xc["xc"] + 3 * (Wd_x + Wd_c)
 
+    K2 = energy.E_kin["tot"]
+
+    if not use_correction:
+        K1 = energy.E_kin["tot"]
+    else:
+        E_kin_alt_dens = staticKS.Energy.calc_E_kin_dens(
+            orbs.eigfuncs, orbs.occnums_w, orbs._xgrid, method="B"
+        )
+        # integrate over sphere
+        K1 = mathtools.int_sphere(np.sum(E_kin_alt_dens, axis=0), orbs._xgrid)
+
     # compute E_V = 2*T + U + W_xc
-    E_V = 2 * energy.E_kin["tot"] + energy.E_en + energy.E_ha + W_xc
+    E_V = K1 + K2 + energy.E_en + energy.E_ha + W_xc
 
     # compute the virial pressure
     P_e = E_V / (3 * sph_vol)

@@ -67,7 +67,7 @@ class TestPressure:
         """
         # set up the atom and model
         Li_at = Atom("Li", 10, radius=2.5, units_temp="eV")
-        model = models.ISModel(Li_at, unbound="quantum", v_shift=False)
+        model = models.ISModel(Li_at, unbound="quantum", v_shift=False, bc="bands")
 
         # run the SCF calculation
         output = model.CalcEnergy(
@@ -140,8 +140,16 @@ class TestPressure:
         """
         energy = SCF_input["SCF_out"]["energy"]
         rho = SCF_input["SCF_out"]["density"]
+        orbs = SCF_input["SCF_out"]["orbitals"]
 
-        P_e = pressure.virial(SCF_input["Atom"], SCF_input["model"], energy, rho)
+        P_e = pressure.virial(
+            SCF_input["Atom"],
+            SCF_input["model"],
+            energy,
+            rho,
+            orbs,
+            use_correction=True,
+        )
 
         return P_e
 
