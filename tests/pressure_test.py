@@ -10,11 +10,13 @@ from atoMEC import Atom, models, config
 from atoMEC.postprocess import pressure
 import numpy as np
 import pytest
+from pytest_lazyfixture import lazy_fixture
 
 
 # expected values and tolerance
 finite_diff_expected = 0.0133944
-stress_tensor_expected = 0.0044425
+stress_tensor_expected_rr = 0.013327
+stress_tensor_expected_tr = 0.0044425
 virial_expected = 0.013604
 ion_expected = 0.0056149
 accuracy_1 = 5e-4
@@ -37,10 +39,19 @@ class TestPressure:
             self._run_finite_diff(SCF_output), finite_diff_expected, atol=accuracy_1
         )
 
-    def test_stress_tensor(self, SCF_output):
+    @pytest.mark.parametrize(
+        "SCF_input,only_rr,expected",
+        [
+            (lazy_fixture("SCF_output"), True, stress_tensor_expected_rr),
+            (lazy_fixture("SCF_output"), False, stress_tensor_expected_tr),
+        ],
+    )
+    def test_stress_tensor(self, SCF_input, only_rr, expected):
         """Run the stress tensor pressure method."""
         assert np.isclose(
-            self._run_stress_tensor(SCF_output), stress_tensor_expected, atol=accuracy_2
+            self._run_stress_tensor(SCF_input, only_rr),
+            expected,
+            atol=accuracy_2,
         )
 
     def test_virial(self, SCF_output):
@@ -67,8 +78,7 @@ class TestPressure:
         """
         # set up the atom and model
         Li_at = Atom("Li", 10, radius=2.5, units_temp="eV")
-        model = models.ISModel(Li_at, unbound="quantum", v_shift=False, bc="bands")
-
+        model = models.ISModel(Li_at, unbound="quantum", v_shift=False, bc="dirichlet")
         # run the SCF calculation
         output = model.CalcEnergy(
             3,
@@ -102,7 +112,7 @@ class TestPressure:
         return P_e
 
     @staticmethod
-    def _run_stress_tensor(SCF_input):
+    def _run_stress_tensor(SCF_input, only_rr):
         """
         Compute pressure via the stress tensor method.
 
@@ -119,7 +129,9 @@ class TestPressure:
         orbs = SCF_input["SCF_out"]["orbitals"]
         pot = SCF_input["SCF_out"]["potential"]
 
-        P_e = pressure.stress_tensor(SCF_input["Atom"], SCF_input["model"], orbs, pot)
+        P_e = pressure.stress_tensor(
+            SCF_input["Atom"], SCF_input["model"], orbs, pot, only_rr
+        )
 
         return P_e
 
@@ -148,7 +160,7 @@ class TestPressure:
             energy,
             rho,
             orbs,
-            use_correction=True,
+            use_correction=False,
         )
 
         return P_e
@@ -176,6 +188,9 @@ class TestPressure:
 if __name__ == "__main__":
     SCF_out = TestPressure._run_SCF()
     print("Finite diff pressure: ", TestPressure._run_finite_diff(SCF_out))
-    print("Stress tensor pressure: ", TestPressure._run_stress_tensor(SCF_out))
+    print("Stress tensor pressure rr: ", TestPressure._run_stress_tensor(SCF_out, True))
+    print(
+        "Stress tensor pressure tr: ", TestPressure._run_stress_tensor(SCF_out, False)
+    )
     print("Virial pressure: ", TestPressure._run_virial(SCF_out))
     print("Ion pressure: ", TestPressure._run_ion(SCF_out["Atom"]))
