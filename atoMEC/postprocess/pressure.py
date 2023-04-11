@@ -275,11 +275,11 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
         P &= \frac{K1 + K2 + E_\mathrm{en} + E_\mathrm{Ha} + W_\mathrm{xc}}{3V}\ , \\
         W_\mathrm{xc} &= 3 (W^\mathrm{d}_\mathrm{xc} - E_\mathrm{xc})
 
-    If `use_correction==True`, :math:`K1` and :math:`K2` are, respectively, the integrated
-    kinetic energy densities "B" and "A" described in :func:`staticKS.Energy.calc_E_kin_dens`. 
+    If `use_correction==True`, :math:`K1` and :math:`K2` are respectively the integrated
+    kinetic energy densities "B" and "A" as in :func:`staticKS.Energy.calc_E_kin_dens`.
 
-    If `use_correction==False`, both terms :math:`K1` and :math:`K2` are the same and both
-    given by method "A" in :func:`staticKS.Energy.calc_E_kin_dens`.
+    If `use_correction==False`, both terms :math:`K1` and :math:`K2` are the same and
+    both given by method "A" in :func:`staticKS.Energy.calc_E_kin_dens`.
 
     References
     ----------
