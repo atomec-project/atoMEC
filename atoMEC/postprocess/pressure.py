@@ -14,7 +14,7 @@ Functions
 import numpy as np
 
 # internal libs
-from atoMEC import mathtools, xc, config
+from atoMEC import mathtools, xc, config, staticKS
 from atoMEC.check_inputs import InputError
 
 
@@ -29,6 +29,7 @@ def finite_diff(
     write_info=False,
     verbosity=0,
     dR=0.01,
+    method="A",
 ):
     r"""
     Calculate the electronic pressure using the finite differences method.
@@ -73,6 +74,10 @@ def finite_diff(
     dR : float, optional
         radius difference for finite difference calculation
         defaults to 0.01
+    method : str, optional
+        method for computing the free energy: can either use normal construction ("A")
+        or with the EnergyAlt class ("B")
+        defaults to "A"
 
     Returns
     -------
@@ -116,7 +121,12 @@ def finite_diff(
         write_density=False,
         write_potential=False,
     )
-    F1 = output1["energy"].F_tot
+    if method == "B":
+        F1 = staticKS.EnergyAlt(
+            output1["orbitals"], output1["density"], output1["potential"]
+        ).F_tot
+    elif method == "A":
+        F1 = output1["energy"].F_tot
 
     # change main radius by -dR
     atom.radius = main_rad - dR
@@ -137,7 +147,13 @@ def finite_diff(
         write_density=False,
         write_potential=False,
     )
-    F2 = output2["energy"].F_tot
+
+    if method == "B":
+        F2 = staticKS.EnergyAlt(
+            output2["orbitals"], output2["density"], output2["potential"]
+        ).F_tot
+    elif method == "A":
+        F2 = output2["energy"].F_tot
 
     dFdR = (F1 - F2) / (2 * dR)  # finite differences
     dRdV = 1 / (4 * np.pi * main_rad**2)  # V = sphere of radius R (main_rad) volume
