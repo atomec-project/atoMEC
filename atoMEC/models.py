@@ -458,6 +458,7 @@ class ISModel:
         write_info=False,
         verbosity=0,
         dR=0.01,
+        method="A",
     ):
         r"""
         Calculate the electronic pressure using the finite differences method.
@@ -523,6 +524,7 @@ class ISModel:
             write_info,
             verbosity,
             dR,
+            method,
         )
 
         return P_e
