@@ -7,6 +7,7 @@ and check they return the expected result.
 """
 
 from atoMEC import Atom, models, config
+from atoMEC.unitconv import ha_to_gpa as h2g
 from atoMEC.postprocess import pressure
 import numpy as np
 import pytest
@@ -14,13 +15,15 @@ from pytest_lazyfixture import lazy_fixture
 
 
 # expected values and tolerance
-finite_diff_expected = 0.0133944
-stress_tensor_expected_rr = 0.013327
-stress_tensor_expected_tr = 0.0044425
-virial_expected = 0.013604
-ion_expected = 0.0056149
-accuracy_1 = 5e-4
-accuracy_2 = 1e-4
+
+finite_diff_expected_A = 170.95
+finite_diff_expected_B = 239.70
+stress_tensor_expected_rr = 146.06
+stress_tensor_expected_tr = 109.76
+virial_expected_corr = 140.75
+virial_expected_nocorr = 175.89
+ion_expected = 165.19
+accuracy = 0.1
 
 
 class TestPressure:
@@ -32,11 +35,20 @@ class TestPressure:
         config.numcores = -1
         return self._run_SCF()
 
-    def test_finite_diff(self, SCF_output):
+    @pytest.mark.parametrize(
+        "SCF_input,method,expected",
+        [
+            (lazy_fixture("SCF_output"), "A", finite_diff_expected_A),
+            (lazy_fixture("SCF_output"), "B", finite_diff_expected_B),
+        ],
+    )
+    def test_finite_diff(self, SCF_input, method, expected):
         """Run the finite difference pressure method."""
         config.numcores = -1
         assert np.isclose(
-            self._run_finite_diff(SCF_output), finite_diff_expected, atol=accuracy_1
+            self._run_finite_diff(SCF_input, method),
+            expected,
+            atol=accuracy,
         )
 
     @pytest.mark.parametrize(
@@ -51,19 +63,28 @@ class TestPressure:
         assert np.isclose(
             self._run_stress_tensor(SCF_input, only_rr),
             expected,
-            atol=accuracy_2,
+            atol=accuracy,
         )
 
-    def test_virial(self, SCF_output):
+    @pytest.mark.parametrize(
+        "SCF_input,use_correction,expected",
+        [
+            (lazy_fixture("SCF_output"), True, virial_expected_corr),
+            (lazy_fixture("SCF_output"), False, virial_expected_nocorr),
+        ],
+    )
+    def test_virial(self, SCF_input, use_correction, expected):
         """Run the virial pressure method."""
         assert np.isclose(
-            self._run_virial(SCF_output), virial_expected, atol=accuracy_1
+            self._run_virial(SCF_input, use_correction),
+            expected,
+            atol=accuracy,
         )
 
     def test_ion(self, SCF_output):
         """Run the ideal ionic pressure method."""
         assert np.isclose(
-            self._run_ion(SCF_output["Atom"]), ion_expected, atol=accuracy_2
+            self._run_ion(SCF_output["Atom"]), ion_expected, atol=accuracy
         )
 
     @staticmethod
@@ -78,7 +99,7 @@ class TestPressure:
         """
         # set up the atom and model
         Li_at = Atom("Li", 10, radius=2.5, units_temp="eV")
-        model = models.ISModel(Li_at, unbound="quantum", v_shift=False, bc="dirichlet")
+        model = models.ISModel(Li_at, unbound="quantum", v_shift=False, bc="bands")
         # run the SCF calculation
         output = model.CalcEnergy(
             3,
@@ -93,7 +114,7 @@ class TestPressure:
         return output_dict
 
     @staticmethod
-    def _run_finite_diff(SCF_input):
+    def _run_finite_diff(SCF_input, method):
         """
         Compute pressure via the finite difference method.
 
@@ -107,7 +128,9 @@ class TestPressure:
         P_e : float
             electronic pressure
         """
-        P_e = SCF_input["model"].CalcPressure(SCF_input["Atom"], SCF_input["SCF_out"])
+        P_e = h2g * SCF_input["model"].CalcPressure(
+            SCF_input["Atom"], SCF_input["SCF_out"], method=method
+        )
 
         return P_e
 
@@ -129,14 +152,14 @@ class TestPressure:
         orbs = SCF_input["SCF_out"]["orbitals"]
         pot = SCF_input["SCF_out"]["potential"]
 
-        P_e = pressure.stress_tensor(
+        P_e = h2g * pressure.stress_tensor(
             SCF_input["Atom"], SCF_input["model"], orbs, pot, only_rr
         )
 
         return P_e
 
     @staticmethod
-    def _run_virial(SCF_input):
+    def _run_virial(SCF_input, use_correction):
         """
         Compute pressure via the virial method.
 
@@ -154,13 +177,13 @@ class TestPressure:
         rho = SCF_input["SCF_out"]["density"]
         orbs = SCF_input["SCF_out"]["orbitals"]
 
-        P_e = pressure.virial(
+        P_e = h2g * pressure.virial(
             SCF_input["Atom"],
             SCF_input["model"],
             energy,
             rho,
             orbs,
-            use_correction=False,
+            use_correction=use_correction,
         )
 
         return P_e
@@ -180,17 +203,24 @@ class TestPressure:
         P_ion : float
             ionic pressure
         """
-        P_ion = pressure.ions_ideal(Atom)
+        P_ion = h2g * pressure.ions_ideal(Atom)
 
         return P_ion
 
 
 if __name__ == "__main__":
+    config.numcores = -1
     SCF_out = TestPressure._run_SCF()
-    print("Finite diff pressure: ", TestPressure._run_finite_diff(SCF_out))
-    print("Stress tensor pressure rr: ", TestPressure._run_stress_tensor(SCF_out, True))
+    print("Finite diff pressure A: ", h2g * TestPressure._run_finite_diff(SCF_out, "A"))
+    print("Finite diff pressure B: ", h2g * TestPressure._run_finite_diff(SCF_out, "B"))
     print(
-        "Stress tensor pressure tr: ", TestPressure._run_stress_tensor(SCF_out, False)
+        "Stress tensor pressure rr: ",
+        h2g * TestPressure._run_stress_tensor(SCF_out, True),
     )
-    print("Virial pressure: ", TestPressure._run_virial(SCF_out))
-    print("Ion pressure: ", TestPressure._run_ion(SCF_out["Atom"]))
+    print(
+        "Stress tensor pressure tr: ",
+        h2g * TestPressure._run_stress_tensor(SCF_out, False),
+    )
+    print("Virial pressure corr: ", h2g * TestPressure._run_virial(SCF_out, True))
+    print("Virial pressure no corr: ", h2g * TestPressure._run_virial(SCF_out, False))
+    print("Ion pressure: ", h2g * TestPressure._run_ion(SCF_out["Atom"]))
