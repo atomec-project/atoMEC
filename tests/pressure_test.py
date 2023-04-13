@@ -111,6 +111,7 @@ class TestPressure:
             3,
             scf_params={"maxscf": 5},
             grid_params={"ngrid": 1000},
+            band_params={"nkpts": 50},
             verbosity=1,
         )
 
