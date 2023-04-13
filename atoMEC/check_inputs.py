@@ -1174,7 +1174,19 @@ class InputWarning:
         return warning
 
     def norbs_warning(quantum_num):
+        """
+        Warn if either nmax or lmax is too low for convergence.
 
+        Parameters
+        ----------
+        quantum_num : str
+            lmax or nmax
+
+        Returns
+        -------
+        warning : str
+            full error message
+        """
         warning = (
             "Warning: "
             + quantum_num

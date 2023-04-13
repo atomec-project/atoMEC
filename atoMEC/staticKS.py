@@ -608,6 +608,25 @@ class Orbitals:
 
     @staticmethod
     def check_orbs(occnums_w, threshold):
+        r"""Check the values of nmax and lmax are sufficient.
+
+        Finds the values of the occupations of the final orbitals in lmax
+        and nmax directions. If either is above the threshold, returns False
+        (which triggers a warning elsewhere).
+
+        Parameters
+        ----------
+        occnums_w : np.ndarray
+            weighted orbital occupations
+        threshold : float
+            the threshold occupation number at which to trigger a warning
+
+        Returns
+        -------
+        norbs_ok, lorbs_ok : tuple of bools
+            whether the values of nmax and lmax are sufficient
+
+        """
         lorbs_ok = True
         norbs_ok = True
         # sum over the first two dimensions (spin and kpts)
