@@ -39,6 +39,7 @@ from . import config
 from . import numerov
 from . import mathtools
 from . import xc
+from . import check_inputs
 
 # from . import writeoutput
 
@@ -135,6 +136,12 @@ class Orbitals:
     def occnums_w(self):
         r"""ndarray: Weighted KS occupation numbers."""
         self._occnums_w = self.occnums * self.occ_weight
+        # check if more bands are needed
+        norbs_ok, lorbs_ok = self.check_orbs(self._occnums_w)
+        if not norbs_ok:
+            print(check_inputs.InputWarning.norbs_warning("nmax"))
+        if not lorbs_ok:
+            print(check_inputs.InputWarning.norbs_warning("lmax"))
         return self._occnums_w
 
     @property
@@ -596,6 +603,21 @@ class Orbitals:
         # sort the array
         e_tot_arr = np.sort(e_tot_arr)
         return e_tot_arr
+
+    @staticmethod
+    def check_orbs(occnums_w, threshold=1e-3):
+        lorbs_ok = True
+        norbs_ok = True
+        # sum over the first two dimensions (spin and kpts)
+        occs_sum = np.sum(occnums_w, axis=(0, 1))
+        # check the l dimension
+        occs_l = occs_sum[:, -1]
+        if max(occs_l) > threshold:
+            lorbs_ok = False
+        occs_n = occs_sum[-1, :]
+        if max(occs_n) > threshold:
+            norbs_ok = False
+        return lorbs_ok, norbs_ok
 
 
 class Density:
