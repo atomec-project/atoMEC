@@ -169,6 +169,7 @@
 <span class="sd">* :func:`finite_diff` : Calculate electronic pressure with finite-difference method.</span>
 <span class="sd">* :func:`stress_tensor` : Calculate electronic pressure with stress-tensor method.</span>
 <span class="sd">* :func:`virial` : Calculate electronic pressure with virial method.</span>
+<span class="sd">* :func:`ideal_electron` : Calculate electronic pressure with ideal method.</span>
 <span class="sd">* :func:`calc_Wd_xc` : Calculate the derivative contribution to virial pressure.</span>
 <span class="sd">* :func:`ions_ideal` : Calculate ionic pressure with ideal gas law.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -177,7 +178,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># internal libs</span>
-<span class="kn">from</span> <span class="nn">atoMEC</span> <span class="kn">import</span> <span class="n">mathtools</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">atoMEC</span> <span class="kn">import</span> <span class="n">mathtools</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">staticKS</span>
 <span class="kn">from</span> <span class="nn">atoMEC.check_inputs</span> <span class="kn">import</span> <span class="n">InputError</span>
 
 
@@ -192,6 +193,7 @@
     <span class="n">write_info</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">dR</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the electronic pressure using the finite differences method.</span>
@@ -232,10 +234,11 @@
 <span class="sd">        `verbosity=1` prints the above and the KS eigenvalues and occupations.</span>
 <span class="sd">    write_info : bool, optional</span>
 <span class="sd">        prints the scf cycle and final parameters</span>
-<span class="sd">        defaults to False</span>
 <span class="sd">    dR : float, optional</span>
 <span class="sd">        radius difference for finite difference calculation</span>
-<span class="sd">        defaults to 0.01</span>
+<span class="sd">    method : str, optional</span>
+<span class="sd">        method for computing the free energy: can either use normal construction (&quot;A&quot;)</span>
+<span class="sd">        or with the EnergyAlt class (&quot;B&quot;)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -279,7 +282,12 @@
         <span class="n">write_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">write_potential</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">F1</span> <span class="o">=</span> <span class="n">output1</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">F_tot</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+        <span class="n">F1</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">EnergyAlt</span><span class="p">(</span>
+            <span class="n">output1</span><span class="p">[</span><span class="s2">&quot;orbitals&quot;</span><span class="p">],</span> <span class="n">output1</span><span class="p">[</span><span class="s2">&quot;density&quot;</span><span class="p">],</span> <span class="n">output1</span><span class="p">[</span><span class="s2">&quot;potential&quot;</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">F_tot</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>
+        <span class="n">F1</span> <span class="o">=</span> <span class="n">output1</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">F_tot</span>
 
     <span class="c1"># change main radius by -dR</span>
     <span class="n">atom</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">main_rad</span> <span class="o">-</span> <span class="n">dR</span>
@@ -300,7 +308,13 @@
         <span class="n">write_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">write_potential</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">F2</span> <span class="o">=</span> <span class="n">output2</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">F_tot</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+        <span class="n">F2</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">EnergyAlt</span><span class="p">(</span>
+            <span class="n">output2</span><span class="p">[</span><span class="s2">&quot;orbitals&quot;</span><span class="p">],</span> <span class="n">output2</span><span class="p">[</span><span class="s2">&quot;density&quot;</span><span class="p">],</span> <span class="n">output2</span><span class="p">[</span><span class="s2">&quot;potential&quot;</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">F_tot</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>
+        <span class="n">F2</span> <span class="o">=</span> <span class="n">output2</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">F_tot</span>
 
     <span class="n">dFdR</span> <span class="o">=</span> <span class="p">(</span><span class="n">F1</span> <span class="o">-</span> <span class="n">F2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">dR</span><span class="p">)</span>  <span class="c1"># finite differences</span>
     <span class="n">dRdV</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">main_rad</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># V = sphere of radius R (main_rad) volume</span>
@@ -314,7 +328,7 @@
     <span class="k">return</span> <span class="n">P_e</span></div>
 
 
-<div class="viewcode-block" id="stress_tensor"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.stress_tensor">[docs]</a><span class="k">def</span> <span class="nf">stress_tensor</span><span class="p">(</span><span class="n">Atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
+<div class="viewcode-block" id="stress_tensor"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.stress_tensor">[docs]</a><span class="k">def</span> <span class="nf">stress_tensor</span><span class="p">(</span><span class="n">Atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">only_rr</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the pressure with the stress tensor approach [9]_.</span>
 
 <span class="sd">    Parameters</span>
@@ -323,6 +337,9 @@
 <span class="sd">        the orbitals object</span>
 <span class="sd">    pot : staticKS.Potential</span>
 <span class="sd">        the potential object</span>
+<span class="sd">    only_rr : bool, optional</span>
+<span class="sd">        whether to use just the radial component of the stress tensor (True)</span>
+<span class="sd">        or the full trace (False). See [9]_ for definitions.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -357,6 +374,10 @@
     <span class="c1"># compute the &quot;gradient&quot; term</span>
     <span class="n">grad_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span><span class="o">**</span><span class="mi">2</span>
 
+    <span class="c1"># add a correction if only rr used</span>
+    <span class="k">if</span> <span class="n">only_rr</span><span class="p">:</span>
+        <span class="n">grad_sq</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span> <span class="o">*</span> <span class="n">grad_orbs</span>
+
     <span class="c1"># compute the l*(l+1) array</span>
     <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">((</span><span class="n">l</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lmax</span><span class="p">)</span>
 
@@ -374,10 +395,13 @@
     <span class="n">eps_term</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">v_E_arr</span> <span class="o">*</span> <span class="n">orb_sq</span>
 
     <span class="c1"># sum the orbital based terms</span>
-    <span class="n">sum_terms</span> <span class="o">=</span> <span class="n">grad_sq</span> <span class="o">+</span> <span class="n">lsq_term</span> <span class="o">+</span> <span class="n">eps_term</span>
+    <span class="k">if</span> <span class="n">only_rr</span><span class="p">:</span>
+        <span class="n">sum_terms</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_sq</span> <span class="o">-</span> <span class="n">lsq_term</span> <span class="o">+</span> <span class="n">eps_term</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sum_terms</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_sq</span> <span class="o">+</span> <span class="n">lsq_term</span> <span class="o">+</span> <span class="n">eps_term</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span>
 
     <span class="c1"># put everything together</span>
-    <span class="n">P_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,ijklm-&gt;m&quot;</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">sum_terms</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span>
+    <span class="n">P_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,ijklm-&gt;m&quot;</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">sum_terms</span><span class="p">)</span>
 
     <span class="c1"># return the value of P at the sphere edge</span>
     <span class="n">P_e</span> <span class="o">=</span> <span class="n">P_arr</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -385,7 +409,7 @@
     <span class="k">return</span> <span class="n">P_e</span></div>
 
 
-<div class="viewcode-block" id="virial"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.virial">[docs]</a><span class="k">def</span> <span class="nf">virial</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
+<div class="viewcode-block" id="virial"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.virial">[docs]</a><span class="k">def</span> <span class="nf">virial</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">use_correction</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the pressure using the virial theorem (see notes).</span>
 
 <span class="sd">    Parameters</span>
@@ -398,6 +422,8 @@
 <span class="sd">        the Energy object</span>
 <span class="sd">    density : staticKS.Density</span>
 <span class="sd">        the density object</span>
+<span class="sd">    use_correction: bool, optional</span>
+<span class="sd">        whether to use boundary condition correction described in [10]_</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -406,12 +432,18 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The virial pressure is given by the formula [10]_</span>
+<span class="sd">    The virial pressure is given by the formula [10]_ [12]_</span>
 
 <span class="sd">    .. math::</span>
 
-<span class="sd">        P &amp;= \frac{2T + E_\mathrm{en} + E_\mathrm{Ha} + W_\mathrm{xc}}{3V}\ , \\</span>
+<span class="sd">        P &amp;= \frac{K1 + K2 + E_\mathrm{en} + E_\mathrm{Ha} + W_\mathrm{xc}}{3V}\ , \\</span>
 <span class="sd">        W_\mathrm{xc} &amp;= 3 (W^\mathrm{d}_\mathrm{xc} - E_\mathrm{xc})</span>
+
+<span class="sd">    If `use_correction==True`, :math:`K1` and :math:`K2` are respectively the integrated</span>
+<span class="sd">    kinetic energy densities &quot;B&quot; and &quot;A&quot; as in :func:`staticKS.Energy.calc_E_kin_dens`.</span>
+
+<span class="sd">    If `use_correction==False`, both terms :math:`K1` and :math:`K2` are the same and</span>
+<span class="sd">    both given by method &quot;A&quot; in :func:`staticKS.Energy.calc_E_kin_dens`.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -419,6 +451,10 @@
 <span class="sd">        GGA, J. Phys.: Condens. Matter 13 (2001) 287–301</span>
 <span class="sd">        `DOI:10.1088/0953-8984/13/2/306</span>
 <span class="sd">        &lt;https://doi.org/10.1088/0953-8984/13/2/306&gt;`__.</span>
+<span class="sd">    .. [12] J. C. Pain, A model of dense-plasma atomic structure for equation-of-state</span>
+<span class="sd">        calculations, J. Phys. B: At. Mol. Opt. Phys. 40 (2007) 1553-1573</span>
+<span class="sd">        `DOI:10.1088/0953-4075/40/8/008</span>
+<span class="sd">        &lt;https://doi.org/10.1088/0953-4075/40/8/008&gt;`__.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># compute the sphere volume</span>
     <span class="n">sph_vol</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">atom</span><span class="o">.</span><span class="n">radius</span><span class="o">**</span><span class="mi">3</span>
@@ -430,8 +466,19 @@
     <span class="c1"># compute total W_xc component</span>
     <span class="n">W_xc</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">Wd_x</span> <span class="o">+</span> <span class="n">Wd_c</span><span class="p">)</span>
 
+    <span class="n">K2</span> <span class="o">=</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">use_correction</span><span class="p">:</span>
+        <span class="n">K1</span> <span class="o">=</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">E_kin_alt_dens</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_dens</span><span class="p">(</span>
+            <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;B&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># integrate over sphere</span>
+        <span class="n">K1</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">E_kin_alt_dens</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+
     <span class="c1"># compute E_V = 2*T + U + W_xc</span>
-    <span class="n">E_V</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_en</span> <span class="o">+</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_ha</span> <span class="o">+</span> <span class="n">W_xc</span>
+    <span class="n">E_V</span> <span class="o">=</span> <span class="n">K1</span> <span class="o">+</span> <span class="n">K2</span> <span class="o">+</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_en</span> <span class="o">+</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_ha</span> <span class="o">+</span> <span class="n">W_xc</span>
 
     <span class="c1"># compute the virial pressure</span>
     <span class="n">P_e</span> <span class="o">=</span> <span class="n">E_V</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">sph_vol</span><span class="p">)</span>
@@ -484,6 +531,39 @@
         <span class="n">Wd_xc</span> <span class="o">+=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">density</span><span class="o">.</span><span class="n">total</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_xc</span><span class="p">[</span><span class="n">sp</span><span class="p">],</span> <span class="n">density</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">Wd_xc</span></div>
+
+
+<div class="viewcode-block" id="ideal_electron"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.ideal_electron">[docs]</a><span class="k">def</span> <span class="nf">ideal_electron</span><span class="p">(</span><span class="n">Atom</span><span class="p">,</span> <span class="n">chem_pot</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the ideal electron pressure.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Atom : atoMEC.Atom</span>
+<span class="sd">        the atom object</span>
+<span class="sd">    chem_pot : float</span>
+<span class="sd">        the chemical potential</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    P_e : float</span>
+<span class="sd">        the ideal electron pressure</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The formula to determine the ideal electron pressure is</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        P_\textrm{e} = \frac{2^{3/2}}{3\pi^2} \int\mathrm{d}\epsilon</span>
+<span class="sd">        \epsilon^{3/2} f_\textrm{FD}(\epsilon,\beta,\mu)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">Atom</span><span class="o">.</span><span class="n">temp</span>
+    <span class="n">prefac</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mf">1.5</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">fd_int</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">fd_int_complete</span><span class="p">(</span><span class="n">chem_pot</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">P_e</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="n">fd_int</span>
+
+    <span class="k">return</span> <span class="n">P_e</span></div>
 
 
 <div class="viewcode-block" id="ions_ideal"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.ions_ideal">[docs]</a><span class="k">def</span> <span class="nf">ions_ideal</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
