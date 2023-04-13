@@ -137,7 +137,9 @@ class Orbitals:
         r"""ndarray: Weighted KS occupation numbers."""
         self._occnums_w = self.occnums * self.occ_weight
         # check if more bands are needed
-        norbs_ok, lorbs_ok = self.check_orbs(self._occnums_w)
+        norbs_ok, lorbs_ok = self.check_orbs(
+            self._occnums_w, config.conv_params["bandtol"]
+        )
         if not norbs_ok:
             print(check_inputs.InputWarning.norbs_warning("nmax"))
         if not lorbs_ok:
@@ -605,7 +607,7 @@ class Orbitals:
         return e_tot_arr
 
     @staticmethod
-    def check_orbs(occnums_w, threshold=1e-3):
+    def check_orbs(occnums_w, threshold):
         lorbs_ok = True
         norbs_ok = True
         # sum over the first two dimensions (spin and kpts)

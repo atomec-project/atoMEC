@@ -752,10 +752,11 @@ class EnergyCalcs:
         conv_params : dict of floats
             dictionary of convergence parameters as follows:
             {
-            `econv` (``float``)  : convergence for total energy,
-            `nconv` (``float``)  : convergence for density,
-            `vconv` (``float``)  : convergence for electron number,
-            `eigtol` (``float``) : tolerance for eigenvalues
+            `econv` (``float``)   : convergence for total energy,
+            `nconv` (``float``)   : convergence for density,
+            `vconv` (``float``)   : convergence for electron number,
+            `eigtol` (``float``)  : tolerance for eigenvalues,
+            `bandtol` (``float``) : tolerance for n(l)max warning
             }
 
         Raises
@@ -765,7 +766,7 @@ class EnergyCalcs:
         """
         conv_params = {}
         # loop through the convergence parameters
-        for conv in ["econv", "nconv", "vconv", "eigtol"]:
+        for conv in ["econv", "nconv", "vconv", "eigtol", "bandtol"]:
             # assign value if not given
             try:
                 x_conv = input_params[conv]
