@@ -259,7 +259,8 @@ class ISModel:
             `econv` (``float``)  : convergence for total energy,
             `nconv` (``float``)  : convergence for density,
             `vconv` (``float``)  : convergence for electron number,
-            `eigtol` (``float``) : convergence for eigenvalues
+            `eigtol` (``float``) : convergence for eigenvalues,
+            `bandtol` (``float``) : tolerance for n(l)max warning
             }
         scf_params : dict, optional
             dictionary for scf cycle parameters as follows:
