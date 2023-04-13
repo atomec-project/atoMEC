@@ -794,10 +794,11 @@ density and potential convergence parameters</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>conv_params</strong> – dictionary of convergence parameters as follows:
 {
-<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for total energy,
-<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for density,
-<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for electron number,
-<cite>eigtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : tolerance for eigenvalues
+<cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)   : convergence for total energy,
+<cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)   : convergence for density,
+<cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)   : convergence for electron number,
+<cite>eigtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : tolerance for eigenvalues,
+<cite>bandtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : tolerance for n(l)max warning
 }</p>
 </dd>
 <dt class="field-odd">Return type</dt>
@@ -1044,6 +1045,23 @@ just total electron number</p>
 <li><p><strong>err1</strong> (<em>str</em>) – first custom part of error message</p></li>
 <li><p><strong>err2</strong> (<em>str</em>) – second custom part of error message</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>warning</strong> – full error message</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.check_inputs.InputWarning.norbs_warning">
+<span class="sig-name descname"><span class="pre">norbs_warning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/check_inputs.html#InputWarning.norbs_warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.check_inputs.InputWarning.norbs_warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Warn if either nmax or lmax is too low for convergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>quantum_num</strong> (<em>str</em>) – lmax or nmax</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>warning</strong> – full error message</p>
@@ -1554,7 +1572,8 @@ of eigenvalues with full diagonalization
 <cite>econv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for total energy,
 <cite>nconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for density,
 <cite>vconv</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>)  : convergence for electron number,
-<cite>eigtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for eigenvalues
+<cite>eigtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : convergence for eigenvalues,
+<cite>bandtol</cite> (<code class="docutils literal notranslate"><span class="pre">float</span></code>) : tolerance for n(l)max warning
 }</p></li>
 <li><p><strong>scf_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – dictionary for scf cycle parameters as follows:
 {
@@ -2761,6 +2780,29 @@ the functional form of the DOS.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.check_orbs">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">check_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">occnums_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals.check_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals.check_orbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the values of nmax and lmax are sufficient.</p>
+<p>Finds the values of the occupations of the final orbitals in lmax
+and nmax directions. If either is above the threshold, returns False
+(which triggers a warning elsewhere).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>occnums_w</strong> (<em>np.ndarray</em>) – weighted orbital occupations</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – the threshold occupation number at which to trigger a warning</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>norbs_ok, lorbs_ok</strong> – whether the values of nmax and lmax are sufficient</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple of bools</p>
 </dd>
 </dl>
 </dd></dl>

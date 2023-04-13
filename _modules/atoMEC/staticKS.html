@@ -202,6 +202,7 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">numerov</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">mathtools</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">xc</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">check_inputs</span>
 
 <span class="c1"># from . import writeoutput</span>
 
@@ -298,6 +299,14 @@
     <span class="k">def</span> <span class="nf">occnums_w</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: Weighted KS occupation numbers.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">occnums</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">occ_weight</span>
+        <span class="c1"># check if more bands are needed</span>
+        <span class="n">norbs_ok</span><span class="p">,</span> <span class="n">lorbs_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_orbs</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">conv_params</span><span class="p">[</span><span class="s2">&quot;bandtol&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">norbs_ok</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">check_inputs</span><span class="o">.</span><span class="n">InputWarning</span><span class="o">.</span><span class="n">norbs_warning</span><span class="p">(</span><span class="s2">&quot;nmax&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lorbs_ok</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">check_inputs</span><span class="o">.</span><span class="n">InputWarning</span><span class="o">.</span><span class="n">norbs_warning</span><span class="p">(</span><span class="s2">&quot;lmax&quot;</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span>
 
     <span class="nd">@property</span>
@@ -758,7 +767,41 @@
 
         <span class="c1"># sort the array</span>
         <span class="n">e_tot_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">e_tot_arr</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">e_tot_arr</span></div></div>
+        <span class="k">return</span> <span class="n">e_tot_arr</span></div>
+
+<div class="viewcode-block" id="Orbitals.check_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.check_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">check_orbs</span><span class="p">(</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check the values of nmax and lmax are sufficient.</span>
+
+<span class="sd">        Finds the values of the occupations of the final orbitals in lmax</span>
+<span class="sd">        and nmax directions. If either is above the threshold, returns False</span>
+<span class="sd">        (which triggers a warning elsewhere).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        occnums_w : np.ndarray</span>
+<span class="sd">            weighted orbital occupations</span>
+<span class="sd">        threshold : float</span>
+<span class="sd">            the threshold occupation number at which to trigger a warning</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        norbs_ok, lorbs_ok : tuple of bools</span>
+<span class="sd">            whether the values of nmax and lmax are sufficient</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lorbs_ok</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">norbs_ok</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># sum over the first two dimensions (spin and kpts)</span>
+        <span class="n">occs_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># check the l dimension</span>
+        <span class="n">occs_l</span> <span class="o">=</span> <span class="n">occs_sum</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">occs_l</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="n">lorbs_ok</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">occs_n</span> <span class="o">=</span> <span class="n">occs_sum</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">occs_n</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="n">norbs_ok</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">lorbs_ok</span><span class="p">,</span> <span class="n">norbs_ok</span></div></div>
 
 
 <div class="viewcode-block" id="Density"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density">[docs]</a><span class="k">class</span> <span class="nc">Density</span><span class="p">:</span>
