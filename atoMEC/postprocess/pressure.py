@@ -6,6 +6,7 @@ Functions
 * :func:`finite_diff` : Calculate electronic pressure with finite-difference method.
 * :func:`stress_tensor` : Calculate electronic pressure with stress-tensor method.
 * :func:`virial` : Calculate electronic pressure with virial method.
+* :func:`ideal_electron` : Calculate electronic pressure with ideal method.
 * :func:`calc_Wd_xc` : Calculate the derivative contribution to virial pressure.
 * :func:`ions_ideal` : Calculate ionic pressure with ideal gas law.
 """
@@ -367,6 +368,39 @@ def calc_Wd_xc(xc_func_id, density):
         Wd_xc += mathtools.int_sphere(density.total[sp] * v_xc[sp], density._xgrid)
 
     return Wd_xc
+
+
+def ideal_electron(Atom, chem_pot):
+    r"""
+    Compute the ideal electron pressure.
+
+    Parameters
+    ----------
+    Atom : atoMEC.Atom
+        the atom object
+    chem_pot : float
+        the chemical potential
+
+    Returns
+    -------
+    P_e : float
+        the ideal electron pressure
+
+    Notes
+    -----
+    The formula to determine the ideal electron pressure is
+
+    .. math::
+
+        P_\textrm{e} = \frac{2^{3/2}}{3\pi^2} \int\mathrm{d}\epsilon
+        \epsilon^{3/2} f_\textrm{FD}(\epsilon,\beta,\mu)
+    """
+    beta = 1.0 / Atom.temp
+    prefac = 2**1.5 / (3 * np.pi**2)
+    fd_int = mathtools.fd_int_complete(chem_pot, beta, 3)
+    P_e = prefac * fd_int
+
+    return P_e
 
 
 def ions_ideal(atom):

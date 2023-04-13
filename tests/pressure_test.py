@@ -6,7 +6,7 @@ Compute pressure with the various avaiable methods in `postprocess.pressure`
 and check they return the expected result.
 """
 
-from atoMEC import Atom, models, config
+from atoMEC import Atom, models, config, mathtools
 from atoMEC.unitconv import ha_to_gpa as h2g
 from atoMEC.postprocess import pressure
 import numpy as np
@@ -22,6 +22,7 @@ stress_tensor_expected_rr = 146.06
 stress_tensor_expected_tr = 109.76
 virial_expected_corr = 140.75
 virial_expected_nocorr = 175.89
+ideal_expected = 100.06
 ion_expected = 165.19
 accuracy = 0.1
 
@@ -80,6 +81,10 @@ class TestPressure:
             expected,
             atol=accuracy,
         )
+
+    def test_ideal(self, SCF_output):
+        """Run the ideal ionic pressure method."""
+        assert np.isclose(self._run_ideal(SCF_output), ideal_expected, atol=accuracy)
 
     def test_ion(self, SCF_output):
         """Run the ideal ionic pressure method."""
@@ -189,6 +194,33 @@ class TestPressure:
         return P_e
 
     @staticmethod
+    def _run_ideal(scf_input):
+        """
+        Compute the ideal electron pressure.
+
+        Inputs
+        ------
+        SCF_input : dictionary
+            Atom, model and SCF output information
+
+        Returns
+        -------
+        P_e : float
+            ideal electron pressure
+        """
+        orbs = scf_input["SCF_out"]["orbitals"]
+        atom = scf_input["Atom"]
+        model = scf_input["model"]
+        # reverse engineer chem pot
+        # this is HORRIBLE and HAS TO CHANGE
+        config.spindims = np.shape(orbs.eigvals)[1]
+        config.unbound = model.unbound
+        chem_pot = mathtools.chem_pot(orbs)
+        P_e = h2g * pressure.ideal_electron(atom, chem_pot)
+
+        return P_e
+
+    @staticmethod
     def _run_ion(Atom):
         """
         Compute the ideal gas pressure.
@@ -211,16 +243,18 @@ class TestPressure:
 if __name__ == "__main__":
     config.numcores = -1
     SCF_out = TestPressure._run_SCF()
-    print("Finite diff pressure A: ", h2g * TestPressure._run_finite_diff(SCF_out, "A"))
-    print("Finite diff pressure B: ", h2g * TestPressure._run_finite_diff(SCF_out, "B"))
+    print("Finite diff pressure A: ", TestPressure._run_finite_diff(SCF_out, "A"))
+    print("Finite diff pressure B: ", TestPressure._run_finite_diff(SCF_out, "B"))
     print(
         "Stress tensor pressure rr: ",
-        h2g * TestPressure._run_stress_tensor(SCF_out, True),
+        TestPressure._run_stress_tensor(SCF_out, True),
     )
     print(
         "Stress tensor pressure tr: ",
-        h2g * TestPressure._run_stress_tensor(SCF_out, False),
+        TestPressure._run_stress_tensor(SCF_out, False),
     )
-    print("Virial pressure corr: ", h2g * TestPressure._run_virial(SCF_out, True))
-    print("Virial pressure no corr: ", h2g * TestPressure._run_virial(SCF_out, False))
-    print("Ion pressure: ", h2g * TestPressure._run_ion(SCF_out["Atom"]))
+    print("Virial pressure corr: ", TestPressure._run_virial(SCF_out, True))
+    print("Virial pressure no corr: ", TestPressure._run_virial(SCF_out, False))
+    print("Virial pressure no corr: ", TestPressure._run_virial(SCF_out, False))
+    print("Ideal electron: ", TestPressure._run_ideal(SCF_out))
+    print("Ion pressure: ", TestPressure._run_ion(SCF_out["Atom"]))
