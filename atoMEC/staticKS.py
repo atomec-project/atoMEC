@@ -39,6 +39,7 @@ from . import config
 from . import numerov
 from . import mathtools
 from . import xc
+from . import check_inputs
 
 # from . import writeoutput
 
@@ -135,6 +136,14 @@ class Orbitals:
     def occnums_w(self):
         r"""ndarray: Weighted KS occupation numbers."""
         self._occnums_w = self.occnums * self.occ_weight
+        # check if more bands are needed
+        norbs_ok, lorbs_ok = self.check_orbs(
+            self._occnums_w, config.conv_params["bandtol"]
+        )
+        if not norbs_ok:
+            print(check_inputs.InputWarning.norbs_warning("nmax"))
+        if not lorbs_ok:
+            print(check_inputs.InputWarning.norbs_warning("lmax"))
         return self._occnums_w
 
     @property
@@ -464,7 +473,7 @@ class Orbitals:
         # compute the pre-factor when the energy gap is large enough for a band
         prefac = np.where(
             eig_diff > config.band_params["de_min"],
-            2.0 / (pi * delta ** 2.0),
+            2.0 / (pi * delta**2.0),
             1.0,
         )
 
@@ -527,7 +536,7 @@ class Orbitals:
                 # compute the pre-factor when the energy gap is large enough for a band
                 prefac = np.where(
                     e_gap_arr > config.band_params["de_min"],
-                    2.0 / (pi * delta ** 2.0),
+                    2.0 / (pi * delta**2.0),
                     0.0,
                 )
 
@@ -596,6 +605,40 @@ class Orbitals:
         # sort the array
         e_tot_arr = np.sort(e_tot_arr)
         return e_tot_arr
+
+    @staticmethod
+    def check_orbs(occnums_w, threshold):
+        r"""Check the values of nmax and lmax are sufficient.
+
+        Finds the values of the occupations of the final orbitals in lmax
+        and nmax directions. If either is above the threshold, returns False
+        (which triggers a warning elsewhere).
+
+        Parameters
+        ----------
+        occnums_w : np.ndarray
+            weighted orbital occupations
+        threshold : float
+            the threshold occupation number at which to trigger a warning
+
+        Returns
+        -------
+        norbs_ok, lorbs_ok : tuple of bools
+            whether the values of nmax and lmax are sufficient
+
+        """
+        lorbs_ok = True
+        norbs_ok = True
+        # sum over the first two dimensions (spin and kpts)
+        occs_sum = np.sum(occnums_w, axis=(0, 1))
+        # check the l dimension
+        occs_l = occs_sum[:, -1]
+        if max(occs_l) > threshold:
+            lorbs_ok = False
+        occs_n = occs_sum[-1, :]
+        if max(occs_n) > threshold:
+            norbs_ok = False
+        return lorbs_ok, norbs_ok
 
 
 class Density:
@@ -693,7 +736,7 @@ class Density:
 
         # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
         orbs_R = np.exp(-xgrid / 2.0) * eigfuncs
-        orbs_R_sq = orbs_R ** 2.0
+        orbs_R_sq = orbs_R**2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
         dens["rho"] = np.einsum("ijkl,ijklm->jm", occnums, orbs_R_sq)
@@ -729,7 +772,7 @@ class Density:
 
             # unbound density is constant
             for i in range(config.spindims):
-                prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi ** 2)
+                prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi**2)
                 n_ub = prefac * mathtools.fd_int_complete(
                     config.mu[i], config.beta, 1.0
                 )
@@ -1044,9 +1087,10 @@ class Energy:
         The methods 'A' and 'B' in this function are given according to the definitions
         in [3]_ and [4]_.
 
-        They of course (should) both integrate to the same kinetic energy. The
-        definition 'B' is the one used in the usual definition of the electron
-        localization function [5]_.
+        Both methods should integrate to the same kinetic energy, in the case of Neumann
+        or Diriclet boundary conditions; for the bands condition they will be different.
+        The definition 'B' is the one used in the usual definition of the electron
+        localization function [5]_. It is given by formula (B.8) in [11]_.
 
         References
         ----------
@@ -1060,6 +1104,9 @@ class Energy:
            Elements: the Diamond Structure, Angew. Chem. Int. Ed. Engl. 31: 187-188
            (1992), `DOI:10.1002/anie.199201871
            <https://doi.org/10.1002/anie.199201871>`__.
+        .. [11] J. Pain, A model of dense-plasma atomic structure for equation-of-state
+           calculations. J. Phys. B, 40(8):1553 (2007), `DOI:10.1088/0953-4075/40/8/008
+           <https://dx.doi.org/10.1088/0953-4075/40/8/008>`__.
         """
         if method == "A":
             # compute the grad^2 component
@@ -1085,19 +1132,23 @@ class Energy:
 
             # compute the (l+1/2) component
             l_arr = np.fromiter(
-                ((2 * l + 1.0) for l in range(config.lmax)), float, config.lmax
+                (l * (l + 1.0) for l in range(config.lmax)), float, config.lmax
             )
-            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigfuncs)
+            eigs_mod = eigfuncs * np.exp(-xgrid / 2)
+            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigs_mod**2) / np.exp(
+                2 * xgrid
+            )
 
             # chain rule to convert from dP_dx to dX_dr
-            grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * lhalf_orbs)
+            grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * eigfuncs)
 
             # square it
-            # grad_orbs_sq = np.einsum("k,ijklm->ijklm", l_arr, grad_orbs ** 2.0)
-            grad_orbs_sq = grad_orbs ** 2.0
+            grad_orbs_sq = grad_orbs**2.0
 
             # multiply and sum over occupation numbers
-            e_kin_dens = 0.5 * np.einsum("ijkl,ijklm->jm", occnums, grad_orbs_sq)
+            e_kin_dens = 0.5 * np.einsum(
+                "ijkl,ijklm->jm", occnums, grad_orbs_sq + lhalf_orbs
+            )
 
         return e_kin_dens
 
@@ -1132,7 +1183,7 @@ class Energy:
         if config.unbound == "ideal":
             E_kin_unbound = 0.0  # initialize
             for i in range(config.spindims):
-                prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
+                prefac = (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi**2)
                 E_kin_unbound += prefac * mathtools.fd_int_complete(
                     config.mu[i], config.beta, 3.0
                 )
@@ -1198,8 +1249,8 @@ class Energy:
                            + (1-f_{nls}) (\log(1-f_{nls}) ]
         """
         # replace zeros in occupation numbers with finite numbers (for taking log)
-        occnums_mod1 = np.where(occnums > 1e-5, occnums, 0.5)
-        occnums_mod2 = np.where(occnums < 1.0 - 1e-5, occnums, 0.5)
+        occnums_mod1 = np.where(occnums > 1e-20, occnums, 1)
+        occnums_mod2 = np.where(occnums < 1.0 - 1e-20, occnums, 0)
 
         # now compute the terms in the square bracket
         term1 = occnums * np.log(occnums_mod1)
@@ -1244,7 +1295,7 @@ class Energy:
             for i in range(config.spindims):
                 if config.nele[i] > 1e-5:
                     prefac = (
-                        (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi ** 2)
+                        (2.0 / config.spindims) * config.sph_vol / (sqrt(2) * pi**2)
                     )
 
                     S_unbound -= prefac * mathtools.ideal_entropy_int(
@@ -1347,8 +1398,10 @@ class EnergyAlt:
         # initialize attributes
         self._F_tot = 0.0
         self._E_tot = 0.0
+        self._E_kin = {"tot": 0.0, "bound": 0.0, "unbound": 0.0}
         self._entropy = {"tot": 0.0, "bound": 0.0, "unbound": 0.0}
         self._E_eps = 0.0
+        self._E_en = 0.0
         self._E_unbound = 0.0
         self._E_v_hxc = 0.0
         self._E_ha = 0.0
@@ -1389,6 +1442,21 @@ class EnergyAlt:
         if self._E_eps == 0.0:
             self._E_eps = np.sum(self._orbs.occnums_w * self._orbs.eigvals)
         return self._E_eps
+
+    @property
+    def E_en(self):
+        r"""float: Electron-nuclear attraction energy."""
+        if self._E_en == 0.0:
+            self._E_en = Energy.calc_E_en(self._dens, self._xgrid)
+        return self._E_en
+
+    @property
+    def E_kin(self):
+        r"""Dict of floats: Kinetic energy components."""
+        if self._E_kin["tot"] == 0.0:
+            self._E_kin["bound"] = self.E_eps - self.E_v_hxc - self.E_en
+            self._E_kin["tot"] = self._E_kin["bound"] + self._E_kin["unbound"]
+        return self._E_kin
 
     @property
     def E_unbound(self):

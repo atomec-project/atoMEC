@@ -259,7 +259,8 @@ class ISModel:
             `econv` (``float``)  : convergence for total energy,
             `nconv` (``float``)  : convergence for density,
             `vconv` (``float``)  : convergence for electron number,
-            `eigtol` (``float``) : convergence for eigenvalues
+            `eigtol` (``float``) : convergence for eigenvalues,
+            `bandtol` (``float``) : tolerance for n(l)max warning
             }
         scf_params : dict, optional
             dictionary for scf cycle parameters as follows:
@@ -458,6 +459,7 @@ class ISModel:
         write_info=False,
         verbosity=0,
         dR=0.01,
+        method="A",
     ):
         r"""
         Calculate the electronic pressure using the finite differences method.
@@ -523,6 +525,7 @@ class ISModel:
             write_info,
             verbosity,
             dR,
+            method,
         )
 
         return P_e

@@ -355,7 +355,7 @@ class Atom:
         # radius in cm
         rad_cm = radius / unitconv.cm_to_bohr
         # volume in cm
-        vol_cm = (4.0 * pi * rad_cm ** 3) / 3.0
+        vol_cm = (4.0 * pi * rad_cm**3) / 3.0
         # atomic mass in g
         mass_g = config.mp_g * atom.at_mass
         # density in g cm^-3
@@ -752,10 +752,11 @@ class EnergyCalcs:
         conv_params : dict of floats
             dictionary of convergence parameters as follows:
             {
-            `econv` (``float``)  : convergence for total energy,
-            `nconv` (``float``)  : convergence for density,
-            `vconv` (``float``)  : convergence for electron number,
-            `eigtol` (``float``) : tolerance for eigenvalues
+            `econv` (``float``)   : convergence for total energy,
+            `nconv` (``float``)   : convergence for density,
+            `vconv` (``float``)   : convergence for electron number,
+            `eigtol` (``float``)  : tolerance for eigenvalues,
+            `bandtol` (``float``) : tolerance for n(l)max warning
             }
 
         Raises
@@ -765,7 +766,7 @@ class EnergyCalcs:
         """
         conv_params = {}
         # loop through the convergence parameters
-        for conv in ["econv", "nconv", "vconv", "eigtol"]:
+        for conv in ["econv", "nconv", "vconv", "eigtol", "bandtol"]:
             # assign value if not given
             try:
                 x_conv = input_params[conv]
@@ -1170,4 +1171,28 @@ class InputWarning:
             + "Suggested grid range is between 1000-5000 but should be tested wrt"
             " convergence \n"
         )
+        return warning
+
+    def norbs_warning(quantum_num):
+        """
+        Warn if either nmax or lmax is too low for convergence.
+
+        Parameters
+        ----------
+        quantum_num : str
+            lmax or nmax
+
+        Returns
+        -------
+        warning : str
+            full error message
+        """
+        warning = (
+            "Warning: "
+            + quantum_num
+            + " appears to be too low. Proceeding anyway, but suggest to increase "
+            + quantum_num
+            + " and restart calculation"
+        )
+
         return warning
