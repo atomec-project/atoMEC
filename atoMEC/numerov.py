@@ -20,6 +20,7 @@ Functions
 
 # standard libs
 import os
+import sys
 import shutil
 import string
 import random
@@ -30,6 +31,7 @@ from scipy.sparse.linalg import eigs
 from scipy import linalg
 from scipy.interpolate import interp1d
 from joblib import Parallel, delayed, dump, load
+from scipy import optimize
 
 # from staticKS import Orbitals
 
@@ -40,7 +42,7 @@ from . import mathtools
 # from . import writeoutput
 
 
-def calc_eigs_min(v, xgrid, bc):
+def calc_eigs_min(v, xgrid, bc, solve_type="guess"):
     """
     Compute an estimate for the minimum values of the KS eigenvalues.
 
@@ -69,7 +71,7 @@ def calc_eigs_min(v, xgrid, bc):
     v_coarse = func_interp(xgrid_coarse)
 
     # full diagonalization to estimate the lowest eigenvalues
-    eigs_min = matrix_solve(v_coarse, xgrid_coarse, bc, solve_type="guess")[1]
+    eigs_min = matrix_solve(v_coarse, xgrid_coarse, bc, solve_type=solve_type)[1]
 
     return eigs_min
 
@@ -144,7 +146,7 @@ def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
     np.fill_diagonal(p, np.exp(-2 * xgrid))
 
     # see referenced paper for definitions of A and B matrices
-    A = np.array((I_minus - 2 * I_zero + I_plus) / dx ** 2)
+    A = np.array((I_minus - 2 * I_zero + I_plus) / dx**2)
     B = np.array((I_minus + 10 * I_zero + I_plus) / 12)
 
     # von neumann boundary conditions
@@ -293,7 +295,6 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
         return eigfuncs, eigvals
 
     elif solve_type == "guess":
-
         for q in range(pmax):
             eigs_guess_flat[q] = X[q][1]
         eigfuncs_null = X[:][0]
@@ -301,6 +302,17 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
         eigs_guess = eigs_guess_flat.reshape(config.spindims, config.lmax)
 
         return eigfuncs_null, eigs_guess
+
+    elif solve_type == "guess_full":
+        eigvals_flat = np.zeros((pmax, config.nmax))
+        for q in range(pmax):
+            eigvals_flat[q] = X[q][1]
+        eigfuncs_null = X[:][0]
+
+        # unflatten eigfuncs / eigvals so they return to original shape
+        eigvals = eigvals_flat.reshape(config.spindims, config.lmax, config.nmax)
+
+        return eigfuncs_null, eigvals
 
 
 def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
@@ -344,10 +356,8 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     # A new Hamiltonian has to be re-constructed for every value of l and each spin
     # channel if spin-polarized
     for l in range(config.lmax):
-
         # diagonalize Hamiltonian using scipy
         for i in range(np.shape(v)[0]):
-
             # fill potential matrices
             np.fill_diagonal(V_mat, v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
 
@@ -367,7 +377,6 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
             # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
             # the estimated lowest eigenvalue from full diagonalization on coarse grid
             if solve_type == "full":
-
                 eigs_up, vecs_up = eigs(
                     H_s,
                     k=config.nmax,
@@ -387,13 +396,23 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
                 )
 
             elif solve_type == "guess":
-
                 # estimate the lowest eigenvalues for a given value of l
                 eigs_up = linalg.eigvals(H, b=B, check_finite=False)
 
                 # sort the eigenvalues to find the lowest
                 idr = np.argsort(eigs_up)
                 eigs_guess[i, l] = np.array(eigs_up[idr].real)[0]
+
+                # dummy variable for the null eigenfucntions
+                eigfuncs_null = eigfuncs
+
+            elif solve_type == "guess_full":
+                # estimate the lowest eigenvalues for a given value of l
+                eigs_up = linalg.eigvals(H, b=B, check_finite=False)
+
+                # sort the eigenvalues to find the lowest
+                idr = np.argsort(eigs_up)
+                eigs_guess[i, l] = np.array(eigs_up[idr].real)
 
                 # dummy variable for the null eigenfucntions
                 eigfuncs_null = eigfuncs
@@ -491,6 +510,18 @@ def diag_H(p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
 
         return evecs_null, evals
 
+    elif solve_type == "guess_full":
+        evals = linalg.eigvals(H, b=B, check_finite=False)
+
+        # sort the eigenvalues to find the lowest
+        idr = np.argsort(evals)
+        evals = np.array(evals[idr].real)
+
+        # dummy eigenvector for return statement
+        evecs_null = np.zeros((N))
+
+        return evecs_null, evals
+
 
 def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
     """
@@ -528,7 +559,7 @@ def update_orbs(l_eigfuncs, l_eigvals, xgrid, bc, K):
 
     # manually propagate to final point for both boundary conditions
     dx = xgrid[1] - xgrid[0]
-    h = (dx ** 2) / 12.0
+    h = (dx**2) / 12.0
     l_eigfuncs[-1] = (
         (2 - 10 * h * K[-2]) * l_eigfuncs[-2] - (1 + h * K[-3]) * l_eigfuncs[-3]
     ) / (1 + h * K[-1])
@@ -628,7 +659,7 @@ def num_propagate(xgrid, W, e_arr, eigfuncs_init):
     """
     # define some initial grid parameters
     dx = xgrid[1] - xgrid[0]
-    h = (dx ** 2) / 12.0  # a parameter for the numerov integration
+    h = (dx**2) / 12.0  # a parameter for the numerov integration
     N = np.size(xgrid)  # size of grid
 
     # set the eigenfucntions to their initial values
@@ -643,9 +674,119 @@ def num_propagate(xgrid, W, e_arr, eigfuncs_init):
 
     # normalize the wavefunction
     Psi = Psi.transpose()
-    psi_sq = np.exp(-xgrid) * Psi ** 2  # convert from P_nl to X_nl and square
+    psi_sq = np.exp(-xgrid) * Psi**2  # convert from P_nl to X_nl and square
     integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
     norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
     Psi_norm = np.einsum("i,ij->ij", norm, Psi)
 
     return Psi_norm
+
+
+def numerov_linear_solve(e_arr, xgrid, W, bc, l):
+    dx = xgrid[1] - xgrid[0]
+    h = (dx**2) / 12.0  # a parameter for the numerov integration
+    N = np.size(xgrid)  # size of grid
+
+    # set the eigenfucntions to their initial values
+    Psi = np.zeros_like(xgrid)
+    Psi_l = np.zeros_like(Psi)
+    Psi_r = np.zeros_like(Psi)
+    Psi_l[1] = np.exp((l + 0.5) * (xgrid[1]))
+
+    W = W + 2.0 * np.exp(2 * xgrid) * e_arr
+
+    if bc == "dirichlet":
+        Psi_r[-2] = dx
+    elif bc == "neumann":
+        Psi_r[-1] = dx  # just set to a constant
+        Psi_r[-2] = Psi_r[-1] * (1 + dx / 2.0)
+
+    if N % 2 == 0:
+        N_l = N // 2
+        # N_r = N // 2 - 1
+    else:
+        N_l = (N - 1) // 2
+        # N_r = (N + 1) // 2
+
+    # Integrate from the left
+    for i in range(2, N_l + 2):
+        Psi_l[i] = (
+            2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi_l[i - 1]
+            - (1.0 + h * W[i - 2]) * Psi_l[i - 2]
+        ) / (1.0 + h * W[i])
+
+        Psi_l /= max(np.max(np.abs(Psi_l)), 1)
+
+    # Integrate from the right
+    for i in range(N - 3, N_l - 2, -1):
+        Psi_r[i] = (
+            2.0 * (1.0 - 5.0 * h * W[i + 1]) * Psi_r[i + 1]
+            - (1.0 + h * W[i + 2]) * Psi_r[i + 2]
+        ) / (1.0 + h * W[i])
+
+        Psi_r /= max(np.max(np.abs(Psi_r)), 1)
+
+    # match the left and right functions at intersection point
+    Psi_r *= Psi_l[N_l] / Psi_r[N_l]
+
+    # compute the gradients
+    Psi_l_grad = (Psi_l[N_l + 1] - Psi_l[N_l - 1]) / (2 * dx)
+    Psi_r_grad = (Psi_r[N_l + 1] - Psi_r[N_l - 1]) / (2 * dx)
+
+    # print(Psi_l[N_l + 1] - Psi_l[N_l - 1], 2 * dx)
+
+    # derivative sign and difference
+    deriv_diff = Psi_l_grad - Psi_r_grad
+    deriv_sign = Psi_l_grad * Psi_r_grad
+
+    # stitch the wfns together
+    Psi[:N_l] = Psi_l[:N_l]
+    # print(Psi[:10])
+    Psi[N_l:] = Psi_r[N_l:]
+
+    # normalize the wavefunction - CHANGE HERE
+    psi_sq = np.exp(-xgrid) * Psi**2  # convert from P_nl to X_nl and square
+    integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+    norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
+    Psi_norm = Psi * norm
+
+    return Psi_norm, deriv_diff, deriv_sign
+
+
+def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
+    for i in range(max_iter):
+        E_mid = 0.5 * E_left + 0.5 * E_right
+        # print(E_left, E_mid, E_right)
+        Psi, deriv_diff, deriv_sign = numerov_linear_solve(E_mid, x, W, boundary, l)
+        # print(deriv_diff)
+        if np.abs(deriv_diff) < tol:  # If the boundary condition is satisfied
+            return E_mid, Psi, True
+        else:
+            if deriv_diff < 0:  # If the root is in the left half
+                E_right = E_mid
+            else:  # If the root is in the right half
+                E_left = E_mid
+
+    print("Warning: Maximum number of iterations reached")
+    return E_mid, Psi, False
+
+
+def linear_solve(v, xgrid, bc, eigs_guess, vecs_guess):
+    eigvals_converged = np.zeros((config.spindims, config.lmax, config.nmax))
+    for sp in range(config.spindims):
+        for l in range(config.lmax):
+            W = -2.0 * np.exp(2.0 * xgrid) * v[sp] - (l + 0.5) ** 2
+            for n in range(config.nmax):
+                print(l, n)
+                E_bracket = 0.01 * np.abs(eigs_guess[sp, l, n])
+                E_upper = eigs_guess[sp, l, n] + E_bracket
+                E_lower = eigs_guess[sp, l, n] - E_bracket
+                eigvals_converged[sp, l, n], psi, conv = find_root(
+                    E_lower, E_upper, W, xgrid, bc, l
+                )
+                if not conv:
+                    return eigvals_converged, psi
+                    sys.exit("oops")
+                # except ValueError:
+                #     print(l, n, E_lower, E_upper, eigs_guess[sp, l, n])
+    return eigvals_converged, psi
