@@ -714,10 +714,10 @@ def numerov_linear_solve(e_arr, xgrid, W, bc, l):
         deriv_X_R = (Psi_norm[-1] - Psi_norm[-2]) / dx
         deriv_diff = np.exp(-1.5 * xgrid[-1]) * (0.5 * Psi_norm[-1] + deriv_X_R)
 
-    return Psi_norm, deriv_diff
+    return deriv_diff
 
 
-def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=3):
+def find_root_manual(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=3):
     for i in range(max_iter):
         E_mid = (E_left + E_right) / 2
         # print(E_left, E_mid, E_right)
@@ -734,20 +734,39 @@ def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=3):
     return E_mid, Psi, False
 
 
+def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
+    E_mid = (E_left + E_right) / 2
+    bracket = np.array([E_left, E_right])
+    args = (x, W, boundary, l)
+    soln = optimize.root_scalar(
+        numerov_linear_solve,
+        x0=E_mid,
+        args=args,
+        method="brentq",
+        bracket=bracket,
+        options={"maxiter": max_iter, "xtol": tol},
+    )
+
+    if not soln.converged:
+        print("Soln not converged")
+    return soln.root
+
+
 def linear_solve(v, xgrid, bc, eigs_guess):
     eigvals_converged = np.zeros((config.spindims, config.lmax, config.nmax))
     for sp in range(config.spindims):
         for l in range(config.lmax):
             W = -2.0 * np.exp(2.0 * xgrid) * v[sp] - (l + 0.5) ** 2
             for n in range(config.nmax):
+                print(l, n)
                 E_bracket = 0.1 * np.abs(eigs_guess[sp, l, n])
-                E_upper = eigs_guess[sp, l, n] + E_bracket * 0.95
+                E_upper = eigs_guess[sp, l, n] + E_bracket
                 E_lower = eigs_guess[sp, l, n] - E_bracket
-                eigvals_converged[sp, l, n], psi, conv = find_root(
+                eigvals_converged[sp, l, n] = find_root(
                     E_lower, E_upper, W, xgrid, bc, l
                 )
                 # if not conv:
                 #     return eigvals_converged, psi
                 # except ValueError:
                 #     print(l, n, E_lower, E_upper, eigs_guess[sp, l, n])
-    return eigvals_converged, psi
+    return eigvals_converged
