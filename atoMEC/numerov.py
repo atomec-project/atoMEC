@@ -689,60 +689,18 @@ def numerov_linear_solve(e_arr, xgrid, W, bc, l):
 
     # set the eigenfucntions to their initial values
     Psi = np.zeros_like(xgrid)
-    Psi_l = np.zeros_like(Psi)
-    Psi_r = np.zeros_like(Psi)
-    Psi_l[1] = np.exp((l + 0.5) * (xgrid[1]))
+    Psi[1] = np.exp((l + 0.5) * xgrid[1])
 
     W = W + 2.0 * np.exp(2 * xgrid) * e_arr
 
-    if bc == "dirichlet":
-        Psi_r[-2] = dx
-    elif bc == "neumann":
-        Psi_r[-1] = dx  # just set to a constant
-        Psi_r[-2] = Psi_r[-1] * (1 + dx / 2.0)
-
-    if N % 2 == 0:
-        N_l = N // 2
-        # N_r = N // 2 - 1
-    else:
-        N_l = (N - 1) // 2
-        # N_r = (N + 1) // 2
-
     # Integrate from the left
-    for i in range(2, N_l + 2):
-        Psi_l[i] = (
-            2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi_l[i - 1]
-            - (1.0 + h * W[i - 2]) * Psi_l[i - 2]
+    for i in range(2, N):
+        Psi[i] = (
+            2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
+            - (1.0 + h * W[i - 2]) * Psi[i - 2]
         ) / (1.0 + h * W[i])
 
-        Psi_l /= max(np.max(np.abs(Psi_l)), 1)
-
-    # Integrate from the right
-    for i in range(N - 3, N_l - 2, -1):
-        Psi_r[i] = (
-            2.0 * (1.0 - 5.0 * h * W[i + 1]) * Psi_r[i + 1]
-            - (1.0 + h * W[i + 2]) * Psi_r[i + 2]
-        ) / (1.0 + h * W[i])
-
-        Psi_r /= max(np.max(np.abs(Psi_r)), 1)
-
-    # match the left and right functions at intersection point
-    Psi_r *= Psi_l[N_l] / Psi_r[N_l]
-
-    # compute the gradients
-    Psi_l_grad = (Psi_l[N_l + 1] - Psi_l[N_l - 1]) / (2 * dx)
-    Psi_r_grad = (Psi_r[N_l + 1] - Psi_r[N_l - 1]) / (2 * dx)
-
-    # print(Psi_l[N_l + 1] - Psi_l[N_l - 1], 2 * dx)
-
-    # derivative sign and difference
-    deriv_diff = Psi_l_grad - Psi_r_grad
-    deriv_sign = Psi_l_grad * Psi_r_grad
-
-    # stitch the wfns together
-    Psi[:N_l] = Psi_l[:N_l]
-    # print(Psi[:10])
-    Psi[N_l:] = Psi_r[N_l:]
+        Psi /= max(np.max(np.abs(Psi)), 1)
 
     # normalize the wavefunction - CHANGE HERE
     psi_sq = np.exp(-xgrid) * Psi**2  # convert from P_nl to X_nl and square
@@ -750,15 +708,20 @@ def numerov_linear_solve(e_arr, xgrid, W, bc, l):
     norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
     Psi_norm = Psi * norm
 
-    return Psi_norm, deriv_diff, deriv_sign
+    if bc == "dirichlet":
+        deriv_diff = Psi_norm[-1]
+    else:
+        deriv_X_R = (Psi_norm[-1] - Psi_norm[-2]) / dx
+        deriv_diff = np.exp(-1.5 * xgrid[-1]) * (0.5 * Psi_norm[-1] + deriv_X_R)
+
+    return Psi_norm, deriv_diff
 
 
-def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
+def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=3):
     for i in range(max_iter):
-        E_mid = 0.5 * E_left + 0.5 * E_right
+        E_mid = (E_left + E_right) / 2
         # print(E_left, E_mid, E_right)
-        Psi, deriv_diff, deriv_sign = numerov_linear_solve(E_mid, x, W, boundary, l)
-        # print(deriv_diff)
+        Psi, deriv_diff = numerov_linear_solve(E_mid, x, W, boundary, l)
         if np.abs(deriv_diff) < tol:  # If the boundary condition is satisfied
             return E_mid, Psi, True
         else:
@@ -771,22 +734,20 @@ def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
     return E_mid, Psi, False
 
 
-def linear_solve(v, xgrid, bc, eigs_guess, vecs_guess):
+def linear_solve(v, xgrid, bc, eigs_guess):
     eigvals_converged = np.zeros((config.spindims, config.lmax, config.nmax))
     for sp in range(config.spindims):
         for l in range(config.lmax):
             W = -2.0 * np.exp(2.0 * xgrid) * v[sp] - (l + 0.5) ** 2
             for n in range(config.nmax):
-                print(l, n)
-                E_bracket = 0.01 * np.abs(eigs_guess[sp, l, n])
-                E_upper = eigs_guess[sp, l, n] + E_bracket
+                E_bracket = 0.1 * np.abs(eigs_guess[sp, l, n])
+                E_upper = eigs_guess[sp, l, n] + E_bracket * 0.95
                 E_lower = eigs_guess[sp, l, n] - E_bracket
                 eigvals_converged[sp, l, n], psi, conv = find_root(
                     E_lower, E_upper, W, xgrid, bc, l
                 )
-                if not conv:
-                    return eigvals_converged, psi
-                    sys.exit("oops")
+                # if not conv:
+                #     return eigvals_converged, psi
                 # except ValueError:
                 #     print(l, n, E_lower, E_upper, eigs_guess[sp, l, n])
     return eigvals_converged, psi
