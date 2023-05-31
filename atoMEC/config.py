@@ -29,5 +29,7 @@ band_params = {"nkpts": 50, "de_min": 1e-3}
 # forced bound energy levels (default none)
 force_bound = []
 
+numerov_solver = "matrix"
+
 # parallelization
 numcores = 0  # defaults to serial

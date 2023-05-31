@@ -41,6 +41,13 @@ from . import mathtools
 
 # from . import writeoutput
 
+def solve(v, xgrid, bc, solve_method="matrix", eigs_min_guess=None, solve_type="full"):
+    """Wrapper to solve either with matrix or linear method."""
+    if solve_method=="matrix":
+        return matrix_solve(v, xgrid, bc, solve_type=solve_type, eigs_min_guess=eigs_min_guess)
+    elif solve_type=="linear":
+        return linear_solve(v, xgrid, bc, eigs_min_guess)
+    
 
 def calc_eigs_min(v, xgrid, bc, solve_type="guess"):
     """
