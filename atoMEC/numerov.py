@@ -48,8 +48,10 @@ def solve(v, xgrid, bc, solve_method="matrix", eigs_min_guess=None, solve_type="
         return matrix_solve(
             v, xgrid, bc, solve_type=solve_type, eigs_min_guess=eigs_min_guess
         )
-    elif solve_type == "linear":
+    elif solve_method == "linear":
         return linear_solve(v, xgrid, bc, eigs_min_guess)
+    else:
+        print("solver not recognized")
 
 
 def calc_eigs_min(v, xgrid, bc, solve_type="guess_full"):
@@ -727,27 +729,33 @@ def numerov_linear_solve(e_arr, xgrid, W, bc, l, wfn=False):
         deriv_diff = np.exp(-1.5 * xgrid[-1]) * (-0.5 * Psi_norm[-1] + deriv_X_R)
 
     if wfn:
-        print("returning wfn")
         return Psi_norm
     else:
         return deriv_diff
 
 
-def find_root_manual(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=3):
+def find_root_manual(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
+    dd_right = numerov_linear_solve(E_right, x, W, boundary, l)
+    dd_left = numerov_linear_solve(E_left, x, W, boundary, l)
+
+    if dd_right * dd_left >= 0:
+        E_mid = (E_left + E_right) / 2
+        return E_mid
     for i in range(max_iter):
         E_mid = (E_left + E_right) / 2
-        # print(E_left, E_mid, E_right)
-        Psi, deriv_diff = numerov_linear_solve(E_mid, x, W, boundary, l)
-        if np.abs(deriv_diff) < tol:  # If the boundary condition is satisfied
-            return E_mid, Psi, True
+        dd_mid = numerov_linear_solve(E_mid, x, W, boundary, l)
+        if np.abs(dd_mid) < tol:  # If the boundary condition is satisfied
+            return E_mid
         else:
-            if deriv_diff < 0:  # If the root is in the left half
+            if dd_mid * dd_left < 0:  # If the root is in the left half
                 E_right = E_mid
+                dd_right = numerov_linear_solve(E_right, x, W, boundary, l)
             else:  # If the root is in the right half
                 E_left = E_mid
+                dd_left = numerov_linear_solve(E_left, x, W, boundary, l)
 
     print("Warning: Maximum number of iterations reached")
-    return E_mid, Psi, False
+    return E_mid
 
 
 def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
@@ -763,7 +771,10 @@ def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
             bracket=bracket,
             options={"maxiter": max_iter, "xtol": tol},
         )
+        if not soln.converged:
+            print("Not converged")
         return soln.root
+
     except ValueError:
         return E_mid
 
@@ -771,16 +782,17 @@ def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
 
 
 def linear_solve(v, xgrid, bc, eigs_guess):
-    eigvals_converged = np.zeros((config.spindims, config.lmax, config.nmax))
-    eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, len(xgrid)))
+    eigvals_converged = np.zeros_like(eigs_guess)
+    d1, d2, d3 = np.shape(eigs_guess)
+    eigfuncs = np.zeros((d1, d2, d3, len(xgrid)))
     for sp in range(config.spindims):
         for l in range(config.lmax):
             W = -2.0 * np.exp(2.0 * xgrid) * v[sp] - (l + 0.5) ** 2
             for n in range(config.nmax):
-                E_bracket = 0.05 * np.abs(eigs_guess[sp, l, n])
+                E_bracket = 0.1 * np.abs(eigs_guess[sp, l, n])
                 E_upper = eigs_guess[sp, l, n] + E_bracket
                 E_lower = eigs_guess[sp, l, n] - E_bracket
-                eigvals_converged[sp, l, n] = find_root(
+                eigvals_converged[sp, l, n] = find_root_manual(
                     E_lower, E_upper, W, xgrid, bc, l
                 )
                 eigfuncs[sp, l, n, :] = numerov_linear_solve(
