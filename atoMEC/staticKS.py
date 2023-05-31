@@ -76,7 +76,6 @@ class Orbitals:
     """Class holding the KS orbitals, associated quantities and relevant routines."""
 
     def __init__(self, xgrid):
-
         self._xgrid = xgrid
         self._eigfuncs = np.zeros(
             (
@@ -95,7 +94,7 @@ class Orbitals:
         self._ldegen = np.zeros_like(self._eigvals)
         self._DOS = np.ones_like(self._eigvals)
         self._eigs_min_guess = np.zeros(
-            (config.band_params["nkpts"], config.spindims, config.lmax)
+            (config.band_params["nkpts"], config.spindims, config.lmax, config.nmax)
         )
         self._eigvals_min = np.zeros(
             (config.band_params["nkpts"], config.spindims, config.lmax)
@@ -520,12 +519,10 @@ class Orbitals:
         fd_dist = np.zeros((len(e_arr_dummy), nspin))
 
         for sp in range(nspin):
-
             # make the total energy array
             e_arr[:, sp] = Orbitals.make_e_arr(eigs_min, eigs_max, sp)
 
             for i, e in enumerate(e_arr[:, sp]):
-
                 # compute delta and (e_+ - e) * (e - e_-)
                 delta = 0.5 * e_gap_arr
                 hub_func = (eigs_max - e) * (e - eigs_min)
@@ -590,7 +587,6 @@ class Orbitals:
         # make the energy array
         e_tot_arr = np.array([])
         for p in range(len(eigs_min) - 1):
-
             # ignore energies below the minimum for bands
             if eigs_min[p] < e_min:
                 continue
@@ -769,7 +765,6 @@ class Density:
 
         # so far only the ideal approximation is implemented
         if config.unbound == "ideal":
-
             # unbound density is constant
             for i in range(config.spindims):
                 prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi**2)
@@ -788,7 +783,6 @@ class Potential:
     """Class holding the KS potential and the routines required to compute it."""
 
     def __init__(self, density):
-
         self._v_s = np.zeros_like(density.total)
         self._v_en = np.zeros((config.grid_params["ngrid"]))
         self._v_ha = np.zeros((config.grid_params["ngrid"]))
@@ -884,7 +878,6 @@ class Potential:
         # loop over the x-grid
         # this may be a bottleneck...
         for i, x0 in enumerate(xgrid):
-
             # set up 'upper' and 'lower' parts of the xgrid (x<=x0; x>x0)
             x_u = xgrid[np.where(x0 < xgrid)]
             x_l = xgrid[np.where(x0 >= xgrid)]
@@ -907,7 +900,6 @@ class Energy:
     r"""Class holding information about the KS total energy and relevant routines."""
 
     def __init__(self, orbs, dens):
-
         # inputs
         self._orbs = orbs
         self._dens = dens.total
@@ -1126,7 +1118,6 @@ class Energy:
             e_kin_dens = -0.5 * np.einsum("ijkl,ijklm->jm", occnums, kin_orbs)
 
         elif method == "B":
-
             # compute the gradient of the orbitals
             grad_eigfuncs = np.gradient(eigfuncs, xgrid, axis=-1, edge_order=2)
 
@@ -1389,7 +1380,6 @@ class EnergyAlt:
     """
 
     def __init__(self, orbs, dens, pot):
-
         self._orbs = orbs
         self._dens = dens.total
         self._xgrid = dens._xgrid

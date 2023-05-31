@@ -41,15 +41,18 @@ from . import mathtools
 
 # from . import writeoutput
 
+
 def solve(v, xgrid, bc, solve_method="matrix", eigs_min_guess=None, solve_type="full"):
     """Wrapper to solve either with matrix or linear method."""
-    if solve_method=="matrix":
-        return matrix_solve(v, xgrid, bc, solve_type=solve_type, eigs_min_guess=eigs_min_guess)
-    elif solve_type=="linear":
+    if solve_method == "matrix":
+        return matrix_solve(
+            v, xgrid, bc, solve_type=solve_type, eigs_min_guess=eigs_min_guess
+        )
+    elif solve_type == "linear":
         return linear_solve(v, xgrid, bc, eigs_min_guess)
-    
 
-def calc_eigs_min(v, xgrid, bc, solve_type="guess"):
+
+def calc_eigs_min(v, xgrid, bc, solve_type="guess_full"):
     """
     Compute an estimate for the minimum values of the KS eigenvalues.
 
@@ -133,6 +136,8 @@ def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
     """
     if eigs_min_guess is None:
         eigs_min_guess = np.zeros((config.spindims, config.lmax))
+    else:
+        eigs_min_guess = eigs_min_guess[:, :, 0]
 
     # define the spacing of the xgrid
     dx = xgrid[1] - xgrid[0]
@@ -313,7 +318,7 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     elif solve_type == "guess_full":
         eigvals_flat = np.zeros((pmax, config.nmax))
         for q in range(pmax):
-            eigvals_flat[q] = X[q][1]
+            eigvals_flat[q] = X[q][1][: config.nmax]
         eigfuncs_null = X[:][0]
 
         # unflatten eigfuncs / eigvals so they return to original shape
@@ -358,7 +363,7 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     # initialize the eigenfunctions and their eigenvalues
     eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N))
     eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
-    eigs_guess = np.zeros((config.spindims, config.lmax))
+    eigs_guess = np.zeros((config.spindims, config.lmax, config.nmax))
 
     # A new Hamiltonian has to be re-constructed for every value of l and each spin
     # channel if spin-polarized
@@ -419,7 +424,7 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
 
                 # sort the eigenvalues to find the lowest
                 idr = np.argsort(eigs_up)
-                eigs_guess[i, l] = np.array(eigs_up[idr].real)
+                eigs_guess[i, l] = np.array(eigs_up[idr].real)[: config.nmax]
 
                 # dummy variable for the null eigenfucntions
                 eigfuncs_null = eigfuncs
@@ -722,6 +727,7 @@ def numerov_linear_solve(e_arr, xgrid, W, bc, l, wfn=False):
         deriv_diff = np.exp(-1.5 * xgrid[-1]) * (-0.5 * Psi_norm[-1] + deriv_X_R)
 
     if wfn:
+        print("returning wfn")
         return Psi_norm
     else:
         return deriv_diff
@@ -766,6 +772,7 @@ def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
 
 def linear_solve(v, xgrid, bc, eigs_guess):
     eigvals_converged = np.zeros((config.spindims, config.lmax, config.nmax))
+    eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, len(xgrid)))
     for sp in range(config.spindims):
         for l in range(config.lmax):
             W = -2.0 * np.exp(2.0 * xgrid) * v[sp] - (l + 0.5) ** 2
@@ -776,4 +783,8 @@ def linear_solve(v, xgrid, bc, eigs_guess):
                 eigvals_converged[sp, l, n] = find_root(
                     E_lower, E_upper, W, xgrid, bc, l
                 )
-    return eigvals_converged
+                eigfuncs[sp, l, n, :] = numerov_linear_solve(
+                    eigvals_converged[sp, l, n], xgrid, W, bc, l, wfn=True
+                )
+
+    return eigfuncs, eigvals_converged
