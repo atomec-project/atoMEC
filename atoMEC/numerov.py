@@ -651,8 +651,84 @@ def calc_wfns_e_grid(xgrid, v, e_arr):
     return eigfuncs_e
 
 
+def calc_wfns_no_kpts(xgrid, v, e_arr, bc, wfn=False):
+    """
+    Compute all KS orbitals defined on the energy grid.
+
+    This routine is used to propagate a set of orbitals defined with a fixed
+    set of energies. It is used for the `bands` boundary condition in the
+    `models.ISModel` class.
+
+    Parameters
+    ----------
+    xgrid : ndarray
+        the spatial (logarithmic) grid
+    v : ndarray
+        the KS potential
+    e_arr : ndarray
+        the energy grid
+    Returns
+    -------
+    eigfuncs_e : ndarray
+        the KS orbitals with defined energies
+    """
+    # size of spaital grid
+    N = np.size(xgrid)
+
+    dx = xgrid[1] - xgrid[0]
+    x0 = xgrid[0]
+
+    # dimensions of e_arr
+    spindims, lmax, nmax = np.shape(e_arr)
+
+    # flatten energy array
+    e_arr_flat = e_arr.flatten()
+
+    # initialize the W (potential) and eigenfunction arrays
+    W_arr = np.zeros((N, spindims, lmax, nmax))
+    eigfuncs_init = np.zeros_like(W_arr)
+
+    # set up the flattened potential matrix
+    # W = -2*exp(x)*(v - E) - (l + 1/2)^2
+    # first set up the v - E array (matching dimensions)
+    v_E_arr = np.transpose(v)[:, :, np.newaxis, np.newaxis] - e_arr[np.newaxis, :]
+
+    # muptiply by -2*exp(x) term
+    v_E_arr = np.einsum("i,iklm->iklm", -2.0 * np.exp(2.0 * xgrid), v_E_arr)
+
+    # add (l+1/2)^2 term and initial condition
+    for l in range(lmax):
+        W_arr[:, :, l] = v_E_arr[:, :, l] - (l + 0.5) ** 2
+        eigfuncs_init[1, :, l] = np.exp((l + 0.5) * (x0 + dx))
+
+    # flatten arrays for input to numerov propagation
+    W_flat = W_arr.reshape((N, len(e_arr_flat)))
+    eigfuncs_init_flat = eigfuncs_init.reshape((N, len(e_arr_flat)))
+
+    # solve numerov eqn for the wfns
+    eigfuncs_flat = num_propagate(xgrid, W_flat, e_arr_flat, eigfuncs_init_flat)
+
+    if wfn:
+        eigfuncs = eigfuncs_flat.reshape((spindims, lmax, nmax, N))
+        return eigfuncs
+
+    else:
+        if bc == "dirichlet":
+            deriv_diff_flat = eigfuncs_flat[:, -1]
+        else:
+            deriv_X_R = (eigfuncs_flat[:, -1] - eigfuncs_flat[:, -2]) / dx
+            deriv_diff_flat = np.exp(-1.5 * xgrid[-1]) * (
+                -0.5 * eigfuncs_flat[:, -1] + deriv_X_R
+            )
+
+        # reshape the eigenfucntions
+        deriv_diff = deriv_diff_flat.reshape((spindims, lmax, nmax))
+
+        return deriv_diff
+
+
 # @writeoutput.timing
-def num_propagate(xgrid, W, e_arr, eigfuncs_init):
+def num_propagate(xgrid, W, e_arr, eigfuncs_init, wfn=True):
     """
     Propagate the wfn manually for fixed energy with numerov scheme.
 
@@ -781,22 +857,25 @@ def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
     return soln.root
 
 
-def linear_solve(v, xgrid, bc, eigs_guess):
+def linear_solve(v, xgrid, bc, eigs_guess, max_iter=100, tol=0.01):
     eigvals_converged = np.zeros_like(eigs_guess)
     d1, d2, d3 = np.shape(eigs_guess)
     eigfuncs = np.zeros((d1, d2, d3, len(xgrid)))
-    for sp in range(config.spindims):
-        for l in range(config.lmax):
-            W = -2.0 * np.exp(2.0 * xgrid) * v[sp] - (l + 0.5) ** 2
-            for n in range(config.nmax):
-                E_bracket = 0.1 * np.abs(eigs_guess[sp, l, n])
-                E_upper = eigs_guess[sp, l, n] + E_bracket
-                E_lower = eigs_guess[sp, l, n] - E_bracket
-                eigvals_converged[sp, l, n] = find_root_manual(
-                    E_lower, E_upper, W, xgrid, bc, l
-                )
-                eigfuncs[sp, l, n, :] = numerov_linear_solve(
-                    eigvals_converged[sp, l, n], xgrid, W, bc, l, wfn=True
-                )
+
+    E_bracket = 0.1 * np.abs(eigs_guess)
+    E_upper = eigs_guess + E_bracket
+    E_lower = eigs_guess - E_bracket
+
+    for i in range(max_iter):
+        E_mid = (E_upper + E_lower) / 2
+        deriv_diff_l = calc_wfns_no_kpts(xgrid, v, E_lower, bc, wfn=False)
+        deriv_diff_mid = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=False)
+
+        if np.amax(np.abs(deriv_diff_mid)) < tol:
+            eigfuncs = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=True)
+            return eigfuncs, E_mid
+
+        E_upper = np.where(deriv_diff_mid * deriv_diff_l < 0, E_mid, E_upper)
+        E_lower = np.where(deriv_diff_mid * deriv_diff_l > 0, E_mid, E_lower)
 
     return eigfuncs, eigvals_converged
