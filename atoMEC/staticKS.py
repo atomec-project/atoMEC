@@ -226,27 +226,30 @@ class Orbitals:
 
         # solve the KS equations
         if bc != "bands":
-            self._eigfuncs[0], self._eigvals[0] = numerov.matrix_solve(
+            self._eigfuncs[0], self._eigvals[0] = numerov.solve(
                 v,
                 self._xgrid,
                 bc,
                 eigs_min_guess=self._eigs_min_guess[0],
+                solve_method=config.numerov_solver,
             )
 
             self._kpt_int_weight = np.ones_like(self._eigvals)
         else:
-            eigfuncs_l, self._eigvals_min = numerov.matrix_solve(
+            eigfuncs_l, self._eigvals_min = numerov.solve(
                 v,
                 self._xgrid,
                 "neumann",
                 eigs_min_guess=self._eigs_min_guess[0],
+                solve_method=config.numerov_solver,
             )
 
-            eigfuncs_u, self._eigvals_max = numerov.matrix_solve(
+            eigfuncs_u, self._eigvals_max = numerov.solve(
                 v,
                 self._xgrid,
                 "dirichlet",
                 eigs_min_guess=self._eigs_min_guess[1],
+                solve_method=config.numerov_solver,
             )
 
             self._eigvals, self._eigfuncs, self._kpt_int_weight = self.calc_bands(
