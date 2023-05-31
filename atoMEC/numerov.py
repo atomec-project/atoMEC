@@ -682,7 +682,7 @@ def num_propagate(xgrid, W, e_arr, eigfuncs_init):
     return Psi_norm
 
 
-def numerov_linear_solve(e_arr, xgrid, W, bc, l):
+def numerov_linear_solve(e_arr, xgrid, W, bc, l, wfn=False):
     dx = xgrid[1] - xgrid[0]
     h = (dx**2) / 12.0  # a parameter for the numerov integration
     N = np.size(xgrid)  # size of grid
@@ -712,9 +712,12 @@ def numerov_linear_solve(e_arr, xgrid, W, bc, l):
         deriv_diff = Psi_norm[-1]
     else:
         deriv_X_R = (Psi_norm[-1] - Psi_norm[-2]) / dx
-        deriv_diff = np.exp(-1.5 * xgrid[-1]) * (0.5 * Psi_norm[-1] + deriv_X_R)
+        deriv_diff = np.exp(-1.5 * xgrid[-1]) * (-0.5 * Psi_norm[-1] + deriv_X_R)
 
-    return deriv_diff
+    if wfn:
+        return Psi_norm
+    else:
+        return deriv_diff
 
 
 def find_root_manual(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=3):
@@ -738,17 +741,19 @@ def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
     E_mid = (E_left + E_right) / 2
     bracket = np.array([E_left, E_right])
     args = (x, W, boundary, l)
-    soln = optimize.root_scalar(
-        numerov_linear_solve,
-        x0=E_mid,
-        args=args,
-        method="brentq",
-        bracket=bracket,
-        options={"maxiter": max_iter, "xtol": tol},
-    )
+    try:
+        soln = optimize.root_scalar(
+            numerov_linear_solve,
+            x0=E_mid,
+            args=args,
+            method="brentq",
+            bracket=bracket,
+            options={"maxiter": max_iter, "xtol": tol},
+        )
+        return soln.root
+    except ValueError:
+        return E_mid
 
-    if not soln.converged:
-        print("Soln not converged")
     return soln.root
 
 
@@ -758,15 +763,10 @@ def linear_solve(v, xgrid, bc, eigs_guess):
         for l in range(config.lmax):
             W = -2.0 * np.exp(2.0 * xgrid) * v[sp] - (l + 0.5) ** 2
             for n in range(config.nmax):
-                print(l, n)
-                E_bracket = 0.1 * np.abs(eigs_guess[sp, l, n])
+                E_bracket = 0.05 * np.abs(eigs_guess[sp, l, n])
                 E_upper = eigs_guess[sp, l, n] + E_bracket
                 E_lower = eigs_guess[sp, l, n] - E_bracket
                 eigvals_converged[sp, l, n] = find_root(
                     E_lower, E_upper, W, xgrid, bc, l
                 )
-                # if not conv:
-                #     return eigvals_converged, psi
-                # except ValueError:
-                #     print(l, n, E_lower, E_upper, eigs_guess[sp, l, n])
     return eigvals_converged
