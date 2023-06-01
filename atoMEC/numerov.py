@@ -772,110 +772,84 @@ def num_propagate(xgrid, W, e_arr, eigfuncs_init, wfn=True):
     return Psi_norm
 
 
-def numerov_linear_solve(e_arr, xgrid, W, bc, l, wfn=False):
-    dx = xgrid[1] - xgrid[0]
-    h = (dx**2) / 12.0  # a parameter for the numerov integration
-    N = np.size(xgrid)  # size of grid
+def linear_solve(
+    v,
+    xgrid,
+    bc,
+    eigs_guess,
+    max_iter_bisect=100,
+    tol=config.conv_params["eigtol"],
+    max_iter_init=20,
+):
+    r"""
+    Solve the Numerov equation using the standard linear approach.
 
-    # set the eigenfucntions to their initial values
-    Psi = np.zeros_like(xgrid)
-    Psi[1] = np.exp((l + 0.5) * xgrid[1])
+    Starting from a guess given by a diagonization of the Hamiltonian on a coarse grid,
+    it uses a bisection method to get the actual eigenvalues.
 
-    W = W + 2.0 * np.exp(2 * xgrid) * e_arr
+    Parameters
+    ----------
+    v : ndarray
+        the KS potential on the log grid
+    xgrid : ndarray
+        the logarithmic grid
+    bc : str
+        the boundary condition ("dirichlet" or "neumann")
+    eigs_guess : ndarray
+        input guess for the eigenvalues
+        should have dimensions `config.spindims` * `config.lmax` * `config.nmax`
+    max_iter_bisect : int, optional
+        maximum number of iterations for bisection
+    tol : float, optional
+        tolerance for convergence of eigenvalues
+    max_iter_init : int, optional
+        maximum number of iterations to find energy range
 
-    # Integrate from the left
-    for i in range(2, N):
-        Psi[i] = (
-            2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
-            - (1.0 + h * W[i - 2]) * Psi[i - 2]
-        ) / (1.0 + h * W[i])
-
-        Psi /= max(np.max(np.abs(Psi)), 1)
-
-    # normalize the wavefunction - CHANGE HERE
-    psi_sq = np.exp(-xgrid) * Psi**2  # convert from P_nl to X_nl and square
-    integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
-    norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
-    Psi_norm = Psi * norm
-
-    if bc == "dirichlet":
-        deriv_diff = Psi_norm[-1]
-    else:
-        deriv_X_R = (Psi_norm[-1] - Psi_norm[-2]) / dx
-        deriv_diff = np.exp(-1.5 * xgrid[-1]) * (-0.5 * Psi_norm[-1] + deriv_X_R)
-
-    if wfn:
-        return Psi_norm
-    else:
-        return deriv_diff
-
-
-def find_root_manual(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
-    dd_right = numerov_linear_solve(E_right, x, W, boundary, l)
-    dd_left = numerov_linear_solve(E_left, x, W, boundary, l)
-
-    if dd_right * dd_left >= 0:
-        E_mid = (E_left + E_right) / 2
-        return E_mid
-    for i in range(max_iter):
-        E_mid = (E_left + E_right) / 2
-        dd_mid = numerov_linear_solve(E_mid, x, W, boundary, l)
-        if np.abs(dd_mid) < tol:  # If the boundary condition is satisfied
-            return E_mid
-        else:
-            if dd_mid * dd_left < 0:  # If the root is in the left half
-                E_right = E_mid
-                dd_right = numerov_linear_solve(E_right, x, W, boundary, l)
-            else:  # If the root is in the right half
-                E_left = E_mid
-                dd_left = numerov_linear_solve(E_left, x, W, boundary, l)
-
-    print("Warning: Maximum number of iterations reached")
-    return E_mid
-
-
-def find_root(E_left, E_right, W, x, boundary, l, tol=1e-3, max_iter=100):
-    E_mid = (E_left + E_right) / 2
-    bracket = np.array([E_left, E_right])
-    args = (x, W, boundary, l)
-    try:
-        soln = optimize.root_scalar(
-            numerov_linear_solve,
-            x0=E_mid,
-            args=args,
-            method="brentq",
-            bracket=bracket,
-            options={"maxiter": max_iter, "xtol": tol},
-        )
-        if not soln.converged:
-            print("Not converged")
-        return soln.root
-
-    except ValueError:
-        return E_mid
-
-    return soln.root
-
-
-def linear_solve(v, xgrid, bc, eigs_guess, max_iter=100, tol=0.01):
+    Returns
+    -------
+    eigfuncs, E_mid: tuple of ndarrays
+        the converged eigenfucntions and eigenvalues
+    """
     eigvals_converged = np.zeros_like(eigs_guess)
-    d1, d2, d3 = np.shape(eigs_guess)
-    eigfuncs = np.zeros((d1, d2, d3, len(xgrid)))
+    eigfuncs = np.zeros((*eigs_guess.shape, len(xgrid)))
 
-    E_bracket = 0.1 * np.abs(eigs_guess)
+    E_bracket = 0.05 * np.abs(eigs_guess)
     E_upper = eigs_guess + E_bracket
     E_lower = eigs_guess - E_bracket
 
-    for i in range(max_iter):
+    deriv_diff_l = calc_wfns_no_kpts(xgrid, v, E_lower, bc, wfn=False)
+    deriv_diff_u = calc_wfns_no_kpts(xgrid, v, E_upper, bc, wfn=False)
+
+    counter = 0
+    while np.any(np.sign(deriv_diff_u * deriv_diff_l) > 0) and counter < max_iter_init:
+        E_upper = np.where(
+            np.sign(deriv_diff_u * deriv_diff_l) < 0, E_upper, E_upper + E_bracket
+        )
+        E_lower = np.where(
+            np.sign(deriv_diff_u * deriv_diff_l) < 0, E_lower, E_lower - E_bracket
+        )
+        deriv_diff_l = calc_wfns_no_kpts(xgrid, v, E_lower, bc, wfn=False)
+        deriv_diff_u = calc_wfns_no_kpts(xgrid, v, E_upper, bc, wfn=False)
+        counter += 1
+
+    if counter == max_iter_init:
+        print("Warning: No eigenvalue bracket found. Results may be inaccurate.")
+
+    E_mid_old = E_upper
+    for i in range(max_iter_bisect):
         E_mid = (E_upper + E_lower) / 2
         deriv_diff_l = calc_wfns_no_kpts(xgrid, v, E_lower, bc, wfn=False)
         deriv_diff_mid = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=False)
 
-        if np.amax(np.abs(deriv_diff_mid)) < tol:
+        if np.amax(np.abs(E_mid_old - E_mid)) < tol:
             eigfuncs = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=True)
             return eigfuncs, E_mid
 
         E_upper = np.where(deriv_diff_mid * deriv_diff_l < 0, E_mid, E_upper)
         E_lower = np.where(deriv_diff_mid * deriv_diff_l > 0, E_mid, E_lower)
+        E_mid_old = E_mid
 
-    return eigfuncs, eigvals_converged
+    print("Warning: eigenvalues not converged!")
+    eigfuncs = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=True)
+
+    return eigfuncs, E_mid
