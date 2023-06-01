@@ -21,6 +21,7 @@ conv_params = {
     "eigtol": 1.0e-4,
     "bandtol": 1.0e-3,
 }
+
 # scf parameters
 scf_params = {"maxscf": 50, "mixfrac": 0.3}
 # band parameters for massacrier band model
@@ -29,6 +30,7 @@ band_params = {"nkpts": 50, "de_min": 1e-3}
 # forced bound energy levels (default none)
 force_bound = []
 
+# method to solve Schrodinger eq (matrix or linear)
 numerov_solver = "matrix"
 
 # parallelization
