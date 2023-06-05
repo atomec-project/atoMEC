@@ -47,9 +47,24 @@ def solve(v, xgrid, bc, solve_method="matrix", eigs_min_guess=None, solve_type="
     """Wrapper to solve either with matrix or linear method."""
     if solve_method == "matrix":
         return matrix_solve(
-            v, xgrid, bc, solve_type=solve_type, eigs_min_guess=eigs_min_guess
+            v,
+            xgrid,
+            bc,
+            config.lmax,
+            config.nmax,
+            solve_type=solve_type,
+            eigs_min_guess=eigs_min_guess,
         )
     elif solve_method == "linear":
+        eigfuncs_mat, _ = matrix_solve(
+            v,
+            xgrid,
+            bc,
+            config.lmax,
+            config.nmax,
+            solve_type=solve_type,
+            eigs_min_guess=eigs_min_guess,
+        )
         return linear_solve(v, xgrid, bc, eigs_min_guess)
     else:
         print("solver not recognized")
@@ -84,7 +99,9 @@ def calc_eigs_min(v, xgrid, bc, solve_type="guess_full"):
     v_coarse = func_interp(xgrid_coarse)
 
     # full diagonalization to estimate the lowest eigenvalues
-    eigs_min = matrix_solve(v_coarse, xgrid_coarse, bc, solve_type=solve_type)[1]
+    eigs_min = matrix_solve(
+        v_coarse, xgrid_coarse, bc, config.lmax, config.nmax, solve_type=solve_type
+    )[1]
 
     return eigs_min
 
@@ -94,10 +111,10 @@ def matrix_solve(
     v,
     xgrid,
     bc,
+    lmax,
+    nmax,
     solve_type="full",
     eigs_min_guess=None,
-    lmax=config.lmax,
-    nmax=config.nmax,
 ):
     r"""
     Solve the radial KS equation via matrix diagonalization of Numerov's method.
