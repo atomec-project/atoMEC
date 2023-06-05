@@ -90,7 +90,15 @@ def calc_eigs_min(v, xgrid, bc, solve_type="guess_full"):
 
 
 # @writeoutput.timing
-def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
+def matrix_solve(
+    v,
+    xgrid,
+    bc,
+    solve_type="full",
+    eigs_min_guess=None,
+    lmax=config.lmax,
+    nmax=config.nmax,
+):
     r"""
     Solve the radial KS equation via matrix diagonalization of Numerov's method.
 
@@ -138,7 +146,7 @@ def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
        1017-1019 (2012) `DOI:10.1119/1.4748813 <https://doi.org/10.1119/1.4748813>`__.
     """
     if eigs_min_guess is None:
-        eigs_min_guess = np.zeros((config.spindims, config.lmax))
+        eigs_min_guess = np.zeros((config.spindims, lmax))
     else:
         eigs_min_guess = eigs_min_guess[:, :, 0]
 
@@ -177,18 +185,18 @@ def matrix_solve(v, xgrid, bc, solve_type="full", eigs_min_guess=None):
     # solve in serial or parallel - serial mostly useful for debugging
     if config.numcores == 0:
         eigfuncs, eigvals = KS_matsolve_serial(
-            T, B, v, xgrid, bc, solve_type, eigs_min_guess
+            T, B, v, xgrid, bc, solve_type, eigs_min_guess, lmax, nmax
         )
 
     else:
         eigfuncs, eigvals = KS_matsolve_parallel(
-            T, B, v, xgrid, bc, solve_type, eigs_min_guess
+            T, B, v, xgrid, bc, solve_type, eigs_min_guess, lmax, nmax
         )
 
     return eigfuncs, eigvals
 
 
-def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
+def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess, lmax, nmax):
     """
     Solve the KS matrix diagonalization by parallelizing over config.numcores.
 
@@ -244,17 +252,15 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     N = np.size(xgrid)
 
     # Compute the number pmax of distinct diagonizations to be solved
-    pmax = config.spindims * config.lmax
+    pmax = config.spindims * lmax
 
     # now flatten the potential matrix over spins
     v_flat = np.zeros((pmax, N))
     eigs_guess_flat = np.zeros((pmax))
     for i in range(np.shape(v)[0]):
-        for l in range(config.lmax):
-            v_flat[l + (i * config.lmax)] = v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(
-                -2 * xgrid
-            )
-            eigs_guess_flat[l + (i * config.lmax)] = eigs_min_guess[i, l]
+        for l in range(lmax):
+            v_flat[l + (i * lmax)] = v[i] + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid)
+            eigs_guess_flat[l + (i * lmax)] = eigs_min_guess[i, l]
 
     # make temporary folder with random name to store arrays
     while True:
@@ -281,7 +287,7 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
                 B,
                 v_flat,
                 xgrid,
-                config.nmax,
+                nmax,
                 bc,
                 eigs_guess_flat,
                 solve_type,
@@ -297,15 +303,15 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
 
     if solve_type == "full":
         # retrieve the eigfuncs and eigvals from the joblib output
-        eigfuncs_flat = np.zeros((pmax, config.nmax, N))
-        eigvals_flat = np.zeros((pmax, config.nmax))
+        eigfuncs_flat = np.zeros((pmax, nmax, N))
+        eigvals_flat = np.zeros((pmax, nmax))
         for q in range(pmax):
             eigfuncs_flat[q] = X[q][0]
             eigvals_flat[q] = X[q][1]
 
         # unflatten eigfuncs / eigvals so they return to original shape
-        eigfuncs = eigfuncs_flat.reshape(config.spindims, config.lmax, config.nmax, N)
-        eigvals = eigvals_flat.reshape(config.spindims, config.lmax, config.nmax)
+        eigfuncs = eigfuncs_flat.reshape(config.spindims, lmax, nmax, N)
+        eigvals = eigvals_flat.reshape(config.spindims, lmax, nmax)
 
         return eigfuncs, eigvals
 
@@ -314,23 +320,23 @@ def KS_matsolve_parallel(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
             eigs_guess_flat[q] = X[q][1]
         eigfuncs_null = X[:][0]
 
-        eigs_guess = eigs_guess_flat.reshape(config.spindims, config.lmax)
+        eigs_guess = eigs_guess_flat.reshape(config.spindims, lmax)
 
         return eigfuncs_null, eigs_guess
 
     elif solve_type == "guess_full":
-        eigvals_flat = np.zeros((pmax, config.nmax))
+        eigvals_flat = np.zeros((pmax, nmax))
         for q in range(pmax):
-            eigvals_flat[q] = X[q][1][: config.nmax]
+            eigvals_flat[q] = X[q][1][:nmax]
         eigfuncs_null = X[:][0]
 
         # unflatten eigfuncs / eigvals so they return to original shape
-        eigvals = eigvals_flat.reshape(config.spindims, config.lmax, config.nmax)
+        eigvals = eigvals_flat.reshape(config.spindims, lmax, nmax)
 
         return eigfuncs_null, eigvals
 
 
-def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
+def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess, lmax, nmax):
     """
     Solve the KS equations via matrix diagonalization in serial.
 
@@ -364,13 +370,13 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
     V_mat = np.zeros((N, N))
 
     # initialize the eigenfunctions and their eigenvalues
-    eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N))
-    eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
-    eigs_guess = np.zeros((config.spindims, config.lmax, config.nmax))
+    eigfuncs = np.zeros((config.spindims, lmax, nmax, N))
+    eigvals = np.zeros((config.spindims, lmax, nmax))
+    eigs_guess = np.zeros((config.spindims, lmax, nmax))
 
     # A new Hamiltonian has to be re-constructed for every value of l and each spin
     # channel if spin-polarized
-    for l in range(config.lmax):
+    for l in range(lmax):
         # diagonalize Hamiltonian using scipy
         for i in range(np.shape(v)[0]):
             # fill potential matrices
@@ -394,15 +400,15 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
             if solve_type == "full":
                 eigs_up, vecs_up = eigs(
                     H_s,
-                    k=config.nmax,
+                    k=nmax,
                     M=B_s,
                     which="LM",
                     sigma=eigs_min_guess[i, l],
                     tol=config.conv_params["eigtol"],
                 )
 
-                K = np.zeros((N, config.nmax))
-                for n in range(config.nmax):
+                K = np.zeros((N, nmax))
+                for n in range(nmax):
                     K[:, n] = (
                         -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - eigs_up.real[n])
                     )
@@ -427,7 +433,7 @@ def KS_matsolve_serial(T, B, v, xgrid, bc, solve_type, eigs_min_guess):
 
                 # sort the eigenvalues to find the lowest
                 idr = np.argsort(eigs_up)
-                eigs_guess[i, l] = np.array(eigs_up[idr].real)[: config.nmax]
+                eigs_guess[i, l] = np.array(eigs_up[idr].real)[:nmax]
 
                 # dummy variable for the null eigenfucntions
                 eigfuncs_null = eigfuncs
