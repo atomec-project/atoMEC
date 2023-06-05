@@ -93,7 +93,6 @@ class ISModel:
         v_shift=config.v_shift,
         write_info=True,
     ):
-
         # Input variables
         self.nele_tot = atom.nele
         self.spinpol = spinpol
@@ -217,6 +216,8 @@ class ISModel:
         self,
         nmax,
         lmax,
+        nmax_s=None,
+        lmax_s=None,
         grid_params={},
         conv_params={},
         scf_params={},
@@ -328,10 +329,17 @@ class ISModel:
         # reset global parameters if they are changed
         config.nmax = nmax
         config.lmax = lmax
+        config.nmax_s = nmax_s
+        config.lmax_s = lmax_s
         config.grid_params = check_inputs.EnergyCalcs.check_grid_params(grid_params)
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
         config.band_params = check_inputs.EnergyCalcs.check_band_params(band_params)
+
+        if config.numerov_solver == "linear" and (
+            config.nmax_s is None or config.lmax_s is None
+        ):
+            sys.exit("If using linear solver then nmax_s and lmax_s must be specified")
 
         # experimental change
         config.force_bound = force_bound
@@ -361,7 +369,6 @@ class ISModel:
         conv = convergence.SCF(xgrid)
 
         for iscf in range(config.scf_params["maxscf"]):
-
             # print orbitals and occupations
             if verbosity == 1:
                 eigs, occs = writeoutput.SCF.write_orb_info(orbs)

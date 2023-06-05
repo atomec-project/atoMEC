@@ -56,16 +56,16 @@ def solve(v, xgrid, bc, solve_method="matrix", eigs_min_guess=None, solve_type="
             eigs_min_guess=eigs_min_guess,
         )
     elif solve_method == "linear":
-        eigfuncs_mat, _ = matrix_solve(
+        eigfuncs_mat, eigvals_mat = matrix_solve(
             v,
             xgrid,
             bc,
-            config.lmax,
-            config.nmax,
+            config.lmax_s,
+            config.nmax_s,
             solve_type=solve_type,
             eigs_min_guess=eigs_min_guess,
         )
-        return linear_solve(v, xgrid, bc, eigs_min_guess)
+        return linear_solve(v, xgrid, bc, eigs_min_guess, eigfuncs_mat, eigvals_mat)
     else:
         print("solver not recognized")
 
@@ -786,9 +786,9 @@ def num_propagate(xgrid, W, e_arr, eigfuncs_init, wfn=True):
             - (1.0 + h * W[i - 2]) * Psi[i - 2]
         ) / (1.0 + h * W[i])
 
-    for j in range(20):
-        if np.amax(Psi[:, j] > 100):
-            print(j, np.amax(Psi[:, j]))
+    # for j in range(20):
+    #     if np.amax(Psi[:, j] > 100):
+    #         print(j, np.amax(Psi[:, j]))
     # normalize the wavefunction
     Psi = Psi.transpose()
     psi_sq = np.exp(-xgrid) * Psi**2  # convert from P_nl to X_nl and square
@@ -804,6 +804,8 @@ def linear_solve(
     xgrid,
     bc,
     eigs_guess,
+    eigfuncs_mat,
+    eigvals_mat,
     max_iter_bisect=100,
     tol=config.conv_params["eigtol"],
     max_iter_init=100,
@@ -840,39 +842,14 @@ def linear_solve(
     eigvals_converged = np.zeros_like(eigs_guess)
     eigfuncs = np.zeros((*eigs_guess.shape, len(xgrid)))
 
-    # E_bracket = 0.2 * np.abs(eigs_guess)
     E_bracket = 0.1 * np.log(2 + eigs_guess - np.amin(eigs_guess))
     E_upper = eigs_guess + E_bracket
     E_lower = eigs_guess - E_bracket
 
-    # E_upper = np.zeros_like(eigs_guess)
-    # E_lower = np.zeros_like(eigs_guess)
-    # E_mid = eigs_guess
-    # for n in range(config.nmax - 1):
-    #     E_upper[:, :, n] = (E_mid[:, :, n + 1] + E_mid[:, :, n]) / 2
-    #     E_lower[:, :, n + 1] = (E_mid[:, :, n + 1] + E_mid[:, :, n]) / 2
-
-    # E_upper[:, :, -1] = E_mid[:, :, -1] + 0.2 * np.abs(E_mid[:, :, 0])
-    # E_lower[:, :, 0] = E_mid[:, :, 0] - 0.2 * np.abs(E_mid[:, :, 0])
-
-    # # print(E_upper)
-    # # print(E_mid)
-    # # print(E_lower)
-
     deriv_diff_l = calc_wfns_no_kpts(xgrid, v, E_lower, bc, wfn=False)
     deriv_diff_u = calc_wfns_no_kpts(xgrid, v, E_upper, bc, wfn=False)
-    # wfns = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=True)
-
-    # print(deriv_diff_u)
-    # print(deriv_diff_l)
-
-    # sys.exit()
-
-    # print(np.sign(deriv_diff_u * deriv_diff_l))
-
-    counter = 0
+    counter = 1
     while np.any(np.sign(deriv_diff_u * deriv_diff_l) > 0) and counter < max_iter_init:
-        # print(np.sign(deriv_diff_u * deriv_diff_l))
         E_upper = np.where(
             np.sign(deriv_diff_u * deriv_diff_l) < 0, E_upper, E_upper + E_bracket
         )
@@ -883,29 +860,31 @@ def linear_solve(
         deriv_diff_u = calc_wfns_no_kpts(xgrid, v, E_upper, bc, wfn=False)
         counter += 1
 
-    print(counter)
     if counter == max_iter_init:
         print("Warning: No eigenvalue bracket found. Results may be inaccurate.")
 
     E_mid_old = E_upper
-    for i in range(max_iter_bisect):
+    for i in range(1, max_iter_bisect + 1):
         E_mid = (E_upper + E_lower) / 2
         deriv_diff_l = calc_wfns_no_kpts(xgrid, v, E_lower, bc, wfn=False)
         deriv_diff_mid = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=False)
 
         if np.amax(np.abs(E_mid_old - E_mid)) < tol:
-            # sort the eigenvalues
-            # E_mid = np.sort(E_mid)
-            eigfuncs = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=True)
-            return eigfuncs, E_mid
+            break
 
         E_upper = np.where(deriv_diff_mid * deriv_diff_l < 0, E_mid, E_upper)
         E_lower = np.where(deriv_diff_mid * deriv_diff_l > 0, E_mid, E_lower)
         E_mid_old = E_mid
 
-    print("Warning: eigenvalues not converged!")
-    # idr = np.argsort(E_mid, axis=2)
-    # E_mid = np.take_along_axis(E_mid, idr, axis=2)
+    if i == max_iter_bisect:
+        print("Warning: eigenvalues not converged!")
+
+    # propagate the eigenfunctions
     eigfuncs = calc_wfns_no_kpts(xgrid, v, E_mid, bc, wfn=True)
+
+    # set the core eigenfunctions / values according to the matsolve
+    _, ls, ns = np.shape(eigvals_mat)
+    E_mid[:, :ls, :ns] = eigvals_mat
+    eigfuncs[:, :ls, :ns] = eigfuncs_mat
 
     return eigfuncs, E_mid
