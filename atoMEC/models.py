@@ -15,6 +15,7 @@ import sys
 
 # import external packages
 from math import log
+import numpy as np
 
 # import internal packages
 from . import check_inputs
@@ -23,6 +24,7 @@ from . import staticKS
 from . import convergence
 from . import writeoutput
 from . import xc
+from . import numerov
 from atoMEC.postprocess import pressure
 
 
@@ -355,6 +357,19 @@ class ISModel:
         else:
             v_init = staticKS.Potential.calc_v_en(xgrid)
         v_s_old = v_init  # initialize the old potential
+
+        if config.numerov_solver == "linear" and (
+            config.nmax_s is None or config.lmax_s is None
+        ):
+            if config.bc != "bands":
+                eigs_0 = numerov.calc_eigs_min(v_init[np.newaxis, :], xgrid, config.bc)
+            else:
+                eigs_0 = numerov.calc_eigs_min(v_init[np.newaxis, :], xgrid, "neumann")
+            screen = np.where(eigs_0 < v_init[-1])
+            config.lmax_s = np.amax(screen[1])
+            config.nmax_s = np.amax(screen[2])
+            print(config.nmax_s, config.lmax_s)
+
         orbs.compute(v_init, config.bc, init=True, eig_guess=True)
 
         # occupy orbitals
