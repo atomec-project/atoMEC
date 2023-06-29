@@ -912,6 +912,7 @@ class SqrtSolver:
                     for n in range(config.nmax):
                         K[:, n] = 8 * sgrid**2 * (V_mat.diagonal() - eigs_up.real[n])
 
+                    # sort and normalize
                     eigfuncs[i, l], eigvals[i, l] = self.update_orbs(
                         vecs_up, eigs_up, sgrid, bc, K
                     )
@@ -1063,6 +1064,7 @@ class SqrtSolver:
 
         # convert to correct dimensions
         eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
+        eigfuncs *= sgrid**-1.5
         eigfuncs = mathtools.normalize_orbs_sgrid(eigfuncs, sgrid)  # normalize
 
         return eigfuncs, eigvals
