@@ -72,11 +72,22 @@ def log_grid(x_r):
     return xgrid, rgrid
 
 
+def sqrt_grid(s_r):
+    # grid in sqrt co-ordinates
+    xgrid = np.linspace(config.grid_params["s0"], s_r, config.grid_params["ngrid"])
+    # grid in real space co-ordinates
+    rgrid = xgrid**2
+
+    config.xgrid = xgrid
+    config.rgrid = rgrid
+
+    return xgrid, rgrid
+
+
 class Orbitals:
     """Class holding the KS orbitals, associated quantities and relevant routines."""
 
-    def __init__(self, xgrid):
-
+    def __init__(self, xgrid, grid_type):
         self._xgrid = xgrid
         self._eigfuncs = np.zeros(
             (
@@ -105,6 +116,7 @@ class Orbitals:
         )
         self._kpt_int_weight = np.ones_like(self._eigvals)
         self._occ_weight = np.zeros_like(self._eigvals)
+        self.grid_type = grid_type
 
     @property
     def eigvals(self):
@@ -214,7 +226,11 @@ class Orbitals:
         # set v to equal the input potential
         v[:] = potential
 
-        solver = numerov.LogSolver()
+        if self.grid_type == "log":
+            solver = numerov.LogSolver()
+        else:
+            print("Solving with sqrt")
+            solver = numerov.SqrtSolver()
 
         if eig_guess:
             if bc != "bands":
@@ -253,7 +269,7 @@ class Orbitals:
             )
 
             self._eigvals, self._eigfuncs, self._kpt_int_weight = self.calc_bands(
-                v, eigfuncs_l
+                v, eigfuncs_l, solver
             )
 
         # guess the chemical potential if initializing
@@ -262,7 +278,7 @@ class Orbitals:
         return
 
     # @writeoutput.timing
-    def calc_bands(self, v, eigfuncs_l):
+    def calc_bands(self, v, eigfuncs_l, solver):
         """
         Compute the eigenfunctions which fill the energy bands.
 
@@ -294,7 +310,6 @@ class Orbitals:
         )
 
         # propagate the numerov equation
-        solver = numerov.LogSolver()
         eigfuncs = solver.calc_wfns_e_grid(self._xgrid, v, e_arr)
 
         # eigenvalues by default are equal to the energy band array
@@ -523,12 +538,10 @@ class Orbitals:
         fd_dist = np.zeros((len(e_arr_dummy), nspin))
 
         for sp in range(nspin):
-
             # make the total energy array
             e_arr[:, sp] = Orbitals.make_e_arr(eigs_min, eigs_max, sp)
 
             for i, e in enumerate(e_arr[:, sp]):
-
                 # compute delta and (e_+ - e) * (e - e_-)
                 delta = 0.5 * e_gap_arr
                 hub_func = (eigs_max - e) * (e - eigs_min)
@@ -593,7 +606,6 @@ class Orbitals:
         # make the energy array
         e_tot_arr = np.array([])
         for p in range(len(eigs_min) - 1):
-
             # ignore energies below the minimum for bands
             if eigs_min[p] < e_min:
                 continue
@@ -669,6 +681,7 @@ class Density:
         self._MIS = 0.0
 
         self._orbs = orbs
+        self.grid_type = orbs.grid_type
 
     @property
     def total(self):
@@ -738,7 +751,10 @@ class Density:
         # occnums in atoMEC are defined as (2l+1)*f_{nl}
 
         # R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs
-        orbs_R = np.exp(-xgrid / 2.0) * eigfuncs
+        if config.grid_type == "log":
+            orbs_R = np.exp(-xgrid / 2.0) * eigfuncs
+        else:
+            orbs_R = eigfuncs
         orbs_R_sq = orbs_R**2.0
 
         # sum over the (l,n) dimensions of the orbitals to get the density
@@ -772,7 +788,6 @@ class Density:
 
         # so far only the ideal approximation is implemented
         if config.unbound == "ideal":
-
             # unbound density is constant
             for i in range(config.spindims):
                 prefac = (2.0 / config.spindims) * 1.0 / (sqrt(2) * pi**2)
@@ -791,7 +806,6 @@ class Potential:
     """Class holding the KS potential and the routines required to compute it."""
 
     def __init__(self, density):
-
         self._v_s = np.zeros_like(density.total)
         self._v_en = np.zeros((config.grid_params["ngrid"]))
         self._v_ha = np.zeros((config.grid_params["ngrid"]))
@@ -802,6 +816,7 @@ class Potential:
         }
         self._density = density.total
         self._xgrid = density._xgrid
+        self.grid_type = density.grid_type
 
     @property
     def v_s(self):
@@ -818,14 +833,14 @@ class Potential:
     def v_en(self):
         r"""ndarray: The electron-nuclear potential."""
         if np.all(self._v_en == 0.0):
-            self._v_en = self.calc_v_en(self._xgrid)
+            self._v_en = self.calc_v_en(self._xgrid, self.grid_type)
         return self._v_en
 
     @property
     def v_ha(self):
         r"""ndarray: The Hartree potential."""
         if np.all(self._v_ha == 0.0):
-            self._v_ha = self.calc_v_ha(self._density, self._xgrid)
+            self._v_ha = self.calc_v_ha(self._density, self._xgrid, self.grid_type)
         return self._v_ha
 
     @property
@@ -837,11 +852,13 @@ class Potential:
         and exchange + correlation respectively.
         """
         if np.all(self._v_xc["xc"] == 0.0):
-            self._v_xc = xc.v_xc(self._density, self._xgrid, config.xfunc, config.cfunc)
+            self._v_xc = xc.v_xc(
+                self._density, self._xgrid, config.xfunc, config.cfunc, self.grid_type
+            )
         return self._v_xc
 
     @staticmethod
-    def calc_v_en(xgrid):
+    def calc_v_en(xgrid, grid_type):
         r"""
         Construct the electron-nuclear potential.
 
@@ -849,12 +866,15 @@ class Potential:
         :math:`v_\mathrm{en} (x) = -Z * \exp(-x)`
         on the logarithmic grid
         """
-        v_en = -config.Z * np.exp(-xgrid)
+        if grid_type == "log":
+            v_en = -config.Z * np.exp(-xgrid)
+        else:
+            v_en = -config.Z / xgrid**2
 
         return v_en
 
     @staticmethod
-    def calc_v_ha(density, xgrid):
+    def calc_v_ha(density, xgrid, grid_type):
         r"""
         Construct the Hartree potential (see notes).
 
@@ -887,7 +907,6 @@ class Potential:
         # loop over the x-grid
         # this may be a bottleneck...
         for i, x0 in enumerate(xgrid):
-
             # set up 'upper' and 'lower' parts of the xgrid (x<=x0; x>x0)
             x_u = xgrid[np.where(x0 < xgrid)]
             x_l = xgrid[np.where(x0 >= xgrid)]
@@ -897,8 +916,12 @@ class Potential:
             rho_l = rho[np.where(x0 >= xgrid)]
 
             # now compute the hartree potential
-            int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
-            int_u = np.trapz(rho_u * np.exp(2 * x_u), x_u)
+            if grid_type == "log":
+                int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
+                int_u = np.trapz(rho_u * np.exp(2 * x_u), x_u)
+            else:
+                int_l = (1 / x0**2) * np.trapz(rho_l * 2 * x_l**5, x_l)
+                int_u = np.trapz(rho_u * 2 * x_u**3, x_u)
 
             # total hartree potential is sum over integrals
             v_ha[i] = 4.0 * pi * (int_l + int_u)
@@ -910,7 +933,6 @@ class Energy:
     r"""Class holding information about the KS total energy and relevant routines."""
 
     def __init__(self, orbs, dens):
-
         # inputs
         self._orbs = orbs
         self._dens = dens.total
@@ -924,6 +946,7 @@ class Energy:
         self._E_en = 0.0
         self._E_ha = 0.0
         self._E_xc = {"xc": 0.0, "x": 0.0, "c": 0.0}
+        self.grid_type = dens.grid_type
 
     @property
     def F_tot(self):
@@ -974,14 +997,14 @@ class Energy:
     def E_en(self):
         """float: The electron-nuclear energy."""
         if self._E_en == 0.0:
-            self._E_en = self.calc_E_en(self._dens, self._xgrid)
+            self._E_en = self.calc_E_en(self._dens, self._xgrid, self.grid_type)
         return self._E_en
 
     @property
     def E_ha(self):
         """float: The Hartree energy."""
         if self._E_ha == 0.0:
-            self._E_ha = self.calc_E_ha(self._dens, self._xgrid)
+            self._E_ha = self.calc_E_ha(self._dens, self._xgrid, self.grid_type)
         return self._E_ha
 
     @property
@@ -993,7 +1016,9 @@ class Energy:
         correlation and exchange + correlation respectively
         """
         if self._E_xc["xc"] == 0.0:
-            self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
+            self._E_xc = xc.E_xc(
+                self._dens, self._xgrid, config.xfunc, config.cfunc, self.grid_type
+            )
         return self._E_xc
 
     def calc_E_kin(self, orbs, xgrid):
@@ -1018,7 +1043,9 @@ class Energy:
         E_kin = {}
 
         # bound part
-        E_kin["bound"] = self.calc_E_kin_orbs(orbs.eigfuncs, orbs.occnums_w, xgrid)
+        E_kin["bound"] = self.calc_E_kin_orbs(
+            orbs.eigfuncs, orbs.occnums_w, xgrid, self.grid_type
+        )
 
         # unbound part
         if config.unbound == "ideal":
@@ -1032,7 +1059,7 @@ class Energy:
         return E_kin
 
     @staticmethod
-    def calc_E_kin_orbs(eigfuncs, occnums, xgrid):
+    def calc_E_kin_orbs(eigfuncs, occnums, xgrid, grid_type):
         """
         Compute the kinetic energy contribution from discrete KS orbitals.
 
@@ -1051,19 +1078,19 @@ class Energy:
             the kinetic energy
         """
         # compute the kinetic energy density (using default method A)
-        e_kin_dens = Energy.calc_E_kin_dens(eigfuncs, occnums, xgrid)
+        e_kin_dens = Energy.calc_E_kin_dens(eigfuncs, occnums, xgrid, grid_type)
 
         # FIXME: this is necessary because the Laplacian is not accurate at the boundary
         for i in range(config.spindims):
             e_kin_dens[i, -3:] = e_kin_dens[i, -4]
 
         # integrate over sphere
-        E_kin = mathtools.int_sphere(np.sum(e_kin_dens, axis=0), xgrid)
+        E_kin = mathtools.int_sphere(np.sum(e_kin_dens, axis=0), xgrid, grid_type)
 
         return E_kin
 
     @staticmethod
-    def calc_E_kin_dens(eigfuncs, occnums, xgrid, method="A"):
+    def calc_E_kin_dens(eigfuncs, occnums, xgrid, grid_type, method="A"):
         """
         Calculate the local kinetic energy density (KED).
 
@@ -1111,6 +1138,8 @@ class Energy:
            calculations. J. Phys. B, 40(8):1553 (2007), `DOI:10.1088/0953-4075/40/8/008
            <https://dx.doi.org/10.1088/0953-4075/40/8/008>`__.
         """
+        if grid_type != "log":
+            return np.zeros((config.spindims, len(xgrid)))
         if method == "A":
             # compute the grad^2 component
             grad2_orbs = mathtools.laplace(eigfuncs, xgrid)
@@ -1129,7 +1158,6 @@ class Energy:
             e_kin_dens = -0.5 * np.einsum("ijkl,ijklm->jm", occnums, kin_orbs)
 
         elif method == "B":
-
             # compute the gradient of the orbitals
             grad_eigfuncs = np.gradient(eigfuncs, xgrid, axis=-1, edge_order=2)
 
@@ -1310,7 +1338,7 @@ class Energy:
         return S_unbound
 
     @staticmethod
-    def calc_E_en(density, xgrid):
+    def calc_E_en(density, xgrid, grid_type):
         r"""
         Compute the electron-nuclear energy.
 
@@ -1338,13 +1366,13 @@ class Energy:
         dens_tot = np.sum(density, axis=0)
 
         # compute the integral
-        v_en = Potential.calc_v_en(xgrid)
-        E_en = mathtools.int_sphere(dens_tot * v_en, xgrid)
+        v_en = Potential.calc_v_en(xgrid, grid_type)
+        E_en = mathtools.int_sphere(dens_tot * v_en, xgrid, grid_type)
 
         return E_en
 
     @staticmethod
-    def calc_E_ha(density, xgrid):
+    def calc_E_ha(density, xgrid, grid_type):
         r"""
         Compute the Hartree energy.
 
@@ -1372,8 +1400,8 @@ class Energy:
         dens_tot = np.sum(density, axis=0)
 
         # compute the integral
-        v_ha = Potential.calc_v_ha(density, xgrid)
-        E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha, xgrid)
+        v_ha = Potential.calc_v_ha(density, xgrid, grid_type)
+        E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha, xgrid, grid_type)
 
         return E_ha
 
@@ -1392,7 +1420,6 @@ class EnergyAlt:
     """
 
     def __init__(self, orbs, dens, pot):
-
         self._orbs = orbs
         self._dens = dens.total
         self._xgrid = dens._xgrid
@@ -1541,7 +1568,9 @@ class EnergyAlt:
         E_v_xc = 0.0
         for i in range(config.spindims):
             v_xc = pot.v_xc["xc"][i]
-            E_v_xc = E_v_xc + mathtools.int_sphere(dens[i] * v_xc, xgrid)
+            E_v_xc = E_v_xc + mathtools.int_sphere(
+                dens[i] * v_xc, xgrid, config.grid_type
+            )
 
         # compute the term due to the constant shift introduced in the potential
         if config.v_shift:

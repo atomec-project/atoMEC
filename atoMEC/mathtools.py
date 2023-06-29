@@ -52,7 +52,7 @@ def normalize_orbs(eigfuncs_x, xgrid):
         eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
         # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
         exp_x = np.exp(-xgrid)
-        ampsq = int_sphere(exp_x * eigfuncs_sq, xgrid)
+        ampsq = int_sphere(exp_x * eigfuncs_sq, xgrid, "log")
         # normalize eigenfunctions
         eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)
 
@@ -83,14 +83,14 @@ def normalize_orbs_sgrid(eigfuncs_x, sgrid):
         # compute the mod squared eigenvalues
         eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
         # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
-        ampsq = int_sphere(2 * sgrid**5 * eigfuncs_sq, sgrid)
+        ampsq = int_sphere(eigfuncs_sq, sgrid, "sqrt")
         # normalize eigenfunctions
         eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)
 
     return eigfuncs_x_norm
 
 
-def int_sphere(fx, xgrid):
+def int_sphere(fx, xgrid, grid_type):
     r"""
     Compute integral over sphere defined by input grid.
 
@@ -114,7 +114,10 @@ def int_sphere(fx, xgrid):
 
     .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)
     """
-    func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
+    if grid_type == "log":
+        func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
+    else:
+        func_int = 8.0 * pi * xgrid**5 * fx
     I_sph = np.trapz(func_int, xgrid)
 
     return I_sph

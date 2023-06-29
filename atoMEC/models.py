@@ -14,7 +14,7 @@ Classes
 import sys
 
 # import external packages
-from math import log
+from math import log, sqrt
 
 # import internal packages
 from . import check_inputs
@@ -93,7 +93,6 @@ class ISModel:
         v_shift=config.v_shift,
         write_info=True,
     ):
-
         # Input variables
         self.nele_tot = atom.nele
         self.spinpol = spinpol
@@ -222,6 +221,7 @@ class ISModel:
         scf_params={},
         band_params={},
         force_bound=[],
+        grid_type="log",
         verbosity=0,
         write_info=True,
         write_density=True,
@@ -332,20 +332,24 @@ class ISModel:
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
         config.band_params = check_inputs.EnergyCalcs.check_band_params(band_params)
+        config.grid_type = grid_type
 
         # experimental change
         config.force_bound = force_bound
 
         # set up the xgrid and rgrid
-        xgrid, rgrid = staticKS.log_grid(log(config.r_s))
+        if config.grid_type == "log":
+            xgrid, rgrid = staticKS.log_grid(log(config.r_s))
+        else:
+            xgrid, rgrid = staticKS.sqrt_grid(sqrt(config.r_s))
 
         # initialize orbitals
-        orbs = staticKS.Orbitals(xgrid)
+        orbs = staticKS.Orbitals(xgrid, grid_type)
         # use coulomb potential or input given potential as initial guess
         if guess:
             v_init = guess_pot
         else:
-            v_init = staticKS.Potential.calc_v_en(xgrid)
+            v_init = staticKS.Potential.calc_v_en(xgrid, grid_type)
         v_s_old = v_init  # initialize the old potential
         orbs.compute(v_init, config.bc, init=True, eig_guess=True)
 
@@ -358,10 +362,9 @@ class ISModel:
             print(scf_init)
 
         # initialize the convergence object
-        conv = convergence.SCF(xgrid)
+        conv = convergence.SCF(xgrid, grid_type)
 
         for iscf in range(config.scf_params["maxscf"]):
-
             # print orbitals and occupations
             if verbosity == 1:
                 eigs, occs = writeoutput.SCF.write_orb_info(orbs)

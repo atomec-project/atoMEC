@@ -116,7 +116,6 @@ def check_xc_func(xc_code, id_supp):
     else:
         # checks if the libxc code is recognised
         try:
-
             xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
 
             # check the xc family is supported
@@ -161,7 +160,7 @@ def set_xc_func(xc_code):
     return xc_func
 
 
-def v_xc(density, xgrid, xfunc, cfunc):
+def v_xc(density, xgrid, xfunc, cfunc, grid_type):
     """
     Retrive the xc potential.
 
@@ -196,7 +195,7 @@ def v_xc(density, xgrid, xfunc, cfunc):
     return _v_xc
 
 
-def E_xc(density, xgrid, xfunc, cfunc):
+def E_xc(density, xgrid, xfunc, cfunc, grid_type):
     """
     Retrieve the xc energy.
 
@@ -225,11 +224,11 @@ def E_xc(density, xgrid, xfunc, cfunc):
 
     # compute the exchange energy
     ex_libxc = calc_xc(density, xgrid, xfunc, "e_xc")
-    _E_xc["x"] = mathtools.int_sphere(ex_libxc * dens_tot, xgrid)
+    _E_xc["x"] = mathtools.int_sphere(ex_libxc * dens_tot, xgrid, grid_type)
 
     # compute the correlation energy
     ec_libxc = calc_xc(density, xgrid, cfunc, "e_xc")
-    _E_xc["c"] = mathtools.int_sphere(ec_libxc * dens_tot, xgrid)
+    _E_xc["c"] = mathtools.int_sphere(ec_libxc * dens_tot, xgrid, grid_type)
 
     # sum to get the total xc potential
     _E_xc["xc"] = _E_xc["x"] + _E_xc["c"]
@@ -276,14 +275,15 @@ def calc_xc(density, xgrid, xcfunc, xctype):
 
     # special case in which xc = -hartree
     elif xcfunc._number == -1:
-
         # import the staticKS module
         from . import staticKS
 
         if xctype == "v_xc":
-            xc_arr[:] = -staticKS.Potential.calc_v_ha(density, xgrid)
+            xc_arr[:] = -staticKS.Potential.calc_v_ha(density, xgrid, config.grid_type)
         elif xctype == "e_xc":
-            xc_arr = -0.5 * staticKS.Potential.calc_v_ha(density, xgrid)
+            xc_arr = -0.5 * staticKS.Potential.calc_v_ha(
+                density, xgrid, config.grid_type
+            )
 
     else:
         # lda
@@ -312,13 +312,13 @@ def calc_xc(density, xgrid, xcfunc, xctype):
                 sigma_libxc = np.zeros((config.grid_params["ngrid"], 3))
                 grad_0 = mathtools.grad_func(density[0, :], xgrid)
                 grad_1 = mathtools.grad_func(density[1, :], xgrid)
-                sigma_libxc[:, 0] = grad_0 ** 2
+                sigma_libxc[:, 0] = grad_0**2
                 sigma_libxc[:, 1] = grad_0 * grad_1
-                sigma_libxc[:, 2] = grad_1 ** 2
+                sigma_libxc[:, 2] = grad_1**2
             else:
                 sigma_libxc = np.zeros((config.grid_params["ngrid"], 1))
                 grad = mathtools.grad_func(density[0, :], xgrid)
-                sigma_libxc[:, 0] = grad ** 2
+                sigma_libxc[:, 0] = grad**2
 
             inp = {"rho": rho_libxc, "sigma": sigma_libxc}
 

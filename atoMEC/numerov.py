@@ -654,9 +654,42 @@ class LogSolver:
 
 
 class SqrtSolver:
+    def calc_eigs_min(self, v, xgrid, bc):
+        """
+        Compute an estimate for the minimum values of the KS eigenvalues.
+
+        This estimate uses full diagonalization of the Hamiltonian on a coarse grid.
+        The eigenvalue estimates are used in Scipy's sparse eigenvalue solver
+        (for the full grid) which optimizes the performance of the solver.
+
+        Parameters
+        ----------
+        v : ndarray
+            the KS potential
+        xgrid : ndarray
+            the logarithmic grid (full)
+
+        Returns
+        -------
+        eigs_min : ndarray
+            array containing estimations of the lowest eigenvalue for each value of
+            `l` angular quantum number and spin quantum number
+        """
+        # first of all create the coarse xgrid
+        xgrid_coarse = np.linspace(
+            xgrid[0], xgrid[-1], config.grid_params["ngrid_coarse"]
+        )
+
+        # interpolate the potential onto the coarse grid
+        func_interp = interp1d(xgrid, v, kind="cubic")
+        v_coarse = func_interp(xgrid_coarse)
+
+        # full diagonalization to estimate the lowest eigenvalues
+        eigs_min = self.matrix_solve(v_coarse, xgrid_coarse, bc, solve_type="guess")[1]
+
     def matrix_solve(self, v, sgrid, bc, solve_type="full", eigs_min_guess=None):
-        if eigs_min_guess is None:
-            eigs_min_guess = np.zeros((config.spindims, config.lmax))
+        # if eigs_min_guess is None:
+        eigs_min_guess = np.zeros((config.spindims, config.lmax))
 
         # define the spacing of the xgrid
         ds = sgrid[1] - sgrid[0]

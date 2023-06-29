@@ -30,12 +30,12 @@ class SCF:
 
     """
 
-    def __init__(self, xgrid):
-
+    def __init__(self, xgrid, grid_type):
         self._xgrid = xgrid
         self._energy = np.zeros((2))
         self._potential = np.zeros((2, config.spindims, config.grid_params["ngrid"]))
         self._density = np.zeros((2, config.spindims, config.grid_params["ngrid"]))
+        self.grid_type = grid_type
 
     def check_conv(self, E_free, pot, dens, iscf):
         """
@@ -78,14 +78,20 @@ class SCF:
         # compute the change in potential
         dv = np.abs(self._potential[0] - self._potential[1])
         # compute the norm
-        norm_v = mathtools.int_sphere(np.abs(self._potential[0]), self._xgrid)
-        conv_vals["dpot"] = mathtools.int_sphere(dv, self._xgrid) / norm_v
+        norm_v = mathtools.int_sphere(
+            np.abs(self._potential[0]), self._xgrid, self.grid_type
+        )
+        conv_vals["dpot"] = (
+            mathtools.int_sphere(dv, self._xgrid, self.grid_type) / norm_v
+        )
 
         # compute the change in density
         dn = np.abs(self._density[0] - self._density[1])
         # integrate over sphere to return a number
         # add a small constant to avoid errors if no electrons in one spin channel
-        conv_vals["drho"] = mathtools.int_sphere(dn, self._xgrid) / (config.nele + 1e-3)
+        conv_vals["drho"] = mathtools.int_sphere(dn, self._xgrid, self.grid_type) / (
+            config.nele + 1e-3
+        )
 
         # reset the energy, potential and density attributes
         self._energy[1] = E_free
