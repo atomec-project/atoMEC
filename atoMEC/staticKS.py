@@ -214,20 +214,22 @@ class Orbitals:
         # set v to equal the input potential
         v[:] = potential
 
+        solver = numerov.LogSolver()
+
         if eig_guess:
             if bc != "bands":
-                self._eigs_min_guess[0] = numerov.calc_eigs_min(v, self._xgrid, bc)
+                self._eigs_min_guess[0] = solver.calc_eigs_min(v, self._xgrid, bc)
             else:
-                self._eigs_min_guess[0] = numerov.calc_eigs_min(
+                self._eigs_min_guess[0] = solver.calc_eigs_min(
                     v, self._xgrid, "neumann"
                 )
-                self._eigs_min_guess[1] = numerov.calc_eigs_min(
+                self._eigs_min_guess[1] = solver.calc_eigs_min(
                     v, self._xgrid, "dirichlet"
                 )
 
         # solve the KS equations
         if bc != "bands":
-            self._eigfuncs[0], self._eigvals[0] = numerov.matrix_solve(
+            self._eigfuncs[0], self._eigvals[0] = solver.matrix_solve(
                 v,
                 self._xgrid,
                 bc,
@@ -236,14 +238,14 @@ class Orbitals:
 
             self._kpt_int_weight = np.ones_like(self._eigvals)
         else:
-            eigfuncs_l, self._eigvals_min = numerov.matrix_solve(
+            eigfuncs_l, self._eigvals_min = solver.matrix_solve(
                 v,
                 self._xgrid,
                 "neumann",
                 eigs_min_guess=self._eigs_min_guess[0],
             )
 
-            eigfuncs_u, self._eigvals_max = numerov.matrix_solve(
+            eigfuncs_u, self._eigvals_max = solver.matrix_solve(
                 v,
                 self._xgrid,
                 "dirichlet",
@@ -292,7 +294,8 @@ class Orbitals:
         )
 
         # propagate the numerov equation
-        eigfuncs = numerov.calc_wfns_e_grid(self._xgrid, v, e_arr)
+        solver = numerov.LogSolver()
+        eigfuncs = solver.calc_wfns_e_grid(self._xgrid, v, e_arr)
 
         # eigenvalues by default are equal to the energy band array
         eigvals = e_arr
