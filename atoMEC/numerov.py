@@ -692,11 +692,148 @@ class SqrtSolver:
         # construct kinetic energy matrix
         T = -0.5 * p @ A
 
-        eigfuncs, eigvals = self.KS_matsolve_serial(
-            T, B, v, sgrid, bc, solve_type, eigs_min_guess
-        )
+        if config.numcores == 0:
+            eigfuncs, eigvals = self.KS_matsolve_serial(
+                T, B, v, sgrid, bc, solve_type, eigs_min_guess
+            )
+        else:
+            eigfuncs, eigvals = self.KS_matsolve_parallel(
+                T, B, v, sgrid, bc, solve_type, eigs_min_guess
+            )
 
         return eigfuncs, eigvals
+
+    def KS_matsolve_parallel(self, T, B, v, sgrid, bc, solve_type, eigs_min_guess):
+        """
+        Solve the KS matrix diagonalization by parallelizing over config.numcores.
+
+        Parameters
+        ----------
+        T : ndarray
+            kinetic energy array
+        B : ndarray
+            off-diagonal array (for RHS of eigenvalue problem)
+        v : ndarray
+            KS potential array
+        sgrid : ndarray
+            the logarithmic grid
+        solve_type : str
+            whether to do a "full" or "guess" calculation: "guess" estimates the lower
+            bounds of the eigenvalues
+        eigs_min_guess : ndarray
+            input guess for the lowest eigenvalues for given `l` and spin,
+            should be dimension `config.spindims * config.lmax`
+
+        Returns
+        -------
+        eigfuncs : ndarray
+            radial KS wfns
+        eigvals : ndarray
+            KS eigenvalues
+
+        Notes
+        -----
+        The parallelization is done via the `joblib.Parallel` class of the `joblib` library,
+        see here_ for more information.
+
+        .. _here: https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html
+
+        For "best" performance (i.e. exactly one core for each call of the diagonalization
+        routine plus one extra for the "master" node), the number of cores should be chosen
+        as `config.numcores = 1 + config.spindims * config.lmax`. However, if this number is
+        larger than the total number of cores available, performance is hindered.
+
+        Therefore for "good" performance, we can suggest:
+        `config.numcores = max(1 + config.spindimgs * config.lmax, n_avail)`, where
+        `n_avail` is the number of cores available.
+
+        The above is just a guide for how to choose `config.numcores`, there may well
+        be better choices. One example where it might not work is for particularly large
+        numbers of grid points, when the memory required might be too large for a single
+        core.
+
+        N.B. if `config.numcores=-N` then `joblib` detects the number of available cores
+        `n_avail` and parallelizes into `n_avail + 1 - N` separate jobs.
+        """
+        # compute the number of grid points
+        N = np.size(sgrid)
+
+        # Compute the number pmax of distinct diagonizations to be solved
+        pmax = config.spindims * config.lmax
+
+        # now flatten the potential matrix over spins
+        v_flat = np.zeros((pmax, N))
+        eigs_guess_flat = np.zeros((pmax))
+        for i in range(np.shape(v)[0]):
+            for l in range(config.lmax):
+                v_flat[l + (i * config.lmax)] = (
+                    v[i] + 3 / (32 * sgrid**4) + l * (l + 1) / (2 * sgrid**4)
+                )
+                eigs_guess_flat[l + (i * config.lmax)] = eigs_min_guess[i, l]
+
+        # make temporary folder with random name to store arrays
+        while True:
+            try:
+                joblib_folder = "atoMEC_tmpdata_" + "".join(
+                    random.choices(string.ascii_uppercase + string.digits, k=20)
+                )
+                os.mkdir(joblib_folder)
+                break
+            except FileExistsError as e:
+                print(e)
+
+        # dump and load the large numpy arrays from file
+        data_filename_memmap = os.path.join(joblib_folder, "data_memmap")
+        dump((T, B, v_flat), data_filename_memmap)
+        T, B, v_flat = load(data_filename_memmap, mmap_mode="r")
+
+        # set up the parallel job
+        with Parallel(n_jobs=config.numcores) as parallel:
+            X = parallel(
+                delayed(self.diag_H)(
+                    q,
+                    T,
+                    B,
+                    v_flat,
+                    sgrid,
+                    config.nmax,
+                    bc,
+                    eigs_guess_flat,
+                    solve_type,
+                )
+                for q in range(pmax)
+            )
+
+        # remove the joblib arrays
+        try:
+            shutil.rmtree(joblib_folder)
+        except:  # noqa
+            print("Could not clean-up automatically.")
+
+        if solve_type == "full":
+            # retrieve the eigfuncs and eigvals from the joblib output
+            eigfuncs_flat = np.zeros((pmax, config.nmax, N))
+            eigvals_flat = np.zeros((pmax, config.nmax))
+            for q in range(pmax):
+                eigfuncs_flat[q] = X[q][0]
+                eigvals_flat[q] = X[q][1]
+
+            # unflatten eigfuncs / eigvals so they return to original shape
+            eigfuncs = eigfuncs_flat.reshape(
+                config.spindims, config.lmax, config.nmax, N
+            )
+            eigvals = eigvals_flat.reshape(config.spindims, config.lmax, config.nmax)
+
+            return eigfuncs, eigvals
+
+        elif solve_type == "guess":
+            for q in range(pmax):
+                eigs_guess_flat[q] = X[q][1]
+            eigfuncs_null = X[:][0]
+
+            eigs_guess = eigs_guess_flat.reshape(config.spindims, config.lmax)
+
+            return eigfuncs_null, eigs_guess
 
     def KS_matsolve_serial(self, T, B, v, sgrid, bc, solve_type, eigs_min_guess):
         """
@@ -794,6 +931,93 @@ class SqrtSolver:
             return eigfuncs, eigvals
         else:
             return eigfuncs_null, eigs_guess
+
+    def diag_H(self, p, T, B, v, sgrid, nmax, bc, eigs_guess, solve_type):
+        """
+        Diagonilize the Hamiltonian for the input potential v[p].
+
+        Uses Scipy's sparse matrix solver scipy.sparse.linalg.eigs. This
+        searches for the lowest magnitude `nmax` eigenvalues, so care
+        must be taken to converge calculations wrt `nmax`.
+
+        Parameters
+        ----------
+        p : int
+           the desired index of the input array v to solve for
+        T : ndarray
+            the kinetic energy matrix
+        B : ndarray
+            the off diagonal matrix multiplying V and RHS
+        v : ndarray
+            KS potential array
+        sgrid : ndarray
+            the logarithmic grid
+        nmax : int
+            number of eigenvalues returned by the sparse matrix diagonalization
+        bc : str
+            the boundary condition
+
+        Returns
+        -------
+        evecs : ndarray
+            the KS radial eigenfunctions
+        evals : ndarray
+            the KS eigenvalues
+        """
+        # compute the number of grid points
+        N = np.size(sgrid)
+        # initialize empty potential matrix
+        V_mat = np.zeros((N, N))
+
+        # fill potential matrices
+        # np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * sgrid))
+        np.fill_diagonal(V_mat, v[p])
+
+        # construct Hamiltonians
+        H = T + B @ V_mat
+
+        # if dirichlet solve on (N-1) x (N-1) grid
+        if bc == "dirichlet":
+            H_s = H[: N - 1, : N - 1]
+            B_s = B[: N - 1, : N - 1]
+        # if neumann don't change anything
+        elif bc == "neumann":
+            H_s = H
+            B_s = B
+
+        # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
+        # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
+        # the estimated lowest eigenvalue from full diagonalization on coarse grid
+        if solve_type == "full":
+            evals, evecs = eigs(
+                H_s,
+                k=nmax,
+                M=B_s,
+                which="LM",
+                tol=config.conv_params["eigtol"],
+                sigma=eigs_guess[p],
+            )
+
+            # sort and normalize
+            K = np.zeros((N, nmax))
+            for n in range(nmax):
+                K[:, n] = 8 * sgrid**2 * (V_mat.diagonal() - evals.real[n])
+            evecs, evals = self.update_orbs(evecs, evals, sgrid, bc, K)
+
+            return evecs, evals
+
+        # estimate the lowest eigenvalues for a given value of l
+        elif solve_type == "guess":
+            evals = linalg.eigvals(H, b=B, check_finite=False)
+
+            # sort the eigenvalues to find the lowest
+            idr = np.argsort(evals)
+            evals = np.array(evals[idr].real)[0]
+
+            # dummy eigenvector for return statement
+            evecs_null = np.zeros((N))
+
+            return evecs_null, evals
 
     @staticmethod
     def update_orbs(l_eigfuncs, l_eigvals, sgrid, bc, K):
