@@ -1053,6 +1053,77 @@ class SqrtSolver:
 
             return evecs_null, evals
 
+    def calc_wfns_e_grid(self, sgrid, v, e_arr):
+        """
+        Compute all KS orbitals defined on the energy grid.
+
+        This routine is used to propagate a set of orbitals defined with a fixed
+        set of energies. It is used for the `bands` boundary condition in the
+        `models.ISModel` class.
+
+        Parameters
+        ----------
+        sgrid : ndarray
+            the spatial (logarithmic) grid
+        v : ndarray
+            the KS potential
+        e_arr : ndarray
+            the energy grid
+        Returns
+        -------
+        eigfuncs_e : ndarray
+            the KS orbitals with defined energies
+        """
+        # size of spaital grid
+        N = np.size(sgrid)
+
+        ds = sgrid[1] - sgrid[0]
+        s0 = sgrid[0]
+
+        # dimensions of e_arr
+        nkpts, spindims, lmax, nmax = np.shape(e_arr)
+
+        # flatten energy array
+        e_arr_flat = e_arr.flatten()
+
+        # initialize the W (potential) and eigenfunction arrays
+        W_arr = np.zeros((N, nkpts, spindims, lmax, nmax))
+        eigfuncs_init = np.zeros_like(W_arr)
+
+        # set up the flattened potential matrix
+        # W = -2*exp(x)*(v - E) - (l + 1/2)^2
+        # first set up the v - E array (matching dimensions)
+
+        v_E_arr = (
+            np.transpose(v)[:, np.newaxis, :, np.newaxis, np.newaxis]
+            - e_arr[np.newaxis, :]
+        )
+
+        # muptiply by -2*exp(x) term
+        v_E_arr = np.einsum("i,ijklm->ijklm", -8 * sgrid**2, v_E_arr)
+
+        # add (l+1/2)^2 term and initial condition
+        for l in range(lmax):
+            l_term = -4 * l * (l + 1) / (sgrid**2) - 3 / (4 * sgrid**2)
+            W_arr[:, :, :, l] = (
+                v_E_arr[:, :, :, l] + l_term[:, np.newaxis, np.newaxis, np.newaxis]
+            )
+            eigfuncs_init[1, :, :, l] = (s0 + ds) ** (2 * l + 1)
+
+        # flatten arrays for input to numerov propagation
+        W_flat = W_arr.reshape((N, len(e_arr_flat)))
+        eigfuncs_init_flat = eigfuncs_init.reshape((N, len(e_arr_flat)))
+
+        # solve numerov eqn for the wfns
+        eigfuncs_flat = self.num_propagate(
+            sgrid, W_flat, e_arr_flat, eigfuncs_init_flat
+        )
+
+        # reshape the eigenfucntions
+        eigfuncs_e = eigfuncs_flat.reshape((nkpts, spindims, lmax, nmax, N))
+
+        return eigfuncs_e
+
     @staticmethod
     def update_orbs(l_eigfuncs, l_eigvals, sgrid, bc, K):
         """
@@ -1101,3 +1172,49 @@ class SqrtSolver:
         eigfuncs = mathtools.normalize_orbs_sgrid(eigfuncs, sgrid)  # normalize
 
         return eigfuncs, eigvals
+
+    @staticmethod
+    def num_propagate(xgrid, W, e_arr, eigfuncs_init):
+        """
+        Propagate the wfn manually for fixed energy with numerov scheme.
+
+        Parameters
+        ----------
+        xgrid : ndarray
+            the logarithmic grid
+        W : ndarray
+            flattened potential array (with angular momentum term)
+        e_arr : ndarray
+            flattened energy array
+        eigfuncs_init : ndarray
+            initial values for eigenfunctions
+        Returns
+        -------
+        Psi_norm : ndarray
+            normalized wavefunction
+        """
+        # define some initial grid parameters
+        dx = xgrid[1] - xgrid[0]
+        h = (dx**2) / 12.0  # a parameter for the numerov integration
+        N = np.size(xgrid)  # size of grid
+
+        # set the eigenfucntions to their initial values
+        Psi = eigfuncs_init
+
+        # Integration loop
+        for i in range(2, N):
+            Psi[i] = (
+                2.0 * (1.0 - 5.0 * h * W[i - 1]) * Psi[i - 1]
+                - (1.0 + h * W[i - 2]) * Psi[i - 2]
+            ) / (1.0 + h * W[i])
+
+        # normalize the wavefunction
+        Psi = Psi.transpose()
+        Psi *= xgrid**-1.5
+        ### CHANGE BELOW
+        psi_sq = Psi**2  # convert from P_nl to X_nl and square
+        integrand = 8.0 * np.pi * xgrid**5 * psi_sq
+        norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
+        Psi_norm = np.einsum("i,ij->ij", norm, Psi)
+
+        return Psi_norm
