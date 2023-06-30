@@ -687,9 +687,11 @@ class SqrtSolver:
         # full diagonalization to estimate the lowest eigenvalues
         eigs_min = self.matrix_solve(v_coarse, xgrid_coarse, bc, solve_type="guess")[1]
 
+        return eigs_min
+
     def matrix_solve(self, v, sgrid, bc, solve_type="full", eigs_min_guess=None):
-        # if eigs_min_guess is None:
-        eigs_min_guess = np.zeros((config.spindims, config.lmax))
+        if eigs_min_guess is None:
+            eigs_min_guess = np.zeros((config.spindims, config.lmax))
 
         # define the spacing of the xgrid
         ds = sgrid[1] - sgrid[0]
@@ -1211,7 +1213,6 @@ class SqrtSolver:
         # normalize the wavefunction
         Psi = Psi.transpose()
         Psi *= xgrid**-1.5
-        ### CHANGE BELOW
         psi_sq = Psi**2  # convert from P_nl to X_nl and square
         integrand = 8.0 * np.pi * xgrid**5 * psi_sq
         norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
