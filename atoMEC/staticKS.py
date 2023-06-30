@@ -1089,7 +1089,7 @@ class Energy:
         return E_kin
 
     @staticmethod
-    def calc_E_kin_dens(eigfuncs, occnums, xgrid, grid_type, method="B"):
+    def calc_E_kin_dens(eigfuncs, occnums, xgrid, grid_type, method="A"):
         """
         Calculate the local kinetic energy density (KED).
 
@@ -1440,6 +1440,7 @@ class EnergyAlt:
         self._dens = dens.total
         self._xgrid = dens._xgrid
         self._pot = pot
+        self.grid_type = orbs.grid_type
 
         # initialize attributes
         self._F_tot = 0.0
@@ -1493,7 +1494,7 @@ class EnergyAlt:
     def E_en(self):
         r"""float: Electron-nuclear attraction energy."""
         if self._E_en == 0.0:
-            self._E_en = Energy.calc_E_en(self._dens, self._xgrid)
+            self._E_en = Energy.calc_E_en(self._dens, self._xgrid, self.grid_type)
         return self._E_en
 
     @property
@@ -1515,7 +1516,9 @@ class EnergyAlt:
     def E_v_hxc(self):
         r"""float: The integral :math:`\int \mathrm{d}r v_\mathrm{Hxc}(r) n(r)`."""
         if self._E_v_hxc == 0.0:
-            self._E_v_hxc = self.calc_E_v_hxc(self._dens, self._pot, self._xgrid)
+            self._E_v_hxc = self.calc_E_v_hxc(
+                self._dens, self._pot, self._xgrid, self.grid_type
+            )
         return self._E_v_hxc
 
     @property
@@ -1533,7 +1536,7 @@ class EnergyAlt:
     def E_ha(self):
         """float: The Hartree energy."""
         if self._E_ha == 0.0:
-            self._E_ha = Energy.calc_E_ha(self._dens, self._xgrid)
+            self._E_ha = Energy.calc_E_ha(self._dens, self._xgrid, self.grid_type)
         return self._E_ha
 
     @property
@@ -1545,11 +1548,13 @@ class EnergyAlt:
         correlation and exchange + correlation respectively
         """
         if self._E_xc["xc"] == 0.0:
-            self._E_xc = xc.E_xc(self._dens, self._xgrid, config.xfunc, config.cfunc)
+            self._E_xc = xc.E_xc(
+                self._dens, self._xgrid, config.xfunc, config.cfunc, self.grid_type
+            )
         return self._E_xc
 
     @staticmethod
-    def calc_E_v_hxc(dens, pot, xgrid):
+    def calc_E_v_hxc(dens, pot, xgrid, grid_type):
         r"""
         Compute the compensating integral term over the Hxc-potential (see notes).
 
@@ -1578,15 +1583,13 @@ class EnergyAlt:
 
         """
         # first compute the hartree contribution, which is twice the hartree energy
-        E_v_ha = 2.0 * Energy.calc_E_ha(dens, xgrid)
+        E_v_ha = 2.0 * Energy.calc_E_ha(dens, xgrid, grid_type)
 
         # now compute the xc contribution (over each spin channel)
         E_v_xc = 0.0
         for i in range(config.spindims):
             v_xc = pot.v_xc["xc"][i]
-            E_v_xc = E_v_xc + mathtools.int_sphere(
-                dens[i] * v_xc, xgrid, config.grid_type
-            )
+            E_v_xc = E_v_xc + mathtools.int_sphere(dens[i] * v_xc, xgrid, grid_type)
 
         # compute the term due to the constant shift introduced in the potential
         if config.v_shift:
