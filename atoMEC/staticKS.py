@@ -229,7 +229,6 @@ class Orbitals:
         if self.grid_type == "log":
             solver = numerov.LogSolver()
         else:
-            print("Solving with sqrt")
             solver = numerov.SqrtSolver()
 
         if eig_guess:
@@ -1138,23 +1137,33 @@ class Energy:
            calculations. J. Phys. B, 40(8):1553 (2007), `DOI:10.1088/0953-4075/40/8/008
            <https://dx.doi.org/10.1088/0953-4075/40/8/008>`__.
         """
-        if grid_type != "log":
-            return np.zeros((config.spindims, len(xgrid)))
         if method == "A":
             # compute the grad^2 component
             grad2_orbs = mathtools.laplace(eigfuncs, xgrid)
 
-            # compute the (l+1/2)^2 component
-            l_arr = np.fromiter(
-                ((l + 0.5) ** 2.0 for l in range(config.lmax)), float, config.lmax
-            )
-            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigfuncs)
+            if grid_type == "log":
+                # compute the (l+1/2)^2 component
+                l_arr = np.fromiter(
+                    ((l + 0.5) ** 2.0 for l in range(config.lmax)), float, config.lmax
+                )
+                lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigfuncs)
 
-            # add together and multiply by eigfuncs*exp(-3x)
-            prefac = np.exp(-3.0 * xgrid) * eigfuncs
-            kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
+                # add together and multiply by eigfuncs*exp(-3x)
+                prefac = np.exp(-3.0 * xgrid) * eigfuncs
+
+            else:
+                l_arr = np.fromiter(
+                    (l * (l + 1) for l in range(config.lmax)), float, config.lmax
+                )
+                lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigfuncs) / (xgrid**4)
+                grad_orbs = np.gradient(eigfuncs, xgrid, axis=-1, edge_order=2)
+
+                grad2_orbs = 0.25 * (grad2_orbs + 3 * grad_orbs / xgrid) / xgrid**2
+
+                prefac = eigfuncs
 
             # multiply and sum over occupation numbers
+            kin_orbs = prefac * (grad2_orbs - lhalf_orbs)
             e_kin_dens = -0.5 * np.einsum("ijkl,ijklm->jm", occnums, kin_orbs)
 
         elif method == "B":
