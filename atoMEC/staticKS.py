@@ -1089,7 +1089,7 @@ class Energy:
         return E_kin
 
     @staticmethod
-    def calc_E_kin_dens(eigfuncs, occnums, xgrid, grid_type, method="A"):
+    def calc_E_kin_dens(eigfuncs, occnums, xgrid, grid_type, method="B"):
         """
         Calculate the local kinetic energy density (KED).
 
@@ -1174,13 +1174,20 @@ class Energy:
             l_arr = np.fromiter(
                 (l * (l + 1.0) for l in range(config.lmax)), float, config.lmax
             )
-            eigs_mod = eigfuncs * np.exp(-xgrid / 2)
-            lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigs_mod**2) / np.exp(
-                2 * xgrid
-            )
+            if grid_type == "log":
+                eigs_mod = eigfuncs * np.exp(-xgrid / 2)
+                lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigs_mod**2) / np.exp(
+                    2 * xgrid
+                )
 
-            # chain rule to convert from dP_dx to dX_dr
-            grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * eigfuncs)
+                # chain rule to convert from dP_dx to dX_dr
+                grad_orbs = np.exp(-1.5 * xgrid) * (grad_eigfuncs - 0.5 * eigfuncs)
+
+            else:
+                grad_orbs = grad_eigfuncs / (2 * xgrid)
+                lhalf_orbs = np.einsum("k,ijklm->ijklm", l_arr, eigfuncs**2) / (
+                    xgrid**4
+                )
 
             # square it
             grad_orbs_sq = grad_orbs**2.0
