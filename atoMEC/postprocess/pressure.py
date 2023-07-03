@@ -95,8 +95,8 @@ def finite_diff(
         nmax,
         grid_params["ngrid"],
     ) = np.shape(eigfuncs)
-    
-    grid_type = orbs.grid_type    
+
+    grid_type = orbs.grid_type
     if grid_type == "log":
         grid_params["x0"] = orbs._xgrid[0]
     else:
@@ -209,27 +209,41 @@ def stress_tensor(Atom, model, orbs, pot, only_rr=False):
     # set the xgrid
     xgrid = orbs._xgrid
 
+    grid_type = orbs.grid_type
+
     # first compute the gradient of the orbitals
     deriv_orbs = np.gradient(orbs.eigfuncs, xgrid, axis=-1, edge_order=2)
 
     # chain rule to convert from dP_dx to dX_dr
-    grad_orbs = np.exp(-1.5 * xgrid) * (deriv_orbs - 0.5 * orbs.eigfuncs)
+    if grid_type == "log":
+        grad_orbs = np.exp(-1.5 * xgrid) * (deriv_orbs - 0.5 * orbs.eigfuncs)
+    else:
+        grad_orbs = deriv_orbs / (2 * xgrid)
 
     # compute the "gradient" term
     grad_sq = grad_orbs**2
 
     # add a correction if only rr used
     if only_rr:
-        grad_sq += 2 * np.exp(-1.5 * xgrid) * orbs.eigfuncs * grad_orbs
+        if grid_type == "log":
+            grad_sq += 2 * np.exp(-1.5 * xgrid) * orbs.eigfuncs * grad_orbs
+        else:
+            grad_sq += 2 * orbs.eigfuncs * grad_orbs / xgrid**2
 
     # compute the l*(l+1) array
     l_arr = np.fromiter((l * (l + 1.0) for l in range(lmax)), float, lmax)
 
     # get the X(R)^2 term
-    orb_sq = orbs.eigfuncs**2 * np.exp(-xgrid)
+    if grid_type == "log":
+        orb_sq = orbs.eigfuncs**2 * np.exp(-xgrid)
+    else:
+        orb_sq = orbs.eigfuncs**2
 
     # compute the l(l+1)/r^2 X(R)^2 term
-    lsq_term = np.exp(-2 * xgrid) * np.einsum("k,ijklm->ijklm", l_arr, orb_sq)
+    if grid_type == "log":
+        lsq_term = np.exp(-2 * xgrid) * np.einsum("k,ijklm->ijklm", l_arr, orb_sq)
+    else:
+        lsq_term = np.einsum("k,ijklm->ijklm", l_arr, orb_sq) / xgrid**4
 
     # compute the eps * X(R)^2 term
     v_E_arr = (
@@ -302,7 +316,7 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
     """
     # get the grid type
     grid_type = density.grid_type
-    
+
     # compute the sphere volume
     sph_vol = (4.0 * np.pi / 3.0) * atom.radius**3
 
@@ -322,7 +336,9 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
             orbs.eigfuncs, orbs.occnums_w, orbs._xgrid, grid_type, method="B"
         )
         # integrate over sphere
-        K1 = mathtools.int_sphere(np.sum(E_kin_alt_dens, axis=0), orbs._xgrid, grid_type)
+        K1 = mathtools.int_sphere(
+            np.sum(E_kin_alt_dens, axis=0), orbs._xgrid, grid_type
+        )
 
     # compute E_V = 2*T + U + W_xc
     E_V = K1 + K2 + energy.E_en + energy.E_ha + W_xc
@@ -375,7 +391,9 @@ def calc_Wd_xc(xc_func_id, density, grid_type):
     # multiply by density, integrate over sphere and sum over spins
     Wd_xc = 0.0
     for sp in range(spindims):
-        Wd_xc += mathtools.int_sphere(density.total[sp] * v_xc[sp], density._xgrid, grid_type)
+        Wd_xc += mathtools.int_sphere(
+            density.total[sp] * v_xc[sp], density._xgrid, grid_type
+        )
 
     return Wd_xc
 
