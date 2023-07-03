@@ -95,7 +95,12 @@ def finite_diff(
         nmax,
         grid_params["ngrid"],
     ) = np.shape(eigfuncs)
-    grid_params["x0"] = orbs._xgrid[0]
+    
+    grid_type = orbs.grid_type    
+    if grid_type == "log":
+        grid_params["x0"] = orbs._xgrid[0]
+    else:
+        grid_params["s0"] = orbs._xgrid[0]
 
     # initialize the main radius we are interested in
     main_rad = atom.radius
@@ -110,6 +115,7 @@ def finite_diff(
         grid_params=grid_params,
         band_params=band_params,
         scf_params=scf_params,
+        grid_type=grid_type,
         conv_params=conv_params,
         force_bound=force_bound,
         verbosity=verbosity,
@@ -136,6 +142,7 @@ def finite_diff(
         grid_params=grid_params,
         band_params=band_params,
         scf_params=scf_params,
+        grid_type=grid_type,
         conv_params=conv_params,
         force_bound=force_bound,
         verbosity=verbosity,
