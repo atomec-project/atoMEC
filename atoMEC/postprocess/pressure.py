@@ -300,12 +300,15 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
         `DOI:10.1088/0953-4075/40/8/008
         <https://doi.org/10.1088/0953-4075/40/8/008>`__.
     """
+    # get the grid type
+    grid_type = density.grid_type
+    
     # compute the sphere volume
     sph_vol = (4.0 * np.pi / 3.0) * atom.radius**3
 
     # compute the derivative term of the W_xc component
-    Wd_x = calc_Wd_xc(model.xfunc_id, density)
-    Wd_c = calc_Wd_xc(model.cfunc_id, density)
+    Wd_x = calc_Wd_xc(model.xfunc_id, density, grid_type)
+    Wd_c = calc_Wd_xc(model.cfunc_id, density, grid_type)
 
     # compute total W_xc component
     W_xc = -3 * energy.E_xc["xc"] + 3 * (Wd_x + Wd_c)
@@ -316,10 +319,10 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
         K1 = energy.E_kin["tot"]
     else:
         E_kin_alt_dens = staticKS.Energy.calc_E_kin_dens(
-            orbs.eigfuncs, orbs.occnums_w, orbs._xgrid, method="B"
+            orbs.eigfuncs, orbs.occnums_w, orbs._xgrid, grid_type, method="B"
         )
         # integrate over sphere
-        K1 = mathtools.int_sphere(np.sum(E_kin_alt_dens, axis=0), orbs._xgrid)
+        K1 = mathtools.int_sphere(np.sum(E_kin_alt_dens, axis=0), orbs._xgrid, grid_type)
 
     # compute E_V = 2*T + U + W_xc
     E_V = K1 + K2 + energy.E_en + energy.E_ha + W_xc
@@ -330,7 +333,7 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
     return P_e
 
 
-def calc_Wd_xc(xc_func_id, density):
+def calc_Wd_xc(xc_func_id, density, grid_type):
     r"""Compute the 'derivative' component of the xc term in virial formula (see notes).
 
     Parameters
@@ -372,7 +375,7 @@ def calc_Wd_xc(xc_func_id, density):
     # multiply by density, integrate over sphere and sum over spins
     Wd_xc = 0.0
     for sp in range(spindims):
-        Wd_xc += mathtools.int_sphere(density.total[sp] * v_xc[sp], density._xgrid)
+        Wd_xc += mathtools.int_sphere(density.total[sp] * v_xc[sp], density._xgrid, grid_type)
 
     return Wd_xc
 
