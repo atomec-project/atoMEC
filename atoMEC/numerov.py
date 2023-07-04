@@ -1110,7 +1110,7 @@ class SqrtSolver:
             W_arr[:, :, :, l] = (
                 v_E_arr[:, :, :, l] + l_term[:, np.newaxis, np.newaxis, np.newaxis]
             )
-            eigfuncs_init[1, :, :, l] = (s0 + ds) ** (2 * l + 1)
+            eigfuncs_init[1, :, :, l] = max((s0 + ds) ** (2 * l + 1), 1e-300)
 
         # flatten arrays for input to numerov propagation
         W_flat = W_arr.reshape((N, len(e_arr_flat)))
