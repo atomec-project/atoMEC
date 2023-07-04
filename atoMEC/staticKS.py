@@ -268,7 +268,7 @@ class Orbitals:
             )
 
             self._eigvals, self._eigfuncs, self._kpt_int_weight = self.calc_bands(
-                v, eigfuncs_l, solver
+                v, eigfuncs_l, eigfuncs_u, solver
             )
 
         # guess the chemical potential if initializing
@@ -277,7 +277,7 @@ class Orbitals:
         return
 
     # @writeoutput.timing
-    def calc_bands(self, v, eigfuncs_l, solver):
+    def calc_bands(self, v, eigfuncs_l, eigfuncs_u, solver):
         """
         Compute the eigenfunctions which fill the energy bands.
 
@@ -309,7 +309,7 @@ class Orbitals:
         )
 
         # propagate the numerov equation
-        eigfuncs = solver.calc_wfns_e_grid(self._xgrid, v, e_arr)
+        eigfuncs = solver.calc_wfns_e_grid(self._xgrid, v, e_arr, eigfuncs_l, eigfuncs_u)
 
         # eigenvalues by default are equal to the energy band array
         eigvals = e_arr

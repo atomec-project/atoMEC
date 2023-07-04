@@ -23,6 +23,7 @@ import os
 import shutil
 import string
 import random
+import warnings
 
 # external libs
 import numpy as np
@@ -540,7 +541,7 @@ class LogSolver:
         return eigfuncs, eigvals
 
     # @writeoutput.timing
-    def calc_wfns_e_grid(self, xgrid, v, e_arr):
+    def calc_wfns_e_grid(self, xgrid, v, e_arr, eigfuncs_l, eigfuncs_u):
         """
         Compute all KS orbitals defined on the energy grid.
 
@@ -1055,7 +1056,7 @@ class SqrtSolver:
 
             return evecs_null, evals
 
-    def calc_wfns_e_grid(self, sgrid, v, e_arr):
+    def calc_wfns_e_grid(self, sgrid, v, e_arr, eigfuncs_l, eigfuncs_u):
         """
         Compute all KS orbitals defined on the energy grid.
 
@@ -1091,6 +1092,14 @@ class SqrtSolver:
         # initialize the W (potential) and eigenfunction arrays
         W_arr = np.zeros((N, nkpts, spindims, lmax, nmax))
         eigfuncs_init = np.zeros_like(W_arr)
+        eigfuncs_backup = np.zeros((nkpts, spindims, lmax, nmax, N))
+        for k in range(nkpts):
+            eigfuncs_backup[k] = (
+                k * eigfuncs_u + (nkpts - k - 1) * eigfuncs_l
+            ) / (nkpts - 1)
+            
+            norm = mathtools.int_sphere(eigfuncs_backup[k]**2, sgrid, "sqrt") ** -0.5
+            eigfuncs_backup[k] = np.einsum("ijkl,ijk->ijkl", eigfuncs_backup[k], norm)
 
         # set up the flattened potential matrix
         # W = -2*exp(x)*(v - E) - (l + 1/2)^2
@@ -1115,6 +1124,7 @@ class SqrtSolver:
         # flatten arrays for input to numerov propagation
         W_flat = W_arr.reshape((N, len(e_arr_flat)))
         eigfuncs_init_flat = eigfuncs_init.reshape((N, len(e_arr_flat)))
+        # eigfuncs_backup_flat = eigfuncs_backup.reshape((N, len(e_arr_flat)))
 
         # solve numerov eqn for the wfns
         eigfuncs_flat = self.num_propagate(
@@ -1123,6 +1133,9 @@ class SqrtSolver:
 
         # reshape the eigenfucntions
         eigfuncs_e = eigfuncs_flat.reshape((nkpts, spindims, lmax, nmax, N))
+        eigfuncs_0 = np.where(np.all(eigfuncs_e == 0, axis=-1))
+        eigfuncs_e[eigfuncs_0] = eigfuncs_backup[eigfuncs_0]
+        print(np.size(eigfuncs_e[eigfuncs_0]) / np.size(eigfuncs_e))
 
         return eigfuncs_e
 
@@ -1212,10 +1225,11 @@ class SqrtSolver:
 
         # normalize the wavefunction
         Psi = Psi.transpose()
-        Psi *= xgrid**-1.5
-        psi_sq = Psi**2  # convert from P_nl to X_nl and square
-        integrand = 8.0 * np.pi * xgrid**5 * psi_sq
-        norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
-        Psi_norm = np.einsum("i,ij->ij", norm, Psi)
+        with np.errstate(over="ignore"):
+            Psi *= xgrid**-1.5
+            psi_sq = Psi**2  # convert from P_nl to X_nl and square
+            integrand = 8.0 * np.pi * xgrid**5 * psi_sq
+            norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
+            Psi_norm = np.einsum("i,ij->ij", norm, Psi)
 
         return Psi_norm
