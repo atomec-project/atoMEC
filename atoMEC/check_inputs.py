@@ -1125,6 +1125,22 @@ class InputError(Exception):
         print("Error in v_shift input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
+    def ELF_error(err_msg):
+        """
+        Raise exception if error in ELF inputs.
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Returns
+        -------
+        None
+        """
+        print("Error in ELF input: " + err_msg)
+        sys.exit("Exiting atoMEC")
+
 
 class InputWarning:
     """Warn if inputs are considered outside of typical ranges, but proceed anyway."""
