@@ -27,7 +27,7 @@ from scipy import optimize, integrate
 from . import config
 
 
-def normalize_orbs(eigfuncs_x, xgrid):
+def normalize_orbs(eigfuncs_x, xgrid, grid_type):
     r"""
     Normalize the KS orbitals within the chosen sphere.
 
@@ -51,8 +51,10 @@ def normalize_orbs(eigfuncs_x, xgrid):
         # compute the mod squared eigenvalues
         eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
         # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
-        exp_x = np.exp(-xgrid)
-        ampsq = int_sphere(exp_x * eigfuncs_sq, xgrid, "log")
+        if grid_type == "log":
+            ampsq = int_sphere(np.exp(-xgrid) * eigfuncs_sq, xgrid, "log")
+        else:
+            ampsq = int_sphere(eigfuncs_sq, xgrid, "sqrt")
         # normalize eigenfunctions
         eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)
 

@@ -227,9 +227,9 @@ class Orbitals:
         v[:] = potential
 
         if self.grid_type == "log":
-            solver = numerov.LogSolver()
+            solver = numerov.Solver("log")
         else:
-            solver = numerov.SqrtSolver()
+            solver = numerov.Solver("sqrt")
 
         if eig_guess:
             if bc != "bands":
@@ -309,7 +309,9 @@ class Orbitals:
         )
 
         # propagate the numerov equation
-        eigfuncs = solver.calc_wfns_e_grid(self._xgrid, v, e_arr, eigfuncs_l, eigfuncs_u)
+        eigfuncs = solver.calc_wfns_e_grid(
+            self._xgrid, v, e_arr, eigfuncs_l, eigfuncs_u
+        )
 
         # eigenvalues by default are equal to the energy band array
         eigvals = e_arr
