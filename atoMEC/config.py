@@ -12,7 +12,7 @@ unbound = "ideal"  # treatment for unbound electrons
 v_shift = True  # whether to shift the KS potential vertically
 
 # numerical grid for static calculations
-grid_params = {"ngrid": 1000, "x0": -12, "ngrid_coarse": 300}
+grid_params = {"ngrid": 1000, "x0": -12, "ngrid_coarse": 300, "s0": 1e-3}
 # convergence parameters for static calculations
 conv_params = {
     "econv": 1.0e-5,
@@ -28,6 +28,8 @@ band_params = {"nkpts": 50, "de_min": 1e-3}
 
 # forced bound energy levels (default none)
 force_bound = []
+
+grid_type = "log"
 
 # parallelization
 numcores = 0  # defaults to serial

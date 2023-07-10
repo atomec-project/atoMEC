@@ -27,7 +27,7 @@ from scipy import optimize, integrate
 from . import config
 
 
-def normalize_orbs(eigfuncs_x, xgrid):
+def normalize_orbs(eigfuncs_x, xgrid, grid_type):
     r"""
     Normalize the KS orbitals within the chosen sphere.
 
@@ -51,15 +51,48 @@ def normalize_orbs(eigfuncs_x, xgrid):
         # compute the mod squared eigenvalues
         eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
         # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
-        exp_x = np.exp(-xgrid)
-        ampsq = int_sphere(exp_x * eigfuncs_sq, xgrid)
+        if grid_type == "log":
+            ampsq = int_sphere(np.exp(-xgrid) * eigfuncs_sq, xgrid, "log")
+        else:
+            ampsq = int_sphere(eigfuncs_sq, xgrid, "sqrt")
         # normalize eigenfunctions
         eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)
 
     return eigfuncs_x_norm
 
 
-def int_sphere(fx, xgrid):
+def normalize_orbs_sgrid(eigfuncs_x, sgrid):
+    r"""
+    Normalize the KS orbitals within the chosen sphere.
+
+    Parameters
+    ----------
+    eigfuncs_x : ndarray
+        The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`
+    xgrid : ndarray
+        The logarithmic grid over which normalization is performed
+
+    Returns
+    -------
+    eigfuncs_x_norm : ndarray
+        The radial KS eigenfunctions normalized over the chosen sphere
+    """
+    # initialize the normalized eigenfunctions
+    eigfuncs_x_norm = eigfuncs_x
+
+    # loop over the eigenfunctions
+    for n in range(np.shape(eigfuncs_x)[0]):
+        # compute the mod squared eigenvalues
+        eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
+        # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
+        ampsq = int_sphere(eigfuncs_sq, sgrid, "sqrt")
+        # normalize eigenfunctions
+        eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)
+
+    return eigfuncs_x_norm
+
+
+def int_sphere(fx, xgrid, grid_type):
     r"""
     Compute integral over sphere defined by input grid.
 
@@ -83,7 +116,10 @@ def int_sphere(fx, xgrid):
 
     .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)
     """
-    func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
+    if grid_type == "log":
+        func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
+    else:
+        func_int = 8.0 * pi * xgrid**5 * fx
     I_sph = np.trapz(func_int, xgrid)
 
     return I_sph

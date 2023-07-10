@@ -700,6 +700,11 @@ class EnergyCalcs:
             x0 = config.grid_params["x0"]
 
         try:
+            s0 = grid_params["s0"]
+        except KeyError:
+            s0 = config.grid_params["s0"]
+
+        try:
             ngrid_coarse = grid_params["ngrid_coarse"]
         except KeyError:
             ngrid_coarse = config.grid_params["ngrid_coarse"]
@@ -732,7 +737,7 @@ class EnergyCalcs:
                 "x0 is too high, calculation will likely not converge"
             )
 
-        grid_params = {"ngrid": ngrid, "x0": x0, "ngrid_coarse": ngrid_coarse}
+        grid_params = {"ngrid": ngrid, "x0": x0, "ngrid_coarse": ngrid_coarse, "s0": s0}
 
         return grid_params
 
@@ -1118,6 +1123,22 @@ class InputError(Exception):
         None
         """
         print("Error in v_shift input: " + err_msg)
+        sys.exit("Exiting atoMEC")
+
+    def ELF_error(err_msg):
+        """
+        Raise exception if error in ELF inputs.
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Returns
+        -------
+        None
+        """
+        print("Error in ELF input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
 
