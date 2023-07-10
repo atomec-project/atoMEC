@@ -23,7 +23,6 @@ import os
 import shutil
 import string
 import random
-import warnings
 
 # external libs
 import numpy as np
@@ -130,13 +129,13 @@ class Solver:
             \hat{T}                  &= -0.5\times\hat{p}\times\hat{A}\ .
 
         where :math:`\hat{p}=\exp(-2x)`.
-        See [2]_ for the definitions of the matrices :math:`\hat{A}` and :math:`\hat{B}`.
+        See [2]_ for definitions of the matrices :math:`\hat{A}` and :math:`\hat{B}`.
 
         References
         ----------
-        .. [2] M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for solving
-           Schrödinger’s equation, American Journal of Physics 80,
-           1017-1019 (2012) `DOI:10.1119/1.4748813 <https://doi.org/10.1119/1.4748813>`__.
+        .. [2] M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for
+        solving Schrödinger’s equation, American Journal of Physics 80, 1017-1019
+        (2012) `DOI:10.1119/1.4748813 <https://doi.org/10.1119/1.4748813>`__.
         """
         if eigs_min_guess is None:
             eigs_min_guess = np.zeros((config.spindims, config.lmax))
@@ -224,15 +223,16 @@ class Solver:
 
         Notes
         -----
-        The parallelization is done via the `joblib.Parallel` class of the `joblib` library,
-        see here_ for more information.
+        The parallelization is done via the `joblib.Parallel` class of the `joblib`
+        library, see here_ for more information.
 
         .. _here: https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html
 
-        For "best" performance (i.e. exactly one core for each call of the diagonalization
-        routine plus one extra for the "master" node), the number of cores should be chosen
-        as `config.numcores = 1 + config.spindims * config.lmax`. However, if this number is
-        larger than the total number of cores available, performance is hindered.
+        For "best" performance (i.e. exactly one core per call of the diagonalization
+        routine plus one extra for the "master" node), the number of cores should be
+        chosen as `config.numcores = 1 + config.spindims * config.lmax`. However, if
+        this number is larger than the total number of cores available, performance
+        is hindered.
 
         Therefore for "good" performance, we can suggest:
         `config.numcores = max(1 + config.spindimgs * config.lmax, n_avail)`, where
@@ -391,8 +391,8 @@ class Solver:
                     B_s = B
 
                 # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
-                # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
-                # the estimated lowest eigenvalue from full diagonalization on coarse grid
+                # use 'shift-invert mode' to find the eigenvalues nearest in magnitude
+                # to the est. lowest eigenvalue from full diagonalization on coarse grid
                 if solve_type == "full":
                     eigs_up, vecs_up = eigs(
                         H_s,
@@ -698,11 +698,13 @@ class Solver:
         if grid_type == "log":
             psi_sq = np.exp(-xgrid) * Psi**2  # convert from P_nl to X_nl and square
             integrand = 4.0 * np.pi * np.exp(3.0 * xgrid) * psi_sq
+            norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
         else:
-            Psi *= xgrid**-1.5
-            psi_sq = Psi**2  # convert from P_nl to X_nl and square
-            integrand = 8.0 * np.pi * xgrid**5 * psi_sq
-        norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
+            with np.errstate(over="ignore"):
+                Psi *= xgrid**-1.5
+                psi_sq = Psi**2  # convert from P_nl to X_nl and square
+                integrand = 8.0 * np.pi * xgrid**5 * psi_sq
+                norm = (np.trapz(integrand, x=xgrid)) ** (-0.5)
         Psi_norm = np.einsum("i,ij->ij", norm, Psi)
 
         return Psi_norm

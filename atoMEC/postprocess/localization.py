@@ -19,7 +19,7 @@ from scipy.signal import argrelmin
 import numpy as np
 
 # internal modules
-from atoMEC import staticKS, mathtools, check_inputs, config
+from atoMEC import staticKS, mathtools, check_inputs
 
 
 class ELFTools:
