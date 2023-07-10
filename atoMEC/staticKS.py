@@ -73,6 +73,21 @@ def log_grid(x_r):
 
 
 def sqrt_grid(s_r):
+    """
+    Set up the sqrt (and real) grid, defined up to d_r.
+
+    The leftmost grid point is given by the `config.grid_params["s0"]` parameter.
+
+    Parameters
+    ----------
+    s_r : float
+        The RHS grid point (in sqrt space)
+
+    Returns
+    -------
+    xgrid, rgrid : tuple of ndarrays
+        The grids in sqrt (x) and real (r) space
+    """
     # grid in sqrt co-ordinates
     xgrid = np.linspace(config.grid_params["s0"], s_r, config.grid_params["ngrid"])
     # grid in real space co-ordinates

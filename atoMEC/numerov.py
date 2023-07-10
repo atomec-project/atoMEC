@@ -43,6 +43,15 @@ from . import mathtools
 
 # Solver which uses a logarithmic grid
 class Solver:
+    """
+    Class holding the numerov solver for KS equations.
+
+    Parameters
+    ----------
+    grid_type : str
+        The grid type (sqrt or log)
+    """
+
     def __init__(self, grid_type):
         self.grid_type = grid_type
 
