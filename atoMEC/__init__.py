@@ -69,7 +69,6 @@ class Atom:
         units_density="g/cm3",
         write_info=True,
     ):
-
         # print the initial spiel
         if write_info:
             print("\n" + "Welcome to atoMEC! \n")
@@ -195,7 +194,7 @@ class Atom:
         self._radius = check_inputs.Atom().check_radius(radius, self.units_radius)
         self._density = check_inputs.Atom().radius_to_dens(self, self._radius)
         config.r_s = self._radius
-        config.sph_vol = (4.0 * pi * self._radius ** 3.0) / 3.0
+        config.sph_vol = (4.0 * pi * self._radius**3.0) / 3.0
 
     @property
     def density(self):
@@ -207,7 +206,7 @@ class Atom:
         self._density = check_inputs.Atom().check_density(density)
         self._radius = check_inputs.Atom().dens_to_radius(self, self._density)
         config.r_s = self._radius
-        config.sph_vol = (4.0 * pi * self._radius ** 3.0) / 3.0
+        config.sph_vol = (4.0 * pi * self._radius**3.0) / 3.0
 
     @property
     def WS_radius(self):
@@ -221,12 +220,12 @@ class Atom:
     @property
     def E_Fermi(self):
         r"""float: the Fermi energy."""
-        return 0.5 * (9.0 * pi / 4.0) ** (2.0 / 3.0) * self.WS_radius ** -2.0
+        return 0.5 * (9.0 * pi / 4.0) ** (2.0 / 3.0) * self.WS_radius**-2.0
 
     @property
     def gamma_ion(self):
         r"""float: the ionic coupling parameter."""
-        return self.at_chrg ** 2.0 / (2.0 * self.radius * self.temp)
+        return self.at_chrg**2.0 / (2.0 * self.radius * self.temp)
 
     @property
     def theta_e(self):

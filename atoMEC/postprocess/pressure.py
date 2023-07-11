@@ -326,7 +326,7 @@ def virial(atom, model, energy, density, orbs, pot, use_correction=False, method
 
     # compute total W_xc component
     W_xc = -3 * energy.E_xc["xc"] + 3 * (Wd_x + Wd_c)
-    
+
     if method == "A":
         K2 = energy.E_kin["tot"]
     elif method == "B":
