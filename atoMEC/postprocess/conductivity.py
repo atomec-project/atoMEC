@@ -32,7 +32,6 @@ class KuboGreenwood:
     """Class for Kubo-Greenwood conductivity and MIS via TRK sum rule."""
 
     def __init__(self, Atom, model, orbitals, valence_orbs=[], nmax=0, lmax=0):
-
         self._orbitals = orbitals
         self._xgrid = orbitals._xgrid
         self._eigfuncs = orbitals._eigfuncs
@@ -994,7 +993,6 @@ class RadialInts:
                     )
 
                     if orb_subset_1 != orb_subset_2:
-
                         R2_mat[:, l2, n2, l1, n1] = cls.R2_int_term(
                             eigfuncs[:, 0, l2, n2], eigfuncs[:, 0, l1, n1], xgrid
                         )

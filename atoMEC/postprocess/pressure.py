@@ -267,7 +267,7 @@ def stress_tensor(Atom, model, orbs, pot, only_rr=False):
     return P_e
 
 
-def virial(atom, model, energy, density, orbs, use_correction=False):
+def virial(atom, model, energy, density, orbs, pot, use_correction=False, method="A"):
     r"""Compute the pressure using the virial theorem (see notes).
 
     Parameters
@@ -327,10 +327,13 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
     # compute total W_xc component
     W_xc = -3 * energy.E_xc["xc"] + 3 * (Wd_x + Wd_c)
 
-    K2 = energy.E_kin["tot"]
+    if method == "A":
+        K2 = energy.E_kin["tot"]
+    elif method == "B":
+        K2 = staticKS.EnergyAlt(orbs, density, pot).E_kin["tot"]
 
     if not use_correction:
-        K1 = energy.E_kin["tot"]
+        K1 = K2
     else:
         E_kin_alt_dens = staticKS.Energy.calc_E_kin_dens(
             orbs.eigfuncs, orbs.occnums_w, orbs._xgrid, grid_type, method="B"

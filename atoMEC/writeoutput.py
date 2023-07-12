@@ -456,7 +456,6 @@ class SCF:
         occnum_tbl = ""
 
         for i in range(config.spindims):
-
             # truncate the table otherwise it becomes too large
 
             lmax_new = min(config.lmax, 8)
@@ -655,7 +654,6 @@ def dos_to_csv(orbitals, filename):
     """
     data_tot = np.array([])
     for sp in range(config.spindims):
-
         # compute the dos (*(2l+1)) and FD dist in amenable format
         e_arr, fd_arr, DOS_arr = orbitals.calc_DOS_sum(
             orbitals.eigvals_min, orbitals.eigvals_max, orbitals.ldegen
