@@ -134,8 +134,8 @@ class Solver:
         References
         ----------
         .. [2] M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for
-        solving Schrödinger’s equation, American Journal of Physics 80, 1017-1019
-        (2012) `DOI:10.1119/1.4748813 <https://doi.org/10.1119/1.4748813>`__.
+           solving Schrödinger’s equation, American Journal of Physics 80, 1017-1019
+           (2012) `DOI:10.1119/1.4748813 <https://doi.org/10.1119/1.4748813>`__.
         """
         if eigs_min_guess is None:
             eigs_min_guess = np.zeros((config.spindims, config.lmax))
