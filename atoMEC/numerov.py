@@ -5,16 +5,10 @@ So far, there is only a single implementation which is based on a matrix
 diagonalization. There is an option for parallelizing over the angular
 quantum number `l`.
 
-Functions
----------
-* :func:`matrix_solve` : Solve the radial KS equation via matrix diagonalization of \
-                         Numerov's method.
-* :func:`KS_matsolve_parallel` : Solve the KS matrix diagonalization by parallelizing \
-                                 over config.ncores.
-* :func:`KS_matsolve_serial` : Solve the KS matrix diagonalization in serial.
-* :func:`diag_H` : Diagonalize the Hamiltonian for given input potential.
-* :func:`update_orbs` : Sort the eigenvalues and functions by ascending energies and \
-                        normalize orbs.
+Classes
+-------
+* :class:`Solver` : Solve the radial KS equation via matrix diagonalization of \
+                    Numerov's method. Can use either logarathmic or sqrt grid.
 """
 
 
@@ -40,7 +34,6 @@ from . import mathtools
 # from . import writeoutput
 
 
-# Solver which uses a logarithmic grid
 class Solver:
     """
     Class holding the numerov solver for KS equations.
@@ -67,7 +60,7 @@ class Solver:
         v : ndarray
             the KS potential
         xgrid : ndarray
-            the logarithmic grid (full)
+            the numerical grid (full)
 
         Returns
         -------
@@ -99,9 +92,9 @@ class Solver:
         Parameters
         ----------
         v : ndarray
-            the KS potential on the log grid
+            the KS potential on the log/sqrt grid
         xgrid : ndarray
-            the logarithmic grid
+            the numerical grid
         solve_type : str, optional
             whether to do a "full" or "guess" calculation: "guess" estimates the lower
             bounds of the eigenvalues
@@ -112,7 +105,7 @@ class Solver:
         Returns
         -------
         eigfuncs : ndarray
-            the radial KS eigenfunctions on the log grid
+            the radial KS eigenfunctions on the log/sqrt grid
         eigvals : ndarray
             the KS eigenvalues
 
@@ -148,14 +141,15 @@ class Solver:
 
         # Set-up the following matrix diagonalization problem
         # H*|u>=E*B*|u>; H=T+B*V; T=-p*A
-        # |u> is related to the radial eigenfunctions R(r) via R(x)=exp(x/2)u(x)
+        # |u> is related to the radial eigenfunctions R(r) via R(x)=J(x)u(x)
+        # J(x)=exp(x/2) for log grid; J(x) = x**-1.5 for sqrt grid
 
         # off-diagonal matrices
         I_minus = np.eye(N, k=-1)
         I_zero = np.eye(N)
         I_plus = np.eye(N, k=1)
 
-        p = np.zeros((N, N))  # transformation for kinetic term on log grid
+        p = np.zeros((N, N))  # transformation for kinetic term on log/sqrt grid
         if self.grid_type == "log":
             np.fill_diagonal(p, np.exp(-2 * xgrid))
         else:
@@ -206,7 +200,7 @@ class Solver:
         v : ndarray
             KS potential array
         xgrid : ndarray
-            the logarithmic grid
+            the numerical grid
         solve_type : str
             whether to do a "full" or "guess" calculation: "guess" estimates the lower
             bounds of the eigenvalues
@@ -341,7 +335,7 @@ class Solver:
         v : ndarray
             KS potential array
         xgrid : ndarray
-            the logarithmic grid
+            the numerical grid
         solve_type : str
             whether to do a "full" or "guess" calculation: "guess" estimates the lower
             bounds of the eigenvalues
@@ -449,7 +443,7 @@ class Solver:
         v : ndarray
             KS potential array
         xgrid : ndarray
-            the logarithmic grid
+            the numerical grid
         nmax : int
             number of eigenvalues returned by the sparse matrix diagonalization
         bc : str
@@ -529,7 +523,7 @@ class Solver:
         l_eigvals : ndarray
             input (unsorted) eigenvalues (for given l and spin)
         xgrid : ndarray
-            the logarithmic grid
+            the numerical grid
         bc : str
             the boundary condition
 
@@ -579,7 +573,7 @@ class Solver:
         Parameters
         ----------
         xgrid : ndarray
-            the spatial (logarithmic) grid
+            the spatial (numerical) grid
         v : ndarray
             the KS potential
         e_arr : ndarray
@@ -666,7 +660,7 @@ class Solver:
         Parameters
         ----------
         xgrid : ndarray
-            the logarithmic grid
+            the numerical grid
         W : ndarray
             flattened potential array (with angular momentum term)
         e_arr : ndarray
