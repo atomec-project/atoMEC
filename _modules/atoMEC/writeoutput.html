@@ -619,7 +619,6 @@
         <span class="n">occnum_tbl</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
-
             <span class="c1"># truncate the table otherwise it becomes too large</span>
 
             <span class="n">lmax_new</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
@@ -818,7 +817,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
     <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
-
         <span class="c1"># compute the dos (*(2l+1)) and FD dist in amenable format</span>
         <span class="n">e_arr</span><span class="p">,</span> <span class="n">fd_arr</span><span class="p">,</span> <span class="n">DOS_arr</span> <span class="o">=</span> <span class="n">orbitals</span><span class="o">.</span><span class="n">calc_DOS_sum</span><span class="p">(</span>
             <span class="n">orbitals</span><span class="o">.</span><span class="n">eigvals_min</span><span class="p">,</span> <span class="n">orbitals</span><span class="o">.</span><span class="n">eigvals_max</span><span class="p">,</span> <span class="n">orbitals</span><span class="o">.</span><span class="n">ldegen</span>

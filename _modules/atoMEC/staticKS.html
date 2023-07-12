@@ -235,11 +235,37 @@
     <span class="k">return</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">rgrid</span></div>
 
 
+<div class="viewcode-block" id="sqrt_grid"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.sqrt_grid">[docs]</a><span class="k">def</span> <span class="nf">sqrt_grid</span><span class="p">(</span><span class="n">s_r</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set up the sqrt (and real) grid, defined up to d_r.</span>
+
+<span class="sd">    The leftmost grid point is given by the `config.grid_params[&quot;s0&quot;]` parameter.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s_r : float</span>
+<span class="sd">        The RHS grid point (in sqrt space)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xgrid, rgrid : tuple of ndarrays</span>
+<span class="sd">        The grids in sqrt (x) and real (r) space</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># grid in sqrt co-ordinates</span>
+    <span class="n">xgrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;s0&quot;</span><span class="p">],</span> <span class="n">s_r</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">])</span>
+    <span class="c1"># grid in real space co-ordinates</span>
+    <span class="n">rgrid</span> <span class="o">=</span> <span class="n">xgrid</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="n">config</span><span class="o">.</span><span class="n">xgrid</span> <span class="o">=</span> <span class="n">xgrid</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">rgrid</span> <span class="o">=</span> <span class="n">rgrid</span>
+
+    <span class="k">return</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">rgrid</span></div>
+
+
 <div class="viewcode-block" id="Orbitals"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals">[docs]</a><span class="k">class</span> <span class="nc">Orbitals</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class holding the KS orbitals, associated quantities and relevant routines.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
-
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">xgrid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
             <span class="p">(</span>
@@ -268,6 +294,7 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kpt_int_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_occ_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">=</span> <span class="n">grid_type</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">eigvals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -377,20 +404,25 @@
         <span class="c1"># set v to equal the input potential</span>
         <span class="n">v</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">potential</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="n">solver</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">Solver</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">solver</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">Solver</span><span class="p">(</span><span class="s2">&quot;sqrt&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">eig_guess</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">bc</span> <span class="o">!=</span> <span class="s2">&quot;bands&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">bc</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span>
                     <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="s2">&quot;neumann&quot;</span>
                 <span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">calc_eigs_min</span><span class="p">(</span>
                     <span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="s2">&quot;dirichlet&quot;</span>
                 <span class="p">)</span>
 
         <span class="c1"># solve the KS equations</span>
         <span class="k">if</span> <span class="n">bc</span> <span class="o">!=</span> <span class="s2">&quot;bands&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
                 <span class="n">v</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
                 <span class="n">bc</span><span class="p">,</span>
@@ -399,14 +431,14 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_kpt_int_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">eigfuncs_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_min</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
+            <span class="n">eigfuncs_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_min</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
                 <span class="n">v</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
                 <span class="s2">&quot;neumann&quot;</span><span class="p">,</span>
                 <span class="n">eigs_min_guess</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigs_min_guess</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
             <span class="p">)</span>
 
-            <span class="n">eigfuncs_u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_max</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
+            <span class="n">eigfuncs_u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_max</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">matrix_solve</span><span class="p">(</span>
                 <span class="n">v</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span>
                 <span class="s2">&quot;dirichlet&quot;</span><span class="p">,</span>
@@ -414,7 +446,7 @@
             <span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kpt_int_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_bands</span><span class="p">(</span>
-                <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span>
+                <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span><span class="p">,</span> <span class="n">eigfuncs_u</span><span class="p">,</span> <span class="n">solver</span>
             <span class="p">)</span>
 
         <span class="c1"># guess the chemical potential if initializing</span>
@@ -423,7 +455,7 @@
         <span class="k">return</span></div>
 
     <span class="c1"># @writeoutput.timing</span>
-<div class="viewcode-block" id="Orbitals.calc_bands"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_bands">[docs]</a>    <span class="k">def</span> <span class="nf">calc_bands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span><span class="p">):</span>
+<div class="viewcode-block" id="Orbitals.calc_bands"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_bands">[docs]</a>    <span class="k">def</span> <span class="nf">calc_bands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span><span class="p">,</span> <span class="n">eigfuncs_u</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the eigenfunctions which fill the energy bands.</span>
 
@@ -455,7 +487,9 @@
         <span class="p">)</span>
 
         <span class="c1"># propagate the numerov equation</span>
-        <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">numerov</span><span class="o">.</span><span class="n">calc_wfns_e_grid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">e_arr</span><span class="p">)</span>
+        <span class="n">eigfuncs</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">calc_wfns_e_grid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">e_arr</span><span class="p">,</span> <span class="n">eigfuncs_l</span><span class="p">,</span> <span class="n">eigfuncs_u</span>
+        <span class="p">)</span>
 
         <span class="c1"># eigenvalues by default are equal to the energy band array</span>
         <span class="n">eigvals</span> <span class="o">=</span> <span class="n">e_arr</span>
@@ -683,12 +717,10 @@
         <span class="n">fd_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">e_arr_dummy</span><span class="p">),</span> <span class="n">nspin</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nspin</span><span class="p">):</span>
-
             <span class="c1"># make the total energy array</span>
             <span class="n">e_arr</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">]</span> <span class="o">=</span> <span class="n">Orbitals</span><span class="o">.</span><span class="n">make_e_arr</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">,</span> <span class="n">eigs_max</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">e_arr</span><span class="p">[:,</span> <span class="n">sp</span><span class="p">]):</span>
-
                 <span class="c1"># compute delta and (e_+ - e) * (e - e_-)</span>
                 <span class="n">delta</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">e_gap_arr</span>
                 <span class="n">hub_func</span> <span class="o">=</span> <span class="p">(</span><span class="n">eigs_max</span> <span class="o">-</span> <span class="n">e</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">e</span> <span class="o">-</span> <span class="n">eigs_min</span><span class="p">)</span>
@@ -753,7 +785,6 @@
         <span class="c1"># make the energy array</span>
         <span class="n">e_tot_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-
             <span class="c1"># ignore energies below the minimum for bands</span>
             <span class="k">if</span> <span class="n">eigs_min</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">e_min</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -829,6 +860,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_MIS</span> <span class="o">=</span> <span class="mf">0.0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span> <span class="o">=</span> <span class="n">orbs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">grid_type</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">total</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -898,7 +930,10 @@
         <span class="c1"># occnums in atoMEC are defined as (2l+1)*f_{nl}</span>
 
         <span class="c1"># R_{nl}(r) = exp(x/2) P_{nl}(x), P(x) are eigfuncs</span>
-        <span class="n">orbs_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="n">orbs_R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">orbs_R</span> <span class="o">=</span> <span class="n">eigfuncs</span>
         <span class="n">orbs_R_sq</span> <span class="o">=</span> <span class="n">orbs_R</span><span class="o">**</span><span class="mf">2.0</span>
 
         <span class="c1"># sum over the (l,n) dimensions of the orbitals to get the density</span>
@@ -932,7 +967,6 @@
 
         <span class="c1"># so far only the ideal approximation is implemented</span>
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
-
             <span class="c1"># unbound density is constant</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
                 <span class="n">prefac</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
@@ -951,7 +985,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class holding the KS potential and the routines required to compute it.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_v_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_v_en</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_v_ha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]))</span>
@@ -962,6 +995,7 @@
         <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_density</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">total</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">_xgrid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">grid_type</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">v_s</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -978,14 +1012,14 @@
     <span class="k">def</span> <span class="nf">v_en</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: The electron-nuclear potential.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_v_en</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_v_en</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_v_en</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v_en</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">v_ha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;ndarray: The Hartree potential.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_v_ha</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_v_ha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_v_ha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v_ha</span>
 
     <span class="nd">@property</span>
@@ -997,11 +1031,13 @@
 <span class="sd">        and exchange + correlation respectively.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_v_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_v_xc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">v_xc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_v_xc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">v_xc</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v_xc</span>
 
 <div class="viewcode-block" id="Potential.calc_v_en"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Potential.calc_v_en">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the electron-nuclear potential.</span>
 
@@ -1009,12 +1045,15 @@
 <span class="sd">        :math:`v_\mathrm{en} (x) = -Z * \exp(-x)`</span>
 <span class="sd">        on the logarithmic grid</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">v_en</span> <span class="o">=</span> <span class="o">-</span><span class="n">config</span><span class="o">.</span><span class="n">Z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="n">v_en</span> <span class="o">=</span> <span class="o">-</span><span class="n">config</span><span class="o">.</span><span class="n">Z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v_en</span> <span class="o">=</span> <span class="o">-</span><span class="n">config</span><span class="o">.</span><span class="n">Z</span> <span class="o">/</span> <span class="n">xgrid</span><span class="o">**</span><span class="mi">2</span>
 
         <span class="k">return</span> <span class="n">v_en</span></div>
 
 <div class="viewcode-block" id="Potential.calc_v_ha"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Potential.calc_v_ha">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the Hartree potential (see notes).</span>
 
@@ -1047,7 +1086,6 @@
         <span class="c1"># loop over the x-grid</span>
         <span class="c1"># this may be a bottleneck...</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x0</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xgrid</span><span class="p">):</span>
-
             <span class="c1"># set up &#39;upper&#39; and &#39;lower&#39; parts of the xgrid (x&lt;=x0; x&gt;x0)</span>
             <span class="n">x_u</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x0</span> <span class="o">&lt;</span> <span class="n">xgrid</span><span class="p">)]</span>
             <span class="n">x_l</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x0</span> <span class="o">&gt;=</span> <span class="n">xgrid</span><span class="p">)]</span>
@@ -1057,8 +1095,12 @@
             <span class="n">rho_l</span> <span class="o">=</span> <span class="n">rho</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x0</span> <span class="o">&gt;=</span> <span class="n">xgrid</span><span class="p">)]</span>
 
             <span class="c1"># now compute the hartree potential</span>
-            <span class="n">int_l</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">rho_l</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">x_l</span><span class="p">),</span> <span class="n">x_l</span><span class="p">)</span>
-            <span class="n">int_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">rho_u</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x_u</span><span class="p">),</span> <span class="n">x_u</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+                <span class="n">int_l</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">rho_l</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">x_l</span><span class="p">),</span> <span class="n">x_l</span><span class="p">)</span>
+                <span class="n">int_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">rho_u</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x_u</span><span class="p">),</span> <span class="n">x_u</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">int_l</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">x0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">rho_l</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x_l</span><span class="o">**</span><span class="mi">5</span><span class="p">,</span> <span class="n">x_l</span><span class="p">)</span>
+                <span class="n">int_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">rho_u</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x_u</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span> <span class="n">x_u</span><span class="p">)</span>
 
             <span class="c1"># total hartree potential is sum over integrals</span>
             <span class="n">v_ha</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">int_l</span> <span class="o">+</span> <span class="n">int_u</span><span class="p">)</span>
@@ -1070,7 +1112,6 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class holding information about the KS total energy and relevant routines.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">dens</span><span class="p">):</span>
-
         <span class="c1"># inputs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span> <span class="o">=</span> <span class="n">orbs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dens</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">total</span>
@@ -1084,6 +1125,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;xc&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">grid_type</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">F_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1134,14 +1176,14 @@
     <span class="k">def</span> <span class="nf">E_en</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;float: The electron-nuclear energy.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_en</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_en</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">E_ha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;float: The Hartree energy.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_ha</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_ha</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span>
 
     <span class="nd">@property</span>
@@ -1153,7 +1195,9 @@
 <span class="sd">        correlation and exchange + correlation respectively</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">E_xc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">E_xc</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span>
 
 <div class="viewcode-block" id="Energy.calc_E_kin"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin">[docs]</a>    <span class="k">def</span> <span class="nf">calc_E_kin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
@@ -1178,7 +1222,9 @@
         <span class="n">E_kin</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># bound part</span>
-        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_orbs</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_kin_orbs</span><span class="p">(</span>
+            <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span>
+        <span class="p">)</span>
 
         <span class="c1"># unbound part</span>
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">unbound</span> <span class="o">==</span> <span class="s2">&quot;ideal&quot;</span><span class="p">:</span>
@@ -1192,7 +1238,7 @@
         <span class="k">return</span> <span class="n">E_kin</span></div>
 
 <div class="viewcode-block" id="Energy.calc_E_kin_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_E_kin_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_E_kin_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the kinetic energy contribution from discrete KS orbitals.</span>
 
@@ -1211,19 +1257,19 @@
 <span class="sd">            the kinetic energy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># compute the kinetic energy density (using default method A)</span>
-        <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
         <span class="c1"># FIXME: this is necessary because the Laplacian is not accurate at the boundary</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
             <span class="n">e_kin_dens</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">=</span> <span class="n">e_kin_dens</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">]</span>
 
         <span class="c1"># integrate over sphere</span>
-        <span class="n">E_kin</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">e_kin_dens</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">E_kin</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">e_kin_dens</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">E_kin</span></div>
 
 <div class="viewcode-block" id="Energy.calc_E_kin_dens"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_dens">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the local kinetic energy density (KED).</span>
 
@@ -1275,21 +1321,32 @@
             <span class="c1"># compute the grad^2 component</span>
             <span class="n">grad2_orbs</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">laplace</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
-            <span class="c1"># compute the (l+1/2)^2 component</span>
-            <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
-                <span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
-            <span class="p">)</span>
-            <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+                <span class="c1"># compute the (l+1/2)^2 component</span>
+                <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
+                    <span class="p">((</span><span class="n">l</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
+                <span class="p">)</span>
+                <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span>
 
-            <span class="c1"># add together and multiply by eigfuncs*exp(-3x)</span>
-            <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
-            <span class="n">kin_orbs</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad2_orbs</span> <span class="o">-</span> <span class="n">lhalf_orbs</span><span class="p">)</span>
+                <span class="c1"># add together and multiply by eigfuncs*exp(-3x)</span>
+                <span class="n">prefac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">l</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
+                <span class="p">)</span>
+                <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">xgrid</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+                <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+                <span class="n">grad2_orbs</span> <span class="o">=</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad2_orbs</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">grad_orbs</span> <span class="o">/</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">/</span> <span class="n">xgrid</span><span class="o">**</span><span class="mi">2</span>
+
+                <span class="n">prefac</span> <span class="o">=</span> <span class="n">eigfuncs</span>
 
             <span class="c1"># multiply and sum over occupation numbers</span>
+            <span class="n">kin_orbs</span> <span class="o">=</span> <span class="n">prefac</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad2_orbs</span> <span class="o">-</span> <span class="n">lhalf_orbs</span><span class="p">)</span>
             <span class="n">e_kin_dens</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijkl,ijklm-&gt;jm&quot;</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">kin_orbs</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
-
             <span class="c1"># compute the gradient of the orbitals</span>
             <span class="n">grad_eigfuncs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
@@ -1297,13 +1354,20 @@
             <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">l</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">lmax</span>
             <span class="p">)</span>
-            <span class="n">eigs_mod</span> <span class="o">=</span> <span class="n">eigfuncs</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigs_mod</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
-                <span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+                <span class="n">eigs_mod</span> <span class="o">=</span> <span class="n">eigfuncs</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigs_mod</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                    <span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span>
+                <span class="p">)</span>
 
-            <span class="c1"># chain rule to convert from dP_dx to dX_dr</span>
-            <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad_eigfuncs</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">eigfuncs</span><span class="p">)</span>
+                <span class="c1"># chain rule to convert from dP_dx to dX_dr</span>
+                <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad_eigfuncs</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">eigfuncs</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">grad_eigfuncs</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+                <span class="n">lhalf_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="n">xgrid</span><span class="o">**</span><span class="mi">4</span>
+                <span class="p">)</span>
 
             <span class="c1"># square it</span>
             <span class="n">grad_orbs_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span><span class="o">**</span><span class="mf">2.0</span>
@@ -1470,7 +1534,7 @@
         <span class="k">return</span> <span class="n">S_unbound</span></div>
 
 <div class="viewcode-block" id="Energy.calc_E_en"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_en">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_E_en</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_E_en</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the electron-nuclear energy.</span>
 
@@ -1498,13 +1562,13 @@
         <span class="n">dens_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># compute the integral</span>
-        <span class="n">v_en</span> <span class="o">=</span> <span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
-        <span class="n">E_en</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens_tot</span> <span class="o">*</span> <span class="n">v_en</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">v_en</span> <span class="o">=</span> <span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
+        <span class="n">E_en</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens_tot</span> <span class="o">*</span> <span class="n">v_en</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">E_en</span></div>
 
 <div class="viewcode-block" id="Energy.calc_E_ha"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_ha">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_E_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_E_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Hartree energy.</span>
 
@@ -1532,8 +1596,8 @@
         <span class="n">dens_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># compute the integral</span>
-        <span class="n">v_ha</span> <span class="o">=</span> <span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
-        <span class="n">E_ha</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens_tot</span> <span class="o">*</span> <span class="n">v_ha</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">v_ha</span> <span class="o">=</span> <span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
+        <span class="n">E_ha</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens_tot</span> <span class="o">*</span> <span class="n">v_ha</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">E_ha</span></div></div>
 
@@ -1552,11 +1616,11 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span> <span class="o">=</span> <span class="n">orbs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dens</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">total</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">dens</span><span class="o">.</span><span class="n">_xgrid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pot</span> <span class="o">=</span> <span class="n">pot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">grid_type</span>
 
         <span class="c1"># initialize attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_F_tot</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -1610,7 +1674,7 @@
     <span class="k">def</span> <span class="nf">E_en</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: Electron-nuclear attraction energy.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_en</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_en</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_en</span>
 
     <span class="nd">@property</span>
@@ -1632,7 +1696,9 @@
     <span class="k">def</span> <span class="nf">E_v_hxc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: The integral :math:`\int \mathrm{d}r v_\mathrm{Hxc}(r) n(r)`.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_v_hxc</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_v_hxc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_v_hxc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_v_hxc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_E_v_hxc</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_v_hxc</span>
 
     <span class="nd">@property</span>
@@ -1650,7 +1716,7 @@
     <span class="k">def</span> <span class="nf">E_ha</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;float: The Hartree energy.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_ha</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span> <span class="o">=</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_ha</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_ha</span>
 
     <span class="nd">@property</span>
@@ -1662,11 +1728,13 @@
 <span class="sd">        correlation and exchange + correlation respectively</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">E_xc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span> <span class="o">=</span> <span class="n">xc</span><span class="o">.</span><span class="n">E_xc</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">xfunc</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">cfunc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_type</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span>
 
 <div class="viewcode-block" id="EnergyAlt.calc_E_v_hxc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt.calc_E_v_hxc">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">calc_E_v_hxc</span><span class="p">(</span><span class="n">dens</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">calc_E_v_hxc</span><span class="p">(</span><span class="n">dens</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the compensating integral term over the Hxc-potential (see notes).</span>
 
@@ -1695,13 +1763,13 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># first compute the hartree contribution, which is twice the hartree energy</span>
-        <span class="n">E_v_ha</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_ha</span><span class="p">(</span><span class="n">dens</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">E_v_ha</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_ha</span><span class="p">(</span><span class="n">dens</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
         <span class="c1"># now compute the xc contribution (over each spin channel)</span>
         <span class="n">E_v_xc</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
             <span class="n">v_xc</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">v_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">E_v_xc</span> <span class="o">=</span> <span class="n">E_v_xc</span> <span class="o">+</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_xc</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+            <span class="n">E_v_xc</span> <span class="o">=</span> <span class="n">E_v_xc</span> <span class="o">+</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_xc</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
         <span class="c1"># compute the term due to the constant shift introduced in the potential</span>
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">v_shift</span><span class="p">:</span>

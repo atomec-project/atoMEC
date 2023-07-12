@@ -190,7 +190,7 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">config</span>
 
 
-<div class="viewcode-block" id="normalize_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.normalize_orbs">[docs]</a><span class="k">def</span> <span class="nf">normalize_orbs</span><span class="p">(</span><span class="n">eigfuncs_x</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="normalize_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.normalize_orbs">[docs]</a><span class="k">def</span> <span class="nf">normalize_orbs</span><span class="p">(</span><span class="n">eigfuncs_x</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Normalize the KS orbitals within the chosen sphere.</span>
 
@@ -214,15 +214,48 @@
         <span class="c1"># compute the mod squared eigenvalues</span>
         <span class="n">eigfuncs_sq</span> <span class="o">=</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">**</span> <span class="mi">2</span>
         <span class="c1"># compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2</span>
-        <span class="n">exp_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
-        <span class="n">ampsq</span> <span class="o">=</span> <span class="n">int_sphere</span><span class="p">(</span><span class="n">exp_x</span> <span class="o">*</span> <span class="n">eigfuncs_sq</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="n">ampsq</span> <span class="o">=</span> <span class="n">int_sphere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">eigfuncs_sq</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ampsq</span> <span class="o">=</span> <span class="n">int_sphere</span><span class="p">(</span><span class="n">eigfuncs_sq</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="s2">&quot;sqrt&quot;</span><span class="p">)</span>
         <span class="c1"># normalize eigenfunctions</span>
         <span class="n">eigfuncs_x_norm</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">ampsq</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">eigfuncs_x_norm</span></div>
 
 
-<div class="viewcode-block" id="int_sphere"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.int_sphere">[docs]</a><span class="k">def</span> <span class="nf">int_sphere</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="normalize_orbs_sgrid"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.normalize_orbs_sgrid">[docs]</a><span class="k">def</span> <span class="nf">normalize_orbs_sgrid</span><span class="p">(</span><span class="n">eigfuncs_x</span><span class="p">,</span> <span class="n">sgrid</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize the KS orbitals within the chosen sphere.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eigfuncs_x : ndarray</span>
+<span class="sd">        The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`</span>
+<span class="sd">    xgrid : ndarray</span>
+<span class="sd">        The logarithmic grid over which normalization is performed</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eigfuncs_x_norm : ndarray</span>
+<span class="sd">        The radial KS eigenfunctions normalized over the chosen sphere</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initialize the normalized eigenfunctions</span>
+    <span class="n">eigfuncs_x_norm</span> <span class="o">=</span> <span class="n">eigfuncs_x</span>
+
+    <span class="c1"># loop over the eigenfunctions</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs_x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="c1"># compute the mod squared eigenvalues</span>
+        <span class="n">eigfuncs_sq</span> <span class="o">=</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">real</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">imag</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="c1"># compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2</span>
+        <span class="n">ampsq</span> <span class="o">=</span> <span class="n">int_sphere</span><span class="p">(</span><span class="n">eigfuncs_sq</span><span class="p">,</span> <span class="n">sgrid</span><span class="p">,</span> <span class="s2">&quot;sqrt&quot;</span><span class="p">)</span>
+        <span class="c1"># normalize eigenfunctions</span>
+        <span class="n">eigfuncs_x_norm</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">eigfuncs_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">ampsq</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">eigfuncs_x_norm</span></div>
+
+
+<div class="viewcode-block" id="int_sphere"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.int_sphere">[docs]</a><span class="k">def</span> <span class="nf">int_sphere</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute integral over sphere defined by input grid.</span>
 
@@ -246,7 +279,10 @@
 
 <span class="sd">    .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">func_int</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">fx</span>
+    <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+        <span class="n">func_int</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">fx</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">func_int</span> <span class="o">=</span> <span class="mf">8.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">xgrid</span><span class="o">**</span><span class="mi">5</span> <span class="o">*</span> <span class="n">fx</span>
     <span class="n">I_sph</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">func_int</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">I_sph</span></div>

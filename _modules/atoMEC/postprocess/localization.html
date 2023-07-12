@@ -182,7 +182,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># internal modules</span>
-<span class="kn">from</span> <span class="nn">atoMEC</span> <span class="kn">import</span> <span class="n">staticKS</span><span class="p">,</span> <span class="n">mathtools</span>
+<span class="kn">from</span> <span class="nn">atoMEC</span> <span class="kn">import</span> <span class="n">staticKS</span><span class="p">,</span> <span class="n">mathtools</span><span class="p">,</span> <span class="n">check_inputs</span>
 
 
 <div class="viewcode-block" id="ELFTools"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools">[docs]</a><span class="k">class</span> <span class="nc">ELFTools</span><span class="p">:</span>
@@ -213,6 +213,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">eigfuncs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_orbs</span><span class="o">.</span><span class="n">_xgrid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
+
+        <span class="k">if</span> <span class="n">orbitals</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">!=</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">InputError</span><span class="o">.</span><span class="n">ELF_error</span><span class="p">(</span>
+                <span class="s2">&quot;Sqrt grid is not yet supported for ELF calculations.&quot;</span>
+                <span class="s2">&quot;Please switch to log grid.&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># density and occupation numbers have to include bound and free contributions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_totdensity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_density</span><span class="o">.</span><span class="n">total</span>
@@ -340,7 +346,9 @@
 <span class="sd">        where :math:`\tau^\sigma(r)` is the local kinetic energy density.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># first compute the contribution from the KED</span>
-        <span class="n">tau</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">)</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_dens</span><span class="p">(</span>
+            <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;B&quot;</span>
+        <span class="p">)</span>
 
         <span class="c1"># compute the density gradient using chain rule</span>
         <span class="n">grad_dens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
@@ -468,7 +476,6 @@
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-
                 <span class="c1"># determine the part of the xgrid lying between two minima</span>
                 <span class="n">xgrid_partition</span> <span class="o">=</span> <span class="n">xgrid</span><span class="p">[</span><span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="p">:</span> <span class="n">xargs_min</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
@@ -481,7 +488,9 @@
                 <span class="c1"># ELF_partition = ELF[i][xargs_min[i][j] : xargs_min[i][j + 1]]</span>
 
                 <span class="c1"># integrate over the density between two minima</span>
-                <span class="n">N_shell</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">density_partition</span><span class="p">,</span> <span class="n">xgrid_partition</span><span class="p">)</span>
+                <span class="n">N_shell</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span>
+                    <span class="n">density_partition</span><span class="p">,</span> <span class="n">xgrid_partition</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span>
+                <span class="p">)</span>
 
         <span class="c1"># delete the last element in N_shell (superfluous)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
@@ -519,7 +528,7 @@
     <span class="k">return</span> <span class="n">MIS</span></div>
 
 
-<div class="viewcode-block" id="calc_IPR_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.calc_IPR_mat">[docs]</a><span class="k">def</span> <span class="nf">calc_IPR_mat</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="calc_IPR_mat"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.calc_IPR_mat">[docs]</a><span class="k">def</span> <span class="nf">calc_IPR_mat</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the inverse participation ratio for all eigenfunctions (see notes).</span>
 
@@ -552,6 +561,12 @@
 <span class="sd">       contribution is correctly accounted for). Use at your own peril...</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">grid_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">grid_type</span> <span class="o">=</span> <span class="s2">&quot;log&quot;</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;No grid type provided, assuming logarathmic grid.&quot;</span>
+            <span class="s2">&quot;Please check if correct&quot;</span>
+        <span class="p">)</span>
     <span class="c1"># get the dimensions for the IPR matrix</span>
     <span class="n">nkpts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">spindims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
@@ -567,9 +582,12 @@
             <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nmax</span><span class="p">):</span>
                     <span class="c1"># compute |X_nl(x)|^4 = |P_nl(x)|^4 * exp(-2x)</span>
-                    <span class="n">Psi4</span> <span class="o">=</span> <span class="n">eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+                        <span class="n">Psi4</span> <span class="o">=</span> <span class="n">eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">Psi4</span> <span class="o">=</span> <span class="n">eigfuncs</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="p">:]</span> <span class="o">**</span> <span class="mf">4.0</span>
                     <span class="c1"># integrate over sphere</span>
-                    <span class="n">IPR_mat</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">Psi4</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+                    <span class="n">IPR_mat</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">Psi4</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">IPR_mat</span></div>
 </pre></div>

@@ -121,7 +121,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.numerov">atoMEC.numerov module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id5">Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">Classes</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.staticKS">atoMEC.staticKS module</a><ul>
@@ -268,6 +268,23 @@ appropriate default inputs where none are supplied.</p>
 <em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.check_inputs.</span></span><span class="sig-name descname"><span class="pre">InputError</span></span><a class="reference internal" href="../_modules/atoMEC/check_inputs.html#InputError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.check_inputs.InputError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Exit atoMEC and print relevant input error message.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.check_inputs.InputError.ELF_error">
+<span class="sig-name descname"><span class="pre">ELF_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/check_inputs.html#InputError.ELF_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.check_inputs.InputError.ELF_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise exception if error in ELF inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>err_msg</strong> (<em>str</em>) – the error message printed</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.check_inputs.InputError.SCF_error">
 <span class="sig-name descname"><span class="pre">SCF_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/check_inputs.html#InputError.SCF_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.check_inputs.InputError.SCF_error" title="Permalink to this definition">¶</a></dt>
@@ -1109,7 +1126,7 @@ be added in future.</p>
 </ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.convergence.SCF">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.convergence.</span></span><span class="sig-name descname"><span class="pre">SCF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/convergence.html#SCF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.convergence.SCF" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.convergence.</span></span><span class="sig-name descname"><span class="pre">SCF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/convergence.html#SCF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.convergence.SCF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Convergence attributes and functions related to SCF energy procedures.</p>
 <p class="rubric">Notes</p>
@@ -1383,7 +1400,7 @@ distribution.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.mathtools.int_sphere">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">int_sphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#int_sphere"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.int_sphere" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">int_sphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#int_sphere"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.int_sphere" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute integral over sphere defined by input grid.</p>
 <p>The integral is performed on the logarithmic grid (see notes).</p>
 <dl class="field-list simple">
@@ -1456,7 +1473,27 @@ default : -1</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.mathtools.normalize_orbs">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">normalize_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#normalize_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.normalize_orbs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">normalize_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#normalize_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.normalize_orbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize the KS orbitals within the chosen sphere.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eigfuncs_x</strong> (<em>ndarray</em>) – The radial KS eigenfunctions <span class="math notranslate nohighlight">\(X_{nl}^{\sigma}(x)\)</span></p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – The logarithmic grid over which normalization is performed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>eigfuncs_x_norm</strong> – The radial KS eigenfunctions normalized over the chosen sphere</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.mathtools.normalize_orbs_sgrid">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">normalize_orbs_sgrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#normalize_orbs_sgrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.normalize_orbs_sgrid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize the KS orbitals within the chosen sphere.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1552,7 +1589,7 @@ average-atom models, <a class="reference external" href="https://arxiv.org/abs/2
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.models.ISModel.CalcEnergy">
-<span class="sig-name descname"><span class="pre">CalcEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_potential</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_eigs_occs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_dos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'density.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'potential.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_occs_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'eigs_occs.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dos_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dos.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess_pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel.CalcEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel.CalcEnergy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">CalcEnergy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scf_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_bound</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_potential</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_eigs_occs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_dos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'density.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'potential.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_occs_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'eigs_occs.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dos_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dos.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess_pot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/models.html#ISModel.CalcEnergy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.models.ISModel.CalcEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a self-consistent calculation to minimize the Kohn-Sham free energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1771,17 +1808,23 @@ defaults to 0.01</p></li>
 diagonalization. There is an option for parallelizing over the angular
 quantum number <cite>l</cite>.</p>
 <div class="section" id="id5">
-<h3>Functions<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<h3>Classes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#atoMEC.numerov.matrix_solve" title="atoMEC.numerov.matrix_solve"><code class="xref py py-func docutils literal notranslate"><span class="pre">matrix_solve()</span></code></a> : Solve the radial KS equation via matrix diagonalization of                          Numerov’s method.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.numerov.KS_matsolve_parallel" title="atoMEC.numerov.KS_matsolve_parallel"><code class="xref py py-func docutils literal notranslate"><span class="pre">KS_matsolve_parallel()</span></code></a> : Solve the KS matrix diagonalization by parallelizing                                  over config.ncores.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.numerov.KS_matsolve_serial" title="atoMEC.numerov.KS_matsolve_serial"><code class="xref py py-func docutils literal notranslate"><span class="pre">KS_matsolve_serial()</span></code></a> : Solve the KS matrix diagonalization in serial.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.numerov.diag_H" title="atoMEC.numerov.diag_H"><code class="xref py py-func docutils literal notranslate"><span class="pre">diag_H()</span></code></a> : Diagonalize the Hamiltonian for given input potential.</p></li>
-<li><p><a class="reference internal" href="#atoMEC.numerov.update_orbs" title="atoMEC.numerov.update_orbs"><code class="xref py py-func docutils literal notranslate"><span class="pre">update_orbs()</span></code></a> : Sort the eigenvalues and functions by ascending energies and                         normalize orbs.</p></li>
+<li><p><a class="reference internal" href="#atoMEC.numerov.Solver" title="atoMEC.numerov.Solver"><code class="xref py py-class docutils literal notranslate"><span class="pre">Solver</span></code></a> : Solve the radial KS equation via matrix diagonalization of                     Numerov’s method. Can use either logarathmic or sqrt grid.</p></li>
 </ul>
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.numerov.KS_matsolve_parallel">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">KS_matsolve_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#KS_matsolve_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.KS_matsolve_parallel" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">Solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class holding the numerov solver for KS equations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>grid_type</strong> (<em>str</em>) – The grid type (sqrt or log)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.KS_matsolve_parallel">
+<span class="sig-name descname"><span class="pre">KS_matsolve_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.KS_matsolve_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.KS_matsolve_parallel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve the KS matrix diagonalization by parallelizing over config.numcores.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1789,7 +1832,7 @@ quantum number <cite>l</cite>.</p>
 <li><p><strong>T</strong> (<em>ndarray</em>) – kinetic energy array</p></li>
 <li><p><strong>B</strong> (<em>ndarray</em>) – off-diagonal array (for RHS of eigenvalue problem)</p></li>
 <li><p><strong>v</strong> (<em>ndarray</em>) – KS potential array</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the numerical grid</p></li>
 <li><p><strong>solve_type</strong> (<em>str</em>) – whether to do a “full” or “guess” calculation: “guess” estimates the lower
 bounds of the eigenvalues</p></li>
 <li><p><strong>eigs_min_guess</strong> (<em>ndarray</em>) – input guess for the lowest eigenvalues for given <cite>l</cite> and spin,
@@ -1805,12 +1848,13 @@ should be dimension <cite>config.spindims * config.lmax</cite></p></li>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The parallelization is done via the <cite>joblib.Parallel</cite> class of the <cite>joblib</cite> library,
-see <a class="reference external" href="https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html">here</a> for more information.</p>
-<p>For “best” performance (i.e. exactly one core for each call of the diagonalization
-routine plus one extra for the “master” node), the number of cores should be chosen
-as <cite>config.numcores = 1 + config.spindims * config.lmax</cite>. However, if this number is
-larger than the total number of cores available, performance is hindered.</p>
+<p>The parallelization is done via the <cite>joblib.Parallel</cite> class of the <cite>joblib</cite>
+library, see <a class="reference external" href="https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html">here</a> for more information.</p>
+<p>For “best” performance (i.e. exactly one core per call of the diagonalization
+routine plus one extra for the “master” node), the number of cores should be
+chosen as <cite>config.numcores = 1 + config.spindims * config.lmax</cite>. However, if
+this number is larger than the total number of cores available, performance
+is hindered.</p>
 <p>Therefore for “good” performance, we can suggest:
 <cite>config.numcores = max(1 + config.spindimgs * config.lmax, n_avail)</cite>, where
 <cite>n_avail</cite> is the number of cores available.</p>
@@ -1822,9 +1866,9 @@ core.</p>
 <cite>n_avail</cite> and parallelizes into <cite>n_avail + 1 - N</cite> separate jobs.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.numerov.KS_matsolve_serial">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">KS_matsolve_serial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#KS_matsolve_serial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.KS_matsolve_serial" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.KS_matsolve_serial">
+<span class="sig-name descname"><span class="pre">KS_matsolve_serial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.KS_matsolve_serial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.KS_matsolve_serial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve the KS equations via matrix diagonalization in serial.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1832,7 +1876,7 @@ core.</p>
 <li><p><strong>T</strong> (<em>ndarray</em>) – kinetic energy array</p></li>
 <li><p><strong>B</strong> (<em>ndarray</em>) – off-diagonal array (for RHS of eigenvalue problem)</p></li>
 <li><p><strong>v</strong> (<em>ndarray</em>) – KS potential array</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the numerical grid</p></li>
 <li><p><strong>solve_type</strong> (<em>str</em>) – whether to do a “full” or “guess” calculation: “guess” estimates the lower
 bounds of the eigenvalues</p></li>
 <li><p><strong>eigs_min_guess</strong> (<em>ndarray</em>) – input guess for the lowest eigenvalues for given <cite>l</cite> and spin,
@@ -1849,9 +1893,9 @@ should be dimension <cite>config.spindims * config.lmax</cite></p></li>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.numerov.calc_eigs_min">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">calc_eigs_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#calc_eigs_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.calc_eigs_min" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.calc_eigs_min">
+<span class="sig-name descname"><span class="pre">calc_eigs_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.calc_eigs_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.calc_eigs_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute an estimate for the minimum values of the KS eigenvalues.</p>
 <p>This estimate uses full diagonalization of the Hamiltonian on a coarse grid.
 The eigenvalue estimates are used in Scipy’s sparse eigenvalue solver
@@ -1860,7 +1904,7 @@ The eigenvalue estimates are used in Scipy’s sparse eigenvalue solver
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>v</strong> (<em>ndarray</em>) – the KS potential</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid (full)</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the numerical grid (full)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1873,9 +1917,9 @@ The eigenvalue estimates are used in Scipy’s sparse eigenvalue solver
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.numerov.calc_wfns_e_grid">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">calc_wfns_e_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#calc_wfns_e_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.calc_wfns_e_grid" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.calc_wfns_e_grid">
+<span class="sig-name descname"><span class="pre">calc_wfns_e_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigfuncs_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigfuncs_u</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.calc_wfns_e_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.calc_wfns_e_grid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute all KS orbitals defined on the energy grid.</p>
 <p>This routine is used to propagate a set of orbitals defined with a fixed
 set of energies. It is used for the <cite>bands</cite> boundary condition in the
@@ -1883,7 +1927,7 @@ set of energies. It is used for the <cite>bands</cite> boundary condition in the
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the spatial (logarithmic) grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the spatial (numerical) grid</p></li>
 <li><p><strong>v</strong> (<em>ndarray</em>) – the KS potential</p></li>
 <li><p><strong>e_arr</strong> (<em>ndarray</em>) – the energy grid</p></li>
 </ul>
@@ -1897,9 +1941,9 @@ set of energies. It is used for the <cite>bands</cite> boundary condition in the
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.numerov.diag_H">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">diag_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_guess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#diag_H"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.diag_H" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.diag_H">
+<span class="sig-name descname"><span class="pre">diag_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_guess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.diag_H"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.diag_H" title="Permalink to this definition">¶</a></dt>
 <dd><p>Diagonilize the Hamiltonian for the input potential v[p].</p>
 <p>Uses Scipy’s sparse matrix solver scipy.sparse.linalg.eigs. This
 searches for the lowest magnitude <cite>nmax</cite> eigenvalues, so care
@@ -1911,7 +1955,7 @@ must be taken to converge calculations wrt <cite>nmax</cite>.</p>
 <li><p><strong>T</strong> (<em>ndarray</em>) – the kinetic energy matrix</p></li>
 <li><p><strong>B</strong> (<em>ndarray</em>) – the off diagonal matrix multiplying V and RHS</p></li>
 <li><p><strong>v</strong> (<em>ndarray</em>) – KS potential array</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the numerical grid</p></li>
 <li><p><strong>nmax</strong> (<em>int</em>) – number of eigenvalues returned by the sparse matrix diagonalization</p></li>
 <li><p><strong>bc</strong> (<em>str</em>) – the boundary condition</p></li>
 </ul>
@@ -1926,16 +1970,16 @@ must be taken to converge calculations wrt <cite>nmax</cite>.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.numerov.matrix_solve">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">matrix_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#matrix_solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.matrix_solve" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.matrix_solve">
+<span class="sig-name descname"><span class="pre">matrix_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'full'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.matrix_solve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.matrix_solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve the radial KS equation via matrix diagonalization of Numerov’s method.</p>
 <p>See notes for details of the implementation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>v</strong> (<em>ndarray</em>) – the KS potential on the log grid</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>v</strong> (<em>ndarray</em>) – the KS potential on the log/sqrt grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the numerical grid</p></li>
 <li><p><strong>solve_type</strong> (<em>str</em><em>, </em><em>optional</em>) – whether to do a “full” or “guess” calculation: “guess” estimates the lower
 bounds of the eigenvalues</p></li>
 <li><p><strong>eigs_min_guess</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – input guess for the lowest eigenvalues for given <cite>l</cite> and spin,
@@ -1944,7 +1988,7 @@ should be dimension <cite>config.spindims * config.lmax</cite></p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the radial KS eigenfunctions on the log grid</p></li>
+<li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the radial KS eigenfunctions on the log/sqrt grid</p></li>
 <li><p><strong>eigvals</strong> (<em>ndarray</em>) – the KS eigenvalues</p></li>
 </ul>
 </p>
@@ -1958,25 +2002,25 @@ should be dimension <cite>config.spindims * config.lmax</cite></p></li>
 \hat{H}                  &amp;= \hat{T} + \hat{B}\times\hat{V}\ ,   \\
 \hat{T}                  &amp;= -0.5\times\hat{p}\times\hat{A}\ .\end{split}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\hat{p}=\exp(-2x)\)</span>.
-See <a class="footnote-reference brackets" href="#id8" id="id7">2</a> for the definitions of the matrices <span class="math notranslate nohighlight">\(\hat{A}\)</span> and <span class="math notranslate nohighlight">\(\hat{B}\)</span>.</p>
+See <a class="footnote-reference brackets" href="#id8" id="id7">2</a> for definitions of the matrices <span class="math notranslate nohighlight">\(\hat{A}\)</span> and <span class="math notranslate nohighlight">\(\hat{B}\)</span>.</p>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
 <dt class="label" id="id8"><span class="brackets">2</span><span class="fn-backref">(<a href="#id6">1</a>,<a href="#id7">2</a>)</span></dt>
-<dd><p>M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for solving
-Schrödinger’s equation, American Journal of Physics 80,
-1017-1019 (2012) <a class="reference external" href="https://doi.org/10.1119/1.4748813">DOI:10.1119/1.4748813</a>.</p>
+<dd><p>M. Pillai, J. Goglio, and T. G. Walker , Matrix Numerov method for
+solving Schrödinger’s equation, American Journal of Physics 80, 1017-1019
+(2012) <a class="reference external" href="https://doi.org/10.1119/1.4748813">DOI:10.1119/1.4748813</a>.</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.numerov.num_propagate">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">num_propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigfuncs_init</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#num_propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.num_propagate" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.num_propagate">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">num_propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigfuncs_init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.num_propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.num_propagate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Propagate the wfn manually for fixed energy with numerov scheme.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the numerical grid</p></li>
 <li><p><strong>W</strong> (<em>ndarray</em>) – flattened potential array (with angular momentum term)</p></li>
 <li><p><strong>e_arr</strong> (<em>ndarray</em>) – flattened energy array</p></li>
 <li><p><strong>eigfuncs_init</strong> (<em>ndarray</em>) – initial values for eigenfunctions</p></li>
@@ -1991,16 +2035,16 @@ Schrödinger’s equation, American Journal of Physics 80,
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.numerov.update_orbs">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.numerov.</span></span><span class="sig-name descname"><span class="pre">update_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_eigvals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#update_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.update_orbs" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.update_orbs">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">update_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_eigvals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.update_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.update_orbs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the eigenvalues and functions by ascending energies and normalize orbs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>l_eigfuncs</strong> (<em>ndarray</em>) – input (unsorted and unnormalized) eigenfunctions (for given l and spin)</p></li>
 <li><p><strong>l_eigvals</strong> (<em>ndarray</em>) – input (unsorted) eigenvalues (for given l and spin)</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the numerical grid</p></li>
 <li><p><strong>bc</strong> (<em>str</em>) – the boundary condition</p></li>
 </ul>
 </dd>
@@ -2012,6 +2056,8 @@ Schrödinger’s equation, American Journal of Physics 80,
 </p>
 </dd>
 </dl>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -2148,7 +2194,7 @@ unbound density and number of unbound electrons respectively</p>
 <p>Class holding information about the KS total energy and relevant routines.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_en">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_en</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_en"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_en" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_en</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_en"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_en" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the electron-nuclear energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2173,7 +2219,7 @@ unbound density and number of unbound electrons respectively</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_ha">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_ha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_ha"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_ha" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_ha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_ha"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_ha" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the Hartree energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2220,7 +2266,7 @@ This routine is a wrapper calling the respective functions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_kin_dens">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_dens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_dens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_dens" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_dens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_dens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_dens" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the local kinetic energy density (KED).</p>
 <p>There are multiple definitions in the literature of the local KED, see notes.</p>
 <dl class="field-list simple">
@@ -2270,7 +2316,7 @@ calculations. J. Phys. B, 40(8):1553 (2007), <a class="reference external" href=
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Energy.calc_E_kin_orbs">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_orbs" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_kin_orbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Energy.calc_E_kin_orbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Energy.calc_E_kin_orbs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the kinetic energy contribution from discrete KS orbitals.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2482,7 +2528,7 @@ to the way the unbound electrons are treated. Which result is ‘correct’ depe
 how we interpret the unbound energy (i.e., is it purely a kinetic term or not).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.EnergyAlt.calc_E_v_hxc">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_v_hxc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#EnergyAlt.calc_E_v_hxc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.calc_E_v_hxc" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_E_v_hxc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#EnergyAlt.calc_E_v_hxc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.EnergyAlt.calc_E_v_hxc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the compensating integral term over the Hxc-potential (see notes).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2713,7 +2759,7 @@ total entropy. <span class="math notranslate nohighlight">\(F = E - TS\)</span><
 
 <dl class="py class">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.staticKS.</span></span><span class="sig-name descname"><span class="pre">Orbitals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">atoMEC.staticKS.</span></span><span class="sig-name descname"><span class="pre">Orbitals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class holding the KS orbitals, associated quantities and relevant routines.</p>
 <dl class="py method">
@@ -2744,7 +2790,7 @@ the functional form of the DOS.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.calc_bands">
-<span class="sig-name descname"><span class="pre">calc_bands</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigfuncs_l</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals.calc_bands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals.calc_bands" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calc_bands</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigfuncs_l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigfuncs_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Orbitals.calc_bands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Orbitals.calc_bands" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the eigenfunctions which fill the energy bands.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3046,7 +3092,7 @@ angular momentum, and the integration weight.</p>
 <p>Class holding the KS potential and the routines required to compute it.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Potential.calc_v_en">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_v_en</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Potential.calc_v_en"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Potential.calc_v_en" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_v_en</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Potential.calc_v_en"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Potential.calc_v_en" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct the electron-nuclear potential.</p>
 <p>The electron-nuclear potential is given by
 <span class="math notranslate nohighlight">\(v_\mathrm{en} (x) = -Z * \exp(-x)\)</span>
@@ -3055,7 +3101,7 @@ on the logarithmic grid</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Potential.calc_v_ha">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_v_ha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Potential.calc_v_ha"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Potential.calc_v_ha" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">calc_v_ha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#Potential.calc_v_ha"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.Potential.calc_v_ha" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct the Hartree potential (see notes).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3135,6 +3181,24 @@ and exchange + correlation respectively.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>xgrid, rgrid</strong> – The grids in logarithmic (x) and real (r) space</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple of ndarrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atoMEC.staticKS.sqrt_grid">
+<span class="sig-prename descclassname"><span class="pre">atoMEC.staticKS.</span></span><span class="sig-name descname"><span class="pre">sqrt_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s_r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/staticKS.html#sqrt_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.staticKS.sqrt_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up the sqrt (and real) grid, defined up to d_r.</p>
+<p>The leftmost grid point is given by the <cite>config.grid_params[“s0”]</cite> parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>s_r</strong> (<em>float</em>) – The RHS grid point (in sqrt space)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>xgrid, rgrid</strong> – The grids in sqrt (x) and real (r) space</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>tuple of ndarrays</p>
@@ -3438,7 +3502,7 @@ the following private attributes (named so to match libxc):</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.xc.E_xc">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">E_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfunc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#E_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.E_xc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">E_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#E_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.E_xc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the xc energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3558,7 +3622,7 @@ the divergence.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.xc.v_xc">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">v_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfunc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#v_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.v_xc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atoMEC.xc.</span></span><span class="sig-name descname"><span class="pre">v_xc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfunc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/xc.html#v_xc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.xc.v_xc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrive the xc potential.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

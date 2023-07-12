@@ -177,7 +177,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="c1"># import external packages</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">sqrt</span>
 
 <span class="c1"># import internal packages</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">check_inputs</span>
@@ -256,7 +256,6 @@
         <span class="n">v_shift</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">v_shift</span><span class="p">,</span>
         <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="c1"># Input variables</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nele_tot</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">nele</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spinpol</span> <span class="o">=</span> <span class="n">spinpol</span>
@@ -385,6 +384,7 @@
         <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">band_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">force_bound</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">grid_type</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span>
         <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">write_density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -495,20 +495,24 @@
         <span class="n">config</span><span class="o">.</span><span class="n">conv_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_conv_params</span><span class="p">(</span><span class="n">conv_params</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">scf_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_scf_params</span><span class="p">(</span><span class="n">scf_params</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">band_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_band_params</span><span class="p">(</span><span class="n">band_params</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">=</span> <span class="n">grid_type</span>
 
         <span class="c1"># experimental change</span>
         <span class="n">config</span><span class="o">.</span><span class="n">force_bound</span> <span class="o">=</span> <span class="n">force_bound</span>
 
         <span class="c1"># set up the xgrid and rgrid</span>
-        <span class="n">xgrid</span><span class="p">,</span> <span class="n">rgrid</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">log_grid</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">r_s</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="n">xgrid</span><span class="p">,</span> <span class="n">rgrid</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">log_grid</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">r_s</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xgrid</span><span class="p">,</span> <span class="n">rgrid</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">sqrt_grid</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">r_s</span><span class="p">))</span>
 
         <span class="c1"># initialize orbitals</span>
-        <span class="n">orbs</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Orbitals</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">orbs</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Orbitals</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
         <span class="c1"># use coulomb potential or input given potential as initial guess</span>
         <span class="k">if</span> <span class="n">guess</span><span class="p">:</span>
             <span class="n">v_init</span> <span class="o">=</span> <span class="n">guess_pot</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">v_init</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+            <span class="n">v_init</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
         <span class="n">v_s_old</span> <span class="o">=</span> <span class="n">v_init</span>  <span class="c1"># initialize the old potential</span>
         <span class="n">orbs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">v_init</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">bc</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -521,10 +525,9 @@
             <span class="nb">print</span><span class="p">(</span><span class="n">scf_init</span><span class="p">)</span>
 
         <span class="c1"># initialize the convergence object</span>
-        <span class="n">conv</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">SCF</span><span class="p">(</span><span class="n">xgrid</span><span class="p">)</span>
+        <span class="n">conv</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">SCF</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">iscf</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">scf_params</span><span class="p">[</span><span class="s2">&quot;maxscf&quot;</span><span class="p">]):</span>
-
             <span class="c1"># print orbitals and occupations</span>
             <span class="k">if</span> <span class="n">verbosity</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">eigs</span><span class="p">,</span> <span class="n">occs</span> <span class="o">=</span> <span class="n">writeoutput</span><span class="o">.</span><span class="n">SCF</span><span class="o">.</span><span class="n">write_orb_info</span><span class="p">(</span><span class="n">orbs</span><span class="p">)</span>

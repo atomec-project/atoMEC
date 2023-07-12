@@ -195,7 +195,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for Kubo-Greenwood conductivity and MIS via TRK sum rule.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">valence_orbs</span><span class="o">=</span><span class="p">[],</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_orbitals</span> <span class="o">=</span> <span class="n">orbitals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">orbitals</span><span class="o">.</span><span class="n">_xgrid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="n">orbitals</span><span class="o">.</span><span class="n">_eigfuncs</span>
@@ -1157,7 +1156,6 @@
                     <span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">orb_subset_1</span> <span class="o">!=</span> <span class="n">orb_subset_2</span><span class="p">:</span>
-
                         <span class="n">R2_mat</span><span class="p">[:,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">l1</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">R2_int_term</span><span class="p">(</span>
                             <span class="n">eigfuncs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">l2</span><span class="p">,</span> <span class="n">n2</span><span class="p">],</span> <span class="n">eigfuncs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">l1</span><span class="p">,</span> <span class="n">n1</span><span class="p">],</span> <span class="n">xgrid</span>
                         <span class="p">)</span>

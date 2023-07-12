@@ -258,7 +258,12 @@
         <span class="n">nmax</span><span class="p">,</span>
         <span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)</span>
-    <span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">grid_type</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">grid_type</span>
+    <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+        <span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;x0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;s0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># initialize the main radius we are interested in</span>
     <span class="n">main_rad</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">radius</span>
@@ -273,6 +278,7 @@
         <span class="n">grid_params</span><span class="o">=</span><span class="n">grid_params</span><span class="p">,</span>
         <span class="n">band_params</span><span class="o">=</span><span class="n">band_params</span><span class="p">,</span>
         <span class="n">scf_params</span><span class="o">=</span><span class="n">scf_params</span><span class="p">,</span>
+        <span class="n">grid_type</span><span class="o">=</span><span class="n">grid_type</span><span class="p">,</span>
         <span class="n">conv_params</span><span class="o">=</span><span class="n">conv_params</span><span class="p">,</span>
         <span class="n">force_bound</span><span class="o">=</span><span class="n">force_bound</span><span class="p">,</span>
         <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span>
@@ -299,6 +305,7 @@
         <span class="n">grid_params</span><span class="o">=</span><span class="n">grid_params</span><span class="p">,</span>
         <span class="n">band_params</span><span class="o">=</span><span class="n">band_params</span><span class="p">,</span>
         <span class="n">scf_params</span><span class="o">=</span><span class="n">scf_params</span><span class="p">,</span>
+        <span class="n">grid_type</span><span class="o">=</span><span class="n">grid_type</span><span class="p">,</span>
         <span class="n">conv_params</span><span class="o">=</span><span class="n">conv_params</span><span class="p">,</span>
         <span class="n">force_bound</span><span class="o">=</span><span class="n">force_bound</span><span class="p">,</span>
         <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span>
@@ -365,27 +372,41 @@
     <span class="c1"># set the xgrid</span>
     <span class="n">xgrid</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span>
 
+    <span class="n">grid_type</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">grid_type</span>
+
     <span class="c1"># first compute the gradient of the orbitals</span>
     <span class="n">deriv_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="c1"># chain rule to convert from dP_dx to dX_dr</span>
-    <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">deriv_orbs</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+        <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">deriv_orbs</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">grad_orbs</span> <span class="o">=</span> <span class="n">deriv_orbs</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
 
     <span class="c1"># compute the &quot;gradient&quot; term</span>
     <span class="n">grad_sq</span> <span class="o">=</span> <span class="n">grad_orbs</span><span class="o">**</span><span class="mi">2</span>
 
     <span class="c1"># add a correction if only rr used</span>
     <span class="k">if</span> <span class="n">only_rr</span><span class="p">:</span>
-        <span class="n">grad_sq</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span> <span class="o">*</span> <span class="n">grad_orbs</span>
+        <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="n">grad_sq</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span> <span class="o">*</span> <span class="n">grad_orbs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">grad_sq</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span> <span class="o">*</span> <span class="n">grad_orbs</span> <span class="o">/</span> <span class="n">xgrid</span><span class="o">**</span><span class="mi">2</span>
 
     <span class="c1"># compute the l*(l+1) array</span>
     <span class="n">l_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">((</span><span class="n">l</span> <span class="o">*</span> <span class="p">(</span><span class="n">l</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmax</span><span class="p">)),</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lmax</span><span class="p">)</span>
 
     <span class="c1"># get the X(R)^2 term</span>
-    <span class="n">orb_sq</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+        <span class="n">orb_sq</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">orb_sq</span> <span class="o">=</span> <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="o">**</span><span class="mi">2</span>
 
     <span class="c1"># compute the l(l+1)/r^2 X(R)^2 term</span>
-    <span class="n">lsq_term</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">orb_sq</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+        <span class="n">lsq_term</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">orb_sq</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lsq_term</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;k,ijklm-&gt;ijklm&quot;</span><span class="p">,</span> <span class="n">l_arr</span><span class="p">,</span> <span class="n">orb_sq</span><span class="p">)</span> <span class="o">/</span> <span class="n">xgrid</span><span class="o">**</span><span class="mi">4</span>
 
     <span class="c1"># compute the eps * X(R)^2 term</span>
     <span class="n">v_E_arr</span> <span class="o">=</span> <span class="p">(</span>
@@ -409,7 +430,7 @@
     <span class="k">return</span> <span class="n">P_e</span></div>
 
 
-<div class="viewcode-block" id="virial"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.virial">[docs]</a><span class="k">def</span> <span class="nf">virial</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">use_correction</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="virial"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.virial">[docs]</a><span class="k">def</span> <span class="nf">virial</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">use_correction</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the pressure using the virial theorem (see notes).</span>
 
 <span class="sd">    Parameters</span>
@@ -456,26 +477,34 @@
 <span class="sd">        `DOI:10.1088/0953-4075/40/8/008</span>
 <span class="sd">        &lt;https://doi.org/10.1088/0953-4075/40/8/008&gt;`__.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get the grid type</span>
+    <span class="n">grid_type</span> <span class="o">=</span> <span class="n">density</span><span class="o">.</span><span class="n">grid_type</span>
+
     <span class="c1"># compute the sphere volume</span>
     <span class="n">sph_vol</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">atom</span><span class="o">.</span><span class="n">radius</span><span class="o">**</span><span class="mi">3</span>
 
     <span class="c1"># compute the derivative term of the W_xc component</span>
-    <span class="n">Wd_x</span> <span class="o">=</span> <span class="n">calc_Wd_xc</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">xfunc_id</span><span class="p">,</span> <span class="n">density</span><span class="p">)</span>
-    <span class="n">Wd_c</span> <span class="o">=</span> <span class="n">calc_Wd_xc</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">cfunc_id</span><span class="p">,</span> <span class="n">density</span><span class="p">)</span>
+    <span class="n">Wd_x</span> <span class="o">=</span> <span class="n">calc_Wd_xc</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">xfunc_id</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
+    <span class="n">Wd_c</span> <span class="o">=</span> <span class="n">calc_Wd_xc</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">cfunc_id</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
     <span class="c1"># compute total W_xc component</span>
     <span class="n">W_xc</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">Wd_x</span> <span class="o">+</span> <span class="n">Wd_c</span><span class="p">)</span>
 
-    <span class="n">K2</span> <span class="o">=</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>
+        <span class="n">K2</span> <span class="o">=</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+        <span class="n">K2</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">EnergyAlt</span><span class="p">(</span><span class="n">orbs</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span><span class="o">.</span><span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">use_correction</span><span class="p">:</span>
-        <span class="n">K1</span> <span class="o">=</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_kin</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span>
+        <span class="n">K1</span> <span class="o">=</span> <span class="n">K2</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">E_kin_alt_dens</span> <span class="o">=</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Energy</span><span class="o">.</span><span class="n">calc_E_kin_dens</span><span class="p">(</span>
-            <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;B&quot;</span>
+            <span class="n">orbs</span><span class="o">.</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;B&quot;</span>
         <span class="p">)</span>
         <span class="c1"># integrate over sphere</span>
-        <span class="n">K1</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">E_kin_alt_dens</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+        <span class="n">K1</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">E_kin_alt_dens</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">orbs</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">grid_type</span>
+        <span class="p">)</span>
 
     <span class="c1"># compute E_V = 2*T + U + W_xc</span>
     <span class="n">E_V</span> <span class="o">=</span> <span class="n">K1</span> <span class="o">+</span> <span class="n">K2</span> <span class="o">+</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_en</span> <span class="o">+</span> <span class="n">energy</span><span class="o">.</span><span class="n">E_ha</span> <span class="o">+</span> <span class="n">W_xc</span>
@@ -486,7 +515,7 @@
     <span class="k">return</span> <span class="n">P_e</span></div>
 
 
-<div class="viewcode-block" id="calc_Wd_xc"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.calc_Wd_xc">[docs]</a><span class="k">def</span> <span class="nf">calc_Wd_xc</span><span class="p">(</span><span class="n">xc_func_id</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
+<div class="viewcode-block" id="calc_Wd_xc"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.pressure.calc_Wd_xc">[docs]</a><span class="k">def</span> <span class="nf">calc_Wd_xc</span><span class="p">(</span><span class="n">xc_func_id</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the &#39;derivative&#39; component of the xc term in virial formula (see notes).</span>
 
 <span class="sd">    Parameters</span>
@@ -528,7 +557,9 @@
     <span class="c1"># multiply by density, integrate over sphere and sum over spins</span>
     <span class="n">Wd_xc</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">spindims</span><span class="p">):</span>
-        <span class="n">Wd_xc</span> <span class="o">+=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">density</span><span class="o">.</span><span class="n">total</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_xc</span><span class="p">[</span><span class="n">sp</span><span class="p">],</span> <span class="n">density</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">)</span>
+        <span class="n">Wd_xc</span> <span class="o">+=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span>
+            <span class="n">density</span><span class="o">.</span><span class="n">total</span><span class="p">[</span><span class="n">sp</span><span class="p">]</span> <span class="o">*</span> <span class="n">v_xc</span><span class="p">[</span><span class="n">sp</span><span class="p">],</span> <span class="n">density</span><span class="o">.</span><span class="n">_xgrid</span><span class="p">,</span> <span class="n">grid_type</span>
+        <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">Wd_xc</span></div>
 

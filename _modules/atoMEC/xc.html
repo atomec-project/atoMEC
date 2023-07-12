@@ -279,7 +279,6 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># checks if the libxc code is recognised</span>
         <span class="k">try</span><span class="p">:</span>
-
             <span class="n">xc_func</span> <span class="o">=</span> <span class="n">pylibxc</span><span class="o">.</span><span class="n">LibXCFunctional</span><span class="p">(</span><span class="n">xc_code</span><span class="p">,</span> <span class="s2">&quot;unpolarized&quot;</span><span class="p">)</span>
 
             <span class="c1"># check the xc family is supported</span>
@@ -324,7 +323,7 @@
     <span class="k">return</span> <span class="n">xc_func</span></div>
 
 
-<div class="viewcode-block" id="v_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.v_xc">[docs]</a><span class="k">def</span> <span class="nf">v_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">):</span>
+<div class="viewcode-block" id="v_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.v_xc">[docs]</a><span class="k">def</span> <span class="nf">v_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrive the xc potential.</span>
 
@@ -359,7 +358,7 @@
     <span class="k">return</span> <span class="n">_v_xc</span></div>
 
 
-<div class="viewcode-block" id="E_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.E_xc">[docs]</a><span class="k">def</span> <span class="nf">E_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">):</span>
+<div class="viewcode-block" id="E_xc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.xc.E_xc">[docs]</a><span class="k">def</span> <span class="nf">E_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieve the xc energy.</span>
 
@@ -388,11 +387,11 @@
 
     <span class="c1"># compute the exchange energy</span>
     <span class="n">ex_libxc</span> <span class="o">=</span> <span class="n">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">xfunc</span><span class="p">,</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">)</span>
-    <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">ex_libxc</span> <span class="o">*</span> <span class="n">dens_tot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+    <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">ex_libxc</span> <span class="o">*</span> <span class="n">dens_tot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
     <span class="c1"># compute the correlation energy</span>
     <span class="n">ec_libxc</span> <span class="o">=</span> <span class="n">calc_xc</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">cfunc</span><span class="p">,</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">)</span>
-    <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">ec_libxc</span> <span class="o">*</span> <span class="n">dens_tot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+    <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">ec_libxc</span> <span class="o">*</span> <span class="n">dens_tot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
     <span class="c1"># sum to get the total xc potential</span>
     <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;xc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">_E_xc</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span>
@@ -439,14 +438,15 @@
 
     <span class="c1"># special case in which xc = -hartree</span>
     <span class="k">elif</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">_number</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-
         <span class="c1"># import the staticKS module</span>
         <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">staticKS</span>
 
         <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">:</span>
-            <span class="n">xc_arr</span><span class="p">[:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+            <span class="n">xc_arr</span><span class="p">[:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_type</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">:</span>
-            <span class="n">xc_arr</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+            <span class="n">xc_arr</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">staticKS</span><span class="o">.</span><span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span>
+                <span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">grid_type</span>
+            <span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># lda</span>
@@ -475,13 +475,13 @@
                 <span class="n">sigma_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
                 <span class="n">grad_0</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
                 <span class="n">grad_1</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
-                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_0</span> <span class="o">**</span> <span class="mi">2</span>
+                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_0</span><span class="o">**</span><span class="mi">2</span>
                 <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_0</span> <span class="o">*</span> <span class="n">grad_1</span>
-                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_1</span> <span class="o">**</span> <span class="mi">2</span>
+                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_1</span><span class="o">**</span><span class="mi">2</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sigma_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
                 <span class="n">grad</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
-                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad</span> <span class="o">**</span> <span class="mi">2</span>
+                <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad</span><span class="o">**</span><span class="mi">2</span>
 
             <span class="n">inp</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="n">rho_libxc</span><span class="p">,</span> <span class="s2">&quot;sigma&quot;</span><span class="p">:</span> <span class="n">sigma_libxc</span><span class="p">}</span>
 
