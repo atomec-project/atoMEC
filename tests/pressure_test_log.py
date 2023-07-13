@@ -181,6 +181,7 @@ class TestPressure:
         energy = SCF_input["SCF_out"]["energy"]
         rho = SCF_input["SCF_out"]["density"]
         orbs = SCF_input["SCF_out"]["orbitals"]
+        pot = SCF_input["SCF_out"]["potential"]
 
         P_e = h2g * pressure.virial(
             SCF_input["Atom"],
@@ -188,6 +189,7 @@ class TestPressure:
             energy,
             rho,
             orbs,
+            pot,
             use_correction=use_correction,
         )
 
