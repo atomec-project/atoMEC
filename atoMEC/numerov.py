@@ -494,9 +494,11 @@ class Solver:
             K = np.zeros((N, nmax))
             for n in range(nmax):
                 if self.grid_type == "log":
-                    K[:, n] = -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - evals.real[n])
+                    K[:, n] = (
+                        -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - evals.real[n])
+                    )
                 else:
-                    K[:, n] = 8 *xgrid**2 * (V_mat.diagonal() - evals.real[n])
+                    K[:, n] = 8 * xgrid**2 * (V_mat.diagonal() - evals.real[n])
             evecs, evals = self.update_orbs(evecs, evals, xgrid, bc, K, self.grid_type)
 
             return evecs, evals
