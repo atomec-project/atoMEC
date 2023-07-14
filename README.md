@@ -9,6 +9,7 @@
 [![PyPI version](https://badge.fury.io/py/atoMEC.svg)](https://badge.fury.io/py/atoMEC)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![codecov](https://codecov.io/gh/atomec-project/atoMEC/branch/develop/graph/badge.svg?token=V66CJJ3KPI)](https://codecov.io/gh/atomec-project/atoMEC)
+[![CodeFactor](https://www.codefactor.io/repository/github/atomec-project/atomec/badge)](https://www.codefactor.io/repository/github/atomec-project/atomec)
 
 atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
 It is designed as an open-source and modular python package.
