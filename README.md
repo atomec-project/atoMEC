@@ -58,8 +58,6 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
 
 We are looking into ways to remove, or at least make optional, the dependency on `pylibxc`, in order to allow installation on Windows and with Python >= 3.10. However, this is not currently a priority.
 
-**Please note**: atoMEC does not yet support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support.
-
 ## Running
 You can familiarize yourself with the usage of this package by running the example scripts in `examples/`.
 
