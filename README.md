@@ -9,6 +9,7 @@
 [![PyPI version](https://badge.fury.io/py/atoMEC.svg)](https://badge.fury.io/py/atoMEC)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![codecov](https://codecov.io/gh/atomec-project/atoMEC/branch/develop/graph/badge.svg?token=V66CJJ3KPI)](https://codecov.io/gh/atomec-project/atoMEC)
+[![CodeFactor](https://www.codefactor.io/repository/github/atomec-project/atomec/badge)](https://www.codefactor.io/repository/github/atomec-project/atomec)
 
 atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
 It is designed as an open-source and modular python package.
@@ -29,6 +30,8 @@ This repository is structured as follows:
 
 ## Installation
 
+Please see below sub-sections on supported operating systems and Python versions before continuing.
+
 First, clone the atoMEC repository and ``cd`` into the main directory.
 
 * Recommended : using [pipenv](https://pypi.org/project/pipenv/)
@@ -42,7 +45,19 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
 
 * Run the tests (see Testing section below) and report any failures (for example by raising an issue)
 
-**Please note**: atoMEC does not yet support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support.
+### Supported operating systems
+
+* **Linux and macOS**: atoMEC has been installed on various linux distributions and macOS, and is expected to work for most distributions and versions
+* **Windows**: atoMEC does **not** support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support.
+
+### Supported Python versions
+
+* atoMEC is extensively tested and is known to work seamlessly with Python 3.8. All development and CI testing is done with Python 3.8.
+* atoMEC is occasionally tested and is expected to work with Python 3.9
+* atoMEC does not work for Python <= 3.7
+* atoMEC does not work for Python >= 3.10. This is due to the dependency on `pylibxc` which breaks for Python >= 3.10.
+
+We are looking into ways to remove, or at least make optional, the dependency on `pylibxc`, in order to allow installation on Windows and with Python >= 3.10. However, this is not currently a priority.
 
 ## Running
 You can familiarize yourself with the usage of this package by running the example scripts in `examples/`.
