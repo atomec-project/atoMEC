@@ -175,7 +175,8 @@
 <a class="reference external" href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
 <a class="reference external" href="https://badge.fury.io/py/atoMEC"><img alt="PyPI version" src="https://badge.fury.io/py/atoMEC.svg" /></a>
 <a class="reference external" href="https://www.python.org/downloads/release/python-380/"><img alt="Python 3.8" src="https://img.shields.io/badge/python-3.8-blue.svg" /></a>
-<a class="reference external" href="https://codecov.io/gh/atomec-project/atoMEC"><img alt="codecov" src="https://codecov.io/gh/atomec-project/atoMEC/branch/develop/graph/badge.svg?token=V66CJJ3KPI" /></a></p>
+<a class="reference external" href="https://codecov.io/gh/atomec-project/atoMEC"><img alt="codecov" src="https://codecov.io/gh/atomec-project/atoMEC/branch/develop/graph/badge.svg?token=V66CJJ3KPI" /></a>
+<a class="reference external" href="https://www.codefactor.io/repository/github/atomec-project/atomec"><img alt="CodeFactor" src="https://www.codefactor.io/repository/github/atomec-project/atomec/badge" /></a></p>
 <p>atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
 It is designed as an open-source and modular python package.</p>
 <p>atoMEC uses Kohn-Sham density functional theory, in combination with an average-atom approximation,
@@ -190,6 +191,7 @@ to solve the electronic structure problem for single-element materials at finite
 </div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Please see below sub-sections on supported operating systems and Python versions before continuing.</p>
 <p>First, clone the atoMEC repository and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the main directory.</p>
 <ul>
 <li><p>Recommended : using <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a></p>
@@ -203,7 +205,23 @@ to solve the electronic structure problem for single-element materials at finite
 </li>
 <li><p>Run the tests (see Testing section below) and report any failures (for example by raising an issue)</p></li>
 </ul>
-<p><strong>Please note</strong>: atoMEC does not yet support Windows installation. This is due to the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code> which currently lacks Windows support.</p>
+<div class="section" id="supported-operating-systems">
+<h3>Supported operating systems<a class="headerlink" href="#supported-operating-systems" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Linux and macOS</strong>: atoMEC has been installed on various linux distributions and macOS, and is expected to work for most distributions and versions</p></li>
+<li><p><strong>Windows</strong>: atoMEC does <strong>not</strong> support Windows installation. This is due to the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code> which currently lacks Windows support.</p></li>
+</ul>
+</div>
+<div class="section" id="supported-python-versions">
+<h3>Supported Python versions<a class="headerlink" href="#supported-python-versions" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>atoMEC is extensively tested and is known to work seamlessly with Python 3.8. All development and CI testing is done with Python 3.8.</p></li>
+<li><p>atoMEC is occasionally tested and is expected to work with Python 3.9</p></li>
+<li><p>atoMEC does not work for Python &lt;= 3.7</p></li>
+<li><p>atoMEC does not work for Python &gt;= 3.10. This is due to the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code> which breaks for Python &gt;= 3.10.</p></li>
+</ul>
+<p>We are looking into ways to remove, or at least make optional, the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code>, in order to allow installation on Windows and with Python &gt;= 3.10. However, this is not currently a priority.</p>
+</div>
 </div>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
