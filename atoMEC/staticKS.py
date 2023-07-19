@@ -40,6 +40,8 @@ from . import numerov
 from . import mathtools
 from . import xc
 from . import check_inputs
+from . import arrays
+
 
 # from . import writeoutput
 
@@ -104,7 +106,7 @@ class Orbitals:
 
     def __init__(self, xgrid, grid_type):
         self._xgrid = xgrid
-        self._eigfuncs = np.zeros(
+        self._eigfuncs = arrays.zeros(
             (
                 config.band_params["nkpts"],
                 config.spindims,
@@ -113,7 +115,7 @@ class Orbitals:
                 config.grid_params["ngrid"],
             )
         )
-        self._eigvals = np.zeros(
+        self._eigvals = arrays.zeros(
             (config.band_params["nkpts"], config.spindims, config.lmax, config.nmax)
         )
         self._occnums = np.zeros_like(self._eigvals)
@@ -123,10 +125,10 @@ class Orbitals:
         self._eigs_min_guess = np.zeros(
             (config.band_params["nkpts"], config.spindims, config.lmax)
         )
-        self._eigvals_min = np.zeros(
+        self._eigvals_min = arrays.zeros(
             (config.band_params["nkpts"], config.spindims, config.lmax)
         )
-        self._eigvals_max = np.zeros(
+        self._eigvals_max = arrays.zeros(
             (config.band_params["nkpts"], config.spindims, config.lmax)
         )
         self._kpt_int_weight = np.ones_like(self._eigvals)
@@ -236,7 +238,7 @@ class Orbitals:
         None
         """
         # ensure the potential has the correct dimensions
-        v = np.zeros((config.spindims, config.grid_params["ngrid"]))
+        v = arrays.zeros((config.spindims, config.grid_params["ngrid"]))
 
         # set v to equal the input potential
         v[:] = potential
@@ -288,7 +290,7 @@ class Orbitals:
 
         # guess the chemical potential if initializing
         if init:
-            config.mu = np.zeros((config.spindims))
+            config.mu = arrays.zeros((config.spindims))
         return
 
     # @writeoutput.timing
@@ -549,9 +551,9 @@ class Orbitals:
         nspin, lmax, nmax = np.shape(eigs_max)
 
         e_arr_dummy = Orbitals.make_e_arr(eigs_min, eigs_max, 0)
-        e_arr = np.zeros((len(e_arr_dummy), nspin))
-        dos_knl = np.zeros((len(e_arr_dummy), nspin, lmax, nmax))
-        fd_dist = np.zeros((len(e_arr_dummy), nspin))
+        e_arr = arrays.zeros((len(e_arr_dummy), nspin))
+        dos_knl = arrays.zeros((len(e_arr_dummy), nspin, lmax, nmax))
+        fd_dist = arrays.zeros((len(e_arr_dummy), nspin))
 
         for sp in range(nspin):
             # make the total energy array
@@ -620,7 +622,7 @@ class Orbitals:
         )
 
         # make the energy array
-        e_tot_arr = np.array([])
+        e_tot_arr = arrays.array([])
         for p in range(len(eigs_min) - 1):
             # ignore energies below the minimum for bands
             if eigs_min[p] < e_min:
@@ -684,14 +686,14 @@ class Density:
 
     def __init__(self, orbs):
         self._xgrid = orbs._xgrid
-        self._total = np.zeros((config.spindims, config.grid_params["ngrid"]))
+        self._total = arrays.zeros((config.spindims, config.grid_params["ngrid"]))
         self._bound = {
-            "rho": np.zeros((config.spindims, config.grid_params["ngrid"])),
-            "N": np.zeros((config.spindims)),
+            "rho": arrays.zeros((config.spindims, config.grid_params["ngrid"])),
+            "N": arrays.zeros((config.spindims)),
         }
         self._unbound = {
-            "rho": np.zeros((config.spindims, config.grid_params["ngrid"])),
-            "N": np.zeros((config.spindims)),
+            "rho": arrays.zeros((config.spindims, config.grid_params["ngrid"])),
+            "N": arrays.zeros((config.spindims)),
         }
 
         self._MIS = 0.0
@@ -799,8 +801,8 @@ class Density:
             contains the keys `rho` and `N` denoting the unbound density
             and number of unbound electrons respectively
         """
-        rho_unbound = np.zeros((config.spindims, config.grid_params["ngrid"]))
-        N_unbound = np.zeros((config.spindims))
+        rho_unbound = arrays.zeros((config.spindims, config.grid_params["ngrid"]))
+        N_unbound = arrays.zeros((config.spindims))
 
         # so far only the ideal approximation is implemented
         if config.unbound == "ideal":
@@ -823,8 +825,8 @@ class Potential:
 
     def __init__(self, density):
         self._v_s = np.zeros_like(density.total)
-        self._v_en = np.zeros((config.grid_params["ngrid"]))
-        self._v_ha = np.zeros((config.grid_params["ngrid"]))
+        self._v_en = arrays.zeros((config.grid_params["ngrid"]))
+        self._v_ha = arrays.zeros((config.grid_params["ngrid"]))
         self._v_xc = {
             "x": np.zeros_like(density.total),
             "c": np.zeros_like(density.total),

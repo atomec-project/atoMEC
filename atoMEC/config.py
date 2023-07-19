@@ -30,6 +30,7 @@ band_params = {"nkpts": 50, "de_min": 1e-3}
 force_bound = []
 
 grid_type = "log"
+float_precision = 64
 
 # parallelization
 numcores = 0  # defaults to serial

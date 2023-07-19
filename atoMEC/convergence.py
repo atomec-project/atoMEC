@@ -18,6 +18,7 @@ import numpy as np
 # internal modules
 from . import mathtools
 from . import config
+from . import arrays
 
 
 class SCF:
@@ -32,9 +33,11 @@ class SCF:
 
     def __init__(self, xgrid, grid_type):
         self._xgrid = xgrid
-        self._energy = np.zeros((2))
-        self._potential = np.zeros((2, config.spindims, config.grid_params["ngrid"]))
-        self._density = np.zeros((2, config.spindims, config.grid_params["ngrid"]))
+        self._energy = arrays.zeros((2))
+        self._potential = arrays.zeros(
+            (2, config.spindims, config.grid_params["ngrid"])
+        )
+        self._density = arrays.zeros((2, config.spindims, config.grid_params["ngrid"]))
         self.grid_type = grid_type
 
     def check_conv(self, E_free, pot, dens, iscf):
