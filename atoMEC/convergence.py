@@ -33,11 +33,13 @@ class SCF:
 
     def __init__(self, xgrid, grid_type):
         self._xgrid = xgrid
-        self._energy = arrays.zeros((2))
-        self._potential = arrays.zeros(
-            (2, config.spindims, config.grid_params["ngrid"])
+        self._energy = np.zeros((2), dtype=config.fp)
+        self._potential = np.zeros(
+            (2, config.spindims, config.grid_params["ngrid"]), dtype=config.fp
         )
-        self._density = arrays.zeros((2, config.spindims, config.grid_params["ngrid"]))
+        self._density = np.zeros(
+            (2, config.spindims, config.grid_params["ngrid"]), dtype=config.fp
+        )
         self.grid_type = grid_type
 
     def check_conv(self, E_free, pot, dens, iscf):

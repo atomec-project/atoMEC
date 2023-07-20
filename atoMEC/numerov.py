@@ -136,7 +136,7 @@ class Solver:
         if solve_type == "guess":
             dtype = np.float64
         else:
-            dtype = dtype_map[config.float_precision]
+            dtype = config.fp
         if eigs_min_guess is None:
             eigs_min_guess = np.zeros((config.spindims, config.lmax), dtype=dtype)
 
@@ -252,7 +252,7 @@ class Solver:
         if solve_type == "guess":
             dtype = np.float64
         else:
-            dtype = dtype_map[config.float_precision]
+            dtype = config.fp
         # compute the number of grid points
         N = np.size(xgrid)
 
@@ -366,7 +366,7 @@ class Solver:
         if solve_type == "guess":
             dtype = np.float64
         else:
-            dtype = dtype_map[config.float_precision]
+            dtype = config.fp
         # compute the number of grid points
         N = np.size(xgrid)
         # initialize empty potential matrix
@@ -476,7 +476,7 @@ class Solver:
         if solve_type == "guess":
             dtype = np.float64
         else:
-            dtype = dtype_map[config.float_precision]
+            dtype = config.fp
         # compute the number of grid points
         N = np.size(xgrid)
         # initialize empty potential matrix
@@ -562,13 +562,13 @@ class Solver:
         """
         # Sort eigenvalues in ascending order
         idr = np.argsort(l_eigvals)
-        eigvals = arrays.array(l_eigvals[idr].real)
+        eigvals = np.array(l_eigvals[idr].real, dtype=config.fp)
 
         # resize l_eigfuncs from N-1 to N for dirichlet condition
         if bc == "dirichlet":
             N = np.size(xgrid)
             nmax = np.shape(l_eigfuncs)[1]
-            l_eigfuncs_dir = arrays.zeros((N, nmax))
+            l_eigfuncs_dir = np.zeros((N, nmax), dtype=config.fp)
             l_eigfuncs_dir[:-1] = l_eigfuncs.real
             l_eigfuncs = l_eigfuncs_dir
 
@@ -580,7 +580,7 @@ class Solver:
         ) / (1 + h * K[-1])
 
         # convert to correct dimensions
-        eigfuncs = arrays.array(np.transpose(l_eigfuncs.real)[idr])
+        eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr], dtype=config.fp)
         if grid_type == "sqrt":
             eigfuncs *= xgrid**-1.5
         eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid, grid_type)  # normalize
@@ -622,9 +622,9 @@ class Solver:
         e_arr_flat = e_arr.flatten()
 
         # initialize the W (potential) and eigenfunction arrays
-        W_arr = arrays.zeros((N, nkpts, spindims, lmax, nmax))
+        W_arr = np.zeros((N, nkpts, spindims, lmax, nmax), dtype=config.fp)
         eigfuncs_init = np.zeros_like(W_arr)
-        eigfuncs_backup = arrays.zeros((nkpts, spindims, lmax, nmax, N))
+        eigfuncs_backup = np.zeros((nkpts, spindims, lmax, nmax, N), dtype=config.fp)
         if self.grid_type == "sqrt":
             for k in range(nkpts):
                 eigfuncs_backup[k] = (k * eigfuncs_u + (nkpts - k - 1) * eigfuncs_l) / (

@@ -266,7 +266,7 @@ def calc_xc(density, xgrid, xcfunc, xctype):
 
     # determine the dimensions of the xc_arr based on xctype
     if xctype == "e_xc":
-        xc_arr = arrays.zeros((config.grid_params["ngrid"]))
+        xc_arr = np.zeros((config.grid_params["ngrid"]), dtype=config.fp)
     elif xctype == "v_xc":
         xc_arr = np.zeros_like(density)
 
@@ -291,7 +291,9 @@ def calc_xc(density, xgrid, xcfunc, xctype):
         if xcfunc._family == 1:
             # lda just needs density as input
             # messy transformation for libxc - why isn't tranpose working??
-            rho_libxc = arrays.zeros((config.grid_params["ngrid"], config.spindims))
+            rho_libxc = np.zeros(
+                (config.grid_params["ngrid"], config.spindims), dtype=config.fp
+            )
             for i in range(config.spindims):
                 rho_libxc[:, i] = density[i, :]
             inp = {"rho": rho_libxc}
@@ -304,20 +306,26 @@ def calc_xc(density, xgrid, xcfunc, xctype):
                 xc_arr = out["vrho"].transpose()
         # gga
         if xcfunc._family == 2:
-            rho_libxc = arrays.zeros((config.grid_params["ngrid"], config.spindims))
+            rho_libxc = np.zeros(
+                (config.grid_params["ngrid"], config.spindims), dtype=config.fp
+            )
 
             for i in range(config.spindims):
                 rho_libxc[:, i] = density[i, :]
             # preparing the sigma array needed for libxc gga calculation
             if config.spindims == 2:
-                sigma_libxc = arrays.zeros((config.grid_params["ngrid"], 3))
+                sigma_libxc = np.zeros(
+                    (config.grid_params["ngrid"], 3), dtype=config.fp
+                )
                 grad_0 = mathtools.grad_func(density[0, :], xgrid)
                 grad_1 = mathtools.grad_func(density[1, :], xgrid)
                 sigma_libxc[:, 0] = grad_0**2
                 sigma_libxc[:, 1] = grad_0 * grad_1
                 sigma_libxc[:, 2] = grad_1**2
             else:
-                sigma_libxc = arrays.zeros((config.grid_params["ngrid"], 1))
+                sigma_libxc = np.zeros(
+                    (config.grid_params["ngrid"], 1), dtype=config.fp
+                )
                 grad = mathtools.grad_func(density[0, :], xgrid)
                 sigma_libxc[:, 0] = grad**2
 
@@ -335,8 +343,8 @@ def calc_xc(density, xgrid, xcfunc, xctype):
                         out, grad_0, grad_1, xgrid, 2
                     )
                 else:
-                    xc_arr = arrays.zeros(
-                        (config.grid_params["ngrid"], config.spindims)
+                    xc_arr = np.zeros(
+                        (config.grid_params["ngrid"], config.spindims), dtype=config.fp
                     )
                     # Using the chain rule to obtain the gga xc pot
                     # from the libxc calculation:
@@ -406,13 +414,14 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
             + grad_0 * libxc_output["vsigma"].transpose()[1]
         )
         # combining the 2 and taking the divergence (in spherical coordinates)
-        gga_addition2 = 2.0 * arrays.array(
+        gga_addition2 = 2.0 * np.array(
             (
                 np.exp(-2.0 * xgrid)
                 * mathtools.grad_func(np.exp(2.0 * xgrid) * term1, xgrid),
                 np.exp(-2.0 * xgrid)
                 * mathtools.grad_func(np.exp(2.0 * xgrid) * term2, xgrid),
-            )
+            ),
+            dtype=config.fp,
         )
     else:
         gga_addition2 = (
