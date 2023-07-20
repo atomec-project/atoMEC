@@ -40,7 +40,6 @@ from . import numerov
 from . import mathtools
 from . import xc
 from . import check_inputs
-from . import arrays
 
 
 # from . import writeoutput

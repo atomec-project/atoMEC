@@ -18,7 +18,6 @@ import numpy as np
 # internal modules
 from . import mathtools
 from . import config
-from . import arrays
 
 
 class SCF:
