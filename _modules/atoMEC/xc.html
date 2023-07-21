@@ -428,7 +428,7 @@
 
     <span class="c1"># determine the dimensions of the xc_arr based on xctype</span>
     <span class="k">if</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;e_xc&quot;</span><span class="p">:</span>
-        <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]))</span>
+        <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">xctype</span> <span class="o">==</span> <span class="s2">&quot;v_xc&quot;</span><span class="p">:</span>
         <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density</span><span class="p">)</span>
 
@@ -453,7 +453,9 @@
         <span class="k">if</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">_family</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># lda just needs density as input</span>
             <span class="c1"># messy transformation for libxc - why isn&#39;t tranpose working??</span>
-            <span class="n">rho_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
+            <span class="n">rho_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span>
+            <span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
                 <span class="n">rho_libxc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
             <span class="n">inp</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="n">rho_libxc</span><span class="p">}</span>
@@ -466,20 +468,26 @@
                 <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;vrho&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
         <span class="c1"># gga</span>
         <span class="k">if</span> <span class="n">xcfunc</span><span class="o">.</span><span class="n">_family</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="n">rho_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
+            <span class="n">rho_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span>
+            <span class="p">)</span>
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
                 <span class="n">rho_libxc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
             <span class="c1"># preparing the sigma array needed for libxc gga calculation</span>
             <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">sigma_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="n">sigma_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span>
+                <span class="p">)</span>
                 <span class="n">grad_0</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
                 <span class="n">grad_1</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
                 <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_0</span><span class="o">**</span><span class="mi">2</span>
                 <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_0</span> <span class="o">*</span> <span class="n">grad_1</span>
                 <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_1</span><span class="o">**</span><span class="mi">2</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">sigma_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">sigma_libxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span>
+                <span class="p">)</span>
                 <span class="n">grad</span> <span class="o">=</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">xgrid</span><span class="p">)</span>
                 <span class="n">sigma_libxc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad</span><span class="o">**</span><span class="mi">2</span>
 
@@ -497,7 +505,9 @@
                         <span class="n">out</span><span class="p">,</span> <span class="n">grad_0</span><span class="p">,</span> <span class="n">grad_1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="mi">2</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
+                    <span class="n">xc_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">grid_params</span><span class="p">[</span><span class="s2">&quot;ngrid&quot;</span><span class="p">],</span> <span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span>
+                    <span class="p">)</span>
                     <span class="c1"># Using the chain rule to obtain the gga xc pot</span>
                     <span class="c1"># from the libxc calculation:</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">):</span>
@@ -572,7 +582,8 @@
                 <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">term1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">),</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
                 <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">grad_func</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">term2</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">),</span>
-            <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">gga_addition2</span> <span class="o">=</span> <span class="p">(</span>

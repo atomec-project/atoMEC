@@ -182,7 +182,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># internal modules</span>
-<span class="kn">from</span> <span class="nn">atoMEC</span> <span class="kn">import</span> <span class="n">staticKS</span><span class="p">,</span> <span class="n">mathtools</span><span class="p">,</span> <span class="n">check_inputs</span>
+<span class="kn">from</span> <span class="nn">atoMEC</span> <span class="kn">import</span> <span class="n">staticKS</span><span class="p">,</span> <span class="n">mathtools</span><span class="p">,</span> <span class="n">check_inputs</span><span class="p">,</span> <span class="n">config</span>
 
 
 <div class="viewcode-block" id="ELFTools"><a class="viewcode-back" href="../../../api/atoMEC.postprocess.html#atoMEC.postprocess.localization.ELFTools">[docs]</a><span class="k">class</span> <span class="nc">ELFTools</span><span class="p">:</span>
@@ -228,8 +228,8 @@
         <span class="n">spindims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">ngrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span><span class="p">)[</span><span class="mi">4</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ELF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">spindims</span><span class="p">,</span> <span class="n">ngrid</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">spindims</span><span class="p">,</span> <span class="n">ngrid</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ELF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">spindims</span><span class="p">,</span> <span class="n">ngrid</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epdc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">spindims</span><span class="p">,</span> <span class="n">ngrid</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_N_shell</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
@@ -573,7 +573,7 @@
     <span class="n">lmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">nmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span>
 
-    <span class="n">IPR_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">))</span>
+    <span class="n">IPR_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nkpts</span><span class="p">,</span> <span class="n">spindims</span><span class="p">,</span> <span class="n">lmax</span><span class="p">,</span> <span class="n">nmax</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">fp</span><span class="p">)</span>
 
     <span class="c1"># compute the IPR matrix</span>
     <span class="c1"># FIXME: add spherical harmonic term</span>
