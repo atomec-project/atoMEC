@@ -2,12 +2,9 @@
 
 # atoMEC: Average-Atom Code for Matter under Extreme Conditions
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5205718.svg)](https://doi.org/10.5281/zenodo.5205718)
 [![docs](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml)
-[![image](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![PyPI version](https://badge.fury.io/py/atoMEC.svg)](https://badge.fury.io/py/atoMEC)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
+[![image](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![codecov](https://codecov.io/gh/atomec-project/atoMEC/branch/develop/graph/badge.svg?token=V66CJJ3KPI)](https://codecov.io/gh/atomec-project/atoMEC)
 [![CodeFactor](https://www.codefactor.io/repository/github/atomec-project/atomec/badge)](https://www.codefactor.io/repository/github/atomec-project/atomec)
 
