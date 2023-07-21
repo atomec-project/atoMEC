@@ -1,5 +1,7 @@
 """Configuration file to store global parameters."""
 
+import numpy as np
+
 # physical constants
 mp_g = 1.6726219e-24  # mass of proton in grams
 
@@ -30,6 +32,7 @@ band_params = {"nkpts": 50, "de_min": 1e-3}
 force_bound = []
 
 grid_type = "log"
+fp = np.float64
 
 # parallelization
 numcores = 0  # defaults to serial
