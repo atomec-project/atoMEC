@@ -17,6 +17,7 @@ import os
 import shutil
 import string
 import random
+import warnings
 
 # external libs
 import numpy as np
@@ -414,6 +415,11 @@ class Solver:
                         tol=config.conv_params["eigtol"],
                     )
 
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", category=np.ComplexWarning)
+                        vecs_up = vecs_up.astype(self.fp)
+                        eigs_up = eigs_up.astype(self.fp)
+
                     K = np.zeros((N, config.nmax), dtype=dtype)
                     if self.grid_type == "log":
                         prefac = -2 * np.exp(2 * xgrid)
@@ -421,6 +427,7 @@ class Solver:
                         prefac = 8 * xgrid**2
                     for n in range(config.nmax):
                         K[:, n] = prefac * (V_mat.diagonal() - eigs_up.real[n])
+
                     eigfuncs[i, l], eigvals[i, l] = self.update_orbs(
                         vecs_up, eigs_up, xgrid, bc, K, self.grid_type
                     )
@@ -510,6 +517,12 @@ class Solver:
                 tol=config.conv_params["eigtol"],
                 sigma=eigs_guess[p],
             )
+
+            # Ignore the complex-to-real casting warning
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=np.ComplexWarning)
+                evecs = evecs.astype(self.fp)
+                evals = evals.astype(self.fp)
 
             # sort and normalize
             K = np.zeros((N, nmax), dtype=dtype)
@@ -622,9 +635,9 @@ class Solver:
         e_arr_flat = e_arr.flatten()
 
         # initialize the W (potential) and eigenfunction arrays
-        W_arr = np.zeros((N, nkpts, spindims, lmax, nmax), dtype=np.float64)
+        W_arr = np.zeros((N, nkpts, spindims, lmax, nmax), dtype=self.fp)
         eigfuncs_init = np.zeros_like(W_arr)
-        eigfuncs_backup = np.zeros((nkpts, spindims, lmax, nmax, N), dtype=np.float64)
+        eigfuncs_backup = np.zeros((nkpts, spindims, lmax, nmax, N), dtype=self.fp)
         if self.grid_type == "sqrt":
             for k in range(nkpts):
                 eigfuncs_backup[k] = (k * eigfuncs_u + (nkpts - k - 1) * eigfuncs_l) / (

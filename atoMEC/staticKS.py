@@ -63,7 +63,9 @@ def log_grid(x_r):
         The grids in logarithmic (x) and real (r) space
     """
     # grid in logarithmic co-ordinates
-    xgrid = np.linspace(config.grid_params["x0"], x_r, config.grid_params["ngrid"])
+    xgrid = np.linspace(
+        config.grid_params["x0"], x_r, config.grid_params["ngrid"], dtype=config.fp
+    )
     # grid in real space co-ordinates
     rgrid = np.exp(xgrid)
 
@@ -324,7 +326,10 @@ class Orbitals:
 
         # make the energy band array
         e_arr = np.linspace(
-            self.eigvals_min, self.eigvals_max, config.band_params["nkpts"]
+            self.eigvals_min,
+            self.eigvals_max,
+            config.band_params["nkpts"],
+            dtype=config.fp,
         )
 
         # propagate the numerov equation
