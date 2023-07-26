@@ -63,9 +63,7 @@ def log_grid(x_r):
         The grids in logarithmic (x) and real (r) space
     """
     # grid in logarithmic co-ordinates
-    xgrid = np.linspace(
-        config.grid_params["x0"], x_r, config.grid_params["ngrid"], dtype=config.fp
-    )
+    xgrid = np.linspace(config.grid_params["x0"], x_r, config.grid_params["ngrid"])
     # grid in real space co-ordinates
     rgrid = np.exp(xgrid)
 

@@ -686,7 +686,9 @@ class Solver:
         )
 
         # reshape the eigenfucntions
-        eigfuncs_e = eigfuncs_flat.reshape((nkpts, spindims, lmax, nmax, N))
+        eigfuncs_e = eigfuncs_flat.reshape((nkpts, spindims, lmax, nmax, N)).astype(
+            self.fp
+        )
 
         return eigfuncs_e
 
