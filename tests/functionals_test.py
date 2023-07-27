@@ -98,8 +98,10 @@ class TestFuncs:
         return F_tot
 
 
-# if __name__ == "__main__":
-#     print("lda=", Test_funcs().run("lda"))
-#     print("gdsmfb=", Test_funcs().run("gdsmfb"))
-#     print("no_xc=", Test_funcs().run("no_xc"))
-#     print("no_hxc=", Test_funcs().run("no_hxc"))
+if __name__ == "__main__":
+    config.numcores = -1
+    print("lda=", TestFuncs()._run("lda"))
+    print("gdsmfb=", TestFuncs()._run("gdsmfb"))
+    print("no_xc=", TestFuncs()._run("no_xc"))
+    print("no_hxc=", TestFuncs()._run("no_hxc"))
+    print("pbe=", TestFuncs()._run("gga"))

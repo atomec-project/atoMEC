@@ -57,7 +57,7 @@ class TestSpin:
             unbound="quantum",
             bc="bands",
             xfunc_id="gga_x_pbe",
-            cfunc_id="gga_c_pbe"
+            cfunc_id="gga_c_pbe",
         )
 
         # run the SCF calculation
@@ -75,5 +75,6 @@ class TestSpin:
 
 
 if __name__ == "__main__":
+    config.numcores = -1
     print("singlet energy = ", TestSpin._run(0))
     print("triplet energy = ", TestSpin._run(2))

@@ -84,11 +84,7 @@ class TestModel:
 
     @pytest.mark.parametrize(
         "xc_input",
-        [
-            (5.0),
-            ("lca"),
-            ("gga_z_pbc")
-        ],
+        [(5.0), ("lca"), ("gga_z_pbc")],
     )
     def test_xc(self, xc_input):
         """Test the exchange-correlation (xc) input."""
@@ -177,7 +173,6 @@ class TestCalcEnergy:
         model = models.ISModel(atom)
 
         with pytest.raises(SystemExit):
-
             model.CalcEnergy(3, 3, grid_params=grid_input)
 
     @pytest.mark.parametrize(
@@ -193,7 +188,6 @@ class TestCalcEnergy:
         model = models.ISModel(atom)
 
         with pytest.raises(SystemExit):
-
             model.CalcEnergy(3, 3, conv_params=conv_input)
 
     @pytest.mark.parametrize(
@@ -211,7 +205,6 @@ class TestCalcEnergy:
         model = models.ISModel(atom)
 
         with pytest.raises(SystemExit):
-
             model.CalcEnergy(3, 3, scf_params=scf_input)
 
     @pytest.mark.parametrize(
@@ -229,5 +222,4 @@ class TestCalcEnergy:
         model = models.ISModel(atom, bc="bands", unbound="quantum")
 
         with pytest.raises(SystemExit):
-
             model.CalcEnergy(3, 3, band_params=bands_input)

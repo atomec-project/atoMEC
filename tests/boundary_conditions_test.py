@@ -76,3 +76,10 @@ class TestBcs:
         # extract the total free energy
         F_tot = output["energy"].F_tot
         return F_tot
+
+
+if __name__ == "__main__":
+    config.numcores = -1
+    print("dirichlet = ", TestBcs._run("dirichlet"))
+    print("neumann = ", TestBcs._run("neumann"))
+    print("bands = ", TestBcs._run("bands"))

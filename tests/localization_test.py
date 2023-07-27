@@ -13,11 +13,11 @@ import numpy as np
 
 
 # expected values and tolerance
+epdc_orbs_expected = 9.2269
+epdc_dens_expected = 3.5304
 orbitals_expected = 1.0889
 density_expected = 2.1496
 IPR_expected = 78.2107
-epdc_orbs_expected = 9.2269
-epdc_dens_expected = 3.5304
 accuracy = 0.01
 
 
@@ -218,6 +218,7 @@ class TestLocalization:
 
 
 if __name__ == "__main__":
+    config.numcores = -1
     SCF_spin_out = TestLocalization._run_SCF(True)
     SCF_no_spin_out = TestLocalization._run_SCF(False)
     print(TestLocalization._run_epdc(SCF_spin_out, "orbitals", True))
