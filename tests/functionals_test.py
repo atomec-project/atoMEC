@@ -41,7 +41,6 @@ class TestFuncs:
         """Check the free energy for different functionals."""
         # parallel
         config.numcores = -1
-        config.fp = np.float32
 
         assert np.isclose(self._run(test_input), expected, atol=accuracy)
 
@@ -84,7 +83,6 @@ class TestFuncs:
             unbound="quantum",
             xfunc_id=xfunc_id,
             cfunc_id=cfunc_id,
-            bc="bands",
         )
 
         # run the SCF calculation
@@ -93,10 +91,7 @@ class TestFuncs:
             6,
             scf_params={"maxscf": 5, "mixfrac": 0.3},
             grid_params={"ngrid": 1000},
-            grid_type="sqrt",
         )
-
-        print(output["orbitals"].eigfuncs.dtype)
 
         # extract the total free energy
         F_tot = output["energy"].F_tot
