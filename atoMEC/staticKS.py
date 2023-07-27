@@ -324,7 +324,10 @@ class Orbitals:
 
         # make the energy band array
         e_arr = np.linspace(
-            self.eigvals_min, self.eigvals_max, config.band_params["nkpts"]
+            self.eigvals_min,
+            self.eigvals_max,
+            config.band_params["nkpts"],
+            dtype=config.fp,
         )
 
         # propagate the numerov equation
