@@ -85,5 +85,6 @@ class TestEnergyAlt:
 
 
 if __name__ == "__main__":
+    config.numcores = -1
     print("ideal energy = ", TestEnergyAlt._run("ideal"))
     print("quantum energy = ", TestEnergyAlt._run("quantum"))

@@ -59,4 +59,5 @@ class TestUnbound:
 
 
 if __name__ == "__main__":
+    config.numcores = -1
     print(TestUnbound._run())

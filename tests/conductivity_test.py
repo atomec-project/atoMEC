@@ -236,20 +236,20 @@ class TestConductivity:
 
 
 if __name__ == "__main__":
+    config.numcores = -1
     SCF_out = TestConductivity._run_SCF()
     print(TestConductivity._run_cond_tot(SCF_out, "cc", (1, 0)))
-    print(TestConductivity._run_cond_tot(SCF_out, "tt", (1, 0)))
-    print(TestConductivity._run_cond_tot(SCF_out, "cv", (1, 0)))
-    print(TestConductivity._run_cond_tot(SCF_out, "vv", (1, 0)))
     print(TestConductivity._run_cond_tot(SCF_out, "cc", (3, 1)))
+    print(TestConductivity._run_cond_tot(SCF_out, "tt", (1, 0)))
     print(TestConductivity._run_cond_tot(SCF_out, "tt", (3, 1)))
-    print(TestConductivity._run_cond_tot(SCF_out, "cv", (3, 1)))
+    print(TestConductivity._run_cond_tot(SCF_out, "vv", (1, 0)))
     print(TestConductivity._run_cond_tot(SCF_out, "vv", (3, 1)))
+    print(TestConductivity._run_cond_tot(SCF_out, "cv", (1, 0)))
+    print(TestConductivity._run_cond_tot(SCF_out, "cv", (3, 1)))
+    print(TestConductivity._run_int_calc(4))
+    print(TestConductivity._run_int_calc(2))
     print(TestConductivity._run_sum_rule(SCF_out))
     print(TestConductivity._run_prop(SCF_out, "sig_vv"))
     print(TestConductivity._run_prop(SCF_out, "sig_cv"))
     print(TestConductivity._run_prop(SCF_out, "N_tot"))
     print(TestConductivity._run_prop(SCF_out, "N_free"))
-    print(TestConductivity._run_int_calc(2))
-    print(TestConductivity._run_int_calc(4))
-    print(TestConductivity._run_sum_rule(SCF_out))
