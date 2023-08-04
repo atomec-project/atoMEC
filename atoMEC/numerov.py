@@ -33,7 +33,6 @@ from joblib import Parallel, delayed, dump, load
 # internal libs
 from . import config
 from . import mathtools
-from . import writeoutput
 
 # from . import writeoutput
 
@@ -382,8 +381,6 @@ class Solver:
         eigvals = np.zeros((config.spindims, config.lmax, config.nmax), dtype=dtype)
         eigs_guess = np.zeros((config.spindims, config.lmax), dtype=dtype)
 
-        start_time = time.time()
-
         # A new Hamiltonian has to be re-constructed for every value of l and each spin
         # channel if spin-polarized
         for l in range(config.lmax):
@@ -450,8 +447,6 @@ class Solver:
 
                     # dummy variable for the null eigenfucntions
                     eigfuncs_null = eigfuncs
-
-        end_time = time.time()
 
         if solve_type == "full":
             return eigfuncs, eigvals
