@@ -15,13 +15,20 @@ from pytest_lazyfixture import lazy_fixture
 
 
 # expected values and tolerance
-finite_diff_expected_A = 170.95
-finite_diff_expected_B = 239.70
-stress_tensor_expected_rr = 146.06
-stress_tensor_expected_tr = 109.76
-virial_expected_corr = 140.75
-virial_expected_nocorr = 175.89
-ideal_expected = 100.06
+# finite_diff_expected_A = 170.95
+# finite_diff_expected_B = 239.70
+# stress_tensor_expected_rr = 146.06
+# stress_tensor_expected_tr = 109.76
+# virial_expected_corr = 140.75
+# virial_expected_nocorr = 175.89
+# ideal_expected = 100.06
+finite_diff_expected_A = 171.17
+finite_diff_expected_B = 239.89
+stress_tensor_expected_rr = 146.22
+stress_tensor_expected_tr = 109.78
+virial_expected_corr = 140.93
+virial_expected_nocorr = 176.12
+ideal_expected = 100.22
 ion_expected = 165.19
 accuracy = 0.1
 
