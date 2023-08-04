@@ -204,11 +204,7 @@ class Solver:
         else:
             p_sparse = diags([0.25 * xgrid**-2], offsets=[0], dtype=dtype)
 
-        A_dense = A_sparse.todense()
-        B_dense = B_sparse.todense()
-
         # construct kinetic energy matrix
-        T = -0.5 * p @ A
         T_sparse = -0.5 * p_sparse @ A_sparse
 
         # solve in serial or parallel - serial mostly useful for debugging
@@ -776,9 +772,22 @@ class Solver:
         return Psi_norm
 
     @staticmethod
-    def mat_convert_dirichlet(mat):
+    def mat_convert_dirichlet(diag_mat):
+        """
+        Truncate a scipy diags matrix from (N,N) to (N-1, N-1).
+
+        Parameters
+        ----------
+        diag_mat : scipy.sparse.diags object
+            diagonal matrix to truncate
+
+        Returns
+        -------
+        diag_mat : scipy.sparse.diags object
+            truncated diagonal matrix
+        """
         # Convert to a dense matrix
-        dense_mat = mat.todense()
+        dense_mat = diag_mat.todense()
 
         # Truncate the dense matrix
         dense_mat_truncated = dense_mat[:-1, :-1]
@@ -789,6 +798,8 @@ class Solver:
         lower_diag = np.diag(dense_mat_truncated, k=-1)
 
         # Create a new diags matrix with the extracted diagonals
-        mat_truncated = diags([main_diag, upper_diag, lower_diag], offsets=[0, 1, -1])
+        diag_mat_truncated = diags(
+            [main_diag, upper_diag, lower_diag], offsets=[0, 1, -1]
+        )
 
-        return mat_truncated
+        return diag_mat_truncated
