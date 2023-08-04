@@ -23,7 +23,6 @@ virial_expected_corr = 143.06375646995878
 virial_expected_nocorr = 178.2430500359269
 ideal_expected = 103.0141806222132
 ion_expected = 165.19118614722603
-
 accuracy = 0.1
 
 
