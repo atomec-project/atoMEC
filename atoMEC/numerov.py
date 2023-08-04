@@ -214,17 +214,19 @@ class Solver:
         # solve in serial or parallel - serial mostly useful for debugging
         if config.numcores == 0:
             eigfuncs, eigvals = self.KS_matsolve_serial(
-                T, B, T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
+                T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
             )
 
         else:
             eigfuncs, eigvals = self.KS_matsolve_parallel(
-                T, B, v, xgrid, bc, solve_type, eigs_min_guess
+                T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
             )
 
         return eigfuncs, eigvals
 
-    def KS_matsolve_parallel(self, T, B, v, xgrid, bc, solve_type, eigs_min_guess):
+    def KS_matsolve_parallel(
+        self, T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
+    ):
         """
         Solve the KS matrix diagonalization by parallelizing over config.numcores.
 
@@ -312,16 +314,16 @@ class Solver:
 
         # dump and load the large numpy arrays from file
         data_filename_memmap = os.path.join(joblib_folder, "data_memmap")
-        dump((T, B, v_flat), data_filename_memmap)
-        T, B, v_flat = load(data_filename_memmap, mmap_mode="r")
+        dump((T_sparse, B_sparse, v_flat), data_filename_memmap)
+        T_sparse, B_sparse, v_flat = load(data_filename_memmap, mmap_mode="r")
 
         # set up the parallel job
         with Parallel(n_jobs=config.numcores) as parallel:
             X = parallel(
                 delayed(self.diag_H)(
                     q,
-                    T,
-                    B,
+                    T_sparse,
+                    B_sparse,
                     v_flat,
                     xgrid,
                     config.nmax,
@@ -364,7 +366,7 @@ class Solver:
             return eigfuncs_null, eigs_guess
 
     def KS_matsolve_serial(
-        self, T, B, T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
+        self, T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
     ):
         """
         Solve the KS equations via matrix diagonalization in serial.
@@ -399,8 +401,6 @@ class Solver:
             dtype = self.fp
         # compute the number of grid points
         N = np.size(xgrid)
-        # initialize empty potential matrix
-        V_mat = np.zeros((N, N), dtype=dtype)
 
         # initialize the eigenfunctions and their eigenvalues
         eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N), dtype=dtype)
@@ -417,24 +417,18 @@ class Solver:
                     v_corr = 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid)
                 else:
                     v_corr = 3 / (32 * xgrid**4) + l * (l + 1) / (2 * xgrid**4)
-                np.fill_diagonal(V_mat, v[i] + v_corr)
                 V_mat_sparse = diags([v[i] + v_corr], offsets=[0], dtype=dtype)
 
                 # construct Hamiltonians
-                H = T + B @ V_mat
                 H_sparse = T_sparse + B_sparse @ V_mat_sparse
 
                 # if dirichlet solve on (N-1) x (N-1) grid
                 if bc == "dirichlet":
-                    H_s = H[: N - 1, : N - 1]
                     H_sparse_s = self.mat_convert_dirichlet(H_sparse)
-                    B_s = B[: N - 1, : N - 1]
                     B_sparse_s = self.mat_convert_dirichlet(B_sparse)
                 # if neumann don't change anything
                 elif bc == "neumann":
-                    H_s = H
                     H_sparse_s = H_sparse
-                    B_s = B
                     B_sparse_s = B_sparse
 
                 # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
@@ -443,9 +437,9 @@ class Solver:
                 if solve_type == "full":
                     start_time = time.time()
                     eigs_up, vecs_up = eigs(
-                        H_s,
+                        H_sparse_s,
                         k=config.nmax,
-                        M=B_s,
+                        M=B_sparse_s,
                         which="LM",
                         sigma=eigs_min_guess[i, l],
                         tol=config.conv_params["eigtol"],
@@ -464,7 +458,7 @@ class Solver:
                     else:
                         prefac = 8 * xgrid**2
                     for n in range(config.nmax):
-                        K[:, n] = prefac * (V_mat.diagonal() - eigs_up.real[n])
+                        K[:, n] = prefac * (v[i] + v_corr - eigs_up.real[n])
 
                     eigfuncs[i, l], eigvals[i, l] = self.update_orbs(
                         vecs_up, eigs_up, xgrid, bc, K, self.grid_type
@@ -488,7 +482,7 @@ class Solver:
         else:
             return eigfuncs_null, eigs_guess
 
-    def diag_H(self, p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
+    def diag_H(self, p, T_sparse, B_sparse, v, xgrid, nmax, bc, eigs_guess, solve_type):
         """
         Diagonilize the Hamiltonian for the input potential v[p].
 
@@ -526,33 +520,30 @@ class Solver:
             dtype = self.fp
         # compute the number of grid points
         N = np.size(xgrid)
-        # initialize empty potential matrix
-        V_mat = np.zeros((N, N), dtype=dtype)
 
         # fill potential matrices
-        # np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
-        np.fill_diagonal(V_mat, v[p])
+        V_mat_sparse = diags([v[p]], offsets=[0], dtype=dtype)
 
         # construct Hamiltonians
-        H = T + B @ V_mat
+        H_sparse = T_sparse + B_sparse @ V_mat_sparse
 
         # if dirichlet solve on (N-1) x (N-1) grid
         if bc == "dirichlet":
-            H_s = H[: N - 1, : N - 1]
-            B_s = B[: N - 1, : N - 1]
+            H_sparse_s = self.mat_convert_dirichlet(H_sparse)
+            B_sparse_s = self.mat_convert_dirichlet(B_sparse)
         # if neumann don't change anything
         elif bc == "neumann":
-            H_s = H
-            B_s = B
+            H_sparse_s = H_sparse
+            B_sparse_s = B_sparse
 
         # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
         # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
         # the estimated lowest eigenvalue from full diagonalization on coarse grid
         if solve_type == "full":
             evals, evecs = eigs(
-                H_s,
+                H_sparse_s,
                 k=nmax,
-                M=B_s,
+                M=B_sparse_s,
                 which="LM",
                 tol=config.conv_params["eigtol"],
                 sigma=eigs_guess[p],
@@ -568,18 +559,18 @@ class Solver:
             K = np.zeros((N, nmax), dtype=dtype)
             for n in range(nmax):
                 if self.grid_type == "log":
-                    K[:, n] = (
-                        -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - evals.real[n])
-                    )
+                    K[:, n] = -2 * np.exp(2 * xgrid) * (v[p] - evals.real[n])
                 else:
-                    K[:, n] = 8 * xgrid**2 * (V_mat.diagonal() - evals.real[n])
+                    K[:, n] = 8 * xgrid**2 * (v[p] - evals.real[n])
             evecs, evals = self.update_orbs(evecs, evals, xgrid, bc, K, self.grid_type)
 
             return evecs, evals
 
         # estimate the lowest eigenvalues for a given value of l
         elif solve_type == "guess":
-            evals = linalg.eigvals(H, b=B, check_finite=False)
+            evals = linalg.eigvals(
+                H_sparse.todense(), b=B_sparse.todense(), check_finite=False
+            )
 
             # sort the eigenvalues to find the lowest
             idr = np.argsort(evals)
