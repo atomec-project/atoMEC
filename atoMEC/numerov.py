@@ -33,6 +33,7 @@ from joblib import Parallel, delayed, dump, load
 # internal libs
 from . import config
 from . import mathtools
+from . import writeoutput
 
 # from . import writeoutput
 
@@ -154,23 +155,7 @@ class Solver:
         # |u> is related to the radial eigenfunctions R(r) via R(x)=J(x)u(x)
         # J(x)=exp(x/2) for log grid; J(x) = x**-1.5 for sqrt grid
 
-        # off-diagonal matrices
-        I_minus = np.eye(N, k=-1, dtype=dtype)
-        I_zero = np.eye(N, dtype=dtype)
-        I_plus = np.eye(N, k=1, dtype=dtype)
-
-        p = np.zeros(
-            (N, N), dtype=dtype
-        )  # transformation for kinetic term on log/sqrt grid
-        if self.grid_type == "log":
-            np.fill_diagonal(p, np.exp(-2 * xgrid))
-        else:
-            np.fill_diagonal(p, 0.25 * xgrid**-2)
-
         # see referenced paper for definitions of A and B matrices
-        A = np.array((I_minus - 2 * I_zero + I_plus) / dx**2)
-        B = np.array((I_minus + 10 * I_zero + I_plus) / 12)
-
         B_main = (10.0 / 12.0) * np.ones((N), dtype=dtype)
         B_upper = (1.0 / 12.0) * np.ones((N - 1), dtype=dtype)
         B_lower = B_upper.copy()
@@ -181,20 +166,14 @@ class Solver:
 
         # von neumann boundary conditions
         if bc == "neumann":
-            A[N - 2, N - 1] = 2 * A[N - 2, N - 1]
             A_lower[N - 2] = 2 * A_lower[N - 2]
-            B[N - 2, N - 1] = 2 * B[N - 2, N - 1]
             B_lower[N - 2] = 2 * B_lower[N - 2]
             if self.grid_type == "log":
-                A[N - 1, N - 1] = A[N - 1, N - 1] + 1.0 / dx
                 A_lower[N - 2] = A_lower[N - 2] + 1.0 / dx
-                B[N - 1, N - 1] = B[N - 1, N - 1] - dx / 12.0
                 B_lower[N - 2] = B_lower[N - 2] - dx / 12.0
             else:
                 x_R = xgrid[-1]
-                A[N - 1, N - 1] = A[N - 1, N - 1] + 3 / (x_R * dx)
                 A_lower[N - 2] = A_lower[N - 2] + 3 / (x_R * dx)
-                B[N - 1, N - 1] = B[N - 1, N - 1] - dx / (4 * x_R)
                 B_lower[N - 2] = B_lower[N - 2] - dx / (4 * x_R)
 
         B_sparse = diags([B_main, B_upper, B_lower], offsets=[0, 1, -1])
@@ -403,6 +382,8 @@ class Solver:
         eigvals = np.zeros((config.spindims, config.lmax, config.nmax), dtype=dtype)
         eigs_guess = np.zeros((config.spindims, config.lmax), dtype=dtype)
 
+        start_time = time.time()
+
         # A new Hamiltonian has to be re-constructed for every value of l and each spin
         # channel if spin-polarized
         for l in range(config.lmax):
@@ -431,7 +412,6 @@ class Solver:
                 # use 'shift-invert mode' to find the eigenvalues nearest in magnitude
                 # to the est. lowest eigenvalue from full diagonalization on coarse grid
                 if solve_type == "full":
-                    start_time = time.time()
                     eigs_up, vecs_up = eigs(
                         H_sparse_s,
                         k=config.nmax,
@@ -440,8 +420,6 @@ class Solver:
                         sigma=eigs_min_guess[i, l],
                         tol=config.conv_params["eigtol"],
                     )
-                    end_time = time.time()
-                    print(l, bc, end_time - start_time)
 
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", category=np.ComplexWarning)
@@ -472,6 +450,8 @@ class Solver:
 
                     # dummy variable for the null eigenfucntions
                     eigfuncs_null = eigfuncs
+
+        end_time = time.time()
 
         if solve_type == "full":
             return eigfuncs, eigvals
@@ -627,7 +607,6 @@ class Solver:
 
         return eigfuncs, eigvals
 
-    # @writeoutput.timing
     def calc_wfns_e_grid(self, xgrid, v, e_arr, eigfuncs_l, eigfuncs_u):
         """
         Compute all KS orbitals defined on the energy grid.
