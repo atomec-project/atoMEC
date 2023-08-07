@@ -378,7 +378,7 @@ class ISModel:
             pot = staticKS.Potential(rho)
 
             # compute energies
-            energy = staticKS.Energy(orbs, rho)
+            energy = staticKS.Energy(orbs, rho, pot)
             E_free = energy.F_tot
 
             # mix potential
@@ -417,7 +417,7 @@ class ISModel:
 
         # compute final density and energy
         rho = staticKS.Density(orbs)
-        energy = staticKS.Energy(orbs, rho)
+        energy = staticKS.Energy(orbs, rho, pot)
 
         # write final output
         scf_final = writeoutput.SCF().write_final(energy, orbs, rho, conv_vals)
