@@ -32,6 +32,7 @@ Functions
 
 # external packages
 import numpy as np
+from numba import jit
 from math import sqrt, pi, exp
 
 # internal modules
@@ -905,6 +906,7 @@ class Potential:
         return v_en
 
     @staticmethod
+    @jit(nopython=True, nogil=True, cache=True, fastmath=True)
     def calc_v_ha(density, xgrid, grid_type):
         r"""
         Construct the Hartree potential (see notes).
