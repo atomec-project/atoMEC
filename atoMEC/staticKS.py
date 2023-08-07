@@ -32,7 +32,8 @@ Functions
 
 # external packages
 import numpy as np
-from numba import jit
+
+# from numba import jit
 from math import sqrt, pi, exp
 
 # internal modules
@@ -906,7 +907,6 @@ class Potential:
         return v_en
 
     @staticmethod
-    @jit(nopython=True, nogil=True, cache=True, fastmath=True)
     def calc_v_ha(density, xgrid, grid_type):
         r"""
         Construct the Hartree potential (see notes).
@@ -965,10 +965,11 @@ class Potential:
 class Energy:
     r"""Class holding information about the KS total energy and relevant routines."""
 
-    def __init__(self, orbs, dens):
+    def __init__(self, orbs, dens, pot):
         # inputs
         self._orbs = orbs
         self._dens = dens.total
+        self._v_ha = pot.v_ha
         self._xgrid = dens._xgrid
 
         # initialize attributes
@@ -1037,7 +1038,9 @@ class Energy:
     def E_ha(self):
         """float: The Hartree energy."""
         if self._E_ha == 0.0:
-            self._E_ha = self.calc_E_ha(self._dens, self._xgrid, self.grid_type)
+            self._E_ha = self.calc_E_ha(
+                self._dens, self._v_ha, self._xgrid, self.grid_type
+            )
         return self._E_ha
 
     @property
@@ -1422,7 +1425,7 @@ class Energy:
         return E_en
 
     @staticmethod
-    def calc_E_ha(density, xgrid, grid_type):
+    def calc_E_ha(density, v_ha, xgrid, grid_type):
         r"""
         Compute the Hartree energy.
 
@@ -1450,7 +1453,7 @@ class Energy:
         dens_tot = np.sum(density, axis=0)
 
         # compute the integral
-        v_ha = Potential.calc_v_ha(density, xgrid, grid_type)
+        # v_ha_alt = Potential.calc_v_ha(density, xgrid, grid_type)
         E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha, xgrid, grid_type)
 
         return E_ha
@@ -1570,7 +1573,9 @@ class EnergyAlt:
     def E_ha(self):
         """float: The Hartree energy."""
         if self._E_ha == 0.0:
-            self._E_ha = Energy.calc_E_ha(self._dens, self._xgrid, self.grid_type)
+            self._E_ha = Energy.calc_E_ha(
+                self._dens, self._pot.v_ha, self._xgrid, self.grid_type
+            )
         return self._E_ha
 
     @property
@@ -1617,7 +1622,7 @@ class EnergyAlt:
 
         """
         # first compute the hartree contribution, which is twice the hartree energy
-        E_v_ha = 2.0 * Energy.calc_E_ha(dens, xgrid, grid_type)
+        E_v_ha = 2.0 * Energy.calc_E_ha(dens, pot.v_ha, xgrid, grid_type)
 
         # now compute the xc contribution (over each spin channel)
         E_v_xc = 0.0
