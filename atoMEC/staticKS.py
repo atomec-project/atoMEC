@@ -932,32 +932,34 @@ class Potential:
             \exp(3x') -\int_x^{\log(r_s)} \mathrm{d}x' n(x') \exp(2x') \Big\}
         """
         # initialize v_ha
-        v_ha = np.zeros_like(xgrid)
+        N = len(xgrid)
 
         # construct the total (sum over spins) density
         rho = np.sum(density, axis=0)
 
-        # loop over the x-grid
-        # this may be a bottleneck...
-        for i, x0 in enumerate(xgrid):
-            # set up 'upper' and 'lower' parts of the xgrid (x<=x0; x>x0)
-            x_u = xgrid[np.where(x0 < xgrid)]
-            x_l = xgrid[np.where(x0 >= xgrid)]
+        v_ha_u = np.zeros_like(rho)
+        v_ha_l = np.zeros_like(rho)
 
-            # likewise for the density
-            rho_u = rho[np.where(x0 < xgrid)]
-            rho_l = rho[np.where(x0 >= xgrid)]
+        dx = xgrid[1] - xgrid[0]
+        if grid_type == "log":
+            int_l = rho * np.exp(3 * xgrid)
+            int_u = rho * np.exp(2 * xgrid)
+            prefac_l = np.exp(-xgrid)
+        else:
+            int_l = 2 * rho * xgrid**5
+            int_u = 2 * rho * xgrid**3
+            prefac_l = xgrid**-2
 
-            # now compute the hartree potential
-            if grid_type == "log":
-                int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
-                int_u = np.trapz(rho_u * np.exp(2 * x_u), x_u)
-            else:
-                int_l = (1 / x0**2) * np.trapz(rho_l * 2 * x_l**5, x_l)
-                int_u = np.trapz(rho_u * 2 * x_u**3, x_u)
+        int_o = 0.0
+        for i in range(1, N - 1):
+            v_ha_l[i] = prefac_l[i] * (int_o + 0.5 * dx * (int_l[i - 1] + int_l[i]))
+            int_o += 0.5 * dx * (int_l[i - 1] + int_l[i])
+        for i in range(1, N):
+            v_ha_u[N - i - 1] = v_ha_u[N - i] + 0.5 * dx * (
+                int_u[N - i] + int_u[N - i - 1]
+            )
 
-            # total hartree potential is sum over integrals
-            v_ha[i] = 4.0 * pi * (int_l + int_u)
+        v_ha = 4.0 * pi * (v_ha_u + v_ha_l)
 
         return v_ha
 
@@ -1038,9 +1040,7 @@ class Energy:
     def E_ha(self):
         """float: The Hartree energy."""
         if self._E_ha == 0.0:
-            self._E_ha = self.calc_E_ha(
-                self._dens, self._v_ha, self._xgrid, self.grid_type
-            )
+            self._E_ha = self.calc_E_ha(self._dens, self._xgrid, self.grid_type)
         return self._E_ha
 
     @property
@@ -1425,7 +1425,7 @@ class Energy:
         return E_en
 
     @staticmethod
-    def calc_E_ha(density, v_ha, xgrid, grid_type):
+    def calc_E_ha(density, xgrid, grid_type):
         r"""
         Compute the Hartree energy.
 
@@ -1453,7 +1453,7 @@ class Energy:
         dens_tot = np.sum(density, axis=0)
 
         # compute the integral
-        # v_ha_alt = Potential.calc_v_ha(density, xgrid, grid_type)
+        v_ha = Potential.calc_v_ha(density, xgrid, grid_type)
         E_ha = 0.5 * mathtools.int_sphere(dens_tot * v_ha, xgrid, grid_type)
 
         return E_ha
@@ -1573,9 +1573,7 @@ class EnergyAlt:
     def E_ha(self):
         """float: The Hartree energy."""
         if self._E_ha == 0.0:
-            self._E_ha = Energy.calc_E_ha(
-                self._dens, self._pot.v_ha, self._xgrid, self.grid_type
-            )
+            self._E_ha = Energy.calc_E_ha(self._dens, self._xgrid, self.grid_type)
         return self._E_ha
 
     @property
@@ -1622,7 +1620,7 @@ class EnergyAlt:
 
         """
         # first compute the hartree contribution, which is twice the hartree energy
-        E_v_ha = 2.0 * Energy.calc_E_ha(dens, pot.v_ha, xgrid, grid_type)
+        E_v_ha = 2.0 * Energy.calc_E_ha(dens, xgrid, grid_type)
 
         # now compute the xc contribution (over each spin channel)
         E_v_xc = 0.0
