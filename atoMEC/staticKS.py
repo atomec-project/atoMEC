@@ -937,6 +937,7 @@ class Potential:
         # construct the total (sum over spins) density
         rho = np.sum(density, axis=0)
 
+        # components of total hartree potential
         v_ha_u = np.zeros_like(rho)
         v_ha_l = np.zeros_like(rho)
 
@@ -950,11 +951,13 @@ class Potential:
             int_u = 2 * rho * xgrid**3
             prefac_l = xgrid**-2
 
-        int_o = 0.0
-        for i in range(1, N - 1):
-            v_ha_l[i] = prefac_l[i] * (int_o + 0.5 * dx * (int_l[i - 1] + int_l[i]))
-            int_o += 0.5 * dx * (int_l[i - 1] + int_l[i])
+        # save the lower integral without prefac
+        int_l_no_prefac = 0.0
         for i in range(1, N):
+            v_ha_l[i] = prefac_l[i] * (
+                int_l_no_prefac + 0.5 * dx * (int_l[i - 1] + int_l[i])
+            )
+            int_l_no_prefac += 0.5 * dx * (int_l[i - 1] + int_l[i])
             v_ha_u[N - i - 1] = v_ha_u[N - i] + 0.5 * dx * (
                 int_u[N - i] + int_u[N - i - 1]
             )
