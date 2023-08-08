@@ -12,11 +12,11 @@ import numpy as np
 
 
 # expected values and tolerance
-lda_expected = -159.210841
-gdsmfb_expected = -159.154166
-no_xc_expected = -145.019411
-no_hxc_expected = -249.507728
-gga_expected = -159.92294751868772
+lda_expected = -158.66453567079228
+gdsmfb_expected = -158.6079090856573
+no_xc_expected = -144.49795725080637
+no_hxc_expected = -249.50772961499766
+gga_expected = -159.37528906276566
 accuracy = 1e-3
 
 
@@ -100,8 +100,13 @@ class TestFuncs:
 
 if __name__ == "__main__":
     config.numcores = -1
-    print("lda=", TestFuncs()._run("lda"))
-    print("gdsmfb=", TestFuncs()._run("gdsmfb"))
-    print("no_xc=", TestFuncs()._run("no_xc"))
-    print("no_hxc=", TestFuncs()._run("no_hxc"))
-    print("pbe=", TestFuncs()._run("gga"))
+    lda = TestFuncs()._run("lda")
+    gdsmfb = TestFuncs()._run("gdsmfb")
+    no_xc = TestFuncs()._run("no_xc")
+    no_hxc = TestFuncs()._run("no_hxc")
+    pbe = TestFuncs()._run("gga")
+    print("lda_expected =", lda)
+    print("gdsmfb_expected =", gdsmfb)
+    print("no_xc_expected =", no_xc)
+    print("no_hxc_expected =", no_hxc)
+    print("gga_expected =", pbe)

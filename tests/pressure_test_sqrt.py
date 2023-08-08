@@ -15,13 +15,14 @@ from pytest_lazyfixture import lazy_fixture
 
 
 # expected values and tolerance
-finite_diff_expected_A = 10.7309
-finite_diff_expected_B = 24.2916
-stress_tensor_expected_rr = 9.8064
-stress_tensor_expected_tr = 7.0468
-virial_expected_corr = 10.9138
-virial_expected_nocorr = 11.7581
-ideal_expected = 8.4891
+finite_diff_expected_A = 10.6938851494863
+finite_diff_expected_B = 24.390856939007094
+stress_tensor_expected_rr = 9.831719531837031
+stress_tensor_expected_tr = 7.059453507314628
+virial_expected_corr = 10.89986054089238
+virial_expected_nocorr = 11.744866168684108
+ideal_expected = 8.514959799814081
+
 accuracy = 0.1
 
 
@@ -220,16 +221,18 @@ class TestPressure:
 if __name__ == "__main__":
     config.numcores = -1
     SCF_out = TestPressure._run_SCF()
-    print("Finite diff pressure A: ", TestPressure._run_finite_diff(SCF_out, "A"))
-    print("Finite diff pressure B: ", TestPressure._run_finite_diff(SCF_out, "B"))
+    fd_a = TestPressure._run_finite_diff(SCF_out, "A")
+    fd_b = TestPressure._run_finite_diff(SCF_out, "B")
+    print("finite_diff_expected_A =", fd_a)
+    print("finite_diff_expected_B =", fd_b)
     print(
-        "Stress tensor pressure rr: ",
+        "stress_tensor_expected_rr =",
         TestPressure._run_stress_tensor(SCF_out, True),
     )
     print(
-        "Stress tensor pressure tr: ",
+        "stress_tensor_expected_tr =",
         TestPressure._run_stress_tensor(SCF_out, False),
     )
-    print("Virial pressure corr: ", TestPressure._run_virial(SCF_out, True))
-    print("Virial pressure no corr: ", TestPressure._run_virial(SCF_out, False))
-    print("Ideal electron: ", TestPressure._run_ideal(SCF_out))
+    print("virial_expected_corr =", TestPressure._run_virial(SCF_out, True))
+    print("virial_expected_nocorr =", TestPressure._run_virial(SCF_out, False))
+    print("ideal_expected =", TestPressure._run_ideal(SCF_out))

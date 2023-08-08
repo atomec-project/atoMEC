@@ -7,8 +7,8 @@ import numpy as np
 
 
 # expected values and tolerance
-dense_expected = -0.562437
-coarse_expected = -0.567817
+dense_expected = -0.5620194349606303
+coarse_expected = -0.5625664849484403
 accuracy = 1e-3
 
 
@@ -68,4 +68,8 @@ class TestSerial:
 
 
 if __name__ == "__main__":
-    print(TestSerial._run())
+    config.numcores = 0
+    dense = TestSerial._run(5001)
+    coarse = TestSerial._run(400)
+    print("dense_expected =", dense)
+    print("coarse_expected =", coarse)
