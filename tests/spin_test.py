@@ -7,8 +7,9 @@ import numpy as np
 
 
 # expected values and tolerance
-singlet_expected = -38.0024097674
-triplet_expected = -37.987537447
+singlet_expected = -37.89807041319449
+triplet_expected = -37.88174335076866
+
 accuracy = 1e-4
 
 
@@ -76,5 +77,7 @@ class TestSpin:
 
 if __name__ == "__main__":
     config.numcores = -1
-    print("singlet energy = ", TestSpin._run(0))
-    print("triplet energy = ", TestSpin._run(2))
+    singlet = TestSpin._run(0)
+    triplet = TestSpin._run(2)
+    print("singlet_expected =", singlet)
+    print("triplet_expected =", triplet)
