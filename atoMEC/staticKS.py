@@ -930,7 +930,8 @@ class Potential:
             \exp(3x') -\int_x^{\log(r_s)} \mathrm{d}x' n(x') \exp(2x') \Big\}
         """
         # initialize v_ha
-        v_ha = np.zeros_like(xgrid)
+        v_ha_u = np.zeros_like(xgrid)
+        v_ha_l = np.zeros_like(xgrid)
 
         # construct the total (sum over spins) density
         rho = np.sum(density, axis=0)
@@ -948,14 +949,16 @@ class Potential:
 
             # now compute the hartree potential
             if grid_type == "log":
-                int_l = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
-                int_u = np.trapz(rho_u * np.exp(2 * x_u), x_u)
+                v_ha_l[i] = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
+                v_ha_u[i] = np.trapz(rho_u * np.exp(2 * x_u), x_u)
             else:
-                int_l = (1 / x0**2) * np.trapz(rho_l * 2 * x_l**5, x_l)
-                int_u = np.trapz(rho_u * 2 * x_u**3, x_u)
+                v_ha_l[i] = (1 / x0**2) * np.trapz(rho_l * 2 * x_l**5, x_l)
+                v_ha_u[i] = np.trapz(rho_u * 2 * x_u**3, x_u)
 
-            # total hartree potential is sum over integrals
-            v_ha[i] = 4.0 * pi * (int_l + int_u)
+        # total hartree potential is sum over integrals
+        # have to shift upper integral by one index to match
+        v_ha_u[1:] = v_ha_u[:-1]
+        v_ha = 4.0 * pi * (v_ha_l + v_ha_u)
 
         return v_ha
 
