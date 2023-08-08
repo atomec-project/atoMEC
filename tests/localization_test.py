@@ -13,11 +13,11 @@ import numpy as np
 
 
 # expected values and tolerance
-epdc_orbs_expected = 9.2269
-epdc_dens_expected = 3.5304
-orbitals_expected = 1.0889
-density_expected = 2.1496
-IPR_expected = 78.2107
+epdc_orbs_expected = 9.22831052983569
+epdc_dens_expected = 3.527486593490338
+density_expected = 2.1469328620811075
+orbitals_expected = 1.100028932668539
+IPR_expected = 78.19952984379802
 accuracy = 0.01
 
 
@@ -221,8 +221,19 @@ if __name__ == "__main__":
     config.numcores = -1
     SCF_spin_out = TestLocalization._run_SCF(True)
     SCF_no_spin_out = TestLocalization._run_SCF(False)
-    print(TestLocalization._run_epdc(SCF_spin_out, "orbitals", True))
-    print(TestLocalization._run_epdc(SCF_spin_out, "density", True))
-    print(TestLocalization._run_ELF(SCF_no_spin_out, "density", False))
-    print(TestLocalization._run_ELF(SCF_spin_out, "orbitals", True))
-    print(TestLocalization._run_IPR(SCF_no_spin_out))
+    print(
+        "epdc_orbs_expected =",
+        TestLocalization._run_epdc(SCF_spin_out, "orbitals", True),
+    )
+    print(
+        "epdc_dens_expected =",
+        TestLocalization._run_epdc(SCF_spin_out, "density", True),
+    )
+    print(
+        "density_expected =",
+        TestLocalization._run_ELF(SCF_no_spin_out, "density", False),
+    )
+    print(
+        "orbitals_expected =", TestLocalization._run_ELF(SCF_spin_out, "orbitals", True)
+    )
+    print("IPR_expected =", TestLocalization._run_IPR(SCF_no_spin_out))

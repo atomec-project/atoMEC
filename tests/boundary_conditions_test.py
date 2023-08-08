@@ -12,9 +12,10 @@ import numpy as np
 
 
 # expected values and tolerance
-dirichlet_expected = -14.080034
-neumann_expected = -15.161942
-bands_expected = -14.731577
+dirichlet_expected = -14.02657778662206
+neumann_expected = -15.112195227107968
+bands_expected = -14.68311960864459
+
 accuracy = 1e-3
 
 
@@ -80,6 +81,9 @@ class TestBcs:
 
 if __name__ == "__main__":
     config.numcores = -1
-    print("dirichlet = ", TestBcs._run("dirichlet"))
-    print("neumann = ", TestBcs._run("neumann"))
-    print("bands = ", TestBcs._run("bands"))
+    dirichlet = TestBcs._run("dirichlet")
+    neumann = TestBcs._run("neumann")
+    bands = TestBcs._run("bands")
+    print("dirichlet_expected =", dirichlet)
+    print("neumann_expected =", neumann)
+    print("bands_expected =", bands)

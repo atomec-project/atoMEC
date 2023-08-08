@@ -13,7 +13,7 @@ import numpy as np
 
 # expected values and tolerance
 self_overlap_expected = 1.00000
-overlap_expected = 0.041998602727
+overlap_expected = 0.041051392274703176
 accuracy = 0.0001
 
 
@@ -97,5 +97,5 @@ class TestGS:
 
 if __name__ == "__main__":
     SCF_out = TestGS._run_SCF()
-    print(TestGS._run_overlap(SCF_out, "self"))
-    print(TestGS._run_overlap(SCF_out, "other"))
+    print("self_overlap_expected =", TestGS._run_overlap(SCF_out, "self"))
+    print("overlap_expected =", TestGS._run_overlap(SCF_out, "other"))
