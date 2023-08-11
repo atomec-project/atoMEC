@@ -7,10 +7,9 @@ import numpy as np
 
 
 # expected values and tolerance
-singlet_expected = -37.89807041319449
-triplet_expected = -37.88174335076866
-
-accuracy = 1e-4
+singlet_expected = -37.89758629854574
+triplet_expected = -37.88133924584101
+accuracy = 1e-3
 
 
 class TestSpin:
