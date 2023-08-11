@@ -316,8 +316,8 @@ def calc_xc(density, xgrid, xcfunc, xctype):
                 sigma_libxc = np.zeros(
                     (config.grid_params["ngrid"], 3), dtype=config.fp
                 )
-                grad_0 = mathtools.grad_func(density[0, :], xgrid)
-                grad_1 = mathtools.grad_func(density[1, :], xgrid)
+                grad_0 = mathtools.grad_func(density[0, :], xgrid, config.grid_type)
+                grad_1 = mathtools.grad_func(density[1, :], xgrid, config.grid_type)
                 sigma_libxc[:, 0] = grad_0**2
                 sigma_libxc[:, 1] = grad_0 * grad_1
                 sigma_libxc[:, 2] = grad_1**2
@@ -325,7 +325,7 @@ def calc_xc(density, xgrid, xcfunc, xctype):
                 sigma_libxc = np.zeros(
                     (config.grid_params["ngrid"], 1), dtype=config.fp
                 )
-                grad = mathtools.grad_func(density[0, :], xgrid)
+                grad = mathtools.grad_func(density[0, :], xgrid, config.grid_type)
                 sigma_libxc[:, 0] = grad**2
 
             inp = {"rho": rho_libxc, "sigma": sigma_libxc}
@@ -416,9 +416,13 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
         gga_addition2 = 2.0 * np.array(
             (
                 np.exp(-2.0 * xgrid)
-                * mathtools.grad_func(np.exp(2.0 * xgrid) * term1, xgrid),
+                * mathtools.grad_func(
+                    np.exp(2.0 * xgrid) * term1, xgrid, config.grid_type
+                ),
                 np.exp(-2.0 * xgrid)
-                * mathtools.grad_func(np.exp(2.0 * xgrid) * term2, xgrid),
+                * mathtools.grad_func(
+                    np.exp(2.0 * xgrid) * term2, xgrid, config.grid_type
+                ),
             ),
             dtype=config.fp,
         )
@@ -434,6 +438,7 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
                     * libxc_output["vsigma"].transpose()[0]
                 ),
                 xgrid,
+                config.grid_type,
             )
         )
     return gga_addition2
