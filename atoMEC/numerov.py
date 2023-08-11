@@ -23,6 +23,7 @@ import warnings
 import numpy as np
 from scipy.sparse.linalg import eigs
 from scipy import linalg
+from scipy.sparse import diags
 from scipy.interpolate import interp1d
 from joblib import Parallel, delayed, dump, load
 
@@ -152,52 +153,53 @@ class Solver:
         # |u> is related to the radial eigenfunctions R(r) via R(x)=J(x)u(x)
         # J(x)=exp(x/2) for log grid; J(x) = x**-1.5 for sqrt grid
 
-        # off-diagonal matrices
-        I_minus = np.eye(N, k=-1, dtype=dtype)
-        I_zero = np.eye(N, dtype=dtype)
-        I_plus = np.eye(N, k=1, dtype=dtype)
-
-        p = np.zeros(
-            (N, N), dtype=dtype
-        )  # transformation for kinetic term on log/sqrt grid
-        if self.grid_type == "log":
-            np.fill_diagonal(p, np.exp(-2 * xgrid))
-        else:
-            np.fill_diagonal(p, 0.25 * xgrid**-2)
-
         # see referenced paper for definitions of A and B matrices
-        A = np.array((I_minus - 2 * I_zero + I_plus) / dx**2)
-        B = np.array((I_minus + 10 * I_zero + I_plus) / 12)
+        B_main = (10.0 / 12.0) * np.ones((N), dtype=dtype)
+        B_upper = (1.0 / 12.0) * np.ones((N - 1), dtype=dtype)
+        B_lower = B_upper.copy()
+
+        A_main = -2 * np.ones((N), dtype=dtype) / dx**2
+        A_upper = np.ones((N - 1), dtype=dtype) / dx**2
+        A_lower = A_upper.copy()
 
         # von neumann boundary conditions
         if bc == "neumann":
-            A[N - 2, N - 1] = 2 * A[N - 2, N - 1]
-            B[N - 2, N - 1] = 2 * B[N - 2, N - 1]
+            A_lower[N - 2] = 2 * A_lower[N - 2]
+            B_lower[N - 2] = 2 * B_lower[N - 2]
             if self.grid_type == "log":
-                A[N - 1, N - 1] = A[N - 1, N - 1] + 1.0 / dx
-                B[N - 1, N - 1] = B[N - 1, N - 1] - dx / 12.0
+                A_lower[N - 2] = A_lower[N - 2] + 1.0 / dx
+                B_lower[N - 2] = B_lower[N - 2] - dx / 12.0
             else:
                 x_R = xgrid[-1]
-                A[N - 1, N - 1] = A[N - 1, N - 1] + 3 / (x_R * dx)
-                B[N - 1, N - 1] = B[N - 1, N - 1] - dx / (4 * x_R)
+                A_lower[N - 2] = A_lower[N - 2] + 3 / (x_R * dx)
+                B_lower[N - 2] = B_lower[N - 2] - dx / (4 * x_R)
+
+        B_sparse = diags([B_main, B_upper, B_lower], offsets=[0, 1, -1])
+        A_sparse = diags([A_main, A_upper, A_lower], offsets=[0, 1, -1])
+        if self.grid_type == "log":
+            p_sparse = diags([np.exp(-2 * xgrid)], offsets=[0], dtype=dtype)
+        else:
+            p_sparse = diags([0.25 * xgrid**-2], offsets=[0], dtype=dtype)
 
         # construct kinetic energy matrix
-        T = -0.5 * p @ A
+        T_sparse = -0.5 * p_sparse @ A_sparse
 
         # solve in serial or parallel - serial mostly useful for debugging
         if config.numcores == 0:
             eigfuncs, eigvals = self.KS_matsolve_serial(
-                T, B, v, xgrid, bc, solve_type, eigs_min_guess
+                T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
             )
 
         else:
             eigfuncs, eigvals = self.KS_matsolve_parallel(
-                T, B, v, xgrid, bc, solve_type, eigs_min_guess
+                T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
             )
 
         return eigfuncs, eigvals
 
-    def KS_matsolve_parallel(self, T, B, v, xgrid, bc, solve_type, eigs_min_guess):
+    def KS_matsolve_parallel(
+        self, T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
+    ):
         """
         Solve the KS matrix diagonalization by parallelizing over config.numcores.
 
@@ -285,16 +287,16 @@ class Solver:
 
         # dump and load the large numpy arrays from file
         data_filename_memmap = os.path.join(joblib_folder, "data_memmap")
-        dump((T, B, v_flat), data_filename_memmap)
-        T, B, v_flat = load(data_filename_memmap, mmap_mode="r")
+        dump((T_sparse, B_sparse, v_flat), data_filename_memmap)
+        T_sparse, B_sparse, v_flat = load(data_filename_memmap, mmap_mode="r")
 
         # set up the parallel job
         with Parallel(n_jobs=config.numcores) as parallel:
             X = parallel(
                 delayed(self.diag_H)(
                     q,
-                    T,
-                    B,
+                    T_sparse,
+                    B_sparse,
                     v_flat,
                     xgrid,
                     config.nmax,
@@ -336,7 +338,9 @@ class Solver:
 
             return eigfuncs_null, eigs_guess
 
-    def KS_matsolve_serial(self, T, B, v, xgrid, bc, solve_type, eigs_min_guess):
+    def KS_matsolve_serial(
+        self, T_sparse, B_sparse, v, xgrid, bc, solve_type, eigs_min_guess
+    ):
         """
         Solve the KS equations via matrix diagonalization in serial.
 
@@ -370,8 +374,6 @@ class Solver:
             dtype = self.fp
         # compute the number of grid points
         N = np.size(xgrid)
-        # initialize empty potential matrix
-        V_mat = np.zeros((N, N), dtype=dtype)
 
         # initialize the eigenfunctions and their eigenvalues
         eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N), dtype=dtype)
@@ -388,28 +390,28 @@ class Solver:
                     v_corr = 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid)
                 else:
                     v_corr = 3 / (32 * xgrid**4) + l * (l + 1) / (2 * xgrid**4)
-                np.fill_diagonal(V_mat, v[i] + v_corr)
+                V_mat_sparse = diags([v[i] + v_corr], offsets=[0], dtype=dtype)
 
                 # construct Hamiltonians
-                H = T + B @ V_mat
+                H_sparse = T_sparse + B_sparse @ V_mat_sparse
 
                 # if dirichlet solve on (N-1) x (N-1) grid
                 if bc == "dirichlet":
-                    H_s = H[: N - 1, : N - 1]
-                    B_s = B[: N - 1, : N - 1]
+                    H_sparse_s = self.mat_convert_dirichlet(H_sparse)
+                    B_sparse_s = self.mat_convert_dirichlet(B_sparse)
                 # if neumann don't change anything
                 elif bc == "neumann":
-                    H_s = H
-                    B_s = B
+                    H_sparse_s = H_sparse
+                    B_sparse_s = B_sparse
 
                 # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
                 # use 'shift-invert mode' to find the eigenvalues nearest in magnitude
                 # to the est. lowest eigenvalue from full diagonalization on coarse grid
                 if solve_type == "full":
                     eigs_up, vecs_up = eigs(
-                        H_s,
+                        H_sparse_s,
                         k=config.nmax,
-                        M=B_s,
+                        M=B_sparse_s,
                         which="LM",
                         sigma=eigs_min_guess[i, l],
                         tol=config.conv_params["eigtol"],
@@ -426,7 +428,7 @@ class Solver:
                     else:
                         prefac = 8 * xgrid**2
                     for n in range(config.nmax):
-                        K[:, n] = prefac * (V_mat.diagonal() - eigs_up.real[n])
+                        K[:, n] = prefac * (v[i] + v_corr - eigs_up.real[n])
 
                     eigfuncs[i, l], eigvals[i, l] = self.update_orbs(
                         vecs_up, eigs_up, xgrid, bc, K, self.grid_type
@@ -434,7 +436,9 @@ class Solver:
 
                 elif solve_type == "guess":
                     # estimate the lowest eigenvalues for a given value of l
-                    eigs_up = linalg.eigvals(H, b=B, check_finite=False)
+                    eigs_up = linalg.eigvals(
+                        H_sparse.todense(), b=B_sparse.todense(), check_finite=False
+                    )
 
                     # sort the eigenvalues to find the lowest
                     idr = np.argsort(eigs_up)
@@ -448,7 +452,7 @@ class Solver:
         else:
             return eigfuncs_null, eigs_guess
 
-    def diag_H(self, p, T, B, v, xgrid, nmax, bc, eigs_guess, solve_type):
+    def diag_H(self, p, T_sparse, B_sparse, v, xgrid, nmax, bc, eigs_guess, solve_type):
         """
         Diagonilize the Hamiltonian for the input potential v[p].
 
@@ -486,33 +490,30 @@ class Solver:
             dtype = self.fp
         # compute the number of grid points
         N = np.size(xgrid)
-        # initialize empty potential matrix
-        V_mat = np.zeros((N, N), dtype=dtype)
 
         # fill potential matrices
-        # np.fill_diagonal(V_mat, v + 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid))
-        np.fill_diagonal(V_mat, v[p])
+        V_mat_sparse = diags([v[p]], offsets=[0], dtype=dtype)
 
         # construct Hamiltonians
-        H = T + B @ V_mat
+        H_sparse = T_sparse + B_sparse @ V_mat_sparse
 
         # if dirichlet solve on (N-1) x (N-1) grid
         if bc == "dirichlet":
-            H_s = H[: N - 1, : N - 1]
-            B_s = B[: N - 1, : N - 1]
+            H_sparse_s = self.mat_convert_dirichlet(H_sparse)
+            B_sparse_s = self.mat_convert_dirichlet(B_sparse)
         # if neumann don't change anything
         elif bc == "neumann":
-            H_s = H
-            B_s = B
+            H_sparse_s = H_sparse
+            B_sparse_s = B_sparse
 
         # we seek the lowest nmax eigenvalues from sparse matrix diagonalization
         # use 'shift-invert mode' to find the eigenvalues nearest in magnitude to
         # the estimated lowest eigenvalue from full diagonalization on coarse grid
         if solve_type == "full":
             evals, evecs = eigs(
-                H_s,
+                H_sparse_s,
                 k=nmax,
-                M=B_s,
+                M=B_sparse_s,
                 which="LM",
                 tol=config.conv_params["eigtol"],
                 sigma=eigs_guess[p],
@@ -528,18 +529,18 @@ class Solver:
             K = np.zeros((N, nmax), dtype=dtype)
             for n in range(nmax):
                 if self.grid_type == "log":
-                    K[:, n] = (
-                        -2 * np.exp(2 * xgrid) * (V_mat.diagonal() - evals.real[n])
-                    )
+                    K[:, n] = -2 * np.exp(2 * xgrid) * (v[p] - evals.real[n])
                 else:
-                    K[:, n] = 8 * xgrid**2 * (V_mat.diagonal() - evals.real[n])
+                    K[:, n] = 8 * xgrid**2 * (v[p] - evals.real[n])
             evecs, evals = self.update_orbs(evecs, evals, xgrid, bc, K, self.grid_type)
 
             return evecs, evals
 
         # estimate the lowest eigenvalues for a given value of l
         elif solve_type == "guess":
-            evals = linalg.eigvals(H, b=B, check_finite=False)
+            evals = linalg.eigvals(
+                H_sparse.todense(), b=B_sparse.todense(), check_finite=False
+            )
 
             # sort the eigenvalues to find the lowest
             idr = np.argsort(evals)
@@ -600,7 +601,6 @@ class Solver:
 
         return eigfuncs, eigvals
 
-    # @writeoutput.timing
     def calc_wfns_e_grid(self, xgrid, v, e_arr, eigfuncs_l, eigfuncs_u):
         """
         Compute all KS orbitals defined on the energy grid.
@@ -743,3 +743,36 @@ class Solver:
         Psi_norm = np.einsum("i,ij->ij", norm, Psi)
 
         return Psi_norm
+
+    @staticmethod
+    def mat_convert_dirichlet(diag_mat):
+        """
+        Truncate a scipy diags matrix from (N,N) to (N-1, N-1).
+
+        Parameters
+        ----------
+        diag_mat : scipy.sparse.diags object
+            diagonal matrix to truncate
+
+        Returns
+        -------
+        diag_mat : scipy.sparse.diags object
+            truncated diagonal matrix
+        """
+        # Convert to a dense matrix
+        dense_mat = diag_mat.todense()
+
+        # Truncate the dense matrix
+        dense_mat_truncated = dense_mat[:-1, :-1]
+
+        # Extract the main diagonal and the +1 and -1 off-diagonals
+        main_diag = np.diag(dense_mat_truncated)
+        upper_diag = np.diag(dense_mat_truncated, k=1)
+        lower_diag = np.diag(dense_mat_truncated, k=-1)
+
+        # Create a new diags matrix with the extracted diagonals
+        diag_mat_truncated = diags(
+            [main_diag, upper_diag, lower_diag], offsets=[0, 1, -1]
+        )
+
+        return diag_mat_truncated

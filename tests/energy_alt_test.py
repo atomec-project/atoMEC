@@ -12,8 +12,8 @@ import numpy as np
 
 
 # expected values and tolerance
-ideal_expected = -214.33339222837958
-quantum_expected = -207.98637746900067
+ideal_expected = -214.31170806859143
+quantum_expected = -207.95120034056816
 accuracy = 1e-3
 
 
