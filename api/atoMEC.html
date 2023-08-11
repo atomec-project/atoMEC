@@ -1824,7 +1824,7 @@ quantum number <cite>l</cite>.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.numerov.Solver.KS_matsolve_parallel">
-<span class="sig-name descname"><span class="pre">KS_matsolve_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.KS_matsolve_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.KS_matsolve_parallel" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">KS_matsolve_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T_sparse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_sparse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.KS_matsolve_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.KS_matsolve_parallel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve the KS matrix diagonalization by parallelizing over config.numcores.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1868,7 +1868,7 @@ core.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.numerov.Solver.KS_matsolve_serial">
-<span class="sig-name descname"><span class="pre">KS_matsolve_serial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.KS_matsolve_serial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.KS_matsolve_serial" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">KS_matsolve_serial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T_sparse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_sparse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_min_guess</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.KS_matsolve_serial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.KS_matsolve_serial" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve the KS equations via matrix diagonalization in serial.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1943,7 +1943,7 @@ set of energies. It is used for the <cite>bands</cite> boundary condition in the
 
 <dl class="py method">
 <dt class="sig sig-object py" id="atoMEC.numerov.Solver.diag_H">
-<span class="sig-name descname"><span class="pre">diag_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_guess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.diag_H"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.diag_H" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">diag_H</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_sparse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_sparse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigs_guess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.diag_H"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.diag_H" title="Permalink to this definition">¶</a></dt>
 <dd><p>Diagonilize the Hamiltonian for the input potential v[p].</p>
 <p>Uses Scipy’s sparse matrix solver scipy.sparse.linalg.eigs. This
 searches for the lowest magnitude <cite>nmax</cite> eigenvalues, so care
@@ -1966,6 +1966,23 @@ must be taken to converge calculations wrt <cite>nmax</cite>.</p>
 <li><p><strong>evals</strong> (<em>ndarray</em>) – the KS eigenvalues</p></li>
 </ul>
 </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atoMEC.numerov.Solver.mat_convert_dirichlet">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">mat_convert_dirichlet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diag_mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/numerov.html#Solver.mat_convert_dirichlet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.numerov.Solver.mat_convert_dirichlet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truncate a scipy diags matrix from (N,N) to (N-1, N-1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>diag_mat</strong> (<em>scipy.sparse.diags object</em>) – diagonal matrix to truncate</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>diag_mat</strong> – truncated diagonal matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>scipy.sparse.diags object</p>
 </dd>
 </dl>
 </dd></dl>
