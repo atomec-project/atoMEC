@@ -401,6 +401,11 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
     The output of the function is the square brackets after being acted upon with
     the divergence.
     """
+    if config.grid_type == "log":
+        r2 = np.exp(2.0 * xgrid)
+    else:
+        r2 = xgrid**4
+
     if spindims == 2:
         # 1st term of the expression in square brackets:
         term1 = (
@@ -413,30 +418,20 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
             + grad_0 * libxc_output["vsigma"].transpose()[1]
         )
         # combining the 2 and taking the divergence (in spherical coordinates)
+
         gga_addition2 = 2.0 * np.array(
             (
-                np.exp(-2.0 * xgrid)
-                * mathtools.grad_func(
-                    np.exp(2.0 * xgrid) * term1, xgrid, config.grid_type
-                ),
-                np.exp(-2.0 * xgrid)
-                * mathtools.grad_func(
-                    np.exp(2.0 * xgrid) * term2, xgrid, config.grid_type
-                ),
+                (1 / r2) * mathtools.grad_func(r2 * term1, xgrid, config.grid_type),
+                (1 / r2) * mathtools.grad_func(r2 * term2, xgrid, config.grid_type),
             ),
             dtype=config.fp,
         )
     else:
         gga_addition2 = (
             2.0
-            * np.exp(-2.0 * xgrid)
+            * (1 / r2)
             * mathtools.grad_func(
-                (
-                    2.0
-                    * np.exp(2.0 * xgrid)
-                    * grad_0
-                    * libxc_output["vsigma"].transpose()[0]
-                ),
+                (2.0 * r2 * grad_0 * libxc_output["vsigma"].transpose()[0]),
                 xgrid,
                 config.grid_type,
             )
