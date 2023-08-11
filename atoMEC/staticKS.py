@@ -972,11 +972,10 @@ class Potential:
 class Energy:
     r"""Class holding information about the KS total energy and relevant routines."""
 
-    def __init__(self, orbs, dens, pot):
+    def __init__(self, orbs, dens):
         # inputs
         self._orbs = orbs
         self._dens = dens.total
-        self._v_ha = pot.v_ha
         self._xgrid = dens._xgrid
 
         # initialize attributes
