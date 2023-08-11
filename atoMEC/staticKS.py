@@ -34,7 +34,7 @@ Functions
 import numpy as np
 
 # from numba import jit
-from math import sqrt, pi, exp
+from math import sqrt, pi
 
 # internal modules
 from . import config
