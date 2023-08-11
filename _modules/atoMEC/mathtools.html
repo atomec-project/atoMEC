@@ -669,7 +669,7 @@
     <span class="k">return</span> <span class="n">lorentzian_</span></div>
 
 
-<div class="viewcode-block" id="grad_func"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.grad_func">[docs]</a><span class="k">def</span> <span class="nf">grad_func</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="grad_func"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.grad_func">[docs]</a><span class="k">def</span> <span class="nf">grad_func</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the gradient of a function on the logarithmic grid.</span>
 
@@ -687,7 +687,10 @@
 <span class="sd">    grad : ndarray</span>
 <span class="sd">        The gradient of the density w.r.t. the radial grid.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">grad</span></div>
 </pre></div>
 
