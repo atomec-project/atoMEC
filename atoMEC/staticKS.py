@@ -32,7 +32,9 @@ Functions
 
 # external packages
 import numpy as np
-from math import sqrt, pi, exp
+
+# from numba import jit
+from math import sqrt, pi
 
 # internal modules
 from . import config
@@ -932,33 +934,37 @@ class Potential:
         # initialize v_ha
         v_ha_u = np.zeros_like(xgrid)
         v_ha_l = np.zeros_like(xgrid)
+        N = len(xgrid)
 
         # construct the total (sum over spins) density
         rho = np.sum(density, axis=0)
 
-        # loop over the x-grid
-        # this may be a bottleneck...
-        for i, x0 in enumerate(xgrid):
-            # set up 'upper' and 'lower' parts of the xgrid (x<=x0; x>x0)
-            x_u = xgrid[np.where(x0 < xgrid)]
-            x_l = xgrid[np.where(x0 >= xgrid)]
+        # components of total hartree potential
+        v_ha_u = np.zeros_like(rho)
+        v_ha_l = np.zeros_like(rho)
 
-            # likewise for the density
-            rho_u = rho[np.where(x0 < xgrid)]
-            rho_l = rho[np.where(x0 >= xgrid)]
+        dx = xgrid[1] - xgrid[0]
+        if grid_type == "log":
+            int_l = rho * np.exp(3 * xgrid)
+            int_u = rho * np.exp(2 * xgrid)
+            prefac_l = np.exp(-xgrid)
+        else:
+            int_l = 2 * rho * xgrid**5
+            int_u = 2 * rho * xgrid**3
+            prefac_l = xgrid**-2
 
-            # now compute the hartree potential
-            if grid_type == "log":
-                v_ha_l[i] = exp(-x0) * np.trapz(rho_l * np.exp(3.0 * x_l), x_l)
-                v_ha_u[i] = np.trapz(rho_u * np.exp(2 * x_u), x_u)
-            else:
-                v_ha_l[i] = (1 / x0**2) * np.trapz(rho_l * 2 * x_l**5, x_l)
-                v_ha_u[i] = np.trapz(rho_u * 2 * x_u**3, x_u)
+        # save the lower integral without prefac
+        int_l_no_prefac = 0.0
+        for i in range(1, N):
+            v_ha_l[i] = prefac_l[i] * (
+                int_l_no_prefac + 0.5 * dx * (int_l[i - 1] + int_l[i])
+            )
+            int_l_no_prefac += 0.5 * dx * (int_l[i - 1] + int_l[i])
+            v_ha_u[N - i - 1] = v_ha_u[N - i] + 0.5 * dx * (
+                int_u[N - i] + int_u[N - i - 1]
+            )
 
-        # total hartree potential is sum over integrals
-        # have to shift upper integral by one index to match
-        v_ha_u[1:] = v_ha_u[:-1]
-        v_ha = 4.0 * pi * (v_ha_l + v_ha_u)
+        v_ha = 4.0 * pi * (v_ha_u + v_ha_l)
 
         return v_ha
 
