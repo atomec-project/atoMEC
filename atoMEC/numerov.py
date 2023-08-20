@@ -436,8 +436,9 @@ class Solver:
 
                 elif solve_type == "guess":
                     # estimate the lowest eigenvalues for a given value of l
+                    invB = linalg.inv(B_sparse.todense())
                     eigs_up = linalg.eigvals(
-                        H_sparse.todense(), b=B_sparse.todense(), check_finite=False
+                        invB * H_sparse.todense(), check_finite=False
                     )
 
                     # sort the eigenvalues to find the lowest
@@ -538,9 +539,8 @@ class Solver:
 
         # estimate the lowest eigenvalues for a given value of l
         elif solve_type == "guess":
-            evals = linalg.eigvals(
-                H_sparse.todense(), b=B_sparse.todense(), check_finite=False
-            )
+            invB = linalg.inv(B_sparse.todense())
+            evals = linalg.eigvals(invB * H_sparse.todense(), check_finite=False)
 
             # sort the eigenvalues to find the lowest
             idr = np.argsort(evals)
