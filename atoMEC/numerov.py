@@ -436,9 +436,13 @@ class Solver:
 
                 elif solve_type == "guess":
                     # estimate the lowest eigenvalues for a given value of l
+                    B_dense = B_sparse.todense()
+                    invB = linalg.inv(B_dense)
                     eigs_up = linalg.eigvals(
-                        H_sparse.todense(), b=B_sparse.todense(), check_finite=False
+                        invB * H_sparse.todense(), check_finite=False
                     )
+                    if not np.all(np.isclose(invB * B_dense, np.eye(len(xgrid)))):
+                        print("Warning: B matrix in eigs_guess is ill-conditioned")
 
                     # sort the eigenvalues to find the lowest
                     idr = np.argsort(eigs_up)
@@ -538,9 +542,11 @@ class Solver:
 
         # estimate the lowest eigenvalues for a given value of l
         elif solve_type == "guess":
-            evals = linalg.eigvals(
-                H_sparse.todense(), b=B_sparse.todense(), check_finite=False
-            )
+            B_dense = B_sparse.todense()
+            invB = linalg.inv(B_dense)
+            evals = linalg.eigvals(invB * H_sparse.todense(), check_finite=False)
+            if not np.all(np.isclose(invB * B_dense, np.eye(len(xgrid)))):
+                print("Warning: B matrix in eigs_guess is ill-conditioned")
 
             # sort the eigenvalues to find the lowest
             idr = np.argsort(evals)
