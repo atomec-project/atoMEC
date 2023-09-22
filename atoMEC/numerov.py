@@ -35,8 +35,6 @@ from . import mathtools
 
 # from . import writeoutput
 
-dtype_map = {32: np.float32, 64: np.float64}
-
 
 class Solver:
     """
@@ -50,7 +48,6 @@ class Solver:
 
     def __init__(self, grid_type):
         self.grid_type = grid_type
-        self.fp = config.fp
 
     def calc_eigs_min(self, v, xgrid, bc):
         """
@@ -135,12 +132,8 @@ class Solver:
            solving Schrödinger’s equation, American Journal of Physics 80, 1017-1019
            (2012) `DOI:10.1119/1.4748813 <https://doi.org/10.1119/1.4748813>`__.
         """
-        if solve_type == "guess":
-            dtype = np.float64
-        else:
-            dtype = self.fp
         if eigs_min_guess is None:
-            eigs_min_guess = np.zeros((config.spindims, config.lmax), dtype=dtype)
+            eigs_min_guess = np.zeros((config.spindims, config.lmax))
 
         # define the spacing of the xgrid
         dx = xgrid[1] - xgrid[0]
@@ -154,12 +147,12 @@ class Solver:
         # J(x)=exp(x/2) for log grid; J(x) = x**-1.5 for sqrt grid
 
         # see referenced paper for definitions of A and B matrices
-        B_main = (10.0 / 12.0) * np.ones((N), dtype=dtype)
-        B_upper = (1.0 / 12.0) * np.ones((N - 1), dtype=dtype)
+        B_main = (10.0 / 12.0) * np.ones((N))
+        B_upper = (1.0 / 12.0) * np.ones((N - 1))
         B_lower = B_upper.copy()
 
-        A_main = -2 * np.ones((N), dtype=dtype) / dx**2
-        A_upper = np.ones((N - 1), dtype=dtype) / dx**2
+        A_main = -2 * np.ones((N)) / dx**2
+        A_upper = np.ones((N - 1)) / dx**2
         A_lower = A_upper.copy()
 
         # von neumann boundary conditions
@@ -177,9 +170,9 @@ class Solver:
         B_sparse = diags([B_main, B_upper, B_lower], offsets=[0, 1, -1])
         A_sparse = diags([A_main, A_upper, A_lower], offsets=[0, 1, -1])
         if self.grid_type == "log":
-            p_sparse = diags([np.exp(-2 * xgrid)], offsets=[0], dtype=dtype)
+            p_sparse = diags([np.exp(-2 * xgrid)], offsets=[0])
         else:
-            p_sparse = diags([0.25 * xgrid**-2], offsets=[0], dtype=dtype)
+            p_sparse = diags([0.25 * xgrid**-2], offsets=[0])
 
         # construct kinetic energy matrix
         T_sparse = -0.5 * p_sparse @ A_sparse
@@ -252,10 +245,6 @@ class Solver:
         N.B. if `config.numcores=-N` then `joblib` detects the number of available cores
         `n_avail` and parallelizes into `n_avail + 1 - N` separate jobs.
         """
-        if solve_type == "guess":
-            dtype = np.float64
-        else:
-            dtype = self.fp
         # compute the number of grid points
         N = np.size(xgrid)
 
@@ -263,8 +252,8 @@ class Solver:
         pmax = config.spindims * config.lmax
 
         # now flatten the potential matrix over spins
-        v_flat = np.zeros((pmax, N), dtype=dtype)
-        eigs_guess_flat = np.zeros((pmax), dtype=dtype)
+        v_flat = np.zeros((pmax, N))
+        eigs_guess_flat = np.zeros((pmax))
         for i in range(np.shape(v)[0]):
             for l in range(config.lmax):
                 if self.grid_type == "log":
@@ -315,8 +304,8 @@ class Solver:
 
         if solve_type == "full":
             # retrieve the eigfuncs and eigvals from the joblib output
-            eigfuncs_flat = np.zeros((pmax, config.nmax, N), dtype=dtype)
-            eigvals_flat = np.zeros((pmax, config.nmax), dtype=dtype)
+            eigfuncs_flat = np.zeros((pmax, config.nmax, N))
+            eigvals_flat = np.zeros((pmax, config.nmax))
             for q in range(pmax):
                 eigfuncs_flat[q] = X[q][0]
                 eigvals_flat[q] = X[q][1]
@@ -368,17 +357,13 @@ class Solver:
         eigvals : ndarray
             KS eigenvalues
         """
-        if solve_type == "guess":
-            dtype = np.float64
-        else:
-            dtype = self.fp
         # compute the number of grid points
         N = np.size(xgrid)
 
         # initialize the eigenfunctions and their eigenvalues
-        eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N), dtype=dtype)
-        eigvals = np.zeros((config.spindims, config.lmax, config.nmax), dtype=dtype)
-        eigs_guess = np.zeros((config.spindims, config.lmax), dtype=dtype)
+        eigfuncs = np.zeros((config.spindims, config.lmax, config.nmax, N))
+        eigvals = np.zeros((config.spindims, config.lmax, config.nmax))
+        eigs_guess = np.zeros((config.spindims, config.lmax))
 
         # A new Hamiltonian has to be re-constructed for every value of l and each spin
         # channel if spin-polarized
@@ -390,7 +375,7 @@ class Solver:
                     v_corr = 0.5 * (l + 0.5) ** 2 * np.exp(-2 * xgrid)
                 else:
                     v_corr = 3 / (32 * xgrid**4) + l * (l + 1) / (2 * xgrid**4)
-                V_mat_sparse = diags([v[i] + v_corr], offsets=[0], dtype=dtype)
+                V_mat_sparse = diags([v[i] + v_corr], offsets=[0])
 
                 # construct Hamiltonians
                 H_sparse = T_sparse + B_sparse @ V_mat_sparse
@@ -417,12 +402,7 @@ class Solver:
                         tol=config.conv_params["eigtol"],
                     )
 
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore", category=np.ComplexWarning)
-                        vecs_up = vecs_up.astype(self.fp)
-                        eigs_up = eigs_up.astype(self.fp)
-
-                    K = np.zeros((N, config.nmax), dtype=dtype)
+                    K = np.zeros((N, config.nmax))
                     if self.grid_type == "log":
                         prefac = -2 * np.exp(2 * xgrid)
                     else:
@@ -446,7 +426,7 @@ class Solver:
 
                     # sort the eigenvalues to find the lowest
                     idr = np.argsort(eigs_up)
-                    eigs_guess[i, l] = np.array(eigs_up[idr].real, dtype=dtype)[0]
+                    eigs_guess[i, l] = np.array(eigs_up[idr].real)[0]
 
                     # dummy variable for the null eigenfucntions
                     eigfuncs_null = eigfuncs
@@ -488,15 +468,11 @@ class Solver:
         evals : ndarray
             the KS eigenvalues
         """
-        if solve_type == "guess":
-            dtype = np.float64
-        else:
-            dtype = self.fp
         # compute the number of grid points
         N = np.size(xgrid)
 
         # fill potential matrices
-        V_mat_sparse = diags([v[p]], offsets=[0], dtype=dtype)
+        V_mat_sparse = diags([v[p]], offsets=[0])
 
         # construct Hamiltonians
         H_sparse = T_sparse + B_sparse @ V_mat_sparse
@@ -523,14 +499,8 @@ class Solver:
                 sigma=eigs_guess[p],
             )
 
-            # Ignore the complex-to-real casting warning
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=np.ComplexWarning)
-                evecs = evecs.astype(self.fp)
-                evals = evals.astype(self.fp)
-
             # sort and normalize
-            K = np.zeros((N, nmax), dtype=dtype)
+            K = np.zeros((N, nmax))
             for n in range(nmax):
                 if self.grid_type == "log":
                     K[:, n] = -2 * np.exp(2 * xgrid) * (v[p] - evals.real[n])
@@ -550,10 +520,10 @@ class Solver:
 
             # sort the eigenvalues to find the lowest
             idr = np.argsort(evals)
-            evals = np.array(evals[idr].real, dtype=dtype)[0]
+            evals = np.array(evals[idr].real)[0]
 
             # dummy eigenvector for return statement
-            evecs_null = np.zeros((N), dtype=dtype)
+            evecs_null = np.zeros((N))
 
             return evecs_null, evals
 
@@ -582,13 +552,13 @@ class Solver:
         """
         # Sort eigenvalues in ascending order
         idr = np.argsort(l_eigvals)
-        eigvals = np.array(l_eigvals[idr].real, dtype=np.float64)
+        eigvals = np.array(l_eigvals[idr].real)
 
         # resize l_eigfuncs from N-1 to N for dirichlet condition
         if bc == "dirichlet":
             N = np.size(xgrid)
             nmax = np.shape(l_eigfuncs)[1]
-            l_eigfuncs_dir = np.zeros((N, nmax), dtype=np.float64)
+            l_eigfuncs_dir = np.zeros((N, nmax))
             l_eigfuncs_dir[:-1] = l_eigfuncs.real
             l_eigfuncs = l_eigfuncs_dir
 
@@ -600,7 +570,7 @@ class Solver:
         ) / (1 + h * K[-1])
 
         # convert to correct dimensions
-        eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr], dtype=np.float64)
+        eigfuncs = np.array(np.transpose(l_eigfuncs.real)[idr])
         if grid_type == "sqrt":
             eigfuncs *= xgrid**-1.5
         eigfuncs = mathtools.normalize_orbs(eigfuncs, xgrid, grid_type)  # normalize
@@ -641,9 +611,9 @@ class Solver:
         e_arr_flat = e_arr.flatten()
 
         # initialize the W (potential) and eigenfunction arrays
-        W_arr = np.zeros((N, nkpts, spindims, lmax, nmax), dtype=self.fp)
+        W_arr = np.zeros((N, nkpts, spindims, lmax, nmax))
         eigfuncs_init = np.zeros_like(W_arr)
-        eigfuncs_backup = np.zeros((nkpts, spindims, lmax, nmax, N), dtype=self.fp)
+        eigfuncs_backup = np.zeros((nkpts, spindims, lmax, nmax, N))
         if self.grid_type == "sqrt":
             for k in range(nkpts):
                 eigfuncs_backup[k] = (k * eigfuncs_u + (nkpts - k - 1) * eigfuncs_l) / (
@@ -692,9 +662,7 @@ class Solver:
         )
 
         # reshape the eigenfucntions
-        eigfuncs_e = eigfuncs_flat.reshape((nkpts, spindims, lmax, nmax, N)).astype(
-            self.fp
-        )
+        eigfuncs_e = eigfuncs_flat.reshape((nkpts, spindims, lmax, nmax, N))
 
         return eigfuncs_e
 
