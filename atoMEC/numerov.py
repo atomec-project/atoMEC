@@ -17,7 +17,6 @@ import os
 import shutil
 import string
 import random
-import warnings
 
 # external libs
 import numpy as np
