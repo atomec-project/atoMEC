@@ -42,7 +42,7 @@ class TestUnbound:
             units_temp="eV",
             units_radius="angstrom",
         )
-        model = models.ISModel(Be_at, unbound="ideal")
+        model = models.ISModel(Be_at, unbound="ideal", bc="dirichlet")
 
         # run the SCF calculation
         output = model.CalcEnergy(

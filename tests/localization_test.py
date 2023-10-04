@@ -91,7 +91,9 @@ class TestLocalization:
 
         # set up the atom and model
         Al_at = Atom("Al", 0.01, radius=5.0, units_temp="eV")
-        model = models.ISModel(Al_at, unbound="quantum", spinpol=spinpol)
+        model = models.ISModel(
+            Al_at, unbound="quantum", bc="dirichlet", spinpol=spinpol
+        )
 
         # run the SCF calculation
         output = model.CalcEnergy(
@@ -136,6 +138,7 @@ class TestLocalization:
             unbound=input_SCF["model"].unbound,
             spinpol=input_SCF["model"].spinpol,
             write_info=False,
+            bc="dirichlet",
         )
 
         ELF = localization.ELFTools(
@@ -177,6 +180,7 @@ class TestLocalization:
             unbound=input_SCF["model"].unbound,
             spinpol=input_SCF["model"].spinpol,
             write_info=False,
+            bc="dirichlet",
         )
 
         ELF = localization.ELFTools(

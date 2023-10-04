@@ -113,6 +113,7 @@ class TestPressure:
             grid_params={"ngrid": 1000},
             band_params={"nkpts": 50},
             verbosity=1,
+            grid_type="log",
         )
 
         output_dict = {"Atom": Li_at, "model": model, "SCF_out": output}

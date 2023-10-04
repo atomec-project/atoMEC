@@ -81,6 +81,7 @@ class TestBcs:
 
 if __name__ == "__main__":
     config.numcores = -1
+    config.fp = np.float32
     dirichlet = TestBcs._run("dirichlet")
     neumann = TestBcs._run("neumann")
     bands = TestBcs._run("bands")
