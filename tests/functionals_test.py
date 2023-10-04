@@ -12,11 +12,11 @@ import numpy as np
 
 
 # expected values and tolerance
-lda_expected = -158.66453567079228
-gdsmfb_expected = -158.6079090856573
-no_xc_expected = -144.49795725080637
-no_hxc_expected = -249.50772961499766
-gga_expected = -159.37528906276566
+lda_expected = -161.13694055882937
+gdsmfb_expected = -161.07726791735197
+no_xc_expected = -147.69699056522276
+no_hxc_expected = -249.7299062816172
+gga_expected = -161.79172099868805
 accuracy = 1e-3
 
 
@@ -91,6 +91,7 @@ class TestFuncs:
             6,
             scf_params={"maxscf": 5, "mixfrac": 0.3},
             grid_params={"ngrid": 1000},
+            band_params={"nkpts": 30},
         )
 
         # extract the total free energy
