@@ -52,7 +52,7 @@ jobs:
         run: |
           install_path=~/libxc/sharedlib/
           
-          git clone git@github.com:ElectronicStructureLibrary/libxc.git
+          git clone https://github.com/ElectronicStructureLibrary/libxc.git
           cd ~/libxc
           mkdir -p $install_path
 
