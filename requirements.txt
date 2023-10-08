@@ -2,5 +2,4 @@ numpy>=1.20.3
 scipy>=1.6.3
 mendeleev>=0.7.0
 tabulate>=0.8.9
-pylibxc2>=6.0.0
 joblib>=1.0.1
