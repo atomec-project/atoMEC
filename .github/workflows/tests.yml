@@ -39,7 +39,6 @@ jobs:
         id: get-sha
         run: |
           echo "::set-output name=sha::$(git ls-remote https://github.com/ElectronicStructureLibrary/libxc.git refs/heads/master | cut -f 1)"
-          shell: bash
         
       - name: Cache external library
         id: cache-libxc
