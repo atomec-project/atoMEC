@@ -21,13 +21,13 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: '3.10'
 
       - name: Upgrade pip
-        run: python3 -m pip install --upgrade pip
+        run: python -m pip install --upgrade pip
 
       - name : Install pipenv
-        run : python3 -m pip install --upgrade pipenv
+        run : python -m pip install --upgrade pipenv
 
       - id: cache-pipenv
         uses: actions/cache@v3
@@ -35,12 +35,55 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}_v2
 
+      - name: Get latest commit SHA of libxc master branch
+        id: get-sha
+        run: |
+          echo "::set-output name=sha::$(git ls-remote git@github.com:ElectronicStructureLibrary/libxc.git refs/heads/master | cut -f 1)"
+          shell: bash
+        
+      - name: Cache external library
+        id: cache-libxc
+        uses: actions/cache@v3
+        with:
+          path: ~/libxc/sharedlib/
+          key: libxc-${{ runner.os }}-${{ steps.get-sha.outputs.sha }}
+
+      - name: Build and install libxc
+        if: steps.cache-libxc.outputs.cache-hit != 'true'
+        run: |
+          install_path=~/libxc/sharedlib/
+          
+          git clone git@github.com:ElectronicStructureLibrary/libxc.git
+          cd ~/libxc
+          mkdir -p $install_path
+
+          cmake -H. -Bobjdir -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$install_path -DENABLE_PYTHON=ON
+          cd objdir && make
+          make test
+          make install
+
+      - name: Set LD_LIBRARY_PATH
+        run: echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/libxc/sharedlib/" >> $GITHUB_ENV
+
+      - name: Cache Python bindings
+        id: cache-bindings
+        uses: actions/cache@v3
+        with:
+          path: ~/libxc
+          key: bindings-${{ runner.os }}-${{ steps.get-libxc-sha.outputs.sha }}
+
+      - name: Install Python bindings
+        if: steps.cache-bindings.outputs.cache-hit != 'true'
+        run: |
+          cd ~/libxc
+          python setup.py install        
+
       - name: Install dependencies
         if: steps.cache-pipenv.outputs.cache-hit != 'true'
-        run: pipenv --python 3.8 install --dev
+        run: pipenv install --dev
 
       - name: Install atoMEC
-        run: pipenv run python3 -m pip install -e .
+        run: pipenv run python -m pip install -e .
 
       - name: Run test suite
         run: pipenv run pytest --cov=atoMEC --cov-report=xml --random-order tests/
