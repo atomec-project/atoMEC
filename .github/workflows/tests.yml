@@ -81,16 +81,12 @@ jobs:
       - name: Install Python bindings
         if: steps.cache-bindings.outputs.cache-hit != 'true'
         run: |
-          cd ${{ github.workspace }}
-          pipenv shell
-          cd ~/libxc
-          pip install .
+          pipenv run pip install ~/libxc/
 
       - name: Install atoMEC
         run: |
           cd ${{ github.workspace }}
-          pipenv shell
-          pip install -e .
+          pipenv run pip install -e .
 
       - name: Run test suite
         run: pipenv run pytest --cov=atoMEC --cov-report=xml --random-order tests/
