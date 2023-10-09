@@ -62,16 +62,16 @@ Note that we provide a script `install_libxc.sh` which performs the full `libxc`
 ### Supported operating systems
 
 * **Linux and macOS**: atoMEC has been installed on various linux distributions and macOS, and is expected to work for most distributions and versions
-* **Windows**: atoMEC does **not** support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support.
+* **Windows**: atoMEC does **not** support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support. We are looking into ways to make the dependency on `pylibxc` optional, in order to allow installation on Windows. However, this is not currently a priority.
+
 
 ### Supported Python versions
 
-* atoMEC is extensively tested and is known to work seamlessly with Python 3.8. All development and CI testing is done with Python 3.8.
-* atoMEC is occasionally tested and is expected to work with Python 3.9
+* atoMEC has been tested and is expected to work for all Python versions >= 3.8 and <= 3.12
 * atoMEC does not work for Python <= 3.7
-* atoMEC does not work for Python >= 3.10. This is due to the dependency on `pylibxc` which breaks for Python >= 3.10.
+* Until 09.10.2023 (release 1.4.0), all development and CI testing was done with Python 3.8. As of this date, development and CI testing is done with Python 3.10.
+* Python 3.10 is therefore the recommended version for atoMEC >= 1.4.0, since this is used for the current testing and development environment
 
-We are looking into ways to remove, or at least make optional, the dependency on `pylibxc`, in order to allow installation on Windows and with Python >= 3.10. However, this is not currently a priority.
 
 ## Running
 You can familiarize yourself with the usage of this package by running the example scripts in `examples/`.
