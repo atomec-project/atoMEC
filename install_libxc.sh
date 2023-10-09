@@ -24,8 +24,8 @@ if ! grep -q "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$install_path" ~/.bashrc;
 fi
 
 # install the python bindings
-cd ..
-python setup.py install
+cd $libxc_path/libxc
+pip install .
 
 echo "libxc installation complete"
 
