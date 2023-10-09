@@ -31,16 +31,33 @@ Please see below sub-sections on supported operating systems and Python versions
 
 First, clone the atoMEC repository and ``cd`` into the main directory.
 
-* Recommended : using [pipenv](https://pypi.org/project/pipenv/)
+* It is recommended to install atoMEC inside a virtual environment. Below, we detail how to achive this with [pipenv](https://pypi.org/project/pipenv/).
 
   This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies.
 
-  1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for    installation instructions)
+  1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for installation instructions)
   2. Next, install `atoMEC`'s dependencies with `pipenv install` (use `--dev` option to install the test dependencies in the same environment)
-  3. Use `pipenv shell` to activate the virtual environment and install atoMEC with `pip install atoMEC` (for developers: `pip install -e .`)
-  4. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
+  3. Use `pipenv shell` to activate the virtual environment
+  4. Install Python bindings for `libxc`. See below section for installation instructions.
+  5. Install atoMEC with `pip install atoMEC` (for developers: `pip install -e .`)
+  6. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
 
 * Run the tests (see Testing section below) and report any failures (for example by raising an issue)
+
+### Libxc installation
+
+atoMEC relies on the [libxc](https://tddft.org/programs/libxc/) library for exchange-correlation functionals.
+
+Unfortunately, there is no official pip installation available for libxc (yet). There are two options for installation.
+
+First, ensure the virtual environment is activated (e.g. with `pipenv shell`). Then:
+
+1. Easy but **not** recommended `pip install pylibxc2`: This is an unofficial pip package for the `libxc` Python bindings. However, besides lacking official support, it does not seem to be under active maintenance. It also works only for Python <= 3.9. Nevertheless, it's an easy way to get started with atoMEC.
+2. Recommended route: Follow [official installation instructions](https://tddft.org/programs/libxc/installation/) for `libxc`'s Python bindings. Note that this requires the `cmake` build pathway with Python bindings and shared library options enabled:
+
+	`cmake -H. -Bobjdir -DBUILD_SHARED_LIBS=ON -DENABLE_PYTHON=ON`
+
+Note that we provide a script `install_libxc.sh` which performs the full `libxc` installation workflow. This script has been tested on Ubuntu 22.04 and Python >= 3.8. 
 
 ### Supported operating systems
 
