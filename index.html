@@ -191,33 +191,47 @@ to solve the electronic structure problem for single-element materials at finite
 <p>Please see below sub-sections on supported operating systems and Python versions before continuing.</p>
 <p>First, clone the atoMEC repository and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the main directory.</p>
 <ul>
-<li><p>Recommended : using <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a></p>
+<li><p>It is recommended to install atoMEC inside a virtual environment. Below, we detail how to achive this with <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a>.</p>
 <p>This route is recommended because <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> automatically creates a virtual environment and manages dependencies.</p>
 <ol class="simple">
-<li><p>First, install <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> if it is not already installed, for example via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pipenv</span></code> (or see <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a> for    installation instructions)</p></li>
+<li><p>First, install <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> if it is not already installed, for example via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pipenv</span></code> (or see <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a> for installation instructions)</p></li>
 <li><p>Next, install <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code>’s dependencies with <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">install</span></code> (use <code class="docutils literal notranslate"><span class="pre">--dev</span></code> option to install the test dependencies in the same environment)</p></li>
-<li><p>Use <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">shell</span></code> to activate the virtual environment and install atoMEC with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">atoMEC</span></code> (for developers: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>)</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">shell</span></code> to activate the virtual environment</p></li>
+<li><p>Install Python bindings for <code class="docutils literal notranslate"><span class="pre">libxc</span></code>. See below section for installation instructions.</p></li>
+<li><p>Install atoMEC with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">atoMEC</span></code> (for developers: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code>)</p></li>
 <li><p>Now run scripts from inside the <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code> virtual environment, e.g. <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">examples/simple.py</span></code></p></li>
 </ol>
 </li>
 <li><p>Run the tests (see Testing section below) and report any failures (for example by raising an issue)</p></li>
 </ul>
+<div class="section" id="libxc-installation">
+<h3>Libxc installation<a class="headerlink" href="#libxc-installation" title="Permalink to this headline">¶</a></h3>
+<p>atoMEC relies on the <a class="reference external" href="https://tddft.org/programs/libxc/">libxc</a> library for exchange-correlation functionals.</p>
+<p>Unfortunately, there is no official pip installation available for libxc (yet). There are two options for installation.</p>
+<p>First, ensure the virtual environment is activated (e.g. with <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">shell</span></code>). Then:</p>
+<ol>
+<li><p>Easy but <strong>not</strong> recommended <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pylibxc2</span></code>: This is an unofficial pip package for the <code class="docutils literal notranslate"><span class="pre">libxc</span></code> Python bindings. However, besides lacking official support, it does not seem to be under active maintenance. It also works only for Python &lt;= 3.9. Nevertheless, it’s an easy way to get started with atoMEC.</p></li>
+<li><p>Recommended route: Follow <a class="reference external" href="https://tddft.org/programs/libxc/installation/">official installation instructions</a> for <code class="docutils literal notranslate"><span class="pre">libxc</span></code>’s Python bindings. Note that this requires the <code class="docutils literal notranslate"><span class="pre">cmake</span></code> build pathway with Python bindings and shared library options enabled:</p>
+<p><code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-H.</span> <span class="pre">-Bobjdir</span> <span class="pre">-DBUILD_SHARED_LIBS=ON</span> <span class="pre">-DENABLE_PYTHON=ON</span></code></p>
+</li>
+</ol>
+<p>Note that we provide a script <code class="docutils literal notranslate"><span class="pre">install_libxc.sh</span></code> which performs the full <code class="docutils literal notranslate"><span class="pre">libxc</span></code> installation workflow. This script has been tested on Ubuntu 22.04 and Python &gt;= 3.8.</p>
+</div>
 <div class="section" id="supported-operating-systems">
 <h3>Supported operating systems<a class="headerlink" href="#supported-operating-systems" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><strong>Linux and macOS</strong>: atoMEC has been installed on various linux distributions and macOS, and is expected to work for most distributions and versions</p></li>
-<li><p><strong>Windows</strong>: atoMEC does <strong>not</strong> support Windows installation. This is due to the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code> which currently lacks Windows support.</p></li>
+<li><p><strong>Windows</strong>: atoMEC does <strong>not</strong> support Windows installation. This is due to the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code> which currently lacks Windows support. We are looking into ways to make the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code> optional, in order to allow installation on Windows. However, this is not currently a priority.</p></li>
 </ul>
 </div>
 <div class="section" id="supported-python-versions">
 <h3>Supported Python versions<a class="headerlink" href="#supported-python-versions" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>atoMEC is extensively tested and is known to work seamlessly with Python 3.8. All development and CI testing is done with Python 3.8.</p></li>
-<li><p>atoMEC is occasionally tested and is expected to work with Python 3.9</p></li>
+<li><p>atoMEC has been tested and is expected to work for all Python versions &gt;= 3.8 and &lt;= 3.12</p></li>
 <li><p>atoMEC does not work for Python &lt;= 3.7</p></li>
-<li><p>atoMEC does not work for Python &gt;= 3.10. This is due to the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code> which breaks for Python &gt;= 3.10.</p></li>
+<li><p>Until 09.10.2023 (release 1.4.0), all development and CI testing was done with Python 3.8. As of this date, development and CI testing is done with Python 3.10.</p></li>
+<li><p>Python 3.10 is therefore the recommended version for atoMEC &gt;= 1.4.0, since this is used for the current testing and development environment</p></li>
 </ul>
-<p>We are looking into ways to remove, or at least make optional, the dependency on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code>, in order to allow installation on Windows and with Python &gt;= 3.10. However, this is not currently a priority.</p>
 </div>
 </div>
 <div class="section" id="running">
