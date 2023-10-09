@@ -72,18 +72,25 @@ jobs:
           path: ~/libxc
           key: bindings-${{ runner.os }}-${{ steps.get-libxc-sha.outputs.sha }}
 
+      - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          cd ~/atoMEC
+          pipenv install --dev
+
       - name: Install Python bindings
         if: steps.cache-bindings.outputs.cache-hit != 'true'
         run: |
+          cd ~/atoMEC
+          pipenv shell
           cd ~/libxc
-          pipenv run python setup.py install        
-
-      - name: Install dependencies
-        if: steps.cache-pipenv.outputs.cache-hit != 'true'
-        run: pipenv install --dev
+          python setup.py install        
 
       - name: Install atoMEC
-        run: pipenv run python -m pip install -e .
+        run: |
+          cd ~/atoMEC
+          pipenv shell
+          pip install -e .
 
       - name: Run test suite
         run: pipenv run pytest --cov=atoMEC --cov-report=xml --random-order tests/
