@@ -76,7 +76,7 @@ jobs:
         if: steps.cache-bindings.outputs.cache-hit != 'true'
         run: |
           cd ~/libxc
-          python setup.py install        
+          pipenv run python setup.py install        
 
       - name: Install dependencies
         if: steps.cache-pipenv.outputs.cache-hit != 'true'
