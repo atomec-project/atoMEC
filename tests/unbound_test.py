@@ -48,7 +48,7 @@ class TestUnbound:
         output = model.CalcEnergy(
             3,
             3,
-            scf_params={"maxscf": 3},
+            scf_params={"maxscf": 3, "mixfrac": 0.3},
             grid_params={"ngrid": 1000},
             force_bound=[[0, 0, 0]],
         )
