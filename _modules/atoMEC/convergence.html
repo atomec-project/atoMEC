@@ -267,7 +267,7 @@
         <span class="n">conv_pot</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">conv_vals</span><span class="p">[</span><span class="s2">&quot;complete&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="k">if</span> <span class="n">iscf</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">iscf</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">conv_vals</span><span class="p">[</span><span class="s2">&quot;dE&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">config</span><span class="o">.</span><span class="n">conv_params</span><span class="p">[</span><span class="s2">&quot;econv&quot;</span><span class="p">]:</span>
                 <span class="n">conv_energy</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">conv_vals</span><span class="p">[</span><span class="s2">&quot;drho&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">config</span><span class="o">.</span><span class="n">conv_params</span><span class="p">[</span><span class="s2">&quot;nconv&quot;</span><span class="p">]):</span>
