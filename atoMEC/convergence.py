@@ -104,7 +104,7 @@ class SCF:
         conv_pot = False
         conv_vals["complete"] = False
 
-        if iscf > 3:
+        if iscf > 1:
             if conv_vals["dE"] < config.conv_params["econv"]:
                 conv_energy = True
             if np.all(conv_vals["drho"] < config.conv_params["nconv"]):
