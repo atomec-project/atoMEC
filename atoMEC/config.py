@@ -33,3 +33,6 @@ grid_type = "sqrt"
 
 # parallelization
 numcores = 0  # defaults to serial
+
+# whether to suppress warnings (not errors)
+suppress_warnings = False

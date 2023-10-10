@@ -170,9 +170,9 @@ class Orbitals:
         norbs_ok, lorbs_ok = self.check_orbs(
             self._occnums_w, config.conv_params["bandtol"]
         )
-        if not norbs_ok:
+        if not norbs_ok and not config.suppress_warnings:
             print(check_inputs.InputWarning.norbs_warning("nmax"))
-        if not lorbs_ok:
+        if not lorbs_ok and not config.suppress_warnings:
             print(check_inputs.InputWarning.norbs_warning("lmax"))
         return self._occnums_w
 
