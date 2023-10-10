@@ -102,7 +102,7 @@ class TestPressure:
         output = model.CalcEnergy(
             6,
             8,
-            scf_params={"maxscf": 5},
+            scf_params={"maxscf": 5, "mixfrac": 0.3},
             grid_params={"ngrid": 1000},
             band_params={"nkpts": 50},
             verbosity=1,
