@@ -35,6 +35,7 @@ class TestPressure:
     def SCF_output(self):
         """Run a spin-unpolarized SCF calc and save the output."""
         config.numcores = -1
+        config.suppress_warnings = True
         return self._run_SCF()
 
     @pytest.mark.parametrize(
