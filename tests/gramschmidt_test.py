@@ -61,7 +61,10 @@ class TestGS:
 
         # run SCF calculation
         output = model.CalcEnergy(
-            4, 4, scf_params={"mixfrac": 0.3, "maxscf": 5}, grid_params={"ngrid": 1000}
+            4,
+            4,
+            scf_params={"mixfrac": 0.3, "maxscf": 5},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 300},
         )
 
         return output

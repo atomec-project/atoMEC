@@ -63,7 +63,10 @@ class TestEnergyAlt:
 
         # run the SCF calculation
         output = model.CalcEnergy(
-            10, 5, scf_params={"maxscf": 6, "mixfrac": 0.3}, grid_params={"ngrid": 1000}
+            10,
+            5,
+            scf_params={"maxscf": 6, "mixfrac": 0.3},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 300},
         )
 
         # construct the EnergyAlt object

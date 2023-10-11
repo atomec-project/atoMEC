@@ -118,14 +118,16 @@ class Atom:
                 temp = unitconv.ev_to_ha * temp
             elif units_temp.lower() == "k":
                 temp = unitconv.K_to_ha * temp
-            # check if temperature is within some reasonable limits
+            # check if temperature is within some reasonable limits (<1000 and > 0.1 eV)
             if temp < 0:
                 raise InputError.temp_error("temperature is negative")
-            if temp < 0.01:
-                print(InputWarning.temp_warning("low"))
+            if temp < 0.0036:
+                if not config.suppress_warnings:
+                    print(InputWarning.temp_warning("low"))
                 return temp
-            elif temp > 3.5:
-                print(InputWarning.temp_warning("high"))
+            elif temp > 36.7:
+                if not config.suppress_warnings:
+                    print(InputWarning.temp_warning("high"))
                 return temp
             else:
                 return temp
@@ -715,10 +717,12 @@ class EnergyCalcs:
         # check that ngrid is a positive number
         if ngrid < 0:
             raise InputError.grid_error("Number of grid points must be positive")
-        elif ngrid < 500:
-            print(InputWarning.ngrid_warning("low", "inaccurate"))
-        elif ngrid > 5000:
-            print(InputWarning.ngrid_warning("high", "expensive"))
+        elif ngrid < 300:
+            if not config.suppress_warnings:
+                print(InputWarning.ngrid_warning("low", "inaccurate"))
+        elif ngrid > 10000:
+            if not config.suppress_warnings:
+                print(InputWarning.ngrid_warning("high", "expensive"))
 
         # check that ngrid_coarse is an integer
         if not isinstance(ngrid_coarse, intc):
@@ -727,14 +731,23 @@ class EnergyCalcs:
         if ngrid_coarse < 0:
             raise InputError.grid_error("Number of coarse grid points must be positive")
         elif ngrid_coarse < 100:
-            print(InputWarning.ngrid_warning("low", "inaccurate"))
+            if not config.suppress_warnings:
+                print(InputWarning.ngrid_warning("low", "inaccurate"))
         elif ngrid_coarse > 500:
-            print(InputWarning.ngrid_warning("high", "expensive"))
+            if not config.suppress_warnings:
+                print(InputWarning.ngrid_warning("high", "expensive"))
 
         # check that x0 is reasonable
         if x0 > -3:
             raise InputError.grid_error(
                 "x0 is too high, calculation will likely not converge"
+            )
+
+        if s0 <= 1e-6:
+            raise InputError.grid_error("s0 is too small, numerical problems likely")
+        elif s0 >= 1e-2:
+            raise InputError.grid_error(
+                "s0 is too large, calculation will likely not converge"
             )
 
         grid_params = {"ngrid": ngrid, "x0": x0, "ngrid_coarse": ngrid_coarse, "s0": s0}
@@ -1189,7 +1202,7 @@ class InputWarning:
             + ". Proceeding anyway, but results may be "
             + err2
             + "\n"
-            + "Suggested grid range is between 1000-5000 but should be tested wrt"
+            + "Suggested grid range is between 500-10000 but should be tested wrt"
             " convergence \n"
         )
         return warning

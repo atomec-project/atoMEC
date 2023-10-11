@@ -70,7 +70,7 @@ class TestBcs:
             4,
             4,
             scf_params={"maxscf": 5, "mixfrac": 0.3},
-            grid_params={"ngrid": 1000},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 600},
             band_params={"nkpts": nkpts},
         )
 

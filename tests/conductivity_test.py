@@ -126,7 +126,10 @@ class TestConductivity:
 
         # run the SCF calculation
         output = model.CalcEnergy(
-            4, 4, scf_params={"mixfrac": 0.3, "maxscf": 6}, grid_params={"ngrid": 1200}
+            4,
+            4,
+            scf_params={"mixfrac": 0.3, "maxscf": 6},
+            grid_params={"ngrid": 1200, "ngrid_coarse": 300},
         )
 
         output_dict = {"Atom": F_at, "model": model, "SCF_out": output}
