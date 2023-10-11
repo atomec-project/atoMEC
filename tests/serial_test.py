@@ -59,7 +59,7 @@ class TestSerial:
             2,
             scf_params={"maxscf": 1, "mixfrac": 0.7},
             band_params={"nkpts": 30},
-            grid_params={"ngrid": ngrid},
+            grid_params={"ngrid": ngrid, "ngrid_coarse": 300},
         )
 
         # extract the total free energy

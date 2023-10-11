@@ -90,7 +90,7 @@ class TestFuncs:
             6,
             6,
             scf_params={"maxscf": 5, "mixfrac": 0.3},
-            grid_params={"ngrid": 1000},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 90},
             band_params={"nkpts": 30},
         )
 

@@ -165,6 +165,8 @@ class TestCalcEnergy:
             ({"ngrid_coarse": "a"}),
             ({"ngrid_coarse": -100}),
             ({"x0": -2}),
+            ({"s0": 1e-7}),
+            ({"s0": 1e-1}),
         ],
     )
     def test_grid_params(self, grid_input):

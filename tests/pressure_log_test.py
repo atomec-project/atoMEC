@@ -112,7 +112,7 @@ class TestPressure:
             3,
             3,
             scf_params={"maxscf": 5, "mixfrac": 0.3},
-            grid_params={"ngrid": 1000},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 300},
             band_params={"nkpts": 50},
             verbosity=1,
             grid_type="log",
