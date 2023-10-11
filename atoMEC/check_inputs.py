@@ -1176,7 +1176,7 @@ class InputWarning:
             "Warning: this input temperature is very "
             + err
             + ". Proceeding anyway, but results may not be accurate. \n"
-            + "Normal temperature range for atoMEC is 0.01 -- 100 eV \n"
+            + "Normal temperature range for atoMEC is 0.1 -- 1000 eV \n"
         )
         return warning
 
