@@ -721,7 +721,7 @@ class EnergyCalcs:
             if not config.suppress_warnings:
                 print(InputWarning.ngrid_warning("low", "inaccurate"))
         elif ngrid > 10000:
-            if not config.supppress_warnings:
+            if not config.suppress_warnings:
                 print(InputWarning.ngrid_warning("high", "expensive"))
 
         # check that ngrid_coarse is an integer
@@ -1195,7 +1195,7 @@ class InputWarning:
             + ". Proceeding anyway, but results may be "
             + err2
             + "\n"
-            + "Suggested grid range is between 1000-5000 but should be tested wrt"
+            + "Suggested grid range is between 500-10000 but should be tested wrt"
             " convergence \n"
         )
         return warning
