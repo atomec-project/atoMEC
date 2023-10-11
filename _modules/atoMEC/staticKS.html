@@ -333,9 +333,9 @@
         <span class="n">norbs_ok</span><span class="p">,</span> <span class="n">lorbs_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_orbs</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">conv_params</span><span class="p">[</span><span class="s2">&quot;bandtol&quot;</span><span class="p">]</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">norbs_ok</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">norbs_ok</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">suppress_warnings</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">check_inputs</span><span class="o">.</span><span class="n">InputWarning</span><span class="o">.</span><span class="n">norbs_warning</span><span class="p">(</span><span class="s2">&quot;nmax&quot;</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">lorbs_ok</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lorbs_ok</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">suppress_warnings</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">check_inputs</span><span class="o">.</span><span class="n">InputWarning</span><span class="o">.</span><span class="n">norbs_warning</span><span class="p">(</span><span class="s2">&quot;lmax&quot;</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_occnums_w</span>
 
