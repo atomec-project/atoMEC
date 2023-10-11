@@ -743,6 +743,13 @@ class EnergyCalcs:
                 "x0 is too high, calculation will likely not converge"
             )
 
+        if s0 <= 1e-6:
+            raise InputError.grid_error("s0 is too small, numerical problems likely")
+        elif s0 >= 1e-2:
+            raise InputError.grid_error(
+                "s0 is too large, calculation will likely not converge"
+            )
+
         grid_params = {"ngrid": ngrid, "x0": x0, "ngrid_coarse": ngrid_coarse, "s0": s0}
 
         return grid_params
