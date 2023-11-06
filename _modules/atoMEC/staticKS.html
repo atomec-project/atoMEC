@@ -1,165 +1,76 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>atoMEC.staticKS &mdash; atoMEC  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-
-  
-  
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/atoMEC_favicon.png"/>
-  
-
-  
-  
-
-  
-
-  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../../index.html" class="icon icon-home"> atoMEC
           
-
-          
-            
-            <img src="../../_static/atoMEC_horizontal1.png" class="logo" alt="Logo"/>
-          
+          <a href="../../index.html" class="icon icon-home">
+            atoMEC
+              <img src="../../_static/atoMEC_horizontal1.png" class="logo" alt="Logo"/>
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">API Reference</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">atoMEC</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">atoMEC</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-        
-          <li><a href="../atoMEC.html">atoMEC</a> &raquo;</li>
-        
-      <li>atoMEC.staticKS</li>
-    
-    
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../atoMEC.html">atoMEC</a></li>
+      <li class="breadcrumb-item active">atoMEC.staticKS</li>
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for atoMEC.staticKS</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">The staticKS module handles time-indepenent KS quantities such as the KS orbitals.</span>
@@ -211,7 +122,9 @@
 
 
 <span class="c1"># the logarithmic grid</span>
-<div class="viewcode-block" id="log_grid"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.log_grid">[docs]</a><span class="k">def</span> <span class="nf">log_grid</span><span class="p">(</span><span class="n">x_r</span><span class="p">):</span>
+<div class="viewcode-block" id="log_grid">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.log_grid">[docs]</a>
+<span class="k">def</span> <span class="nf">log_grid</span><span class="p">(</span><span class="n">x_r</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set up the logarithmic (and real) grid, defined up to x_r.</span>
 
@@ -238,7 +151,10 @@
     <span class="k">return</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">rgrid</span></div>
 
 
-<div class="viewcode-block" id="sqrt_grid"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.sqrt_grid">[docs]</a><span class="k">def</span> <span class="nf">sqrt_grid</span><span class="p">(</span><span class="n">s_r</span><span class="p">):</span>
+
+<div class="viewcode-block" id="sqrt_grid">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.sqrt_grid">[docs]</a>
+<span class="k">def</span> <span class="nf">sqrt_grid</span><span class="p">(</span><span class="n">s_r</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set up the sqrt (and real) grid, defined up to d_r.</span>
 
@@ -265,7 +181,10 @@
     <span class="k">return</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">rgrid</span></div>
 
 
-<div class="viewcode-block" id="Orbitals"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals">[docs]</a><span class="k">class</span> <span class="nc">Orbitals</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Orbitals">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals">[docs]</a>
+<span class="k">class</span> <span class="nc">Orbitals</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class holding the KS orbitals, associated quantities and relevant routines.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
@@ -386,7 +305,9 @@
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;eigs_min has not been initialized&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eigvals_max</span>
 
-<div class="viewcode-block" id="Orbitals.compute"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Orbitals.compute">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.compute">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">bc</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eig_guess</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the orbitals and their eigenvalues with the given potential.</span>
 
@@ -457,8 +378,11 @@
             <span class="n">config</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">config</span><span class="o">.</span><span class="n">spindims</span><span class="p">))</span>
         <span class="k">return</span></div>
 
+
     <span class="c1"># @writeoutput.timing</span>
-<div class="viewcode-block" id="Orbitals.calc_bands"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_bands">[docs]</a>    <span class="k">def</span> <span class="nf">calc_bands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span><span class="p">,</span> <span class="n">eigfuncs_u</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
+<div class="viewcode-block" id="Orbitals.calc_bands">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_bands">[docs]</a>
+    <span class="k">def</span> <span class="nf">calc_bands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">eigfuncs_l</span><span class="p">,</span> <span class="n">eigfuncs_u</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the eigenfunctions which fill the energy bands.</span>
 
@@ -528,7 +452,10 @@
 
         <span class="k">return</span> <span class="n">eigvals</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">kpt_int_weight</span></div>
 
-<div class="viewcode-block" id="Orbitals.occupy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.occupy">[docs]</a>    <span class="k">def</span> <span class="nf">occupy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Orbitals.occupy">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.occupy">[docs]</a>
+    <span class="k">def</span> <span class="nf">occupy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Occupy the KS orbitals according to Fermi-Dirac statistics.</span>
 
@@ -548,7 +475,10 @@
 
         <span class="k">return</span></div>
 
-<div class="viewcode-block" id="Orbitals.calc_occnums"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_occnums">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Orbitals.calc_occnums">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_occnums">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_occnums</span><span class="p">(</span><span class="n">eigvals</span><span class="p">,</span> <span class="n">mu</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Fermi-Dirac occupations for the eigenvalues.</span>
@@ -578,7 +508,10 @@
 
         <span class="k">return</span> <span class="n">occnums</span></div>
 
-<div class="viewcode-block" id="Orbitals.make_ldegen"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_ldegen">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Orbitals.make_ldegen">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_ldegen">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">make_ldegen</span><span class="p">(</span><span class="n">eigvals</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the lbound matrix denoting the bound states and their degeneracies.</span>
@@ -618,7 +551,10 @@
 
         <span class="k">return</span> <span class="n">ldegen_mat</span></div>
 
-<div class="viewcode-block" id="Orbitals.make_DOS_bands"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_DOS_bands">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Orbitals.make_DOS_bands">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_DOS_bands">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">make_DOS_bands</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">,</span> <span class="n">eigs_max</span><span class="p">,</span> <span class="n">eigvals</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the density-of-states using the method of Massacrier (see notes, [6]_).</span>
@@ -684,7 +620,10 @@
 
         <span class="k">return</span> <span class="n">dos</span></div>
 
-<div class="viewcode-block" id="Orbitals.calc_DOS_sum"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_DOS_sum">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Orbitals.calc_DOS_sum">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.calc_DOS_sum">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_DOS_sum</span><span class="p">(</span><span class="n">eigs_min</span><span class="p">,</span> <span class="n">eigs_max</span><span class="p">,</span> <span class="n">ldegen</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the summed density-of-states using the method of Massacrier et al.</span>
@@ -753,7 +692,10 @@
 
         <span class="k">return</span> <span class="n">e_arr</span><span class="p">,</span> <span class="n">fd_dist</span><span class="p">,</span> <span class="n">DOS_sum</span></div>
 
-<div class="viewcode-block" id="Orbitals.make_e_arr"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_e_arr">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Orbitals.make_e_arr">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.make_e_arr">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">make_e_arr</span><span class="p">(</span><span class="n">eigvals_min</span><span class="p">,</span> <span class="n">eigvals_max</span><span class="p">,</span> <span class="n">sp</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make the energy array for the bands boundary condition.</span>
 
@@ -805,7 +747,10 @@
         <span class="n">e_tot_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">e_tot_arr</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">e_tot_arr</span></div>
 
-<div class="viewcode-block" id="Orbitals.check_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.check_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Orbitals.check_orbs">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Orbitals.check_orbs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">check_orbs</span><span class="p">(</span><span class="n">occnums_w</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check the values of nmax and lmax are sufficient.</span>
 
@@ -837,10 +782,14 @@
         <span class="n">occs_n</span> <span class="o">=</span> <span class="n">occs_sum</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
         <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">occs_n</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
             <span class="n">norbs_ok</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="n">lorbs_ok</span><span class="p">,</span> <span class="n">norbs_ok</span></div></div>
+        <span class="k">return</span> <span class="n">lorbs_ok</span><span class="p">,</span> <span class="n">norbs_ok</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Density"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density">[docs]</a><span class="k">class</span> <span class="nc">Density</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Density">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density">[docs]</a>
+<span class="k">class</span> <span class="nc">Density</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class holding the static KS density and routines required to compute its components.</span>
 
@@ -908,7 +857,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_MIS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">occs_pos</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">unbound</span><span class="p">[</span><span class="s2">&quot;N&quot;</span><span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MIS</span>
 
-<div class="viewcode-block" id="Density.construct_rho_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Density.construct_rho_orbs">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_orbs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">construct_rho_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct a density from a set of discrete KS orbitals.</span>
@@ -949,7 +900,10 @@
 
         <span class="k">return</span> <span class="n">dens</span></div>
 
-<div class="viewcode-block" id="Density.construct_rho_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Density.construct_rho_unbound">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Density.construct_rho_unbound">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">construct_rho_unbound</span><span class="p">():</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the unbound part of the density.</span>
@@ -983,10 +937,14 @@
 
             <span class="n">unbound</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;rho&quot;</span><span class="p">:</span> <span class="n">rho_unbound</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span> <span class="n">N_unbound</span><span class="p">}</span>
 
-        <span class="k">return</span> <span class="n">unbound</span></div></div>
+        <span class="k">return</span> <span class="n">unbound</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Potential"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Potential">[docs]</a><span class="k">class</span> <span class="nc">Potential</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Potential">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Potential">[docs]</a>
+<span class="k">class</span> <span class="nc">Potential</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class holding the KS potential and the routines required to compute it.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">):</span>
@@ -1041,7 +999,9 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_v_xc</span>
 
-<div class="viewcode-block" id="Potential.calc_v_en"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Potential.calc_v_en">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Potential.calc_v_en">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Potential.calc_v_en">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_v_en</span><span class="p">(</span><span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the electron-nuclear potential.</span>
@@ -1057,7 +1017,10 @@
 
         <span class="k">return</span> <span class="n">v_en</span></div>
 
-<div class="viewcode-block" id="Potential.calc_v_ha"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Potential.calc_v_ha">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Potential.calc_v_ha">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Potential.calc_v_ha">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Construct the Hartree potential (see notes).</span>
@@ -1117,10 +1080,14 @@
 
         <span class="n">v_ha</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_ha_u</span> <span class="o">+</span> <span class="n">v_ha_l</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">v_ha</span></div></div>
+        <span class="k">return</span> <span class="n">v_ha</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Energy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy">[docs]</a><span class="k">class</span> <span class="nc">Energy</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Energy">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy">[docs]</a>
+<span class="k">class</span> <span class="nc">Energy</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class holding information about the KS total energy and relevant routines.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">dens</span><span class="p">):</span>
@@ -1212,7 +1179,9 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span>
 
-<div class="viewcode-block" id="Energy.calc_E_kin"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin">[docs]</a>    <span class="k">def</span> <span class="nf">calc_E_kin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+<div class="viewcode-block" id="Energy.calc_E_kin">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin">[docs]</a>
+    <span class="k">def</span> <span class="nf">calc_E_kin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the kinetic energy.</span>
 
@@ -1249,7 +1218,10 @@
 
         <span class="k">return</span> <span class="n">E_kin</span></div>
 
-<div class="viewcode-block" id="Energy.calc_E_kin_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Energy.calc_E_kin_orbs">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_orbs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_E_kin_orbs</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the kinetic energy contribution from discrete KS orbitals.</span>
@@ -1280,7 +1252,10 @@
 
         <span class="k">return</span> <span class="n">E_kin</span></div>
 
-<div class="viewcode-block" id="Energy.calc_E_kin_dens"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_dens">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Energy.calc_E_kin_dens">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_dens">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_E_kin_dens</span><span class="p">(</span><span class="n">eigfuncs</span><span class="p">,</span> <span class="n">occnums</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the local kinetic energy density (KED).</span>
@@ -1391,7 +1366,10 @@
 
         <span class="k">return</span> <span class="n">e_kin_dens</span></div>
 
-<div class="viewcode-block" id="Energy.calc_E_kin_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Energy.calc_E_kin_unbound">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_kin_unbound">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_E_kin_unbound</span><span class="p">():</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the contribution from unbound (continuum) electrons to kinetic energy.</span>
@@ -1429,7 +1407,10 @@
 
         <span class="k">return</span> <span class="n">E_kin_unbound</span></div>
 
-<div class="viewcode-block" id="Energy.calc_entropy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_entropy">[docs]</a>    <span class="k">def</span> <span class="nf">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Energy.calc_entropy">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_entropy">[docs]</a>
+    <span class="k">def</span> <span class="nf">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the KS entropy.</span>
 
@@ -1462,7 +1443,10 @@
 
         <span class="k">return</span> <span class="n">S</span></div>
 
-<div class="viewcode-block" id="Energy.calc_S_orbs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_orbs">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Energy.calc_S_orbs">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_orbs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_S_orbs</span><span class="p">(</span><span class="n">occnums</span><span class="p">,</span> <span class="n">degen</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the KS (non-interacting) entropy for specified orbitals (see notes).</span>
@@ -1503,7 +1487,10 @@
 
         <span class="k">return</span> <span class="n">S_orbs</span></div>
 
-<div class="viewcode-block" id="Energy.calc_S_unbound"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_unbound">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Energy.calc_S_unbound">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_S_unbound">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_S_unbound</span><span class="p">():</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the unbound contribution to the entropy.</span>
@@ -1545,7 +1532,10 @@
 
         <span class="k">return</span> <span class="n">S_unbound</span></div>
 
-<div class="viewcode-block" id="Energy.calc_E_en"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_en">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Energy.calc_E_en">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_en">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_E_en</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the electron-nuclear energy.</span>
@@ -1579,7 +1569,10 @@
 
         <span class="k">return</span> <span class="n">E_en</span></div>
 
-<div class="viewcode-block" id="Energy.calc_E_ha"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_ha">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="Energy.calc_E_ha">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.Energy.calc_E_ha">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_E_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Hartree energy.</span>
@@ -1611,10 +1604,14 @@
         <span class="n">v_ha</span> <span class="o">=</span> <span class="n">Potential</span><span class="o">.</span><span class="n">calc_v_ha</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
         <span class="n">E_ha</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">mathtools</span><span class="o">.</span><span class="n">int_sphere</span><span class="p">(</span><span class="n">dens_tot</span> <span class="o">*</span> <span class="n">v_ha</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">E_ha</span></div></div>
+        <span class="k">return</span> <span class="n">E_ha</span></div>
+</div>
 
 
-<div class="viewcode-block" id="EnergyAlt"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt">[docs]</a><span class="k">class</span> <span class="nc">EnergyAlt</span><span class="p">:</span>
+
+<div class="viewcode-block" id="EnergyAlt">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt">[docs]</a>
+<span class="k">class</span> <span class="nc">EnergyAlt</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class holding information about the KS energy and associated routines.</span>
 
 <span class="sd">    N.B. this computes the total energy functional in an alternative way to the main</span>
@@ -1745,7 +1742,9 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_E_xc</span>
 
-<div class="viewcode-block" id="EnergyAlt.calc_E_v_hxc"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt.calc_E_v_hxc">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="EnergyAlt.calc_E_v_hxc">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt.calc_E_v_hxc">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">calc_E_v_hxc</span><span class="p">(</span><span class="n">dens</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the compensating integral term over the Hxc-potential (see notes).</span>
@@ -1792,7 +1791,10 @@
 
         <span class="k">return</span> <span class="n">E_v_ha</span> <span class="o">+</span> <span class="n">E_v_xc</span> <span class="o">+</span> <span class="n">E_const</span></div>
 
-<div class="viewcode-block" id="EnergyAlt.calc_entropy"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt.calc_entropy">[docs]</a>    <span class="k">def</span> <span class="nf">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="EnergyAlt.calc_entropy">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.EnergyAlt.calc_entropy">[docs]</a>
+    <span class="k">def</span> <span class="nf">calc_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">orbs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the KS entropy.</span>
 
@@ -1823,17 +1825,23 @@
         <span class="c1"># total</span>
         <span class="n">S</span><span class="p">[</span><span class="s2">&quot;tot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;bound&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">S</span><span class="p">[</span><span class="s2">&quot;unbound&quot;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">S</span></div></div>
+        <span class="k">return</span> <span class="n">S</span></div>
+</div>
 
 
-<div class="viewcode-block" id="GramSchmidt"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt">[docs]</a><span class="k">class</span> <span class="nc">GramSchmidt</span><span class="p">:</span>
+
+<div class="viewcode-block" id="GramSchmidt">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt">[docs]</a>
+<span class="k">class</span> <span class="nc">GramSchmidt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class holding Gram-Schmidt orthoganalization process.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="n">eigfuncs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">xgrid</span>
 
-<div class="viewcode-block" id="GramSchmidt.make_ortho"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.make_ortho">[docs]</a>    <span class="k">def</span> <span class="nf">make_ortho</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="GramSchmidt.make_ortho">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.make_ortho">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_ortho</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make eigenfunctions orthonormal using Gram-Schmidt orthoganalization.</span>
 
@@ -1877,7 +1885,10 @@
 
         <span class="k">return</span> <span class="n">eigfuncs_ortho</span></div>
 
-<div class="viewcode-block" id="GramSchmidt.prod_eigfuncs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.prod_eigfuncs">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="GramSchmidt.prod_eigfuncs">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.prod_eigfuncs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">prod_eigfuncs</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">phi1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the product of two KS eigenfunctions and integrate.</span>
@@ -1899,7 +1910,10 @@
         <span class="n">prod_eigfuncs_</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">phi0</span> <span class="o">*</span> <span class="n">phi1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">prod_eigfuncs_</span></div>
 
-<div class="viewcode-block" id="GramSchmidt.proj_eigfuncs"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.proj_eigfuncs">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="GramSchmidt.proj_eigfuncs">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.proj_eigfuncs">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">proj_eigfuncs</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">phi1</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the projection of one eigenfunction onto another.</span>
@@ -1923,50 +1937,36 @@
             <span class="o">/</span> <span class="n">GramSchmidt</span><span class="o">.</span><span class="n">prod_eigfuncs</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">phi0</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">)</span>
         <span class="p">)</span> <span class="o">*</span> <span class="n">phi0</span>
 
-        <span class="k">return</span> <span class="n">proj_eigfuncs_</span></div></div>
+        <span class="k">return</span> <span class="n">proj_eigfuncs_</span></div>
+</div>
+
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, CASUS.
-
-    </p>
+    <p>&#169; Copyright 2021, CASUS.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

@@ -1,165 +1,76 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>atoMEC.writeoutput &mdash; atoMEC  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-
-  
-  
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/atoMEC_favicon.png"/>
-  
-
-  
-  
-
-  
-
-  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../../index.html" class="icon icon-home"> atoMEC
           
-
-          
-            
-            <img src="../../_static/atoMEC_horizontal1.png" class="logo" alt="Logo"/>
-          
+          <a href="../../index.html" class="icon icon-home">
+            atoMEC
+              <img src="../../_static/atoMEC_horizontal1.png" class="logo" alt="Logo"/>
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">API Reference</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">atoMEC</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">atoMEC</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-        
-          <li><a href="../atoMEC.html">atoMEC</a> &raquo;</li>
-        
-      <li>atoMEC.writeoutput</li>
-    
-    
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../atoMEC.html">atoMEC</a></li>
+      <li class="breadcrumb-item active">atoMEC.writeoutput</li>
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for atoMEC.writeoutput</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Contains the routines which generate printed output (to screen and separate files).</span>
@@ -194,7 +105,9 @@
 <span class="n">dblspc</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
 
 
-<div class="viewcode-block" id="write_atomic_data"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.write_atomic_data">[docs]</a><span class="k">def</span> <span class="nf">write_atomic_data</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
+<div class="viewcode-block" id="write_atomic_data">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.write_atomic_data">[docs]</a>
+<span class="k">def</span> <span class="nf">write_atomic_data</span><span class="p">(</span><span class="n">atom</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write information about the main Atom object.</span>
 
@@ -260,7 +173,10 @@
     <span class="k">return</span> <span class="n">output_str</span></div>
 
 
-<div class="viewcode-block" id="write_ISModel_data"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.write_ISModel_data">[docs]</a><span class="k">def</span> <span class="nf">write_ISModel_data</span><span class="p">(</span><span class="n">ISModel</span><span class="p">):</span>
+
+<div class="viewcode-block" id="write_ISModel_data">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.write_ISModel_data">[docs]</a>
+<span class="k">def</span> <span class="nf">write_ISModel_data</span><span class="p">(</span><span class="n">ISModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write information about the approximations used for the IS model.</span>
 
@@ -334,10 +250,15 @@
     <span class="k">return</span> <span class="n">output_str</span></div>
 
 
-<div class="viewcode-block" id="SCF"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF">[docs]</a><span class="k">class</span> <span class="nc">SCF</span><span class="p">:</span>
+
+<div class="viewcode-block" id="SCF">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF">[docs]</a>
+<span class="k">class</span> <span class="nc">SCF</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write information about the self-consistent field (SCF) cycle.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SCF.write_init"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_init">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="SCF.write_init">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_init">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">write_init</span><span class="p">():</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write the initial spiel for an SCF calculation.</span>
@@ -375,7 +296,10 @@
         <span class="n">output_str</span> <span class="o">=</span> <span class="n">init_str</span> <span class="o">+</span> <span class="n">main_str</span> <span class="o">+</span> <span class="n">buffer_str</span>
         <span class="k">return</span> <span class="n">output_str</span></div>
 
-<div class="viewcode-block" id="SCF.write_cycle"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_cycle">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SCF.write_cycle">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_cycle">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">write_cycle</span><span class="p">(</span><span class="n">iscf</span><span class="p">,</span> <span class="n">E_free</span><span class="p">,</span> <span class="n">conv_vals</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write output string for each SCF iteration.</span>
@@ -406,7 +330,10 @@
 
         <span class="k">return</span> <span class="n">output</span></div>
 
-<div class="viewcode-block" id="SCF.write_final"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_final">[docs]</a>    <span class="k">def</span> <span class="nf">write_final</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">conv_vals</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SCF.write_final">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_final">[docs]</a>
+    <span class="k">def</span> <span class="nf">write_final</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">orbitals</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">conv_vals</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write final post-SCF information about energy, orbitals and convergence.</span>
 
@@ -480,7 +407,10 @@
 
         <span class="k">return</span> <span class="n">output_str</span></div>
 
-<div class="viewcode-block" id="SCF.write_final_energies"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_final_energies">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SCF.write_final_energies">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_final_energies">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">write_final_energies</span><span class="p">(</span><span class="n">energy</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write formatted KS energy information (by component).</span>
@@ -595,7 +525,10 @@
 
         <span class="k">return</span> <span class="n">output_str</span></div>
 
-<div class="viewcode-block" id="SCF.write_orb_info"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_orb_info">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SCF.write_orb_info">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.SCF.write_orb_info">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">write_orb_info</span><span class="p">(</span><span class="n">orbitals</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write formatted KS orbital information.</span>
@@ -668,10 +601,14 @@
                 <span class="o">+</span> <span class="n">dblspc</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">eigval_tbl</span><span class="p">,</span> <span class="n">occnum_tbl</span></div></div>
+        <span class="k">return</span> <span class="n">eigval_tbl</span><span class="p">,</span> <span class="n">occnum_tbl</span></div>
+</div>
 
 
-<div class="viewcode-block" id="density_to_csv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.density_to_csv">[docs]</a><span class="k">def</span> <span class="nf">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+
+<div class="viewcode-block" id="density_to_csv">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.density_to_csv">[docs]</a>
+<span class="k">def</span> <span class="nf">density_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write the density (on the r-grid) to file.</span>
 
@@ -717,7 +654,10 @@
     <span class="k">return</span></div>
 
 
-<div class="viewcode-block" id="potential_to_csv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.potential_to_csv">[docs]</a><span class="k">def</span> <span class="nf">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+
+<div class="viewcode-block" id="potential_to_csv">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.potential_to_csv">[docs]</a>
+<span class="k">def</span> <span class="nf">potential_to_csv</span><span class="p">(</span><span class="n">rgrid</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write the potential (on the r-grid) to file.</span>
 
@@ -756,7 +696,10 @@
     <span class="k">return</span></div>
 
 
-<div class="viewcode-block" id="eigs_occs_to_csv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.eigs_occs_to_csv">[docs]</a><span class="k">def</span> <span class="nf">eigs_occs_to_csv</span><span class="p">(</span><span class="n">orbitals</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+
+<div class="viewcode-block" id="eigs_occs_to_csv">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.eigs_occs_to_csv">[docs]</a>
+<span class="k">def</span> <span class="nf">eigs_occs_to_csv</span><span class="p">(</span><span class="n">orbitals</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write all the orbital energies and their occupations to file.</span>
 
@@ -800,7 +743,10 @@
     <span class="k">return</span></div>
 
 
-<div class="viewcode-block" id="dos_to_csv"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.dos_to_csv">[docs]</a><span class="k">def</span> <span class="nf">dos_to_csv</span><span class="p">(</span><span class="n">orbitals</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+
+<div class="viewcode-block" id="dos_to_csv">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.dos_to_csv">[docs]</a>
+<span class="k">def</span> <span class="nf">dos_to_csv</span><span class="p">(</span><span class="n">orbitals</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write the energy eigenvalues, Fermi-Dirac occupations and DOS to file.</span>
 
@@ -839,8 +785,11 @@
     <span class="k">return</span></div>
 
 
+
 <span class="c1"># timing wrapper</span>
-<div class="viewcode-block" id="timing"><a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.timing">[docs]</a><span class="k">def</span> <span class="nf">timing</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+<div class="viewcode-block" id="timing">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.writeoutput.timing">[docs]</a>
+<span class="k">def</span> <span class="nf">timing</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate timing information for given input function.</span>
 
@@ -859,49 +808,34 @@
         <span class="k">return</span> <span class="n">result</span>
 
     <span class="k">return</span> <span class="n">wrap</span></div>
+
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2021, CASUS.
-
-    </p>
+    <p>&#169; Copyright 2021, CASUS.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
