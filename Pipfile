@@ -9,9 +9,10 @@ scipy = ">=1.6.3"
 mendeleev = ">=0.7.0"
 tabulate = ">=0.8.9"
 joblib = ">=1.0.1"
+pylibxc = {file = "https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz"}
 
 [requires]
-python_version = "3"
+python_version = "3.12"
 
 [dev-packages]
 pytest = ">=7.1.3"
