@@ -3,7 +3,7 @@
 # atoMEC: Average-Atom Code for Matter under Extreme Conditions
 
 [![docs](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml)
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![image](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![codecov](https://codecov.io/gh/atomec-project/atoMEC/branch/develop/graph/badge.svg?token=V66CJJ3KPI)](https://codecov.io/gh/atomec-project/atoMEC)
 [![CodeFactor](https://www.codefactor.io/repository/github/atomec-project/atomec/badge)](https://www.codefactor.io/repository/github/atomec-project/atomec)
@@ -27,7 +27,17 @@ This repository is structured as follows:
 
 ## Installation
 
-Please see below sub-sections on supported operating systems and Python versions before continuing.
+The latest stable release of `atoMEC` can be installed via `pip`:
+
+`pip install atoMEC`
+
+Note that atoMEC does not (yet) support Windows installation (please see the section below on supported operating systems).
+
+The installation takes some time due to the dependence on `pylibxc`, which currently has no official wheels distribution on PyPI.
+
+Read on for instructions on how to install `atoMEC` from source, using the recommended `pipenv` installation route.
+
+### Installation via `pipenv`
 
 First, clone the atoMEC repository and ``cd`` into the main directory.
 
@@ -38,26 +48,10 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
   1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for installation instructions)
   2. Next, install `atoMEC`'s dependencies with `pipenv install` (use `--dev` option to install the test dependencies in the same environment)
   3. Use `pipenv shell` to activate the virtual environment
-  4. Install Python bindings for `libxc`. See below section for installation instructions.
-  5. Install atoMEC with `pip install atoMEC` (for developers: `pip install -e .`)
-  6. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
+  4. Install atoMEC with `pip install atoMEC` (for developers: `pip install -e .`)
+  5. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
 
-* Run the tests (see Testing section below) and report any failures (for example by raising an issue)
-
-### Libxc installation
-
-atoMEC relies on the [libxc](https://tddft.org/programs/libxc/) library for exchange-correlation functionals.
-
-Unfortunately, there is no official pip installation available for libxc (yet). There are two options for installation.
-
-First, ensure the virtual environment is activated (e.g. with `pipenv shell`). Then:
-
-1. Easy but **not** recommended `pip install pylibxc2`: This is an unofficial pip package for the `libxc` Python bindings. However, besides lacking official support, it does not seem to be under active maintenance. It also works only for Python <= 3.9. Nevertheless, it's an easy way to get started with atoMEC.
-2. Recommended route: Follow [official installation instructions](https://tddft.org/programs/libxc/installation/) for `libxc`'s Python bindings. Note that this requires the `cmake` build pathway with Python bindings and shared library options enabled:
-
-	`cmake -H. -Bobjdir -DBUILD_SHARED_LIBS=ON -DENABLE_PYTHON=ON`
-
-Note that we provide a script `install_libxc.sh` which performs the full `libxc` installation workflow. This script has been tested on Ubuntu 22.04 and Python >= 3.8. 
+* Run the tests (see Testing section below) and report any failures (for example by raising an issue).
 
 ### Supported operating systems
 
@@ -69,8 +63,8 @@ Note that we provide a script `install_libxc.sh` which performs the full `libxc`
 
 * atoMEC has been tested and is expected to work for all Python versions >= 3.8 and <= 3.12
 * atoMEC does not work for Python <= 3.7
-* Until 09.10.2023 (release 1.4.0), all development and CI testing was done with Python 3.8. As of this date, development and CI testing is done with Python 3.10.
-* Python 3.10 is therefore the recommended version for atoMEC >= 1.4.0, since this is used for the current testing and development environment
+* Until 09.10.2023 (release 1.4.0), all development and CI testing was done with Python 3.8. As of this date, development and CI testing is done with Python 3.12.
+* Python 3.12 is therefore the recommended version for atoMEC >= 1.4.0, since this is used for the current testing and development environment
 
 
 ## Running
