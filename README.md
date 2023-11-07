@@ -14,14 +14,14 @@ It is designed as an open-source and modular python package.
 atoMEC uses Kohn-Sham density functional theory, in combination with an average-atom approximation,
 to solve the electronic structure problem for single-element materials at finite temperature.
 
-More information on the average-atom methodology and Kohn-Sham density functional theory can be found (for example) in this [preprint](https://arxiv.org/abs/2103.09928) and references therein.
+More information on the average-atom methodology and Kohn-Sham density functional theory can be found (for example) in this [paper](https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.4.023055) and references therein.
 
 This repository is structured as follows:
 ```
 ├── atoMEC : source code
 ├── docs : sphinx documentation
-├── examples : useful examples to get you started with the package
-└── tests : test scripts used during development, will hold tests for CI in the future
+├── examples : simple examples to get you started with the package
+└── tests : CI tests
 ```
 
 
