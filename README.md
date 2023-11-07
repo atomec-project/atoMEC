@@ -1,4 +1,4 @@
-![image](./docs/source/img/logos/atoMEC_horizontal2.png)
+![image](https://github.com/atomec-project/atoMEC/blob/develop/docs/source/img/logos/atoMEC_horizontal2.png)
 
 # atoMEC: Average-Atom Code for Matter under Extreme Conditions
 
