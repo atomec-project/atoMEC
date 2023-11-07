@@ -274,3 +274,69 @@ def gather_benchmark_results(basedir, new_filename):
     # Save the new dataframe to the specified CSV file
     new_df.to_csv(new_filename, index=False)
     print(f"Results saved to {new_filename}")
+
+def analyze_benchmark_results(csv_file):
+    """
+    Reads benchmark results from a CSV file and analyzes the data.
+
+    Parameters
+    ----------
+    csv_file : str
+        The path to the CSV file containing benchmark results with columns:
+        'species', 'rho', 'temp', 'outcome', 'pc_err_st', 'pc_err_vir', 'pc_err_id', 'time_s'
+
+    Returns
+    -------
+    None
+    """
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_file)
+
+    # Calculate the number of tests passed
+    total_tests = len(df)
+    passed_tests = len(df[df['outcome'] == 'pass'])
+    pass_fraction = passed_tests / total_tests
+
+    # Calculate median and max for error columns
+    pc_err_st_stats = {'median': df['pc_err_st'].median(), 'max': df['pc_err_st'].max()}
+    pc_err_vir_stats = {'median': df['pc_err_vir'].median(), 'max': df['pc_err_vir'].max()}
+    pc_err_id_stats = {'median': df['pc_err_id'].median(), 'max': df['pc_err_id'].max()}
+
+    # Calculate mean, median, quartiles, and max for time column
+    time_stats = {
+        'mean': df['time_s'].mean(),
+        'median': df['time_s'].median(),
+        'q1': df['time_s'].quantile(0.25),
+        'q3': df['time_s'].quantile(0.75),
+        'max': df['time_s'].max()
+    }
+
+    # Format the table
+    table = f"""
+    Benchmarking Results Analysis
+    -----------------------------
+    Tests passed: {passed_tests} / {total_tests} ({pass_fraction:.2%})
+
+    Error Statistics:
+
+    | Error Type   | Median    | Max       |
+    |--------------|-----------|-----------|
+    | pc_err_st    | {pc_err_st_stats['median']:.2f}      | {pc_err_st_stats['max']:.2f}      |
+    | pc_err_vir   | {pc_err_vir_stats['median']:.2f}      | {pc_err_vir_stats['max']:.2f}      |
+    | pc_err_id    | {pc_err_id_stats['median']:.2f}      | {pc_err_id_stats['max']:.2f}      |
+
+    Time Statistics (s):
+    | Statistic |   Value  |
+    |-----------|----------|
+    | Mean      | {time_stats['mean']:7.2f} |
+    | Median    | {time_stats['median']:7.2f} |
+    | Q1        | {time_stats['q1']:7.2f} |
+    | Q3        | {time_stats['q3']:7.2f} |
+    | Max       | {time_stats['max']:7.2f} |
+    """
+    print(table)
+
+
+
+
+

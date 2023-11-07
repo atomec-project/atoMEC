@@ -27,6 +27,7 @@ if "run" in calc_type:
 
 if calc_type == "evaluate":
     benchmarking.gather_benchmark_results(savedir, savedir + "_benchmark_results.csv")
+    benchmarking.analyze_benchmark_results(savedir + "_benchmark_results.csv")
 
 if calc_type not in ["setup", "setup_and_run", "run", "evaluate"]:
     sys.exit(
