@@ -83,7 +83,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#atoMEC.mathtools.laplace"><code class="docutils literal notranslate"><span class="pre">laplace()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#atoMEC.mathtools.lorentzian"><code class="docutils literal notranslate"><span class="pre">lorentzian()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#atoMEC.mathtools.normalize_orbs"><code class="docutils literal notranslate"><span class="pre">normalize_orbs()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#atoMEC.mathtools.normalize_orbs_sgrid"><code class="docutils literal notranslate"><span class="pre">normalize_orbs_sgrid()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-atoMEC.models">atoMEC.models module</a><ul>
@@ -1454,26 +1453,6 @@ default : -1</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eigfuncs_x</strong> (<em>ndarray</em>) – The radial KS eigenfunctions <span class="math notranslate nohighlight">\(X_{nl}^{\sigma}(x)\)</span></p></li>
 <li><p><strong>xgrid</strong> (<em>ndarray</em>) – The log / sqrt grid over which normalization is performed</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>eigfuncs_x_norm</strong> – The radial KS eigenfunctions normalized over the chosen sphere</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="atoMEC.mathtools.normalize_orbs_sgrid">
-<span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">normalize_orbs_sgrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eigfuncs_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sgrid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#normalize_orbs_sgrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.normalize_orbs_sgrid" title="Link to this definition"></a></dt>
-<dd><p>Normalize the KS orbitals within the chosen sphere.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>eigfuncs_x</strong> (<em>ndarray</em>) – The radial KS eigenfunctions <span class="math notranslate nohighlight">\(X_{nl}^{\sigma}(x)\)</span></p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – The logarithmic grid over which normalization is performed</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
