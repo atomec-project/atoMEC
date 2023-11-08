@@ -912,6 +912,30 @@ class EnergyCalcs:
 
         return band_params
 
+    @staticmethod
+    def check_grid_type(grid_type):
+        r"""Check grid type.
+
+        Parameters
+        ----------
+        grid_type : str
+            the grid type
+
+        Returns
+        -------
+        grid_type : str
+            the grid type
+
+        Raises
+        ------
+        InputError.grid_type_error
+            if grid type not one of "log" or "sqrt"
+        """
+        if grid_type not in ["log", "sqrt"]:
+            raise InputError.grid_error("Grid type must be either 'log' or 'sqrt'")
+        else:
+            return grid_type
+
 
 class InputError(Exception):
     """Exit atoMEC and print relevant input error message."""
