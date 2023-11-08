@@ -275,15 +275,15 @@ def gather_benchmark_results(basedir, new_filename):
     new_df.to_csv(new_filename, index=False)
     print(f"Results saved to {new_filename}")
 
+
 def analyze_benchmark_results(csv_file):
     """
-    Reads benchmark results from a CSV file and analyzes the data.
+    Read benchmark results from a CSV file and analyzes the data.
 
     Parameters
     ----------
     csv_file : str
-        The path to the CSV file containing benchmark results with columns:
-        'species', 'rho', 'temp', 'outcome', 'pc_err_st', 'pc_err_vir', 'pc_err_id', 'time_s'
+        The path to the CSV file containing benchmark results
 
     Returns
     -------
@@ -294,21 +294,24 @@ def analyze_benchmark_results(csv_file):
 
     # Calculate the number of tests passed
     total_tests = len(df)
-    passed_tests = len(df[df['outcome'] == 'pass'])
+    passed_tests = len(df[df["outcome"] == "pass"])
     pass_fraction = passed_tests / total_tests
 
     # Calculate median and max for error columns
-    pc_err_st_stats = {'median': df['pc_err_st'].median(), 'max': df['pc_err_st'].max()}
-    pc_err_vir_stats = {'median': df['pc_err_vir'].median(), 'max': df['pc_err_vir'].max()}
-    pc_err_id_stats = {'median': df['pc_err_id'].median(), 'max': df['pc_err_id'].max()}
+    err_st_stats = {"median": df["pc_err_st"].median(), "max": df["pc_err_st"].max()}
+    err_vir_stats = {
+        "median": df["pc_err_vir"].median(),
+        "max": df["pc_err_vir"].max(),
+    }
+    err_id_stats = {"median": df["pc_err_id"].median(), "max": df["pc_err_id"].max()}
 
     # Calculate mean, median, quartiles, and max for time column
     time_stats = {
-        'mean': df['time_s'].mean(),
-        'median': df['time_s'].median(),
-        'q1': df['time_s'].quantile(0.25),
-        'q3': df['time_s'].quantile(0.75),
-        'max': df['time_s'].max()
+        "mean": df["time_s"].mean(),
+        "median": df["time_s"].median(),
+        "q1": df["time_s"].quantile(0.25),
+        "q3": df["time_s"].quantile(0.75),
+        "max": df["time_s"].max(),
     }
 
     # Format the table
@@ -317,26 +320,92 @@ def analyze_benchmark_results(csv_file):
     -----------------------------
     Tests passed: {passed_tests} / {total_tests} ({pass_fraction:.2%})
 
-    Error Statistics:
+    Error Statistics
+    -----------------------------------------
+    | Error Type  | Median     | Max        |
+    |-------------|------------|------------|
+    | pc_err_st   | {err_st_stats['median']:10.2f} | {err_st_stats['max']:10.2f} |
+    | pc_err_vir  | {err_vir_stats['median']:10.2f} | {err_vir_stats['max']:10.2f} |
+    | pc_err_id   | {err_id_stats['median']:10.2f} | {err_id_stats['max']:10.2f} |
 
-    | Error Type   | Median    | Max       |
-    |--------------|-----------|-----------|
-    | pc_err_st    | {pc_err_st_stats['median']:.2f}      | {pc_err_st_stats['max']:.2f}      |
-    | pc_err_vir   | {pc_err_vir_stats['median']:.2f}      | {pc_err_vir_stats['max']:.2f}      |
-    | pc_err_id    | {pc_err_id_stats['median']:.2f}      | {pc_err_id_stats['max']:.2f}      |
-
-    Time Statistics (s):
+    Time Statistics (s)
+    ------------------------
     | Statistic |   Value  |
     |-----------|----------|
-    | Mean      | {time_stats['mean']:7.2f} |
-    | Median    | {time_stats['median']:7.2f} |
-    | Q1        | {time_stats['q1']:7.2f} |
-    | Q3        | {time_stats['q3']:7.2f} |
-    | Max       | {time_stats['max']:7.2f} |
+    | Mean      | {time_stats['mean']:8.2f} |
+    | Median    | {time_stats['median']:8.2f} |
+    | Q1        | {time_stats['q1']:8.2f} |
+    | Q3        | {time_stats['q3']:8.2f} |
+    | Max       | {time_stats['max']:8.2f} |
     """
     print(table)
 
 
+def calc_time_diff(csv_ref, csv_new):
+    """
+    Calculate the average percentage difference in timings between two atoMEC versions.
+
+    Parameters
+    ----------
+    csv_ref : str
+        Filepath to the reference CSV file.
+    csv_new : str
+        Filepath to the new CSV file to compare against the reference.
+
+    Returns
+    -------
+    float
+        The average absolute percentage difference of the 'time_s' column
+        between the reference and new datasets.
+
+    Notes
+    -----
+    The percentage difference is calculated using the formula:
+    100 * abs(time_new - time_ref) / time_ref
+    This formula gives the average of the absolute relative differences
+    from the reference to the new values.
+    """
+    # Read the time_s column from each CSV into a DataFrame
+    df_ref = pd.read_csv(csv_ref)["time_s"]
+    df_new = pd.read_csv(csv_new)["time_s"]
+
+    # Calculate the absolute percentage difference
+    time_diff_pc = 100 * (df_ref - df_new) / df_ref
+
+    # Return the mean of these percentage differences, rounded to 2 decimal places
+    return round(time_diff_pc.mean(), 2)
 
 
+def comp_benchmark_results(csv_ref, csv_new):
+    """
+    Compare benchmark results between a reference CSV file and a new CSV file.
 
+    Prints individual test and timings results, and finally does a row-by-row
+    percentage difference of timings.
+
+    Parameters
+    ----------
+    csv_ref : str
+        Filepath to the reference CSV file containing benchmark results.
+    csv_new : str
+        Filepath to the new CSV file containing benchmark results to be compared.
+
+    Returns
+    -------
+    None
+    """
+    # Print results from the reference CSV
+    print("\nResults from reference csv")
+    print("--------------------------")
+    analyze_benchmark_results(csv_ref)
+
+    # Print results from the new CSV
+    print("\nResults from new csv")
+    print("--------------------------")
+    analyze_benchmark_results(csv_new)
+
+    # Calculate and print the average time percentage difference
+    avg_time_diff = calc_time_diff(csv_ref, csv_new)
+    print("\n-------------------------------------")
+    print(f" Average time % difference = {avg_time_diff}% ")
+    print("-------------------------------------")
