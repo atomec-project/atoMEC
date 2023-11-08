@@ -3,3 +3,4 @@ scipy>=1.6.3
 mendeleev>=0.7.0
 tabulate>=0.8.9
 joblib>=1.0.1
+https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz
