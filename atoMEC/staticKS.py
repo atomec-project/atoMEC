@@ -1669,9 +1669,16 @@ class EnergyAlt:
 class GramSchmidt:
     """Class holding Gram-Schmidt orthoganalization process."""
 
-    def __init__(self, eigfuncs, xgrid):
+    def __init__(self, eigfuncs, xgrid, grid_type):
         self._eigfuncs = eigfuncs
         self._xgrid = xgrid
+
+        # check grid is logarithmic
+        if grid_type != "log":
+            raise check_inputs.InputError.grid_error(
+                "Sqrt grid is not yet supported for Gram-Schmidt procedure."
+                "Please switch to log grid."
+            )
 
     def make_ortho(self):
         """
