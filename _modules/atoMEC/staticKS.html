@@ -1838,9 +1838,16 @@
 <span class="k">class</span> <span class="nc">GramSchmidt</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class holding Gram-Schmidt orthoganalization process.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eigfuncs</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">=</span> <span class="n">eigfuncs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_xgrid</span> <span class="o">=</span> <span class="n">xgrid</span>
+
+        <span class="c1"># check grid is logarithmic</span>
+        <span class="k">if</span> <span class="n">grid_type</span> <span class="o">!=</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">InputError</span><span class="o">.</span><span class="n">grid_error</span><span class="p">(</span>
+                <span class="s2">&quot;Sqrt grid is not yet supported for Gram-Schmidt procedure.&quot;</span>
+                <span class="s2">&quot;Please switch to log grid.&quot;</span>
+            <span class="p">)</span>
 
 <div class="viewcode-block" id="GramSchmidt.make_ortho">
 <a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.staticKS.GramSchmidt.make_ortho">[docs]</a>

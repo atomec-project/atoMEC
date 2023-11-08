@@ -120,6 +120,12 @@
                 <span class="s2">&quot;Kubo-Greenwood is not yet set-up for spin-polarized calculations. </span><span class="se">\</span>
 <span class="s2">Please run again with spin-unpolarized input.&quot;</span>
             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">orbitals</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">!=</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span>
+                <span class="s2">&quot;Sqrt grid is not yet supported for Kubo-Greenwood calculations.&quot;</span>
+                <span class="s2">&quot;Please switch to log grid.&quot;</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="n">nmax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_nmax</span> <span class="o">=</span> <span class="n">nmax_default</span>
         <span class="k">else</span><span class="p">:</span>
