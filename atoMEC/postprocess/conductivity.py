@@ -44,6 +44,12 @@ class KuboGreenwood:
                 "Kubo-Greenwood is not yet set-up for spin-polarized calculations. \
 Please run again with spin-unpolarized input."
             )
+
+        if orbitals.grid_type != "log":
+            sys.exit(
+                "Sqrt grid is not yet supported for Kubo-Greenwood calculations."
+                "Please switch to log grid."
+            )
         if nmax == 0:
             self._nmax = nmax_default
         else:

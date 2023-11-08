@@ -6,7 +6,7 @@ Run an SCF calculation and uses the resulting orbs to calculate overlap
 integrals and perform Gram-Schmidt orthonormalization.
 """
 
-from atoMEC import Atom, models, staticKS
+from atoMEC import Atom, models, staticKS, config
 import pytest
 from pytest_lazyfixture import lazy_fixture
 import numpy as np
@@ -34,6 +34,7 @@ class TestGS:
     )
     def test_overlap(self, input_SCF, case, expected):
         """Run overlap integral after orthonormalizatation."""
+        config.grid_type = "log"
         assert np.isclose(
             self._run_overlap(input_SCF, case),
             expected,
@@ -88,7 +89,7 @@ class TestGS:
 
         """
         xgrid = input_SCF["orbitals"]._xgrid
-        GS = staticKS.GramSchmidt(input_SCF["orbitals"].eigfuncs, xgrid)
+        GS = staticKS.GramSchmidt(input_SCF["orbitals"].eigfuncs, xgrid, "log")
         ortho = GS.make_ortho()
         if case == "self":
             norm = GS.prod_eigfuncs(ortho[0, 0, 0, 1], ortho[0, 0, 0, 1], xgrid)
@@ -99,6 +100,7 @@ class TestGS:
 
 
 if __name__ == "__main__":
+    config.grid_type = "log"
     SCF_out = TestGS._run_SCF()
     print("self_overlap_expected =", TestGS._run_overlap(SCF_out, "self"))
     print("overlap_expected =", TestGS._run_overlap(SCF_out, "other"))
