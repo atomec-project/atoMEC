@@ -806,8 +806,9 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        grid_params : dict</span>
-<span class="sd">            Can contain the keys `ngrid` (``int``, number of grid points)</span>
-<span class="sd">            and `x0` (`float`, LHS grid point for log grid)</span>
+<span class="sd">            Can contain the keys `ngrid` (``int``, number of grid points),</span>
+<span class="sd">            `x0` (`float`, LHS grid point for log grid), and</span>
+<span class="sd">            `s0` (`float`, LHS grid point for sqrt grid)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -817,6 +818,8 @@
 <span class="sd">            `ngrid` (``int``)        : number of grid points,</span>
 <span class="sd">            `x0`    (``float``)      : LHS grid point takes form</span>
 <span class="sd">            :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified</span>
+<span class="sd">            `s0`    (``float``)      : LHS grid point takes form</span>
+<span class="sd">            :math:`r_0=s0^2`; :math:`s_0` can be specified</span>
 <span class="sd">            `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation</span>
 <span class="sd">            of eigenvalues with full diagonalization</span>
 <span class="sd">            }</span>

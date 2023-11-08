@@ -228,10 +228,13 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">eigfuncs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        ndarray: The radial KS eigenfunctions on the logarithmic grid.</span>
+<span class="sd">        ndarray: The radial KS eigenfunctions on the log / sqrt grid.</span>
 
-<span class="sd">        Related to real-grid KS radial orbitals by</span>
+<span class="sd">        Related to real-grid KS radial orbitals for log grid by:</span>
 <span class="sd">        :math:`X_{nl}^{\sigma}(x)=e^{x/2} R_{nl}^{\sigma}(r).`</span>
+
+<span class="sd">        And for the sqrt grid by (no transformation):</span>
+<span class="sd">        :math:`X_{nl}^{\sigma}(s) = R_{nl}^{\sigma}(r).`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eigfuncs</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Eigenfunctions have not been initialized&quot;</span><span class="p">)</span>
@@ -871,7 +874,7 @@
 <span class="sd">        occnums : ndarray</span>
 <span class="sd">            the orbital occupations</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -913,7 +916,7 @@
 <span class="sd">        orbs : ndarray</span>
 <span class="sd">            the radial eigenfunctions on the xgrid</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1008,7 +1011,7 @@
 
 <span class="sd">        The electron-nuclear potential is given by</span>
 <span class="sd">        :math:`v_\mathrm{en} (x) = -Z * \exp(-x)`</span>
-<span class="sd">        on the logarithmic grid</span>
+<span class="sd">        on the log / sqrt grid</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
             <span class="n">v_en</span> <span class="o">=</span> <span class="o">-</span><span class="n">config</span><span class="o">.</span><span class="n">Z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">xgrid</span><span class="p">)</span>
@@ -1030,7 +1033,7 @@
 <span class="sd">        density : ndarray</span>
 <span class="sd">            the total KS density</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
@@ -1039,7 +1042,7 @@
 <span class="sd">        .. math::</span>
 <span class="sd">            v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r&#39; r&#39;^2 \frac{n(r&#39;)}{\max(r,r&#39;)}</span>
 
-<span class="sd">        On the x-grid:</span>
+<span class="sd">        On the log-grid:</span>
 
 <span class="sd">        .. math::</span>
 <span class="sd">            v_\mathrm{ha}(x) = 4\pi\Big\{\exp(-x)\int_{x0}^x \mathrm{d}x&#39; n(x&#39;) \</span>
@@ -1193,7 +1196,7 @@
 <span class="sd">        orbs : :obj:`Orbitals`</span>
 <span class="sd">            the KS orbitals object</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1233,7 +1236,7 @@
 <span class="sd">        occnums : ndarray</span>
 <span class="sd">            the orbital occupations</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1269,7 +1272,7 @@
 <span class="sd">        occnums : ndarray</span>
 <span class="sd">            the orbital occupations</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 <span class="sd">        method : str, optional</span>
 <span class="sd">            the definition used for KED, can be &#39;A&#39; or &#39;B&#39; (see notes).</span>
 
@@ -1379,7 +1382,7 @@
 <span class="sd">        orbs : :obj:`Orbitals`</span>
 <span class="sd">            the KS orbitals object</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1545,7 +1548,7 @@
 <span class="sd">        density : ndarray</span>
 <span class="sd">            the (spin) KS density</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1582,7 +1585,7 @@
 <span class="sd">        density : ndarray</span>
 <span class="sd">            the (spin) KS density</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1756,7 +1759,7 @@
 <span class="sd">        pot : :class:`Potential`</span>
 <span class="sd">            the KS potential object</span>
 <span class="sd">        xgrid : ndarray</span>
-<span class="sd">            the logarithmic grid</span>
+<span class="sd">            the log / sqrt grid</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

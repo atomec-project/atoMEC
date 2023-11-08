@@ -802,8 +802,9 @@ density and potential convergence parameters</p>
 <dd><p>Check grid parameters are reasonable, or assigns if empty.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>grid_params</strong> (<em>dict</em>) – Can contain the keys <cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, number of grid points)
-and <cite>x0</cite> (<cite>float</cite>, LHS grid point for log grid)</p>
+<dd class="field-odd"><p><strong>grid_params</strong> (<em>dict</em>) – Can contain the keys <cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, number of grid points),
+<cite>x0</cite> (<cite>float</cite>, LHS grid point for log grid), and
+<cite>s0</cite> (<cite>float</cite>, LHS grid point for sqrt grid)</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>grid_params</strong> – dictionary of grid parameters as follows:
@@ -811,6 +812,8 @@ and <cite>x0</cite> (<cite>float</cite>, LHS grid point for log grid)</p>
 <cite>ngrid</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)        : number of grid points,
 <cite>x0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>)      : LHS grid point takes form
 <span class="math notranslate nohighlight">\(r_0=\exp(x_0)\)</span>; <span class="math notranslate nohighlight">\(x_0\)</span> can be specified
+<cite>s0</cite>    (<code class="docutils literal notranslate"><span class="pre">float</span></code>)      : LHS grid point takes form
+<span class="math notranslate nohighlight">\(r_0=s0^2\)</span>; <span class="math notranslate nohighlight">\(s_0\)</span> can be specified
 <cite>ngrid_coarse</cite> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) : (smaller) number of grid points for estimation
 of eigenvalues with full diagonalization
 }</p>
@@ -1292,13 +1295,13 @@ N_{ub}(\beta,\mu) - N_e\]</div>
 <dl class="py function">
 <dt class="sig sig-object py" id="atoMEC.mathtools.grad_func">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">grad_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">den</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#grad_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.grad_func" title="Link to this definition"></a></dt>
-<dd><p>Compute the gradient of a function on the logarithmic grid.</p>
+<dd><p>Compute the gradient of a function on the log / sqrt grid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>den</strong> (<em>ndarray</em>) – density array or any other function that is integrated</p></li>
-<li><p><strong>rgrid</strong> (<em>ndarray</em>) – radial grid array</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – exponential grid array</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – log / sqrt grid</p></li>
+<li><p><strong>grid_type</strong> (<em>str</em>) – grid type, log or sqrt</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1371,12 +1374,11 @@ distribution.</p>
 <dt class="sig sig-object py" id="atoMEC.mathtools.int_sphere">
 <span class="sig-prename descclassname"><span class="pre">atoMEC.mathtools.</span></span><span class="sig-name descname"><span class="pre">int_sphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xgrid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/atoMEC/mathtools.html#int_sphere"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#atoMEC.mathtools.int_sphere" title="Link to this definition"></a></dt>
 <dd><p>Compute integral over sphere defined by input grid.</p>
-<p>The integral is performed on the logarithmic grid (see notes).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fx</strong> (<em>array_like</em>) – The function (array) to be integrated</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – The logarithmic radial grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – The log / sqrt radial grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1387,9 +1389,12 @@ distribution.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The integral formula is given by</p>
+<p>The integral formula on the log grid is given by</p>
 <div class="math notranslate nohighlight">
 \[I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)\]</div>
+<p>and on the sqrt grid is given by</p>
+<div class="math notranslate nohighlight">
+\[I = 4 \pi \int \mathrm{d}s\ s^5 f(s)\]</div>
 </dd></dl>
 
 <dl class="py function">
@@ -1448,7 +1453,7 @@ default : -1</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eigfuncs_x</strong> (<em>ndarray</em>) – The radial KS eigenfunctions <span class="math notranslate nohighlight">\(X_{nl}^{\sigma}(x)\)</span></p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – The logarithmic grid over which normalization is performed</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – The log / sqrt grid over which normalization is performed</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2092,7 +2097,7 @@ The main assumption used everywhere is that we have a logarithmically spaced gri
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the radial eigenfunctions on the xgrid</p></li>
 <li><p><strong>occnums</strong> (<em>ndarray</em>) – the orbital occupations</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2113,7 +2118,7 @@ and number of electrons respectively</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>orbs</strong> (<em>ndarray</em>) – the radial eigenfunctions on the xgrid</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2189,7 +2194,7 @@ unbound density and number of unbound electrons respectively</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>density</strong> (<em>ndarray</em>) – the (spin) KS density</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2214,7 +2219,7 @@ unbound density and number of unbound electrons respectively</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>density</strong> (<em>ndarray</em>) – the (spin) KS density</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2241,7 +2246,7 @@ This routine is a wrapper calling the respective functions.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>orbs</strong> (<a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Orbitals</span></code></a>) – the KS orbitals object</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2263,7 +2268,7 @@ This routine is a wrapper calling the respective functions.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the radial KS orbitals on the log grid</p></li>
 <li><p><strong>occnums</strong> (<em>ndarray</em>) – the orbital occupations</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 <li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – the definition used for KED, can be ‘A’ or ‘B’ (see notes).</p></li>
 </ul>
 </dd>
@@ -2316,7 +2321,7 @@ calculations. J. Phys. B, 40(8):1553 (2007), <a class="reference external" href=
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eigfuncs</strong> (<em>ndarray</em>) – the radial KS orbitals on the log grid</p></li>
 <li><p><strong>occnums</strong> (<em>ndarray</em>) – the orbital occupations</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2336,7 +2341,7 @@ calculations. J. Phys. B, 40(8):1553 (2007), <a class="reference external" href=
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>orbs</strong> (<a class="reference internal" href="#atoMEC.staticKS.Orbitals" title="atoMEC.staticKS.Orbitals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Orbitals</span></code></a>) – the KS orbitals object</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2528,7 +2533,7 @@ how we interpret the unbound energy (i.e., is it purely a kinetic term or not).<
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dens</strong> (<em>ndarray</em>) – the (spin) KS density</p></li>
 <li><p><strong>pot</strong> (<a class="reference internal" href="#atoMEC.staticKS.Potential" title="atoMEC.staticKS.Potential"><code class="xref py py-class docutils literal notranslate"><span class="pre">Potential</span></code></a>) – the KS potential object</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2971,9 +2976,11 @@ order to optimize computation time.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="atoMEC.staticKS.Orbitals.eigfuncs">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eigfuncs</span></span><a class="headerlink" href="#atoMEC.staticKS.Orbitals.eigfuncs" title="Link to this definition"></a></dt>
-<dd><p>The radial KS eigenfunctions on the logarithmic grid.</p>
-<p>Related to real-grid KS radial orbitals by
+<dd><p>The radial KS eigenfunctions on the log / sqrt grid.</p>
+<p>Related to real-grid KS radial orbitals for log grid by:
 <span class="math notranslate nohighlight">\(X_{nl}^{\sigma}(x)=e^{x/2} R_{nl}^{\sigma}(r).\)</span></p>
+<p>And for the sqrt grid by (no transformation):
+<span class="math notranslate nohighlight">\(X_{nl}^{\sigma}(s) = R_{nl}^{\sigma}(r).\)</span></p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ndarray</p>
@@ -3084,7 +3091,7 @@ angular momentum, and the integration weight.</p>
 <dd><p>Construct the electron-nuclear potential.</p>
 <p>The electron-nuclear potential is given by
 <span class="math notranslate nohighlight">\(v_\mathrm{en} (x) = -Z * \exp(-x)\)</span>
-on the logarithmic grid</p>
+on the log / sqrt grid</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3095,7 +3102,7 @@ on the logarithmic grid</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>density</strong> (<em>ndarray</em>) – the total KS density</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid</p></li>
 </ul>
 </dd>
 </dl>
@@ -3103,7 +3110,7 @@ on the logarithmic grid</p>
 <p><span class="math notranslate nohighlight">\(v_\mathrm{ha}\)</span> is defined on the r-grid as:</p>
 <div class="math notranslate nohighlight">
 \[v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}\]</div>
-<p>On the x-grid:</p>
+<p>On the log-grid:</p>
 <div class="math notranslate nohighlight">
 \[v_\mathrm{ha}(x) = 4\pi\Big\{\exp(-x)\int_{x0}^x \mathrm{d}x' n(x') \
 \exp(3x') -\int_x^{\log(r_s)} \mathrm{d}x' n(x') \exp(2x') \Big\}\]</div>
@@ -3489,8 +3496,8 @@ the following private attributes (named so to match libxc):</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log grid</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log grid</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log/sqrt grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log/sqrt grid</p></li>
 <li><p><strong>xfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the exchange functional object</p></li>
 <li><p><strong>cfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the correlation functional object</p></li>
 </ul>
@@ -3512,8 +3519,8 @@ and exchange + correlation respectively</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log grid</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log grid</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log/sqrt grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log/sqrt grid</p></li>
 <li><p><strong>xcfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the exchange or correlation functional object</p></li>
 <li><p><strong>xctype</strong> (<em>str</em>) – the quantity to return, <cite>e_xc</cite> for energy density or <cite>v_xc</cite> for potential</p></li>
 </ul>
@@ -3557,7 +3564,7 @@ and exchange + correlation respectively</p>
 <li><p><strong>libxc_output</strong> (<em>dict</em><em> of </em><em>libxc objects</em>) – The output of the libxc calculation</p></li>
 <li><p><strong>grad_0</strong> (<em>ndarray</em>) – The gradient of the density of the 0 spin channel.</p></li>
 <li><p><strong>grad_1</strong> (<em>ndarray</em>) – The gradient of the density of the 1 spin channel.</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the logarithmic (equispaced) grid.</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log / sqrt grid.</p></li>
 <li><p><strong>spindim</strong> (<em>int</em>) – the number of spin dimentions in the calculation.</p></li>
 </ul>
 </dd>
@@ -3609,8 +3616,8 @@ the divergence.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log grid</p></li>
-<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log grid</p></li>
+<li><p><strong>density</strong> (<em>ndarray</em>) – the KS density on the log/sqrt grid</p></li>
+<li><p><strong>xgrid</strong> (<em>ndarray</em>) – the log/sqrt grid</p></li>
 <li><p><strong>xfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the exchange functional object</p></li>
 <li><p><strong>cfunc</strong> (<a class="reference internal" href="#atoMEC.xc.XCFunc" title="atoMEC.xc.XCFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XCFunc</span></code></a> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">pylibxc.LibXCFunctional</span></code>) – the correlation functional object</p></li>
 </ul>

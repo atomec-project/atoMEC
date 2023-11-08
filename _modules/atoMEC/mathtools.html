@@ -112,7 +112,7 @@
 <span class="sd">    eigfuncs_x : ndarray</span>
 <span class="sd">        The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`</span>
 <span class="sd">    xgrid : ndarray</span>
-<span class="sd">        The logarithmic grid over which normalization is performed</span>
+<span class="sd">        The log / sqrt grid over which normalization is performed</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -178,14 +178,12 @@
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute integral over sphere defined by input grid.</span>
 
-<span class="sd">    The integral is performed on the logarithmic grid (see notes).</span>
-
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    fx : array_like</span>
 <span class="sd">        The function (array) to be integrated</span>
 <span class="sd">    xgrid : ndarray</span>
-<span class="sd">        The logarithmic radial grid</span>
+<span class="sd">        The log / sqrt radial grid</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -194,9 +192,13 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The integral formula is given by</span>
+<span class="sd">    The integral formula on the log grid is given by</span>
 
 <span class="sd">    .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)</span>
+
+<span class="sd">    and on the sqrt grid is given by</span>
+
+<span class="sd">    .. math:: I = 4 \pi \int \mathrm{d}s\ s^5 f(s)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">grid_type</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
         <span class="n">func_int</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">3.0</span> <span class="o">*</span> <span class="n">xgrid</span><span class="p">)</span> <span class="o">*</span> <span class="n">fx</span>
@@ -620,16 +622,16 @@
 <a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.mathtools.grad_func">[docs]</a>
 <span class="k">def</span> <span class="nf">grad_func</span><span class="p">(</span><span class="n">den</span><span class="p">,</span> <span class="n">xgrid</span><span class="p">,</span> <span class="n">grid_type</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute the gradient of a function on the logarithmic grid.</span>
+<span class="sd">    Compute the gradient of a function on the log / sqrt grid.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    den : ndarray</span>
 <span class="sd">        density array or any other function that is integrated</span>
-<span class="sd">    rgrid : ndarray</span>
-<span class="sd">        radial grid array</span>
 <span class="sd">    xgrid : ndarray</span>
-<span class="sd">        exponential grid array</span>
+<span class="sd">        log / sqrt grid</span>
+<span class="sd">    grid_type : str</span>
+<span class="sd">        grid type, log or sqrt</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
