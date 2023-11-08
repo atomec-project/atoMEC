@@ -61,37 +61,6 @@ def normalize_orbs(eigfuncs_x, xgrid, grid_type):
     return eigfuncs_x_norm
 
 
-def normalize_orbs_sgrid(eigfuncs_x, sgrid):
-    r"""
-    Normalize the KS orbitals within the chosen sphere.
-
-    Parameters
-    ----------
-    eigfuncs_x : ndarray
-        The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`
-    xgrid : ndarray
-        The logarithmic grid over which normalization is performed
-
-    Returns
-    -------
-    eigfuncs_x_norm : ndarray
-        The radial KS eigenfunctions normalized over the chosen sphere
-    """
-    # initialize the normalized eigenfunctions
-    eigfuncs_x_norm = eigfuncs_x
-
-    # loop over the eigenfunctions
-    for n in range(np.shape(eigfuncs_x)[0]):
-        # compute the mod squared eigenvalues
-        eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
-        # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
-        ampsq = int_sphere(eigfuncs_sq, sgrid, "sqrt")
-        # normalize eigenfunctions
-        eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)
-
-    return eigfuncs_x_norm
-
-
 def int_sphere(fx, xgrid, grid_type):
     r"""
     Compute integral over sphere defined by input grid.
