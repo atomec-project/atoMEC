@@ -101,6 +101,7 @@ class TestLocalization:
             2,
             scf_params={"mixfrac": 0.3, "maxscf": 50},
             grid_params={"ngrid": 1000, "ngrid_coarse": 300},
+            grid_type="log",
         )
 
         output_dict = {"Atom": Al_at, "model": model, "SCF_out": output}

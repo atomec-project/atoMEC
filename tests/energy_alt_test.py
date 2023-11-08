@@ -67,6 +67,7 @@ class TestEnergyAlt:
             5,
             scf_params={"maxscf": 6, "mixfrac": 0.3},
             grid_params={"ngrid": 1000, "ngrid_coarse": 300},
+            grid_type="log",
         )
 
         # construct the EnergyAlt object

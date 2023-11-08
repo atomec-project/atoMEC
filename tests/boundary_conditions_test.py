@@ -72,6 +72,7 @@ class TestBcs:
             scf_params={"maxscf": 5, "mixfrac": 0.3},
             grid_params={"ngrid": 1000, "ngrid_coarse": 600},
             band_params={"nkpts": nkpts},
+            grid_type="log",
         )
 
         # extract the total free energy
