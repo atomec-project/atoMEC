@@ -29,6 +29,7 @@ band_params = {"nkpts": 30, "de_min": 1e-3}
 # forced bound energy levels (default none)
 force_bound = []
 
+# the grid type used for the calculations
 grid_type = "sqrt"
 
 # parallelization

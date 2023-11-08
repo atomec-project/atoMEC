@@ -668,8 +668,9 @@ class EnergyCalcs:
         Parameters
         ----------
         grid_params : dict
-            Can contain the keys `ngrid` (``int``, number of grid points)
-            and `x0` (`float`, LHS grid point for log grid)
+            Can contain the keys `ngrid` (``int``, number of grid points),
+            `x0` (`float`, LHS grid point for log grid), and
+            `s0` (`float`, LHS grid point for sqrt grid)
 
         Returns
         -------
@@ -679,6 +680,8 @@ class EnergyCalcs:
             `ngrid` (``int``)        : number of grid points,
             `x0`    (``float``)      : LHS grid point takes form
             :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            `s0`    (``float``)      : LHS grid point takes form
+            :math:`r_0=s0^2`; :math:`s_0` can be specified
             `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation
             of eigenvalues with full diagonalization
             }

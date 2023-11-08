@@ -146,10 +146,13 @@ class Orbitals:
     @property
     def eigfuncs(self):
         r"""
-        ndarray: The radial KS eigenfunctions on the logarithmic grid.
+        ndarray: The radial KS eigenfunctions on the log / sqrt grid.
 
-        Related to real-grid KS radial orbitals by
+        Related to real-grid KS radial orbitals for log grid by:
         :math:`X_{nl}^{\sigma}(x)=e^{x/2} R_{nl}^{\sigma}(r).`
+
+        And for the sqrt grid by (no transformation):
+        :math:`X_{nl}^{\sigma}(s) = R_{nl}^{\sigma}(r).`
         """
         if np.all(self._eigfuncs == 0.0):
             raise Exception("Eigenfunctions have not been initialized")
@@ -757,7 +760,7 @@ class Density:
         occnums : ndarray
             the orbital occupations
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Returns
         -------
@@ -796,7 +799,7 @@ class Density:
         orbs : ndarray
             the radial eigenfunctions on the xgrid
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Returns
         -------
@@ -885,7 +888,7 @@ class Potential:
 
         The electron-nuclear potential is given by
         :math:`v_\mathrm{en} (x) = -Z * \exp(-x)`
-        on the logarithmic grid
+        on the log / sqrt grid
         """
         if grid_type == "log":
             v_en = -config.Z * np.exp(-xgrid)
@@ -904,7 +907,7 @@ class Potential:
         density : ndarray
             the total KS density
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Notes
         -----
@@ -913,7 +916,7 @@ class Potential:
         .. math::
             v_\mathrm{ha}(r) = 4\pi\int_0^r \mathrm{d}r' r'^2 \frac{n(r')}{\max(r,r')}
 
-        On the x-grid:
+        On the log-grid:
 
         .. math::
             v_\mathrm{ha}(x) = 4\pi\Big\{\exp(-x)\int_{x0}^x \mathrm{d}x' n(x') \
@@ -1061,7 +1064,7 @@ class Energy:
         orbs : :obj:`Orbitals`
             the KS orbitals object
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Returns
         -------
@@ -1098,7 +1101,7 @@ class Energy:
         occnums : ndarray
             the orbital occupations
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Returns
         -------
@@ -1131,7 +1134,7 @@ class Energy:
         occnums : ndarray
             the orbital occupations
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
         method : str, optional
             the definition used for KED, can be 'A' or 'B' (see notes).
 
@@ -1238,7 +1241,7 @@ class Energy:
         orbs : :obj:`Orbitals`
             the KS orbitals object
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Returns
         -------
@@ -1392,7 +1395,7 @@ class Energy:
         density : ndarray
             the (spin) KS density
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Returns
         -------
@@ -1426,7 +1429,7 @@ class Energy:
         density : ndarray
             the (spin) KS density
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Returns
         -------
@@ -1594,7 +1597,7 @@ class EnergyAlt:
         pot : :class:`Potential`
             the KS potential object
         xgrid : ndarray
-            the logarithmic grid
+            the log / sqrt grid
 
         Returns
         -------
