@@ -177,6 +177,10 @@ def stress_tensor(Atom, model, orbs, pot, only_rr=False):
 
     Parameters
     ----------
+    Atom : atoMEC.Atom
+        The main atom object
+    model : models.ISModel
+        The model object
     orbs : staticKS.Orbitals
         the orbitals object
     pot : staticKS.Potential
@@ -280,6 +284,8 @@ def virial(atom, model, energy, density, orbs, pot, use_correction=False, method
         the Energy object
     density : staticKS.Density
         the density object
+    pot : staticKS.Potential
+        the potential object
     use_correction: bool, optional
         whether to use boundary condition correction described in [10]_
 
