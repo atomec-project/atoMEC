@@ -167,9 +167,9 @@ def v_xc(density, xgrid, xfunc, cfunc, grid_type):
     Parameters
     ----------
     density: ndarray
-        the KS density on the log grid
+        the KS density on the log/sqrt grid
     xgrid: ndarray
-        the log grid
+        the log/sqrt grid
     xfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
         the exchange functional object
     cfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
@@ -202,9 +202,9 @@ def E_xc(density, xgrid, xfunc, cfunc, grid_type):
     Parameters
     ----------
     density: ndarray
-        the KS density on the log grid
+        the KS density on the log/sqrt grid
     xgrid: ndarray
-        the log grid
+        the log/sqrt grid
     xfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
         the exchange functional object
     cfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
@@ -243,9 +243,9 @@ def calc_xc(density, xgrid, xcfunc, xctype):
     Parameters
     ----------
     density: ndarray
-        the KS density on the log grid
+        the KS density on the log/sqrt grid
     xgrid: ndarray
-        the log grid
+        the log/sqrt grid
     xcfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
         the exchange or correlation functional object
     xctype: str
@@ -359,7 +359,7 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
     grad_1: ndarray
         The gradient of the density of the 1 spin channel.
     xgrid: ndarray
-        the logarithmic (equispaced) grid.
+        the log / sqrt grid.
     spindim: int
         the number of spin dimentions in the calculation.
 
