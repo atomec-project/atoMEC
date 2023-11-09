@@ -118,14 +118,16 @@ class Atom:
                 temp = unitconv.ev_to_ha * temp
             elif units_temp.lower() == "k":
                 temp = unitconv.K_to_ha * temp
-            # check if temperature is within some reasonable limits
+            # check if temperature is within some reasonable limits (<1000 and > 0.1 eV)
             if temp < 0:
                 raise InputError.temp_error("temperature is negative")
-            if temp < 0.01:
-                print(InputWarning.temp_warning("low"))
+            if temp < 0.0036:
+                if not config.suppress_warnings:
+                    print(InputWarning.temp_warning("low"))
                 return temp
-            elif temp > 3.5:
-                print(InputWarning.temp_warning("high"))
+            elif temp > 36.7:
+                if not config.suppress_warnings:
+                    print(InputWarning.temp_warning("high"))
                 return temp
             else:
                 return temp
@@ -666,8 +668,9 @@ class EnergyCalcs:
         Parameters
         ----------
         grid_params : dict
-            Can contain the keys `ngrid` (``int``, number of grid points)
-            and `x0` (`float`, LHS grid point for log grid)
+            Can contain the keys `ngrid` (``int``, number of grid points),
+            `x0` (`float`, LHS grid point for log grid), and
+            `s0` (`float`, LHS grid point for sqrt grid)
 
         Returns
         -------
@@ -677,6 +680,8 @@ class EnergyCalcs:
             `ngrid` (``int``)        : number of grid points,
             `x0`    (``float``)      : LHS grid point takes form
             :math:`r_0=\exp(x_0)`; :math:`x_0` can be specified
+            `s0`    (``float``)      : LHS grid point takes form
+            :math:`r_0=s0^2`; :math:`s_0` can be specified
             `ngrid_coarse` (``int``) : (smaller) number of grid points for estimation
             of eigenvalues with full diagonalization
             }
@@ -700,6 +705,11 @@ class EnergyCalcs:
             x0 = config.grid_params["x0"]
 
         try:
+            s0 = grid_params["s0"]
+        except KeyError:
+            s0 = config.grid_params["s0"]
+
+        try:
             ngrid_coarse = grid_params["ngrid_coarse"]
         except KeyError:
             ngrid_coarse = config.grid_params["ngrid_coarse"]
@@ -710,10 +720,12 @@ class EnergyCalcs:
         # check that ngrid is a positive number
         if ngrid < 0:
             raise InputError.grid_error("Number of grid points must be positive")
-        elif ngrid < 500:
-            print(InputWarning.ngrid_warning("low", "inaccurate"))
-        elif ngrid > 5000:
-            print(InputWarning.ngrid_warning("high", "expensive"))
+        elif ngrid < 300:
+            if not config.suppress_warnings:
+                print(InputWarning.ngrid_warning("low", "inaccurate"))
+        elif ngrid > 10000:
+            if not config.suppress_warnings:
+                print(InputWarning.ngrid_warning("high", "expensive"))
 
         # check that ngrid_coarse is an integer
         if not isinstance(ngrid_coarse, intc):
@@ -722,9 +734,11 @@ class EnergyCalcs:
         if ngrid_coarse < 0:
             raise InputError.grid_error("Number of coarse grid points must be positive")
         elif ngrid_coarse < 100:
-            print(InputWarning.ngrid_warning("low", "inaccurate"))
+            if not config.suppress_warnings:
+                print(InputWarning.ngrid_warning("low", "inaccurate"))
         elif ngrid_coarse > 500:
-            print(InputWarning.ngrid_warning("high", "expensive"))
+            if not config.suppress_warnings:
+                print(InputWarning.ngrid_warning("high", "expensive"))
 
         # check that x0 is reasonable
         if x0 > -3:
@@ -732,7 +746,14 @@ class EnergyCalcs:
                 "x0 is too high, calculation will likely not converge"
             )
 
-        grid_params = {"ngrid": ngrid, "x0": x0, "ngrid_coarse": ngrid_coarse}
+        if s0 <= 1e-6:
+            raise InputError.grid_error("s0 is too small, numerical problems likely")
+        elif s0 >= 1e-2:
+            raise InputError.grid_error(
+                "s0 is too large, calculation will likely not converge"
+            )
+
+        grid_params = {"ngrid": ngrid, "x0": x0, "ngrid_coarse": ngrid_coarse, "s0": s0}
 
         return grid_params
 
@@ -890,6 +911,30 @@ class EnergyCalcs:
                 raise InputError.bands_error("de_min must be positive")
 
         return band_params
+
+    @staticmethod
+    def check_grid_type(grid_type):
+        r"""Check grid type.
+
+        Parameters
+        ----------
+        grid_type : str
+            the grid type
+
+        Returns
+        -------
+        grid_type : str
+            the grid type
+
+        Raises
+        ------
+        InputError.grid_type_error
+            if grid type not one of "log" or "sqrt"
+        """
+        if grid_type not in ["log", "sqrt"]:
+            raise InputError.grid_error("Grid type must be either 'log' or 'sqrt'")
+        else:
+            return grid_type
 
 
 class InputError(Exception):
@@ -1120,6 +1165,22 @@ class InputError(Exception):
         print("Error in v_shift input: " + err_msg)
         sys.exit("Exiting atoMEC")
 
+    def ELF_error(err_msg):
+        """
+        Raise exception if error in ELF inputs.
+
+        Parameters
+        ----------
+        err_msg : str
+            the error message printed
+
+        Returns
+        -------
+        None
+        """
+        print("Error in ELF input: " + err_msg)
+        sys.exit("Exiting atoMEC")
+
 
 class InputWarning:
     """Warn if inputs are considered outside of typical ranges, but proceed anyway."""
@@ -1142,7 +1203,7 @@ class InputWarning:
             "Warning: this input temperature is very "
             + err
             + ". Proceeding anyway, but results may not be accurate. \n"
-            + "Normal temperature range for atoMEC is 0.01 -- 100 eV \n"
+            + "Normal temperature range for atoMEC is 0.1 -- 1000 eV \n"
         )
         return warning
 
@@ -1168,7 +1229,7 @@ class InputWarning:
             + ". Proceeding anyway, but results may be "
             + err2
             + "\n"
-            + "Suggested grid range is between 1000-5000 but should be tested wrt"
+            + "Suggested grid range is between 500-10000 but should be tested wrt"
             " convergence \n"
         )
         return warning

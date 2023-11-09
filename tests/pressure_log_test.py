@@ -15,15 +15,16 @@ from pytest_lazyfixture import lazy_fixture
 
 
 # expected values and tolerance
+finite_diff_expected_A = 172.7901141261863
+finite_diff_expected_B = 244.0758379313636
+stress_tensor_expected_rr = 149.73033807657444
+stress_tensor_expected_tr = 111.06081510721712
+virial_expected_corr = 143.24751643303316
+virial_expected_nocorr = 178.4773754883355
+ideal_expected = 103.18020549074609
+ion_expected = 165.19118614722603
 
-finite_diff_expected_A = 170.95
-finite_diff_expected_B = 239.70
-stress_tensor_expected_rr = 146.06
-stress_tensor_expected_tr = 109.76
-virial_expected_corr = 140.75
-virial_expected_nocorr = 175.89
-ideal_expected = 100.06
-ion_expected = 165.19
+
 accuracy = 0.1
 
 
@@ -34,6 +35,7 @@ class TestPressure:
     def SCF_output(self):
         """Run a spin-unpolarized SCF calc and save the output."""
         config.numcores = -1
+        config.suppress_warnings = True
         return self._run_SCF()
 
     @pytest.mark.parametrize(
@@ -109,10 +111,11 @@ class TestPressure:
         output = model.CalcEnergy(
             3,
             3,
-            scf_params={"maxscf": 5},
-            grid_params={"ngrid": 1000},
+            scf_params={"maxscf": 5, "mixfrac": 0.3},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 300},
             band_params={"nkpts": 50},
             verbosity=1,
+            grid_type="log",
         )
 
         output_dict = {"Atom": Li_at, "model": model, "SCF_out": output}
@@ -182,6 +185,7 @@ class TestPressure:
         energy = SCF_input["SCF_out"]["energy"]
         rho = SCF_input["SCF_out"]["density"]
         orbs = SCF_input["SCF_out"]["orbitals"]
+        pot = SCF_input["SCF_out"]["potential"]
 
         P_e = h2g * pressure.virial(
             SCF_input["Atom"],
@@ -189,6 +193,7 @@ class TestPressure:
             energy,
             rho,
             orbs,
+            pot,
             use_correction=use_correction,
         )
 
@@ -244,18 +249,19 @@ class TestPressure:
 if __name__ == "__main__":
     config.numcores = -1
     SCF_out = TestPressure._run_SCF()
-    print("Finite diff pressure A: ", TestPressure._run_finite_diff(SCF_out, "A"))
-    print("Finite diff pressure B: ", TestPressure._run_finite_diff(SCF_out, "B"))
+    fd_a = TestPressure._run_finite_diff(SCF_out, "A")
+    fd_b = TestPressure._run_finite_diff(SCF_out, "B")
+    print("finite_diff_expected_A =", fd_a)
+    print("finite_diff_expected_B =", fd_b)
     print(
-        "Stress tensor pressure rr: ",
+        "stress_tensor_expected_rr =",
         TestPressure._run_stress_tensor(SCF_out, True),
     )
     print(
-        "Stress tensor pressure tr: ",
+        "stress_tensor_expected_tr =",
         TestPressure._run_stress_tensor(SCF_out, False),
     )
-    print("Virial pressure corr: ", TestPressure._run_virial(SCF_out, True))
-    print("Virial pressure no corr: ", TestPressure._run_virial(SCF_out, False))
-    print("Virial pressure no corr: ", TestPressure._run_virial(SCF_out, False))
-    print("Ideal electron: ", TestPressure._run_ideal(SCF_out))
-    print("Ion pressure: ", TestPressure._run_ion(SCF_out["Atom"]))
+    print("virial_expected_corr =", TestPressure._run_virial(SCF_out, True))
+    print("virial_expected_nocorr =", TestPressure._run_virial(SCF_out, False))
+    print("ideal_expected =", TestPressure._run_ideal(SCF_out))
+    print("ion_expected =", TestPressure._run_ion(SCF_out["Atom"]))

@@ -12,8 +12,8 @@ import numpy as np
 
 
 # expected values and tolerance
-ideal_expected = -214.953809
-quantum_expected = -208.999350
+ideal_expected = -214.31170806859143
+quantum_expected = -207.95120034056816
 accuracy = 1e-3
 
 
@@ -63,7 +63,11 @@ class TestEnergyAlt:
 
         # run the SCF calculation
         output = model.CalcEnergy(
-            10, 5, scf_params={"maxscf": 6, "mixfrac": 0.3}, grid_params={"ngrid": 1000}
+            10,
+            5,
+            scf_params={"maxscf": 6, "mixfrac": 0.3},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 300},
+            grid_type="log",
         )
 
         # construct the EnergyAlt object
@@ -85,5 +89,8 @@ class TestEnergyAlt:
 
 
 if __name__ == "__main__":
-    print("ideal energy = ", TestEnergyAlt._run("ideal"))
-    print("quantum energy = ", TestEnergyAlt._run("quantum"))
+    config.numcores = -1
+    ideal = TestEnergyAlt._run("ideal")
+    quantum = TestEnergyAlt._run("quantum")
+    print("ideal_expected =", ideal)
+    print("quantum_expected =", quantum)

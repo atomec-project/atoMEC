@@ -12,11 +12,11 @@ import numpy as np
 
 
 # expected values and tolerance
-lda_expected = -159.210841
-gdsmfb_expected = -159.154166
-no_xc_expected = -145.019411
-no_hxc_expected = -249.507728
-gga_expected = -159.92294751868772
+lda_expected = -161.13694055882937
+gdsmfb_expected = -161.07726791735197
+no_xc_expected = -147.69699056522276
+no_hxc_expected = -249.7299062816172
+gga_expected = -161.79172099868805
 accuracy = 1e-3
 
 
@@ -90,7 +90,9 @@ class TestFuncs:
             6,
             6,
             scf_params={"maxscf": 5, "mixfrac": 0.3},
-            grid_params={"ngrid": 1000},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 90},
+            band_params={"nkpts": 30},
+            grid_type="log",
         )
 
         # extract the total free energy
@@ -98,8 +100,15 @@ class TestFuncs:
         return F_tot
 
 
-# if __name__ == "__main__":
-#     print("lda=", Test_funcs().run("lda"))
-#     print("gdsmfb=", Test_funcs().run("gdsmfb"))
-#     print("no_xc=", Test_funcs().run("no_xc"))
-#     print("no_hxc=", Test_funcs().run("no_hxc"))
+if __name__ == "__main__":
+    config.numcores = -1
+    lda = TestFuncs()._run("lda")
+    gdsmfb = TestFuncs()._run("gdsmfb")
+    no_xc = TestFuncs()._run("no_xc")
+    no_hxc = TestFuncs()._run("no_hxc")
+    pbe = TestFuncs()._run("gga")
+    print("lda_expected =", lda)
+    print("gdsmfb_expected =", gdsmfb)
+    print("no_xc_expected =", no_xc)
+    print("no_hxc_expected =", no_hxc)
+    print("gga_expected =", pbe)

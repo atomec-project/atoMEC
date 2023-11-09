@@ -32,7 +32,6 @@ class KuboGreenwood:
     """Class for Kubo-Greenwood conductivity and MIS via TRK sum rule."""
 
     def __init__(self, Atom, model, orbitals, valence_orbs=[], nmax=0, lmax=0):
-
         self._orbitals = orbitals
         self._xgrid = orbitals._xgrid
         self._eigfuncs = orbitals._eigfuncs
@@ -44,6 +43,12 @@ class KuboGreenwood:
             sys.exit(
                 "Kubo-Greenwood is not yet set-up for spin-polarized calculations. \
 Please run again with spin-unpolarized input."
+            )
+
+        if orbitals.grid_type != "log":
+            sys.exit(
+                "Sqrt grid is not yet supported for Kubo-Greenwood calculations."
+                "Please switch to log grid."
             )
         if nmax == 0:
             self._nmax = nmax_default
@@ -994,7 +999,6 @@ class RadialInts:
                     )
 
                     if orb_subset_1 != orb_subset_2:
-
                         R2_mat[:, l2, n2, l1, n1] = cls.R2_int_term(
                             eigfuncs[:, 0, l2, n2], eigfuncs[:, 0, l1, n1], xgrid
                         )

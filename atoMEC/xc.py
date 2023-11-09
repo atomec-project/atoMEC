@@ -116,7 +116,6 @@ def check_xc_func(xc_code, id_supp):
     else:
         # checks if the libxc code is recognised
         try:
-
             xc_func = pylibxc.LibXCFunctional(xc_code, "unpolarized")
 
             # check the xc family is supported
@@ -161,16 +160,16 @@ def set_xc_func(xc_code):
     return xc_func
 
 
-def v_xc(density, xgrid, xfunc, cfunc):
+def v_xc(density, xgrid, xfunc, cfunc, grid_type):
     """
     Retrive the xc potential.
 
     Parameters
     ----------
     density: ndarray
-        the KS density on the log grid
+        the KS density on the log/sqrt grid
     xgrid: ndarray
-        the log grid
+        the log/sqrt grid
     xfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
         the exchange functional object
     cfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
@@ -196,16 +195,16 @@ def v_xc(density, xgrid, xfunc, cfunc):
     return _v_xc
 
 
-def E_xc(density, xgrid, xfunc, cfunc):
+def E_xc(density, xgrid, xfunc, cfunc, grid_type):
     """
     Retrieve the xc energy.
 
     Parameters
     ----------
     density: ndarray
-        the KS density on the log grid
+        the KS density on the log/sqrt grid
     xgrid: ndarray
-        the log grid
+        the log/sqrt grid
     xfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
         the exchange functional object
     cfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
@@ -225,11 +224,11 @@ def E_xc(density, xgrid, xfunc, cfunc):
 
     # compute the exchange energy
     ex_libxc = calc_xc(density, xgrid, xfunc, "e_xc")
-    _E_xc["x"] = mathtools.int_sphere(ex_libxc * dens_tot, xgrid)
+    _E_xc["x"] = mathtools.int_sphere(ex_libxc * dens_tot, xgrid, grid_type)
 
     # compute the correlation energy
     ec_libxc = calc_xc(density, xgrid, cfunc, "e_xc")
-    _E_xc["c"] = mathtools.int_sphere(ec_libxc * dens_tot, xgrid)
+    _E_xc["c"] = mathtools.int_sphere(ec_libxc * dens_tot, xgrid, grid_type)
 
     # sum to get the total xc potential
     _E_xc["xc"] = _E_xc["x"] + _E_xc["c"]
@@ -244,9 +243,9 @@ def calc_xc(density, xgrid, xcfunc, xctype):
     Parameters
     ----------
     density: ndarray
-        the KS density on the log grid
+        the KS density on the log/sqrt grid
     xgrid: ndarray
-        the log grid
+        the log/sqrt grid
     xcfunc: :obj:`XCFunc` or :obj:`pylibxc.LibXCFunctional`
         the exchange or correlation functional object
     xctype: str
@@ -276,14 +275,15 @@ def calc_xc(density, xgrid, xcfunc, xctype):
 
     # special case in which xc = -hartree
     elif xcfunc._number == -1:
-
         # import the staticKS module
         from . import staticKS
 
         if xctype == "v_xc":
-            xc_arr[:] = -staticKS.Potential.calc_v_ha(density, xgrid)
+            xc_arr[:] = -staticKS.Potential.calc_v_ha(density, xgrid, config.grid_type)
         elif xctype == "e_xc":
-            xc_arr = -0.5 * staticKS.Potential.calc_v_ha(density, xgrid)
+            xc_arr = -0.5 * staticKS.Potential.calc_v_ha(
+                density, xgrid, config.grid_type
+            )
 
     else:
         # lda
@@ -310,15 +310,15 @@ def calc_xc(density, xgrid, xcfunc, xctype):
             # preparing the sigma array needed for libxc gga calculation
             if config.spindims == 2:
                 sigma_libxc = np.zeros((config.grid_params["ngrid"], 3))
-                grad_0 = mathtools.grad_func(density[0, :], xgrid)
-                grad_1 = mathtools.grad_func(density[1, :], xgrid)
-                sigma_libxc[:, 0] = grad_0 ** 2
+                grad_0 = mathtools.grad_func(density[0, :], xgrid, config.grid_type)
+                grad_1 = mathtools.grad_func(density[1, :], xgrid, config.grid_type)
+                sigma_libxc[:, 0] = grad_0**2
                 sigma_libxc[:, 1] = grad_0 * grad_1
-                sigma_libxc[:, 2] = grad_1 ** 2
+                sigma_libxc[:, 2] = grad_1**2
             else:
                 sigma_libxc = np.zeros((config.grid_params["ngrid"], 1))
-                grad = mathtools.grad_func(density[0, :], xgrid)
-                sigma_libxc[:, 0] = grad ** 2
+                grad = mathtools.grad_func(density[0, :], xgrid, config.grid_type)
+                sigma_libxc[:, 0] = grad**2
 
             inp = {"rho": rho_libxc, "sigma": sigma_libxc}
 
@@ -359,7 +359,7 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
     grad_1: ndarray
         The gradient of the density of the 1 spin channel.
     xgrid: ndarray
-        the logarithmic (equispaced) grid.
+        the log / sqrt grid.
     spindim: int
         the number of spin dimentions in the calculation.
 
@@ -391,6 +391,11 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
     The output of the function is the square brackets after being acted upon with
     the divergence.
     """
+    if config.grid_type == "log":
+        r2 = np.exp(2.0 * xgrid)
+    else:
+        r2 = xgrid**4
+
     if spindims == 2:
         # 1st term of the expression in square brackets:
         term1 = (
@@ -403,26 +408,21 @@ def gga_pot_chainrule(libxc_output, grad_0, grad_1, xgrid, spindims):
             + grad_0 * libxc_output["vsigma"].transpose()[1]
         )
         # combining the 2 and taking the divergence (in spherical coordinates)
+
         gga_addition2 = 2.0 * np.array(
             (
-                np.exp(-2.0 * xgrid)
-                * mathtools.grad_func(np.exp(2.0 * xgrid) * term1, xgrid),
-                np.exp(-2.0 * xgrid)
-                * mathtools.grad_func(np.exp(2.0 * xgrid) * term2, xgrid),
-            )
+                (1 / r2) * mathtools.grad_func(r2 * term1, xgrid, config.grid_type),
+                (1 / r2) * mathtools.grad_func(r2 * term2, xgrid, config.grid_type),
+            ),
         )
     else:
         gga_addition2 = (
             2.0
-            * np.exp(-2.0 * xgrid)
+            * (1 / r2)
             * mathtools.grad_func(
-                (
-                    2.0
-                    * np.exp(2.0 * xgrid)
-                    * grad_0
-                    * libxc_output["vsigma"].transpose()[0]
-                ),
+                (2.0 * r2 * grad_0 * libxc_output["vsigma"].transpose()[0]),
                 xgrid,
+                config.grid_type,
             )
         )
     return gga_addition2

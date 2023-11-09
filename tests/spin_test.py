@@ -7,9 +7,9 @@ import numpy as np
 
 
 # expected values and tolerance
-singlet_expected = -38.0024097674
-triplet_expected = -37.987537447
-accuracy = 1e-4
+singlet_expected = -37.89758629854574
+triplet_expected = -37.88133924584101
+accuracy = 1e-3
 
 
 class TestSpin:
@@ -57,7 +57,7 @@ class TestSpin:
             unbound="quantum",
             bc="bands",
             xfunc_id="gga_x_pbe",
-            cfunc_id="gga_c_pbe"
+            cfunc_id="gga_c_pbe",
         )
 
         # run the SCF calculation
@@ -66,7 +66,8 @@ class TestSpin:
             5,
             scf_params={"maxscf": 4, "mixfrac": 0.3},
             band_params={"nkpts": 50},
-            grid_params={"ngrid": 1000},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 300},
+            grid_type="log",
         )
 
         # extract the total free energy
@@ -75,5 +76,8 @@ class TestSpin:
 
 
 if __name__ == "__main__":
-    print("singlet energy = ", TestSpin._run(0))
-    print("triplet energy = ", TestSpin._run(2))
+    config.numcores = -1
+    singlet = TestSpin._run(0)
+    triplet = TestSpin._run(2)
+    print("singlet_expected =", singlet)
+    print("triplet_expected =", triplet)

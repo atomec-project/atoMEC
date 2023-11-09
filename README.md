@@ -1,14 +1,12 @@
-![image](./docs/source/img/logos/atoMEC_horizontal2.png)
+![image](https://github.com/atomec-project/atoMEC/blob/develop/docs/source/img/logos/atoMEC_horizontal2.png)
 
 # atoMEC: Average-Atom Code for Matter under Extreme Conditions
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5205718.svg)](https://doi.org/10.5281/zenodo.5205718)
 [![docs](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/atomec-project/atoMEC/actions/workflows/gh-pages.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![image](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![PyPI version](https://badge.fury.io/py/atoMEC.svg)](https://badge.fury.io/py/atoMEC)
-[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![codecov](https://codecov.io/gh/atomec-project/atoMEC/branch/develop/graph/badge.svg?token=V66CJJ3KPI)](https://codecov.io/gh/atomec-project/atoMEC)
+[![CodeFactor](https://www.codefactor.io/repository/github/atomec-project/atomec/badge)](https://www.codefactor.io/repository/github/atomec-project/atomec)
 
 atoMEC is a python-based average-atom code for simulations of high energy density phenomena such as in warm dense matter.
 It is designed as an open-source and modular python package.
@@ -16,33 +14,59 @@ It is designed as an open-source and modular python package.
 atoMEC uses Kohn-Sham density functional theory, in combination with an average-atom approximation,
 to solve the electronic structure problem for single-element materials at finite temperature.
 
-More information on the average-atom methodology and Kohn-Sham density functional theory can be found (for example) in this [preprint](https://arxiv.org/abs/2103.09928) and references therein.
+More information on the average-atom methodology and Kohn-Sham density functional theory can be found (for example) in this [paper](https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.4.023055) and references therein.
 
 This repository is structured as follows:
 ```
 ├── atoMEC : source code
 ├── docs : sphinx documentation
-├── examples : useful examples to get you started with the package
-└── tests : test scripts used during development, will hold tests for CI in the future
+├── examples : simple examples to get you started with the package
+└── tests : CI tests
 ```
 
 
 ## Installation
 
+The latest stable release of `atoMEC` can be installed via `pip`. It is first necessary to install the `libxc` package from a tarball source, because it currently has no official wheels distribution on PyPI. This step takes some time.
+
+```sh
+$ pip install https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz
+$ pip install atoMEC
+```
+
+Note that atoMEC does not (yet) support Windows installation (please see the section below on supported operating systems).
+
+Read on for instructions on how to install `atoMEC` from source, using the recommended `pipenv` installation route.
+
+### Installation via `pipenv`
+
 First, clone the atoMEC repository and ``cd`` into the main directory.
 
-* Recommended : using [pipenv](https://pypi.org/project/pipenv/)
+* It is recommended to install atoMEC inside a virtual environment. Below, we detail how to achive this with [pipenv](https://pypi.org/project/pipenv/).
 
-  This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies.
+  This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies. Note that `pyblibxc` is automatically installed in this case, so there is no need to install it separately.
 
-  1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for    installation instructions)
+  1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for installation instructions)
   2. Next, install `atoMEC`'s dependencies with `pipenv install` (use `--dev` option to install the test dependencies in the same environment)
-  3. Use `pipenv shell` to activate the virtual environment and install atoMEC with `pip install atoMEC` (for developers: `pip install -e .`)
-  4. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
+  3. Use `pipenv shell` to activate the virtual environment
+  4. Install atoMEC with `pip install atoMEC` (for developers: `pip install -e .`)
+  5. Now run scripts from inside the `atoMEC` virtual environment, e.g. `python examples/simple.py`
 
-* Run the tests (see Testing section below) and report any failures (for example by raising an issue)
+* Run the tests (see Testing section below) and report any failures (for example by raising an issue).
 
-**Please note**: atoMEC does not yet support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support.
+### Supported operating systems
+
+* **Linux and macOS**: atoMEC has been installed on various linux distributions and macOS, and is expected to work for most distributions and versions
+* **Windows**: atoMEC does **not** support Windows installation. This is due to the dependency on `pylibxc` which currently lacks Windows support. We are looking into ways to make the dependency on `pylibxc` optional, in order to allow installation on Windows. However, this is not currently a priority.
+
+
+### Supported Python versions
+
+* atoMEC has been tested and is expected to work for all Python versions >= 3.8 and <= 3.12
+* atoMEC does not work for Python <= 3.7
+* Until 09.10.2023 (release 1.4.0), all development and CI testing was done with Python 3.8. As of this date, development and CI testing is done with Python 3.12.
+* Python 3.12 is therefore the recommended version for atoMEC >= 1.4.0, since this is used for the current testing and development environment
+
 
 ## Running
 You can familiarize yourself with the usage of this package by running the example scripts in `examples/`.

@@ -5,7 +5,7 @@ import numpy as np
 
 
 # expected values and tolerance
-unbound_expected = -10.091898
+unbound_expected = -10.085061150480994
 accuracy = 1e-3
 
 
@@ -42,14 +42,14 @@ class TestUnbound:
             units_temp="eV",
             units_radius="angstrom",
         )
-        model = models.ISModel(Be_at, unbound="ideal")
+        model = models.ISModel(Be_at, unbound="ideal", bc="dirichlet")
 
         # run the SCF calculation
         output = model.CalcEnergy(
             3,
             3,
-            scf_params={"maxscf": 3},
-            grid_params={"ngrid": 1000},
+            scf_params={"maxscf": 3, "mixfrac": 0.3},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 300},
             force_bound=[[0, 0, 0]],
         )
 
@@ -59,4 +59,6 @@ class TestUnbound:
 
 
 if __name__ == "__main__":
-    print(TestUnbound._run())
+    config.numcores = -1
+    unbound = TestUnbound._run()
+    print("unbound_expected =", unbound)

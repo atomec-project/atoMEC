@@ -27,7 +27,7 @@ from scipy import optimize, integrate
 from . import config
 
 
-def normalize_orbs(eigfuncs_x, xgrid):
+def normalize_orbs(eigfuncs_x, xgrid, grid_type):
     r"""
     Normalize the KS orbitals within the chosen sphere.
 
@@ -36,7 +36,7 @@ def normalize_orbs(eigfuncs_x, xgrid):
     eigfuncs_x : ndarray
         The radial KS eigenfunctions :math:`X_{nl}^{\sigma}(x)`
     xgrid : ndarray
-        The logarithmic grid over which normalization is performed
+        The log / sqrt grid over which normalization is performed
 
     Returns
     -------
@@ -51,26 +51,26 @@ def normalize_orbs(eigfuncs_x, xgrid):
         # compute the mod squared eigenvalues
         eigfuncs_sq = eigfuncs_x[n].real ** 2 + eigfuncs_x[n].imag ** 2
         # compute the intergal ampsq=4*pi*\int_dr r^2 |R(r)|^2
-        exp_x = np.exp(-xgrid)
-        ampsq = int_sphere(exp_x * eigfuncs_sq, xgrid)
+        if grid_type == "log":
+            ampsq = int_sphere(np.exp(-xgrid) * eigfuncs_sq, xgrid, "log")
+        else:
+            ampsq = int_sphere(eigfuncs_sq, xgrid, "sqrt")
         # normalize eigenfunctions
         eigfuncs_x_norm[n] = eigfuncs_x[n] / sqrt(ampsq)
 
     return eigfuncs_x_norm
 
 
-def int_sphere(fx, xgrid):
+def int_sphere(fx, xgrid, grid_type):
     r"""
     Compute integral over sphere defined by input grid.
-
-    The integral is performed on the logarithmic grid (see notes).
 
     Parameters
     ----------
     fx : array_like
         The function (array) to be integrated
     xgrid : ndarray
-        The logarithmic radial grid
+        The log / sqrt radial grid
 
     Returns
     -------
@@ -79,11 +79,18 @@ def int_sphere(fx, xgrid):
 
     Notes
     -----
-    The integral formula is given by
+    The integral formula on the log grid is given by
 
     .. math:: I = 4 \pi \int \mathrm{d}x\ e^{3x} f(x)
+
+    and on the sqrt grid is given by
+
+    .. math:: I = 4 \pi \int \mathrm{d}s\ s^5 f(s)
     """
-    func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
+    if grid_type == "log":
+        func_int = 4.0 * pi * np.exp(3.0 * xgrid) * fx
+    else:
+        func_int = 8.0 * pi * xgrid**5 * fx
     I_sph = np.trapz(func_int, xgrid)
 
     return I_sph
@@ -470,23 +477,26 @@ def lorentzian(x, x0, gamma):
     return lorentzian_
 
 
-def grad_func(den, xgrid):
+def grad_func(den, xgrid, grid_type):
     """
-    Compute the gradient of a function on the logarithmic grid.
+    Compute the gradient of a function on the log / sqrt grid.
 
     Parameters
     ----------
     den : ndarray
         density array or any other function that is integrated
-    rgrid : ndarray
-        radial grid array
     xgrid : ndarray
-        exponential grid array
+        log / sqrt grid
+    grid_type : str
+        grid type, log or sqrt
 
     Returns
     -------
     grad : ndarray
         The gradient of the density w.r.t. the radial grid.
     """
-    grad = (np.exp(-xgrid)) * np.gradient(den, xgrid)
+    if grid_type == "log":
+        grad = (np.exp(-xgrid)) * np.gradient(den, xgrid)
+    else:
+        grad = np.gradient(den, xgrid) / (2 * xgrid)
     return grad

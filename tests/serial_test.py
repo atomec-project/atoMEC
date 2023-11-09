@@ -7,8 +7,8 @@ import numpy as np
 
 
 # expected values and tolerance
-dense_expected = -0.562437
-coarse_expected = -0.567817
+dense_expected = -0.5620111902408967
+coarse_expected = -0.56341460946266
 accuracy = 1e-3
 
 
@@ -23,8 +23,8 @@ class TestSerial:
     @pytest.mark.parametrize(
         "test_input,expected",
         [
-            (400, coarse_expected),
-            (5001, dense_expected),
+            (250, coarse_expected),
+            (10001, dense_expected),
         ],
     )
     def test_serial(self, test_input, expected):
@@ -59,7 +59,8 @@ class TestSerial:
             2,
             scf_params={"maxscf": 1, "mixfrac": 0.7},
             band_params={"nkpts": 30},
-            grid_params={"ngrid": ngrid},
+            grid_params={"ngrid": ngrid, "ngrid_coarse": 300},
+            grid_type="log",
         )
 
         # extract the total free energy
@@ -68,4 +69,8 @@ class TestSerial:
 
 
 if __name__ == "__main__":
-    print(TestSerial._run())
+    config.numcores = 0
+    dense = TestSerial._run(10001)
+    coarse = TestSerial._run(250)
+    print("dense_expected =", dense)
+    print("coarse_expected =", coarse)

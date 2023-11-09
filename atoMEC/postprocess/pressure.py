@@ -95,7 +95,12 @@ def finite_diff(
         nmax,
         grid_params["ngrid"],
     ) = np.shape(eigfuncs)
-    grid_params["x0"] = orbs._xgrid[0]
+
+    grid_type = orbs.grid_type
+    if grid_type == "log":
+        grid_params["x0"] = orbs._xgrid[0]
+    else:
+        grid_params["s0"] = orbs._xgrid[0]
 
     # initialize the main radius we are interested in
     main_rad = atom.radius
@@ -110,6 +115,7 @@ def finite_diff(
         grid_params=grid_params,
         band_params=band_params,
         scf_params=scf_params,
+        grid_type=grid_type,
         conv_params=conv_params,
         force_bound=force_bound,
         verbosity=verbosity,
@@ -136,6 +142,7 @@ def finite_diff(
         grid_params=grid_params,
         band_params=band_params,
         scf_params=scf_params,
+        grid_type=grid_type,
         conv_params=conv_params,
         force_bound=force_bound,
         verbosity=verbosity,
@@ -170,6 +177,10 @@ def stress_tensor(Atom, model, orbs, pot, only_rr=False):
 
     Parameters
     ----------
+    Atom : atoMEC.Atom
+        The main atom object
+    model : models.ISModel
+        The model object
     orbs : staticKS.Orbitals
         the orbitals object
     pot : staticKS.Potential
@@ -202,27 +213,41 @@ def stress_tensor(Atom, model, orbs, pot, only_rr=False):
     # set the xgrid
     xgrid = orbs._xgrid
 
+    grid_type = orbs.grid_type
+
     # first compute the gradient of the orbitals
     deriv_orbs = np.gradient(orbs.eigfuncs, xgrid, axis=-1, edge_order=2)
 
     # chain rule to convert from dP_dx to dX_dr
-    grad_orbs = np.exp(-1.5 * xgrid) * (deriv_orbs - 0.5 * orbs.eigfuncs)
+    if grid_type == "log":
+        grad_orbs = np.exp(-1.5 * xgrid) * (deriv_orbs - 0.5 * orbs.eigfuncs)
+    else:
+        grad_orbs = deriv_orbs / (2 * xgrid)
 
     # compute the "gradient" term
     grad_sq = grad_orbs**2
 
     # add a correction if only rr used
     if only_rr:
-        grad_sq += 2 * np.exp(-1.5 * xgrid) * orbs.eigfuncs * grad_orbs
+        if grid_type == "log":
+            grad_sq += 2 * np.exp(-1.5 * xgrid) * orbs.eigfuncs * grad_orbs
+        else:
+            grad_sq += 2 * orbs.eigfuncs * grad_orbs / xgrid**2
 
     # compute the l*(l+1) array
     l_arr = np.fromiter((l * (l + 1.0) for l in range(lmax)), float, lmax)
 
     # get the X(R)^2 term
-    orb_sq = orbs.eigfuncs**2 * np.exp(-xgrid)
+    if grid_type == "log":
+        orb_sq = orbs.eigfuncs**2 * np.exp(-xgrid)
+    else:
+        orb_sq = orbs.eigfuncs**2
 
     # compute the l(l+1)/r^2 X(R)^2 term
-    lsq_term = np.exp(-2 * xgrid) * np.einsum("k,ijklm->ijklm", l_arr, orb_sq)
+    if grid_type == "log":
+        lsq_term = np.exp(-2 * xgrid) * np.einsum("k,ijklm->ijklm", l_arr, orb_sq)
+    else:
+        lsq_term = np.einsum("k,ijklm->ijklm", l_arr, orb_sq) / xgrid**4
 
     # compute the eps * X(R)^2 term
     v_E_arr = (
@@ -246,7 +271,7 @@ def stress_tensor(Atom, model, orbs, pot, only_rr=False):
     return P_e
 
 
-def virial(atom, model, energy, density, orbs, use_correction=False):
+def virial(atom, model, energy, density, orbs, pot, use_correction=False, method="A"):
     r"""Compute the pressure using the virial theorem (see notes).
 
     Parameters
@@ -259,6 +284,8 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
         the Energy object
     density : staticKS.Density
         the density object
+    pot : staticKS.Potential
+        the potential object
     use_correction: bool, optional
         whether to use boundary condition correction described in [10]_
 
@@ -293,26 +320,34 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
         `DOI:10.1088/0953-4075/40/8/008
         <https://doi.org/10.1088/0953-4075/40/8/008>`__.
     """
+    # get the grid type
+    grid_type = density.grid_type
+
     # compute the sphere volume
     sph_vol = (4.0 * np.pi / 3.0) * atom.radius**3
 
     # compute the derivative term of the W_xc component
-    Wd_x = calc_Wd_xc(model.xfunc_id, density)
-    Wd_c = calc_Wd_xc(model.cfunc_id, density)
+    Wd_x = calc_Wd_xc(model.xfunc_id, density, grid_type)
+    Wd_c = calc_Wd_xc(model.cfunc_id, density, grid_type)
 
     # compute total W_xc component
     W_xc = -3 * energy.E_xc["xc"] + 3 * (Wd_x + Wd_c)
 
-    K2 = energy.E_kin["tot"]
+    if method == "A":
+        K2 = energy.E_kin["tot"]
+    elif method == "B":
+        K2 = staticKS.EnergyAlt(orbs, density, pot).E_kin["tot"]
 
     if not use_correction:
-        K1 = energy.E_kin["tot"]
+        K1 = K2
     else:
         E_kin_alt_dens = staticKS.Energy.calc_E_kin_dens(
-            orbs.eigfuncs, orbs.occnums_w, orbs._xgrid, method="B"
+            orbs.eigfuncs, orbs.occnums_w, orbs._xgrid, grid_type, method="B"
         )
         # integrate over sphere
-        K1 = mathtools.int_sphere(np.sum(E_kin_alt_dens, axis=0), orbs._xgrid)
+        K1 = mathtools.int_sphere(
+            np.sum(E_kin_alt_dens, axis=0), orbs._xgrid, grid_type
+        )
 
     # compute E_V = 2*T + U + W_xc
     E_V = K1 + K2 + energy.E_en + energy.E_ha + W_xc
@@ -323,7 +358,7 @@ def virial(atom, model, energy, density, orbs, use_correction=False):
     return P_e
 
 
-def calc_Wd_xc(xc_func_id, density):
+def calc_Wd_xc(xc_func_id, density, grid_type):
     r"""Compute the 'derivative' component of the xc term in virial formula (see notes).
 
     Parameters
@@ -365,7 +400,9 @@ def calc_Wd_xc(xc_func_id, density):
     # multiply by density, integrate over sphere and sum over spins
     Wd_xc = 0.0
     for sp in range(spindims):
-        Wd_xc += mathtools.int_sphere(density.total[sp] * v_xc[sp], density._xgrid)
+        Wd_xc += mathtools.int_sphere(
+            density.total[sp] * v_xc[sp], density._xgrid, grid_type
+        )
 
     return Wd_xc
 

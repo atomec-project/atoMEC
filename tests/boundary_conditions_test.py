@@ -12,9 +12,10 @@ import numpy as np
 
 
 # expected values and tolerance
-dirichlet_expected = -14.080034
-neumann_expected = -15.161942
-bands_expected = -14.731577
+dirichlet_expected = -14.02657778662206
+neumann_expected = -15.112195227107968
+bands_expected = -14.68311960864459
+
 accuracy = 1e-3
 
 
@@ -69,10 +70,22 @@ class TestBcs:
             4,
             4,
             scf_params={"maxscf": 5, "mixfrac": 0.3},
-            grid_params={"ngrid": 1000},
+            grid_params={"ngrid": 1000, "ngrid_coarse": 600},
             band_params={"nkpts": nkpts},
+            grid_type="log",
         )
 
         # extract the total free energy
         F_tot = output["energy"].F_tot
         return F_tot
+
+
+if __name__ == "__main__":
+    config.numcores = -1
+    config.fp = np.float32
+    dirichlet = TestBcs._run("dirichlet")
+    neumann = TestBcs._run("neumann")
+    bands = TestBcs._run("bands")
+    print("dirichlet_expected =", dirichlet)
+    print("neumann_expected =", neumann)
+    print("bands_expected =", bands)

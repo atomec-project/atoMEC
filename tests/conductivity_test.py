@@ -9,21 +9,22 @@ import numpy as np
 
 
 # expected values and tolerance
-N_cc_expected_1_0 = 1.742515706139
-N_cc_expected_3_1 = 4.492209106738
-N_tt_expected_1_0 = 4.59790383269
-N_tt_expected_3_1 = 4.59790383269
+N_cc_expected_1_0 = 2.454442757747575
+N_cc_expected_3_1 = 6.727831527604185
+N_tt_expected_1_0 = 6.833387102730367
+N_tt_expected_3_1 = 6.833387102730367
 N_vv_expected_1_0 = 0.0
 N_vv_expected_3_1 = 0.0
-N_cv_expected_1_0 = 2.60323659985
-N_cv_expected_3_1 = 0.006759
-expected_integral_4 = 1.341640786499
-expected_integral_2 = 0.447213595499
-expected_sum_rule = 0.2940819621
+N_cv_expected_1_0 = 4.1257136059769985
+N_cv_expected_3_1 = 0.00749276366862972
+expected_integral_4 = 1.3416407864998738
+expected_integral_2 = 0.447213595499958
+expected_sum_rule = 0.29294247872666707
 expected_prop_sig_vv = 0.0
-expected_prop_sig_cv = 0.0013982278
-expected_prop_N_tot = 6.09241213503
-expected_prop_N_free = 4.5709301608
+expected_prop_sig_cv = 0.0014275605940770114
+expected_prop_N_tot = 6.08906292713134
+expected_prop_N_free = 4.5527425486281805
+
 accuracy = 0.001
 
 
@@ -125,7 +126,11 @@ class TestConductivity:
 
         # run the SCF calculation
         output = model.CalcEnergy(
-            4, 4, scf_params={"mixfrac": 0.3, "maxscf": 6}, grid_params={"ngrid": 1200}
+            4,
+            4,
+            scf_params={"mixfrac": 0.3, "maxscf": 6},
+            grid_params={"ngrid": 1200, "ngrid_coarse": 300},
+            grid_type="log",
         )
 
         output_dict = {"Atom": F_at, "model": model, "SCF_out": output}
@@ -236,20 +241,20 @@ class TestConductivity:
 
 
 if __name__ == "__main__":
+    config.numcores = -1
     SCF_out = TestConductivity._run_SCF()
-    print(TestConductivity._run_cond_tot(SCF_out, "cc", (1, 0)))
-    print(TestConductivity._run_cond_tot(SCF_out, "tt", (1, 0)))
-    print(TestConductivity._run_cond_tot(SCF_out, "cv", (1, 0)))
-    print(TestConductivity._run_cond_tot(SCF_out, "vv", (1, 0)))
-    print(TestConductivity._run_cond_tot(SCF_out, "cc", (3, 1)))
-    print(TestConductivity._run_cond_tot(SCF_out, "tt", (3, 1)))
-    print(TestConductivity._run_cond_tot(SCF_out, "cv", (3, 1)))
-    print(TestConductivity._run_cond_tot(SCF_out, "vv", (3, 1)))
-    print(TestConductivity._run_sum_rule(SCF_out))
-    print(TestConductivity._run_prop(SCF_out, "sig_vv"))
-    print(TestConductivity._run_prop(SCF_out, "sig_cv"))
-    print(TestConductivity._run_prop(SCF_out, "N_tot"))
-    print(TestConductivity._run_prop(SCF_out, "N_free"))
-    print(TestConductivity._run_int_calc(2))
-    print(TestConductivity._run_int_calc(4))
-    print(TestConductivity._run_sum_rule(SCF_out))
+    print("N_cc_expected_1_0 =", TestConductivity._run_cond_tot(SCF_out, "cc", (1, 0)))
+    print("N_cc_expected_3_1 =", TestConductivity._run_cond_tot(SCF_out, "cc", (3, 1)))
+    print("N_tt_expected_1_0 =", TestConductivity._run_cond_tot(SCF_out, "tt", (1, 0)))
+    print("N_tt_expected_3_1 =", TestConductivity._run_cond_tot(SCF_out, "tt", (3, 1)))
+    print("N_vv_expected_1_0 =", TestConductivity._run_cond_tot(SCF_out, "vv", (1, 0)))
+    print("N_vv_expected_3_1 =", TestConductivity._run_cond_tot(SCF_out, "vv", (3, 1)))
+    print("N_cv_expected_1_0 =", TestConductivity._run_cond_tot(SCF_out, "cv", (1, 0)))
+    print("N_cv_expected_3_1 =", TestConductivity._run_cond_tot(SCF_out, "cv", (3, 1)))
+    print("expected_integral_4 =", TestConductivity._run_int_calc(4))
+    print("expected_integral_2 =", TestConductivity._run_int_calc(2))
+    print("expected_sum_rule =", TestConductivity._run_sum_rule(SCF_out))
+    print("expected_prop_sig_vv =", TestConductivity._run_prop(SCF_out, "sig_vv"))
+    print("expected_prop_sig_cv =", TestConductivity._run_prop(SCF_out, "sig_cv"))
+    print("expected_prop_N_tot =", TestConductivity._run_prop(SCF_out, "N_tot"))
+    print("expected_prop_N_free =", TestConductivity._run_prop(SCF_out, "N_free"))
