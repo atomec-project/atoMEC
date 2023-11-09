@@ -97,17 +97,19 @@ to solve the electronic structure problem for single-element materials at finite
 </div>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
-<p>The latest stable release of <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code> can be installed via <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
-<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">atoMEC</span></code></p>
+<p>The latest stable release of <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code> can be installed via <code class="docutils literal notranslate"><span class="pre">pip</span></code>. It is first necessary to install the <code class="docutils literal notranslate"><span class="pre">libxc</span></code> package from a tarball source, because it currently has no official wheels distribution on PyPI. This step takes some time.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>atoMEC
+</pre></div>
+</div>
 <p>Note that atoMEC does not (yet) support Windows installation (please see the section below on supported operating systems).</p>
-<p>The installation takes some time due to the dependence on <code class="docutils literal notranslate"><span class="pre">pylibxc</span></code>, which currently has no official wheels distribution on PyPI.</p>
 <p>Read on for instructions on how to install <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code> from source, using the recommended <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> installation route.</p>
 <section id="installation-via-pipenv">
 <h3>Installation via <code class="docutils literal notranslate"><span class="pre">pipenv</span></code><a class="headerlink" href="#installation-via-pipenv" title="Link to this heading"></a></h3>
 <p>First, clone the atoMEC repository and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into the main directory.</p>
 <ul>
 <li><p>It is recommended to install atoMEC inside a virtual environment. Below, we detail how to achive this with <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a>.</p>
-<p>This route is recommended because <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> automatically creates a virtual environment and manages dependencies.</p>
+<p>This route is recommended because <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> automatically creates a virtual environment and manages dependencies. Note that <code class="docutils literal notranslate"><span class="pre">pyblibxc</span></code> is automatically installed in this case, so there is no need to install it separately.</p>
 <ol class="arabic simple">
 <li><p>First, install <code class="docutils literal notranslate"><span class="pre">pipenv</span></code> if it is not already installed, for example via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pipenv</span></code> (or see <a class="reference external" href="https://pypi.org/project/pipenv/">pipenv</a> for installation instructions)</p></li>
 <li><p>Next, install <code class="docutils literal notranslate"><span class="pre">atoMEC</span></code>’s dependencies with <code class="docutils literal notranslate"><span class="pre">pipenv</span> <span class="pre">install</span></code> (use <code class="docutils literal notranslate"><span class="pre">--dev</span></code> option to install the test dependencies in the same environment)</p></li>
