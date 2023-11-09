@@ -92,6 +92,7 @@ class TestFuncs:
             scf_params={"maxscf": 5, "mixfrac": 0.3},
             grid_params={"ngrid": 1000, "ngrid_coarse": 90},
             band_params={"nkpts": 30},
+            grid_type="log",
         )
 
         # extract the total free energy

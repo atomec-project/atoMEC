@@ -221,7 +221,7 @@ class ISModel:
         scf_params={},
         band_params={},
         force_bound=[],
-        grid_type="log",
+        grid_type="sqrt",
         verbosity=0,
         write_info=True,
         write_density=True,
@@ -280,6 +280,9 @@ class ISModel:
             forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be
             always bound even if it has positive energy. This prevents convergence
             issues.
+        grid_type : str, optional
+            the transformed radial grid used for the KS equations.
+            can be 'sqrt' (default) or 'log'
         verbosity : int, optional
             how much information is printed at each SCF cycle.
             `verbosity=0` prints the total energy and convergence values (default).
@@ -332,7 +335,7 @@ class ISModel:
         config.conv_params = check_inputs.EnergyCalcs.check_conv_params(conv_params)
         config.scf_params = check_inputs.EnergyCalcs.check_scf_params(scf_params)
         config.band_params = check_inputs.EnergyCalcs.check_band_params(band_params)
-        config.grid_type = grid_type
+        config.grid_type = check_inputs.EnergyCalcs.check_grid_type(grid_type)
 
         # experimental change
         config.force_bound = force_bound

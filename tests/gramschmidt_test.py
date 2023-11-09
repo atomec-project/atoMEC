@@ -34,7 +34,6 @@ class TestGS:
     )
     def test_overlap(self, input_SCF, case, expected):
         """Run overlap integral after orthonormalizatation."""
-        config.grid_type = "log"
         assert np.isclose(
             self._run_overlap(input_SCF, case),
             expected,
@@ -66,6 +65,7 @@ class TestGS:
             4,
             scf_params={"mixfrac": 0.3, "maxscf": 5},
             grid_params={"ngrid": 1000, "ngrid_coarse": 300},
+            grid_type="log",
         )
 
         return output
@@ -100,7 +100,6 @@ class TestGS:
 
 
 if __name__ == "__main__":
-    config.grid_type = "log"
     SCF_out = TestGS._run_SCF()
     print("self_overlap_expected =", TestGS._run_overlap(SCF_out, "self"))
     print("overlap_expected =", TestGS._run_overlap(SCF_out, "other"))

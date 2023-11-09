@@ -225,3 +225,11 @@ class TestCalcEnergy:
 
         with pytest.raises(SystemExit):
             model.CalcEnergy(3, 3, band_params=bands_input)
+
+    def test_grid_type(self):
+        """Test the grid type."""
+        atom = Atom("Al", 0.01, radius=1)
+        model = models.ISModel(atom, bc="bands", unbound="quantum")
+
+        with pytest.raises(SystemExit):
+            model.CalcEnergy(3, 3, grid_type="linear")

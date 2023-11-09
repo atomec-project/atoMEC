@@ -67,6 +67,7 @@ class TestSpin:
             scf_params={"maxscf": 4, "mixfrac": 0.3},
             band_params={"nkpts": 50},
             grid_params={"ngrid": 1000, "ngrid_coarse": 300},
+            grid_type="log",
         )
 
         # extract the total free energy
