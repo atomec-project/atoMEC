@@ -27,13 +27,14 @@ This repository is structured as follows:
 
 ## Installation
 
-The latest stable release of `atoMEC` can be installed via `pip`:
+The latest stable release of `atoMEC` can be installed via `pip`. It is first necessary to install the `libxc` package from a tarball source, because it currently has no official wheels distribution on PyPI. This step takes some time.
 
-`pip install atoMEC`
+```sh
+$ pip install https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz
+$ pip install atoMEC
+```
 
 Note that atoMEC does not (yet) support Windows installation (please see the section below on supported operating systems).
-
-The installation takes some time due to the dependence on `pylibxc`, which currently has no official wheels distribution on PyPI.
 
 Read on for instructions on how to install `atoMEC` from source, using the recommended `pipenv` installation route.
 
@@ -43,7 +44,7 @@ First, clone the atoMEC repository and ``cd`` into the main directory.
 
 * It is recommended to install atoMEC inside a virtual environment. Below, we detail how to achive this with [pipenv](https://pypi.org/project/pipenv/).
 
-  This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies.
+  This route is recommended because `pipenv` automatically creates a virtual environment and manages dependencies. Note that `pyblibxc` is automatically installed in this case, so there is no need to install it separately.
 
   1. First, install `pipenv` if it is not already installed, for example via `pip install pipenv` (or see [pipenv](https://pypi.org/project/pipenv/) for installation instructions)
   2. Next, install `atoMEC`'s dependencies with `pipenv install` (use `--dev` option to install the test dependencies in the same environment)

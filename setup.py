@@ -24,10 +24,7 @@ setup(
     url="https://github.com/atomec-project/atoMEC",
     license=license,
     packages=find_packages(exclude=("tests", "docs", "examples")),
-    install_requires=open("requirements.txt").read().splitlines()[:-1],
-    dependency_links=[
-        "https://gitlab.com/libxc/libxc/-/archive/6.2.2/libxc-6.2.2.tar.gz",
-    ],
+    install_requires=open("requirements.txt").read().splitlines(),
     extras_require=extras,
     python_requires=">=3.6",
 )
