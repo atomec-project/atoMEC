@@ -1058,6 +1058,33 @@
                 <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">bands_error</span><span class="p">(</span><span class="s2">&quot;de_min must be positive&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">band_params</span></div>
+
+
+<div class="viewcode-block" id="EnergyCalcs.check_grid_type">
+<a class="viewcode-back" href="../../api/atoMEC.html#atoMEC.check_inputs.EnergyCalcs.check_grid_type">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">check_grid_type</span><span class="p">(</span><span class="n">grid_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check grid type.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        grid_type : str</span>
+<span class="sd">            the grid type</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        grid_type : str</span>
+<span class="sd">            the grid type</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        InputError.grid_type_error</span>
+<span class="sd">            if grid type not one of &quot;log&quot; or &quot;sqrt&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">grid_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="s2">&quot;sqrt&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="n">InputError</span><span class="o">.</span><span class="n">grid_error</span><span class="p">(</span><span class="s2">&quot;Grid type must be either &#39;log&#39; or &#39;sqrt&#39;&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">grid_type</span></div>
 </div>
 
 

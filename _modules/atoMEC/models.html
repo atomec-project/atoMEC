@@ -299,7 +299,7 @@
         <span class="n">scf_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">band_params</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">force_bound</span><span class="o">=</span><span class="p">[],</span>
-        <span class="n">grid_type</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span>
+        <span class="n">grid_type</span><span class="o">=</span><span class="s2">&quot;sqrt&quot;</span><span class="p">,</span>
         <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">write_density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -358,6 +358,9 @@
 <span class="sd">            forces the orbital with quantum numbers :math:`\sigma=0,\ l=1,\ n=0` to be</span>
 <span class="sd">            always bound even if it has positive energy. This prevents convergence</span>
 <span class="sd">            issues.</span>
+<span class="sd">        grid_type : str, optional</span>
+<span class="sd">            the transformed radial grid used for the KS equations.</span>
+<span class="sd">            can be &#39;sqrt&#39; (default) or &#39;log&#39;</span>
 <span class="sd">        verbosity : int, optional</span>
 <span class="sd">            how much information is printed at each SCF cycle.</span>
 <span class="sd">            `verbosity=0` prints the total energy and convergence values (default).</span>
@@ -410,7 +413,7 @@
         <span class="n">config</span><span class="o">.</span><span class="n">conv_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_conv_params</span><span class="p">(</span><span class="n">conv_params</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">scf_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_scf_params</span><span class="p">(</span><span class="n">scf_params</span><span class="p">)</span>
         <span class="n">config</span><span class="o">.</span><span class="n">band_params</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_band_params</span><span class="p">(</span><span class="n">band_params</span><span class="p">)</span>
-        <span class="n">config</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">=</span> <span class="n">grid_type</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">grid_type</span> <span class="o">=</span> <span class="n">check_inputs</span><span class="o">.</span><span class="n">EnergyCalcs</span><span class="o">.</span><span class="n">check_grid_type</span><span class="p">(</span><span class="n">grid_type</span><span class="p">)</span>
 
         <span class="c1"># experimental change</span>
         <span class="n">config</span><span class="o">.</span><span class="n">force_bound</span> <span class="o">=</span> <span class="n">force_bound</span>
